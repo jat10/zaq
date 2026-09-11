@@ -279,7 +279,28 @@ defmodule Zaq.Channels.DiskBridgeTest do
       assert_received {:dispatch, :storage, :list_documents, %{params: ^params}}
       assert_received {:dispatch_opts, :storage, :list_documents, opts}
       assert opts[:config_id] == 42
-      refute Keyword.has_key?(opts, :storage_config)
+      assert opts[:storage_config][:base_path] == "priv/documents"
+    end
+
+    test "passes settings-level storage config explicitly to storage events" do
+      params = %{"filters" => %{"parent" => "archives"}}
+      stub_response({:ok, entry_page([])})
+
+      assert {:ok, %RecordPage{}} =
+               DiskBridge.list_files(
+                 config(%{
+                   "storage_config" => nil,
+                   "settings" => %{
+                     "storage_config" => %{"base_path" => "/selected/root"},
+                     "volumes" => [%{"name" => "archives", "path" => "archives"}]
+                   }
+                 }),
+                 params
+               )
+
+      assert_received {:dispatch_opts, :storage, :list_documents, opts}
+      assert opts[:storage_config][:base_path] == "/selected/root"
+      assert opts[:storage_config][:volumes] == %{"archives" => "/selected/root/archives"}
     end
 
     test "prefers an explicit parent filter over a tool path" do

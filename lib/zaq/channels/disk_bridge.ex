@@ -466,17 +466,20 @@ defmodule Zaq.Channels.DiskBridge do
   # caller-supplied data that reaches here verbatim from agent tools, and choosing the dispatch
   # target from it would make what runs a function of what the caller sent.
   defp dispatch(action, request, config, context) do
-    node_router = fetch(config, "node_router") || NodeRouter
-    config_id = config_id(config)
+    with {:ok, storage_opts} <- VolumeConfig.opts_for_channel_config(config) do
+      node_router = fetch(config, "node_router") || NodeRouter
+      config_id = config_id(config)
+      event_opts = storage_opts |> Keyword.merge(maybe_put([], :config_id, config_id))
 
-    event_builder_opts =
-      TrustedContext.event_builder_opts(context,
-        node_router: node_router,
-        config: fetch(config, "config"),
-        event_opts: maybe_put([], :config_id, config_id)
-      )
+      event_builder_opts =
+        TrustedContext.event_builder_opts(context,
+          node_router: node_router,
+          config: fetch(config, "config"),
+          event_opts: event_opts
+        )
 
-    Events.build_and_dispatch_event(action, request, event_builder_opts)
+      Events.build_and_dispatch_event(action, request, event_builder_opts)
+    end
   end
 
   defp maybe_put(opts, _key, nil), do: opts

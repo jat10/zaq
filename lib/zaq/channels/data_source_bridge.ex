@@ -1,4 +1,6 @@
 defmodule Zaq.Channels.DataSourceBridge do
+  @behaviour Zaq.Channels.DataSourceBridgeFacade
+
   @moduledoc """
   DataSource-domain bridge routing and delegation helpers.
 

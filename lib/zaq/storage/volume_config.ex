@@ -158,7 +158,7 @@ defmodule Zaq.Storage.VolumeConfig do
   defp storage_config(opts) do
     case Keyword.get(opts, :storage_config) do
       nil -> Config.get(:zaq, Zaq.Storage, [], opts)
-      config -> config
+      config -> normalize_storage_config(config)
     end
   end
 
@@ -169,7 +169,36 @@ defmodule Zaq.Storage.VolumeConfig do
     end
   end
 
-  defp map_get_storage_config(%{storage_config: storage_config}), do: storage_config
-  defp map_get_storage_config(%{"storage_config" => storage_config}), do: storage_config
+  defp map_get_storage_config(%{storage_config: storage_config}) when not is_nil(storage_config),
+    do: normalize_storage_config(storage_config)
+
+  defp map_get_storage_config(%{"storage_config" => storage_config})
+       when not is_nil(storage_config),
+       do: normalize_storage_config(storage_config)
+
+  defp map_get_storage_config(%{settings: %{"storage_config" => storage_config}}),
+    do: normalize_storage_config(storage_config)
+
+  defp map_get_storage_config(%{settings: %{storage_config: storage_config}}),
+    do: normalize_storage_config(storage_config)
+
+  defp map_get_storage_config(%{"settings" => %{"storage_config" => storage_config}}),
+    do: normalize_storage_config(storage_config)
+
+  defp map_get_storage_config(%{"settings" => %{storage_config: storage_config}}),
+    do: normalize_storage_config(storage_config)
+
   defp map_get_storage_config(_config), do: nil
+
+  defp normalize_storage_config(config) when is_list(config), do: config
+
+  defp normalize_storage_config(config) when is_map(config) do
+    config
+    |> Enum.map(fn
+      {"base_path", value} -> {:base_path, value}
+      {"volumes", value} -> {:volumes, value}
+      {"default_volume", value} -> {:default_volume, value}
+      {key, value} -> {key, value}
+    end)
+  end
 end

@@ -17,6 +17,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
   alias Zaq.Channels.WebhookUrl
   alias Zaq.Contracts.Record
   alias Zaq.Event
+  alias Zaq.Events.Helper, as: EventHelper
   alias Zaq.Ingestion
   alias Zaq.Ingestion.{Document, ExternalSource, IngestJob}
   alias Zaq.NodeRouter
@@ -47,13 +48,16 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
   def mount(params, _session, socket) do
     if connected?(socket), do: Phoenix.PubSub.subscribe(Zaq.PubSub, @ingestion_topic)
 
-    source_scopes = enabled_data_source_sources()
+    data_source_bridge_module = configured_data_source_bridge_module()
+    source_scopes = enabled_data_source_sources(data_source_bridge_module)
     active_source = resolve_source_scope(params, source_scopes)
     provider = active_source_provider(active_source, Map.get(params, "provider"))
     data_source_enabled? = data_source_config_enabled?()
 
     provider_config_id = active_source_config_id(active_source, provider)
-    action_capabilities = action_capabilities(provider, provider_config_id)
+
+    action_capabilities =
+      action_capabilities(provider, provider_config_id, data_source_bridge_module)
 
     {:ok,
      socket
@@ -61,6 +65,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
        current_path: ingestion_path(provider),
        provider: provider,
        provider_config_id: provider_config_id,
+       data_source_bridge_module: data_source_bridge_module,
        provider_folder_stack: [],
        provider_page: nil,
        provider_page_token: nil,
@@ -1213,12 +1218,12 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
 
   defp maybe_refresh_entries_after_job(socket, _job), do: socket
 
-  defp enabled_data_source_sources do
+  defp enabled_data_source_sources(data_source_bridge_module) do
     ChannelConfig
     |> where([c], c.kind == "data_source" and c.enabled == true)
     |> Repo.all()
     |> Enum.sort_by(&{&1.provider, &1.name})
-    |> Enum.flat_map(&source_scopes_for_config/1)
+    |> Enum.flat_map(&source_scopes_for_config(&1, data_source_bridge_module))
   end
 
   defp data_source_config_enabled? do
@@ -1227,8 +1232,12 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
     |> Repo.exists?()
   end
 
-  defp source_scopes_for_config(config) do
-    case dispatch_source_scopes(config.provider, %{"config_id" => config.id}) do
+  defp source_scopes_for_config(config, data_source_bridge_module) do
+    case dispatch_source_scopes(
+           config.provider,
+           %{"config_id" => config.id},
+           data_source_bridge_module
+         ) do
       {:ok, scopes} when is_list(scopes) -> Enum.map(scopes, &source_scope_nav(config, &1))
       _ -> []
     end
@@ -1275,16 +1284,29 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
   defp active_source_config_id(nil, provider), do: provider_config_id(provider)
 
   defp ingestion_call(fun, args) do
-    call_module = Zaq.Config.get(:zaq, :ingestion_call_module, NodeRouter, [])
-    call_module.invoke(:ingestion, Ingestion, fun, args)
+    router_module =
+      Zaq.Config.get(:zaq, :ingestion_node_router_module, NodeRouter, [])
+
+    EventHelper.build_and_dispatch_invoke_event(
+      :ingestion,
+      %{module: Ingestion, function: fun, args: args},
+      :invoke,
+      node_router: router_module
+    )
+    |> unwrap_ingestion_call_response()
   end
+
+  defp unwrap_ingestion_call_response(%Event{response: {:error, {:rpc_failed, _, _}} = error}),
+    do: error
+
+  defp unwrap_ingestion_call_response(%Event{response: response}), do: response
 
   defp dispatch_list_files(provider, params, socket) do
     DataSourceEvents.build_and_dispatch(
       :data_source_list_files,
       %{provider: provider, params: params},
       socket.assigns.current_user,
-      event_opts: [data_source_bridge_module: data_source_bridge_module()]
+      event_opts: [data_source_bridge_module: data_source_bridge_module(socket)]
     )
     |> Map.get(:response)
   end
@@ -1294,7 +1316,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
       action,
       %{provider: provider, params: params},
       socket.assigns.current_user,
-      event_opts: [data_source_bridge_module: data_source_bridge_module()]
+      event_opts: [data_source_bridge_module: data_source_bridge_module(socket)]
     )
     |> Map.get(:response)
   end
@@ -1345,7 +1367,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
   defp create_document_context(socket) do
     %{
       actor: BOActor.build(socket.assigns.current_user),
-      event_opts: [data_source_bridge_module: data_source_bridge_module()]
+      event_opts: [data_source_bridge_module: data_source_bridge_module(socket)]
     }
   end
 
@@ -1362,7 +1384,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
       :data_source_update_file,
       %{record: record, params: params},
       socket.assigns.current_user,
-      event_opts: [data_source_bridge_module: data_source_bridge_module()]
+      event_opts: [data_source_bridge_module: data_source_bridge_module(socket)]
     )
     |> Map.get(:response)
   end
@@ -1387,7 +1409,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
       :data_source_delete_file,
       %{record: record},
       socket.assigns.current_user,
-      event_opts: [data_source_bridge_module: data_source_bridge_module()]
+      event_opts: [data_source_bridge_module: data_source_bridge_module(socket)]
     )
     |> Map.get(:response)
   end
@@ -1429,9 +1451,13 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
     |> NodeRouter.dispatch()
   end
 
-  defp data_source_bridge_module do
-    Application.get_env(:zaq, :ingestion_data_source_bridge_module, DataSourceBridge)
+  defp configured_data_source_bridge_module do
+    Zaq.Config.get(:zaq, :ingestion_data_source_bridge_module, DataSourceBridge, [])
   end
+
+  defp data_source_bridge_module(%{assigns: %{data_source_bridge_module: module}})
+       when is_atom(module),
+       do: module
 
   defp dispatch_ingest_records([], _params, _socket), do: {:ok, []}
 
@@ -1450,10 +1476,10 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
     router_module.dispatch(event).response
   end
 
-  defp dispatch_source_scopes(provider, params) do
+  defp dispatch_source_scopes(provider, params, data_source_bridge_module) do
     opts = [
       action: :data_source_list_source_scopes,
-      data_source_bridge_module: data_source_bridge_module()
+      data_source_bridge_module: data_source_bridge_module
     ]
 
     event = Event.new(%{provider: provider, params: params}, :channels, opts: opts)
@@ -1631,7 +1657,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
       |> Event.new(:ingestion,
         opts: [
           action: :sync_data_source_permissions,
-          data_source_bridge_module: data_source_bridge_module()
+          data_source_bridge_module: data_source_bridge_module(socket)
         ],
         actor: BOActor.build(socket.assigns.current_user)
       )
@@ -1929,7 +1955,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
            data_source_provider(socket),
            params,
            actor: BOActor.build(socket.assigns.current_user),
-           event_opts: [data_source_bridge_module: data_source_bridge_module()]
+           event_opts: [data_source_bridge_module: data_source_bridge_module(socket)]
          ).response do
       {:ok, result} -> {:ok, result}
       {:error, reason} -> {:error, reason}
@@ -1947,7 +1973,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
            data_source_provider(socket),
            params,
            actor: BOActor.build(socket.assigns.current_user),
-           event_opts: [data_source_bridge_module: data_source_bridge_module()]
+           event_opts: [data_source_bridge_module: data_source_bridge_module(socket)]
          ).response do
       :ok -> :ok
       {:ok, _result} = ok -> ok
@@ -2223,8 +2249,8 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
     end
   end
 
-  defp action_capabilities(provider, config_id) do
-    resolved = capability_snapshot_resolved(provider, config_id)
+  defp action_capabilities(provider, config_id, data_source_bridge_module) do
+    resolved = capability_snapshot_resolved(provider, config_id, data_source_bridge_module)
 
     %{
       create: capability_resolved?(resolved, :create_item),
@@ -2251,10 +2277,10 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
     end
   end
 
-  defp capability_snapshot_resolved(provider, config_id) do
+  defp capability_snapshot_resolved(provider, config_id, data_source_bridge_module) do
     provider
     |> capability_provider()
-    |> dispatch_capability_snapshot(capability_params(config_id))
+    |> dispatch_capability_snapshot(capability_params(config_id), data_source_bridge_module)
     |> case do
       {:ok, %{resolved: resolved}} when is_map(resolved) ->
         resolved
@@ -2274,8 +2300,8 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
   defp maybe_config_param(nil), do: %{}
   defp maybe_config_param(id), do: %{"config_id" => id}
 
-  defp dispatch_capability_snapshot(provider, params) do
-    opts = [action: :channel_capability_snapshot, bridge_module: data_source_bridge_module()]
+  defp dispatch_capability_snapshot(provider, params, data_source_bridge_module) do
+    opts = [action: :channel_capability_snapshot, bridge_module: data_source_bridge_module]
 
     params
     |> Map.put(:provider, provider)

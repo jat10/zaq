@@ -169,4 +169,39 @@ defmodule Zaq.Storage.VolumeConfigTest do
                storage_config: [base_path: "/caller/root"]
              )
   end
+
+  test "settings-level storage config overrides global fallback" do
+    Application.put_env(:zaq, Zaq.Storage, base_path: "/global/root")
+
+    assert {:ok,
+            [
+              storage_config: [
+                base_path: "/settings/root",
+                volumes: %{"archive" => "/settings/root/archive"},
+                default_volume: "archive"
+              ]
+            ]} =
+             VolumeConfig.opts_for_channel_config(%{
+               settings: %{
+                 "storage_config" => %{"base_path" => "/settings/root"},
+                 "volumes" => [%{"name" => "archive", "path" => "archive"}]
+               }
+             })
+  end
+
+  test "falls back to global storage config when disk config has no explicit storage config" do
+    Application.put_env(:zaq, Zaq.Storage, base_path: "/global/root")
+
+    assert {:ok,
+            [
+              storage_config: [
+                base_path: "/global/root",
+                volumes: %{"archive" => "/global/root/archive"},
+                default_volume: "archive"
+              ]
+            ]} =
+             VolumeConfig.opts_for_channel_config(%{
+               settings: %{"volumes" => [%{"name" => "archive", "path" => "archive"}]}
+             })
+  end
 end

@@ -1,6 +1,8 @@
 Mox.defmock(Zaq.Agent.ChunkTitleMock, for: Zaq.Agent.ChunkTitleBehaviour)
+Mox.defmock(Zaq.CreateDocumentMock, for: Jido.Action)
 Mox.defmock(Zaq.DocumentProcessorMock, for: Zaq.DocumentProcessorBehaviour)
 Mox.defmock(Zaq.NodeRouterMock, for: Zaq.NodeRouter.Behaviour)
 Mox.defmock(Zaq.UserPortal.ClientMock, for: Zaq.UserPortal.ClientBehaviour)
+Mox.defmock(Zaq.DataSourceBridgeMock, for: Zaq.Channels.DataSourceBridgeFacade)
 Mox.defmock(Zaq.Channels.EmailBridge.ImapClientMock, for: Zaq.Channels.EmailBridge.ImapClient)
 Mox.defmock(Zaq.Permissions.PermissionRevokerMock, for: Zaq.Permissions.PermissionRevoker)
