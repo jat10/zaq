@@ -10,6 +10,11 @@ defmodule Zaq.Channels.EmailBridge do
   Inbound `email:imap` payloads are normalized by the configured adapter into
   `%Incoming{}` values, including lazy attachment `Record`s in
   `Incoming.attachments`.
+
+  Runtime dependencies can be overridden with `config: ConfigModule` in optional
+  call opts, listener `sink_opts`, or connection details under `:config_opts`.
+  Runtime startup carries these opts into listener callbacks. Without overrides,
+  configuration is read from the application environment.
   """
 
   @behaviour Zaq.Channels.Bridge
@@ -21,35 +26,47 @@ defmodule Zaq.Channels.EmailBridge do
 
   alias Zaq.Channels.{Bridge, ChannelConfig}
   alias Zaq.Channels.EmailBridge.ImapConfigHelpers
+  alias Zaq.Config
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.{Incoming, Outgoing}
   alias Zaq.NodeRouter
   alias Zaq.Utils.EmailUtils
 
   @doc "Converts an email adapter payload to the internal `%Incoming{}` format."
-  @spec to_internal(map(), map()) :: Incoming.t() | {:error, term()}
+  @spec to_internal(map(), map(), keyword()) :: Incoming.t() | {:error, term()}
   @impl true
-  def to_internal(params, connection_details)
+  def to_internal(params, connection_details, opts \\ [])
+
+  def to_internal(params, connection_details, opts)
       when is_map(params) and is_map(connection_details) do
-    with {:ok, adapter} <- resolve_adapter(connection_details) do
+    channels = Config.get(:zaq, :channels, %{}, config_opts(connection_details, opts))
+
+    with {:ok, adapter} <- resolve_adapter(connection_details, channels) do
       adapter.to_internal(params, connection_details)
     end
   end
 
-  def to_internal(_params, _connection_details), do: {:error, :invalid_email_payload}
+  def to_internal(_params, _connection_details, _opts), do: {:error, :invalid_email_payload}
+
+  @doc "Starts the email runtime with per-call configuration overrides."
+  def start_runtime(config, opts) when is_map(config) and is_list(opts) do
+    start_runtime(Map.put(config, :config_opts, config_opts(config, opts)))
+  end
 
   @impl true
   def build_runtime_specs(config) do
+    opts = Map.get(config, :config_opts, [])
+    channels = Config.get(:zaq, :channels, %{}, opts)
     bridge_id = runtime_bridge_id(config)
     provider = Map.get(config, :provider) || Map.get(config, "provider")
 
-    with {:ok, adapter} <- adapter_for(provider),
+    with {:ok, adapter} <- adapter_for(provider, channels),
          {:ok, prepared_config} <- normalize_imap_config(config) do
       adapter.runtime_specs(
         prepared_config,
         bridge_id,
         sink_mfa: {__MODULE__, :from_listener, []},
-        sink_opts: [bridge_id: bridge_id]
+        sink_opts: Keyword.put(opts, :bridge_id, bridge_id)
       )
     end
   end
@@ -71,8 +88,18 @@ defmodule Zaq.Channels.EmailBridge do
       when is_map(payload) and is_list(sink_opts) do
     connection = sink_opts |> Enum.into(%{}) |> Map.put(:config, config)
 
-    with %Incoming{} = incoming <- to_internal(payload, connection),
-         :ok <- route_and_maybe_deliver_incoming(incoming, config, connection) do
+    routing_opts = [
+      channel_config_id: Map.get(config, :id) || Map.get(config, "id"),
+      topic_id: connection[:mailbox],
+      pipeline_module:
+        Config.get(:zaq, :email_bridge_pipeline_module, Zaq.Agent.Pipeline, sink_opts),
+      node_router: Config.get(:zaq, :email_bridge_node_router_module, NodeRouter, sink_opts)
+    ]
+
+    router = Config.get(:zaq, :email_bridge_router_module, Zaq.Channels.Api, sink_opts)
+
+    with %Incoming{} = incoming <- to_internal(payload, connection, sink_opts),
+         :ok <- route_and_maybe_deliver_incoming(incoming, routing_opts, router) do
       :ok
     else
       {:error, reason} ->
@@ -92,12 +119,13 @@ defmodule Zaq.Channels.EmailBridge do
   end
 
   @doc "Lists available IMAP mailboxes through the configured email adapter."
-  @spec list_mailboxes(map(), map()) :: {:ok, [String.t()]} | {:error, term()}
+  @spec list_mailboxes(map(), map(), keyword()) :: {:ok, [String.t()]} | {:error, term()}
   @impl true
-  def list_mailboxes(config, _connection_details \\ %{}) when is_map(config) do
+  def list_mailboxes(config, connection_details \\ %{}, opts \\ []) when is_map(config) do
+    channels = Config.get(:zaq, :channels, %{}, config_opts(connection_details, opts))
     provider = Map.get(config, :provider) || Map.get(config, "provider")
 
-    with {:ok, adapter} <- adapter_for(provider),
+    with {:ok, adapter} <- adapter_for(provider, channels),
          {:ok, prepared_config} <- normalize_imap_config(config) do
       case adapter.list_mailboxes(prepared_config) do
         {:ok, mailboxes} when is_list(mailboxes) ->
@@ -162,14 +190,26 @@ defmodule Zaq.Channels.EmailBridge do
 
   @doc "Materializes an email attachment Record through the configured IMAP adapter."
   @impl true
-  def materialize_record(config, request, details)
+  def materialize_record(config, request, details, opts \\ [])
+
+  def materialize_record(config, request, details, opts)
       when is_map(config) and is_map(request) and is_map(details) do
+    opts = config_opts(details, opts)
+    channels = Config.get(:zaq, :channels, %{}, opts)
+
+    max_bytes =
+      Keyword.get(
+        opts,
+        :max_media_bytes,
+        Config.get(:zaq, :message_trace_artifact_max_bytes, 100 * 1024 * 1024, opts)
+      )
+
     with :ok <- ensure_imap_provider(config),
-         :ok <- enforce_media_size(request_size(request), max_media_bytes(details)),
-         {:ok, adapter} <- adapter_for(config_provider(config)),
+         :ok <- enforce_media_size(request_size(request), max_bytes),
+         {:ok, adapter} <- adapter_for(config_provider(config), channels),
          true <- adapter_supports?(adapter, :download_attachment, 2) || {:error, :unsupported},
          {:ok, content} when is_binary(content) <- adapter.download_attachment(config, request),
-         :ok <- enforce_media_size(byte_size(content), max_media_bytes(details)) do
+         :ok <- enforce_media_size(byte_size(content), max_bytes) do
       {:ok,
        %{
          record: %Record{
@@ -190,7 +230,7 @@ defmodule Zaq.Channels.EmailBridge do
     end
   end
 
-  def materialize_record(_config, _request, _details), do: {:error, :invalid_media_request}
+  def materialize_record(_config, _request, _details, _opts), do: {:error, :invalid_media_request}
 
   @doc """
   Delivers `%Outgoing{}` as an email to `outgoing.channel_id` (the recipient address).
@@ -198,9 +238,17 @@ defmodule Zaq.Channels.EmailBridge do
   Reads subject and html_body from `outgoing.metadata` (keys `:subject` / `"subject"`
   and `:html_body` / `"html_body"`). Falls back to a default subject if missing.
   """
-  @spec send_reply(Outgoing.t(), map()) :: {:ok, map()} | {:error, term()}
+  @spec send_reply(Outgoing.t(), map(), keyword()) :: {:ok, map()} | {:error, term()}
   @impl true
-  def send_reply(%Outgoing{} = outgoing, _connection_details) do
+  def send_reply(%Outgoing{} = outgoing, connection_details, opts \\ []) do
+    smtp_sender =
+      Config.get(
+        :zaq,
+        :email_bridge_smtp_module,
+        Zaq.Channels.EmailBridge.SmtpSender,
+        config_opts(connection_details, opts)
+      )
+
     # Two independent predicates. `inbound_reply?` is about *provenance* (are we
     # answering an email someone sent us) and drives the `Re:` prefix. Continuity
     # (do we have a parent to point at) comes from `thread_anchor`/`in_reply_to`
@@ -230,38 +278,31 @@ defmodule Zaq.Channels.EmailBridge do
       |> maybe_put("from_email", from_email)
       |> maybe_put("from_name", from_name)
 
-    case smtp_sender_module().send_notification(outgoing.channel_id, payload, %{}) do
+    case smtp_sender.send_notification(outgoing.channel_id, payload, %{}) do
       :ok -> {:ok, delivery_receipt(threading)}
       error -> error
     end
-  end
-
-  defp smtp_sender_module do
-    Zaq.Config.get(
-      :zaq,
-      :email_bridge_smtp_module,
-      Zaq.Channels.EmailBridge.SmtpSender
-    )
   end
 
   # ---------------------------------------------------------------------------
   # Private
   # ---------------------------------------------------------------------------
 
-  defp route_and_maybe_deliver_incoming(%Incoming{} = incoming, config, connection) do
-    case route_incoming_message(
-           incoming,
-           [],
-           actor_from_incoming(incoming),
-           channel_config_id: Map.get(config, :id) || Map.get(config, "id"),
-           topic_id: connection[:mailbox],
-           pipeline_module: pipeline_module(),
-           node_router: node_router_module()
-         ) do
-      %Outgoing{} = outgoing -> normalize_runtime_delivery(deliver_outgoing_runtime(outgoing))
-      :ok -> :ok
-      {:error, _} = error -> error
-      other -> {:error, other}
+  defp route_and_maybe_deliver_incoming(%Incoming{} = incoming, routing_opts, router) do
+    case route_incoming_message(incoming, [], actor_from_incoming(incoming), routing_opts) do
+      %Outgoing{} = outgoing ->
+        normalize_runtime_delivery(
+          deliver_outgoing_runtime(outgoing, router, Keyword.fetch!(routing_opts, :node_router))
+        )
+
+      :ok ->
+        :ok
+
+      {:error, _} = error ->
+        error
+
+      other ->
+        {:error, other}
     end
   end
 
@@ -270,14 +311,14 @@ defmodule Zaq.Channels.EmailBridge do
   defp normalize_runtime_delivery({:ok, receipt}) when is_map(receipt), do: :ok
   defp normalize_runtime_delivery(other), do: other
 
-  defp resolve_adapter(connection_details) do
+  defp resolve_adapter(connection_details, channels) do
     case Map.get(connection_details, :adapter) || Map.get(connection_details, "adapter") do
       module when is_atom(module) and not is_nil(module) -> {:ok, module}
-      _ -> adapter_from_provider(connection_details)
+      _ -> adapter_from_provider(connection_details, channels)
     end
   end
 
-  defp adapter_from_provider(connection_details) do
+  defp adapter_from_provider(connection_details, channels) do
     provider =
       connection_details
       |> Map.get(:config)
@@ -286,13 +327,13 @@ defmodule Zaq.Channels.EmailBridge do
         _ -> "email:imap"
       end
 
-    adapter_for(provider)
+    adapter_for(provider, channels)
   end
 
-  defp adapter_for(provider) do
+  defp adapter_for(provider, channels) do
     with key when not is_nil(key) <- provider_key(provider),
          adapter when is_atom(adapter) and not is_nil(adapter) <-
-           Application.get_env(:zaq, :channels, %{}) |> get_in([key, :adapter]) do
+           get_in(channels, [key, :adapter]) do
       {:ok, adapter}
     else
       nil when provider in ["email:imap", :"email:imap", :email] ->
@@ -324,17 +365,11 @@ defmodule Zaq.Channels.EmailBridge do
     }
   end
 
-  defp pipeline_module,
-    do: Application.get_env(:zaq, :email_bridge_pipeline_module, Zaq.Agent.Pipeline)
-
-  defp node_router_module,
-    do: Application.get_env(:zaq, :email_bridge_node_router_module, NodeRouter)
-
-  defp deliver_outgoing_runtime(%Outgoing{} = outgoing) do
-    case Application.get_env(:zaq, :email_bridge_router_module, Zaq.Channels.Api) do
+  defp deliver_outgoing_runtime(%Outgoing{} = outgoing, router, node_router) do
+    case router do
       Zaq.Channels.Api ->
         Zaq.Event.new(outgoing, :channels, opts: [action: :deliver_outgoing])
-        |> node_router_module().dispatch()
+        |> node_router.dispatch()
         |> then(& &1.response)
 
       module when is_atom(module) ->
@@ -342,7 +377,7 @@ defmodule Zaq.Channels.EmailBridge do
           module.deliver(outgoing)
         else
           Zaq.Event.new(outgoing, :channels, opts: [action: :deliver_outgoing])
-          |> node_router_module().dispatch()
+          |> node_router.dispatch()
           |> then(& &1.response)
         end
     end
@@ -633,12 +668,7 @@ defmodule Zaq.Channels.EmailBridge do
   defp enforce_media_size(size, max_bytes) when size <= max_bytes, do: :ok
   defp enforce_media_size(_size, _max_bytes), do: {:error, :media_too_large}
 
-  defp max_media_bytes(details) do
-    details
-    |> Map.get(:config_opts, [])
-    |> Keyword.get(
-      :max_media_bytes,
-      Application.get_env(:zaq, :message_trace_artifact_max_bytes, 100 * 1024 * 1024)
-    )
+  defp config_opts(details, opts) do
+    details |> Map.get(:config_opts, []) |> Keyword.merge(opts)
   end
 end

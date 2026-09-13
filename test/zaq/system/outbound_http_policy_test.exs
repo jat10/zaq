@@ -1,5 +1,5 @@
 defmodule Zaq.System.OutboundHttpPolicyTest do
-  use Zaq.DataCase, async: false
+  use Zaq.DataCase, async: true
   use ExUnitProperties
 
   alias Zaq.System

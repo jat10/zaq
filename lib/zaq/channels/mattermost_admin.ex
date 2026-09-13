@@ -26,8 +26,12 @@ defmodule Zaq.Channels.MattermostAdmin do
   # ---------------------------------------------------------------------------
 
   @doc "Fetches the bot's Mattermost user ID by calling /api/v4/users/me."
-  def fetch_bot_user_id(url, token) do
-    case get([url: url, token: token], "/api/v4/users/me", []) do
+  def fetch_bot_user_id(url, token, opts \\ []) do
+    case get(
+           [url: url, token: token, req_opts: Keyword.get(opts, :req_opts, [])],
+           "/api/v4/users/me",
+           []
+         ) do
       {:ok, %{"id" => id}} -> {:ok, id}
       {:error, {status, _body}} -> {:error, "HTTP #{status}"}
       {:error, reason} -> {:error, inspect(reason)}
@@ -104,11 +108,24 @@ defmodule Zaq.Channels.MattermostAdmin do
   defp get(opts, path, params) do
     url = Keyword.fetch!(opts, :url) <> path
     token = Keyword.fetch!(opts, :token)
+    req_opts = Keyword.get(opts, :req_opts, [])
 
-    case Req.get(url, params: params, headers: [{"Authorization", "Bearer #{token}"}]) do
-      {:ok, %{status: status, body: body}} when status in 200..299 -> {:ok, body}
-      {:ok, %{status: status, body: body}} -> {:error, {status, body}}
-      {:error, reason} -> {:error, reason}
+    request_opts =
+      [
+        params: params,
+        headers: [{"Authorization", "Bearer #{token}"}]
+      ]
+      |> Keyword.merge(req_opts)
+
+    case Req.get(url, request_opts) do
+      {:ok, %{status: status, body: body}} when status in 200..299 ->
+        {:ok, body}
+
+      {:ok, %{status: status, body: body}} ->
+        {:error, {status, body}}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 

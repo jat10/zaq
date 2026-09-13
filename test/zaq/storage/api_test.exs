@@ -1,5 +1,5 @@
 defmodule Zaq.Storage.ApiTest do
-  use Zaq.DataCase, async: false
+  use Zaq.DataCase, async: true
 
   alias Zaq.Accounts.People
   alias Zaq.Event
