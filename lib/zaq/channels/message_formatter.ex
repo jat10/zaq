@@ -29,20 +29,26 @@ defmodule Zaq.Channels.MessageFormatter do
 
   On formatting errors, the original body is kept unchanged.
 
-  `format_outgoing/1` is the canonical public entrypoint.
+  `format_outgoing/2` is the canonical public entrypoint.
   """
 
   alias Zaq.Channels.Bridge
+  alias Zaq.Config
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Utils.HtmlUtils
 
   @doc """
   Formats an outbound message body according to provider `:message_format`
   channel config while preserving all routing and metadata fields.
+
+  Pass `config: ConfigModule` in opts to override runtime configuration.
+  With no opts, configuration comes from the application environment.
   """
-  @spec format_outgoing(Outgoing.t()) :: Outgoing.t()
-  def format_outgoing(%Outgoing{} = outgoing) do
-    provider_config = provider_channel_config(outgoing.provider)
+  @spec format_outgoing(Outgoing.t(), keyword()) :: Outgoing.t()
+  def format_outgoing(%Outgoing{} = outgoing, opts \\ []) do
+    channels = Config.get(:zaq, :channels, %{}, opts)
+    portal_url = Config.get(:zaq, :user_portal_base_url, nil, opts)
+    provider_config = provider_channel_config(outgoing.provider, channels)
     format = provider_message_format(provider_config)
     formatter = provider_message_formatter(provider_config)
     metadata = ensure_metadata_map(outgoing.metadata)
@@ -53,7 +59,7 @@ defmodule Zaq.Channels.MessageFormatter do
         other -> other
       end
 
-    body = maybe_append_budget_exceeded_link(body, outgoing)
+    body = maybe_append_budget_exceeded_link(body, outgoing, portal_url)
 
     %{outgoing | body: body, metadata: put_format_metadata(metadata, format)}
   end
@@ -61,13 +67,13 @@ defmodule Zaq.Channels.MessageFormatter do
   # Web bridge renders budget exceeded via BO component — no link needed.
   # All other channels get a plain-text URL appended after format conversion
   # so the link survives plain-text and HTML stripping.
-  defp maybe_append_budget_exceeded_link(body, %Outgoing{provider: provider})
+  defp maybe_append_budget_exceeded_link(body, %Outgoing{provider: provider}, _portal_url)
        when provider in [:web, "web"],
        do: body
 
-  defp maybe_append_budget_exceeded_link(body, %Outgoing{} = outgoing) do
+  defp maybe_append_budget_exceeded_link(body, %Outgoing{} = outgoing, portal_url) do
     with :budget_exceeded <- outgoing.metadata[:error_type],
-         portal_url when is_binary(portal_url) <- Application.get_env(:zaq, :user_portal_base_url) do
+         portal_url when is_binary(portal_url) <- portal_url do
       body <> "\nTop up your wallet: #{portal_url}"
     else
       _ -> body
@@ -78,9 +84,8 @@ defmodule Zaq.Channels.MessageFormatter do
   # atoms and strings. Sub-providers such as `:"email:imap"` are not config keys
   # in their own right — they map back onto `:email`. Using the raw provider as
   # the key made IMAP replies miss `:message_format` and ship as raw markdown.
-  defp provider_channel_config(provider) do
-    Application.get_env(:zaq, :channels, %{})
-    |> Map.get(Bridge.provider_to_bridge_key(provider), %{})
+  defp provider_channel_config(provider, channels) do
+    Map.get(channels, Bridge.provider_to_bridge_key(provider), %{})
   end
 
   # `:markdown` is the default when a channel omits `:message_format` or sets it to

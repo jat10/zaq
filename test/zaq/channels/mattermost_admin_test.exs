@@ -1,5 +1,5 @@
 defmodule Zaq.Channels.MattermostAdminTest do
-  use Zaq.DataCase, async: false
+  use Zaq.DataCase, async: true
 
   alias Zaq.Channels.ChannelConfig
   alias Zaq.Channels.MattermostAdmin
@@ -39,7 +39,9 @@ defmodule Zaq.Channels.MattermostAdminTest do
     test "returns inspected reason on transport error" do
       url = unavailable_local_url()
 
-      assert {:error, reason} = MattermostAdmin.fetch_bot_user_id(url, "token-1")
+      assert {:error, reason} =
+               MattermostAdmin.fetch_bot_user_id(url, "token-1", req_opts: [retry: false])
+
       assert is_binary(reason)
     end
   end

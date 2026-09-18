@@ -1,5 +1,5 @@
 defmodule Zaq.System.UpdateBadgeWorkerTest do
-  use Zaq.DataCase, async: false
+  use Zaq.DataCase, async: true
 
   import Ecto.Query
 
@@ -17,7 +17,7 @@ defmodule Zaq.System.UpdateBadgeWorkerTest do
     Application.put_env(
       :zaq,
       ReleaseUpdate,
-      Keyword.merge(original, plug: {Req.Test, __MODULE__.HTTP})
+      Keyword.merge(original, plug: {Req.Test, __MODULE__.HTTP}, retry: false)
     )
 
     on_exit(fn -> Application.put_env(:zaq, ReleaseUpdate, original) end)

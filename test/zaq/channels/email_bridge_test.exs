@@ -1,7 +1,8 @@
 defmodule Zaq.Channels.EmailBridgeTest do
-  use Zaq.DataCase, async: false
+  use ExUnit.Case, async: true
   import ExUnit.CaptureLog
 
+  alias Ecto.Adapters.SQL.Sandbox
   alias Zaq.Channels.ChannelConfig
   alias Zaq.Channels.EmailBridge
   alias Zaq.Channels.EmailBridge.ImapConfigHelpers
@@ -10,9 +11,25 @@ defmodule Zaq.Channels.EmailBridgeTest do
   alias Zaq.Repo
   alias Zaq.SystemConfigFixtures
 
-  defmodule UnresolvedIdentityResolver do
-    def resolve(_incoming, _opts), do: {:error, :not_found}
-    def person_payload(_person), do: raise("unexpected person payload")
+  defmodule TestConfig do
+    def get(:zaq, key, default, opts), do: Keyword.get(opts, key, default)
+  end
+
+  setup do
+    owner = Sandbox.start_owner!(Repo, shared: false)
+    on_exit(fn -> Sandbox.stop_owner(owner) end)
+    :ok
+  end
+
+  defmodule SmtpSenderStub do
+    def send_notification(recipient, payload, details) do
+      send(self(), {:smtp_notification, recipient, payload, details})
+      :ok
+    end
+  end
+
+  defmodule SmtpErrorStub do
+    def send_notification(_recipient, _payload, _details), do: {:error, :smtp_unavailable}
   end
 
   defmodule DynamicAdapterStub do
@@ -124,8 +141,9 @@ defmodule Zaq.Channels.EmailBridgeTest do
   end
 
   defmodule RuntimeCaptureAdapterStub do
-    def runtime_specs(config, _bridge_id, _opts) do
+    def runtime_specs(config, _bridge_id, opts) do
       send(self(), {:captured_runtime_config, config})
+      send(self(), {:captured_runtime_opts, opts})
       {:ok, {nil, []}}
     end
   end
@@ -311,6 +329,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
 
   describe "to_internal/2" do
     test "maps imap payload into Incoming message" do
+      opts = [config: TestConfig]
       config = %{id: 42}
 
       payload = %{
@@ -331,11 +350,15 @@ defmodule Zaq.Channels.EmailBridgeTest do
       }
 
       assert incoming =
-               EmailBridge.to_internal(payload, %{
-                 config: config,
-                 mailbox: "INBOX",
-                 adapter: Zaq.Channels.EmailBridge.ImapAdapter
-               })
+               EmailBridge.to_internal(
+                 payload,
+                 %{
+                   config: config,
+                   mailbox: "INBOX",
+                   adapter: Zaq.Channels.EmailBridge.ImapAdapter
+                 },
+                 opts
+               )
 
       assert incoming.content == "Subject: Hello\n\nhello from imap"
       assert incoming.channel_id == "alice@example.com"
@@ -352,13 +375,12 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "materializes email attachments through configured IMAP adapter" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        email: %{adapter: MaterializationAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          email: %{adapter: MaterializationAdapterStub}
+        })
 
       config = %{id: 3, provider: "email:imap"}
 
@@ -372,7 +394,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         "mime_type" => "application/pdf"
       }
 
-      assert {:ok, %{record: record}} = EmailBridge.materialize_record(config, request, %{})
+      assert {:ok, %{record: record}} = EmailBridge.materialize_record(config, request, %{}, opts)
       assert record.id == "email:3:10:42:2.1"
       assert record.content == "downloaded-bytes"
       assert record.name == "invoice.pdf"
@@ -383,101 +405,94 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "rejects invalid adapter download content" do
-      previous = Application.get_env(:zaq, :channels)
-      Application.put_env(:zaq, :channels, %{email: %{adapter: MaterializationAdapterStub}})
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :channels, %{email: %{adapter: MaterializationAdapterStub}})
       Process.put(:email_materialization_download_result, {:ok, :not_binary})
-
-      on_exit(fn ->
-        Application.put_env(:zaq, :channels, previous)
-        Process.delete(:email_materialization_download_result)
-      end)
 
       config = %{id: 3, provider: "email:imap"}
       request = %{"mailbox" => "INBOX", "uid_validity" => 10, "uid" => 42, "section" => "2.1"}
 
       assert {:error, :invalid_media_content} =
-               EmailBridge.materialize_record(config, request, %{})
+               EmailBridge.materialize_record(config, request, %{}, opts)
 
       assert_received {:download_attachment, ^config, ^request}
     end
 
     test "returns unexpected adapter download result" do
-      previous = Application.get_env(:zaq, :channels)
-      Application.put_env(:zaq, :channels, %{email: %{adapter: MaterializationAdapterStub}})
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :channels, %{email: %{adapter: MaterializationAdapterStub}})
       Process.put(:email_materialization_download_result, :unexpected_download_result)
-
-      on_exit(fn ->
-        Application.put_env(:zaq, :channels, previous)
-        Process.delete(:email_materialization_download_result)
-      end)
 
       config = %{id: 3, provider: "email:imap"}
       request = %{"mailbox" => "INBOX", "uid_validity" => 10, "uid" => 42, "section" => "2.1"}
 
       assert {:error, :unexpected_download_result} =
-               EmailBridge.materialize_record(config, request, %{})
+               EmailBridge.materialize_record(config, request, %{}, opts)
     end
 
     test "rejects invalid materialization argument shapes without resolving an adapter" do
-      assert {:error, :invalid_media_request} = EmailBridge.materialize_record(:bad, %{}, %{})
-      assert {:error, :invalid_media_request} = EmailBridge.materialize_record(%{}, :bad, %{})
-      assert {:error, :invalid_media_request} = EmailBridge.materialize_record(%{}, %{}, :bad)
+      opts = [config: TestConfig]
+
+      assert {:error, :invalid_media_request} =
+               EmailBridge.materialize_record(:bad, %{}, %{}, opts)
+
+      assert {:error, :invalid_media_request} =
+               EmailBridge.materialize_record(%{}, :bad, %{}, opts)
+
+      assert {:error, :invalid_media_request} =
+               EmailBridge.materialize_record(%{}, %{}, :bad, opts)
+
       refute_received {:download_attachment, _, _}
     end
 
     test "returns unsupported for an adapter without attachment downloads" do
-      previous = Application.get_env(:zaq, :channels)
-      Application.put_env(:zaq, :channels, %{email: %{adapter: DynamicAdapterStub}})
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :channels, %{email: %{adapter: DynamicAdapterStub}})
 
       assert {:error, :unsupported} =
                EmailBridge.materialize_record(
                  %{provider: "email:imap"},
                  %{"mailbox" => "INBOX"},
-                 %{}
+                 %{},
+                 opts
                )
     end
 
     test "generates attachment id when reference is absent" do
-      previous = Application.get_env(:zaq, :channels)
-      Application.put_env(:zaq, :channels, %{email: %{adapter: MaterializationAdapterStub}})
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :channels, %{email: %{adapter: MaterializationAdapterStub}})
 
       config = %{id: 7, provider: "email:imap"}
       request = %{"channel_config_id" => 7, "uid_validity" => 10, "uid" => 42, "section" => "2.1"}
 
       assert {:ok, %{record: %{id: "email:7:10:42:2.1"}}} =
-               EmailBridge.materialize_record(config, request, %{})
+               EmailBridge.materialize_record(config, request, %{}, opts)
     end
 
     test "accepts string attachment size at the configured limit" do
-      previous = Application.get_env(:zaq, :channels)
-      Application.put_env(:zaq, :channels, %{email: %{adapter: MaterializationAdapterStub}})
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :channels, %{email: %{adapter: MaterializationAdapterStub}})
       Process.put(:email_materialization_download_result, {:ok, "1234567"})
-
-      on_exit(fn ->
-        Application.put_env(:zaq, :channels, previous)
-        Process.delete(:email_materialization_download_result)
-      end)
 
       config = %{id: 3, provider: "email:imap"}
       request = %{"size" => "7", "uid_validity" => 10, "uid" => 42, "section" => "2.1"}
 
       assert {:ok, %{record: %{content: "1234567"}}} =
-               EmailBridge.materialize_record(config, request, %{
-                 config_opts: [max_media_bytes: 7]
-               })
+               EmailBridge.materialize_record(
+                 config,
+                 request,
+                 %{
+                   config_opts: [max_media_bytes: 7]
+                 },
+                 opts
+               )
 
       assert_received {:download_attachment, ^config, ^request}
     end
 
     test "ignores invalid attachment size strings" do
-      previous = Application.get_env(:zaq, :channels)
-      Application.put_env(:zaq, :channels, %{email: %{adapter: MaterializationAdapterStub}})
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :channels, %{email: %{adapter: MaterializationAdapterStub}})
 
       config = %{id: 3, provider: "email:imap"}
 
@@ -485,42 +500,46 @@ defmodule Zaq.Channels.EmailBridgeTest do
         request = %{"size" => size, "uid_validity" => 10, "uid" => 42, "section" => "2.1"}
 
         assert {:ok, _} =
-                 EmailBridge.materialize_record(config, request, %{
-                   config_opts: [max_media_bytes: 20]
-                 })
+                 EmailBridge.materialize_record(
+                   config,
+                   request,
+                   %{
+                     config_opts: [max_media_bytes: 20]
+                   },
+                   opts
+                 )
       end
     end
 
     test "allows attachment content when no size limit is configured" do
-      previous = Application.get_env(:zaq, :channels)
-      Application.put_env(:zaq, :channels, %{email: %{adapter: MaterializationAdapterStub}})
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :channels, %{email: %{adapter: MaterializationAdapterStub}})
 
       assert {:ok, _} =
                EmailBridge.materialize_record(
                  %{id: 3, provider: "email:imap"},
                  %{"size" => 999, "uid_validity" => 10, "uid" => 42, "section" => "2.1"},
-                 %{config_opts: [max_media_bytes: nil]}
+                 %{config_opts: [max_media_bytes: nil]},
+                 opts
                )
     end
 
     test "rejects oversized declared and downloaded attachment content" do
-      previous = Application.get_env(:zaq, :channels)
-      Application.put_env(:zaq, :channels, %{email: %{adapter: MaterializationAdapterStub}})
-
-      on_exit(fn ->
-        Application.put_env(:zaq, :channels, previous)
-        Process.delete(:email_materialization_download_result)
-      end)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :channels, %{email: %{adapter: MaterializationAdapterStub}})
 
       config = %{id: 3, provider: "email:imap"}
       request = %{"size" => 8, "uid_validity" => 10, "uid" => 42, "section" => "2.1"}
 
       assert {:error, :media_too_large} =
-               EmailBridge.materialize_record(config, request, %{
-                 config_opts: [max_media_bytes: 7]
-               })
+               EmailBridge.materialize_record(
+                 config,
+                 request,
+                 %{
+                   config_opts: [max_media_bytes: 7]
+                 },
+                 opts
+               )
 
       refute_received {:download_attachment, _, _}
 
@@ -528,109 +547,97 @@ defmodule Zaq.Channels.EmailBridgeTest do
       request = Map.put(request, "size", 7)
 
       assert {:error, :media_too_large} =
-               EmailBridge.materialize_record(config, request, %{
-                 config_opts: [max_media_bytes: 7]
-               })
+               EmailBridge.materialize_record(
+                 config,
+                 request,
+                 %{
+                   config_opts: [max_media_bytes: 7]
+                 },
+                 opts
+               )
 
       assert_received {:download_attachment, ^config, ^request}
     end
 
     test "rejects non-IMAP configs for email attachment materialization" do
+      opts = [config: TestConfig]
+
       assert {:error, :invalid_email_attachment_provider} =
-               EmailBridge.materialize_record(%{provider: "email:smtp"}, %{}, %{})
+               EmailBridge.materialize_record(%{provider: "email:smtp"}, %{}, %{}, opts)
     end
 
     test "dispatches to adapter passed through connection details" do
+      opts = [config: TestConfig]
       payload = %{"body_text" => "hello"}
       details = %{adapter: DynamicAdapterStub, mailbox: "INBOX"}
 
-      assert %Zaq.Engine.Messages.Incoming{} = EmailBridge.to_internal(payload, details)
+      assert %Zaq.Engine.Messages.Incoming{} = EmailBridge.to_internal(payload, details, opts)
       assert_received {:dynamic_adapter_called, ^payload, ^details}
     end
 
     test "returns invalid payload error when args are not maps" do
-      assert {:error, :invalid_email_payload} = EmailBridge.to_internal("bad", %{})
-      assert {:error, :invalid_email_payload} = EmailBridge.to_internal(%{}, :bad)
+      opts = [config: TestConfig]
+      assert {:error, :invalid_email_payload} = EmailBridge.to_internal("bad", %{}, opts)
+      assert {:error, :invalid_email_payload} = EmailBridge.to_internal(%{}, :bad, opts)
     end
 
     test "falls back to provider adapter from config when adapter key is absent" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: DynamicAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: DynamicAdapterStub}
+        })
 
       payload = %{"body_text" => "hello"}
       details = %{config: %{provider: "missing-provider"}, mailbox: "INBOX"}
 
-      assert %Zaq.Engine.Messages.Incoming{} = EmailBridge.to_internal(payload, details)
+      assert %Zaq.Engine.Messages.Incoming{} = EmailBridge.to_internal(payload, details, opts)
       assert_received {:dynamic_adapter_called, ^payload, ^details}
     end
 
     test "uses default email:imap provider when config is absent" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: DynamicAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: DynamicAdapterStub}
+        })
 
       payload = %{"body_text" => "hello"}
       details = %{mailbox: "INBOX"}
 
-      assert %Zaq.Engine.Messages.Incoming{} = EmailBridge.to_internal(payload, details)
+      assert %Zaq.Engine.Messages.Incoming{} = EmailBridge.to_internal(payload, details, opts)
       assert_received {:dynamic_adapter_called, ^payload, ^details}
     end
   end
 
   describe "from_listener/3 via NodeRouter event dispatch" do
-    setup do
-      Application.put_env(:zaq, :email_bridge_pipeline_module, Zaq.Agent.Pipeline)
-      Application.put_env(:zaq, :email_bridge_router_module, Zaq.Channels.Router)
-      Application.put_env(:zaq, :email_bridge_conversations_module, Zaq.Engine.Conversations)
-
-      Application.put_env(
-        :zaq,
-        :communication_bridge_identity_resolver,
-        UnresolvedIdentityResolver
-      )
-
-      on_exit(fn ->
-        Application.delete_env(:zaq, :email_bridge_pipeline_module)
-        Application.delete_env(:zaq, :email_bridge_router_module)
-        Application.delete_env(:zaq, :email_bridge_conversations_module)
-        Application.delete_env(:zaq, :email_bridge_node_router_module)
-        Application.delete_env(:zaq, :communication_bridge_identity_resolver)
-      end)
-
-      :ok
-    end
-
     test "returns :ok when NodeRouter provides pipeline/delivery/persist responses" do
-      Application.put_env(:zaq, :email_bridge_node_router_module, NodeRouterOkStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_node_router_module, NodeRouterOkStub)
 
       config = %{provider: "email:imap", id: 1}
       payload = %{"body_text" => "hello"}
       sink_opts = [adapter: IncomingAdapterStub, mailbox: "INBOX"]
 
-      assert :ok = EmailBridge.from_listener(config, payload, sink_opts)
+      assert :ok = EmailBridge.from_listener(config, payload, Keyword.merge(sink_opts, opts))
     end
 
     test "treats non-error route responses as acknowledged" do
-      Application.put_env(:zaq, :email_bridge_node_router_module, NodeRouterBadPipelineStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_node_router_module, NodeRouterBadPipelineStub)
 
       config = %{provider: "email:imap", id: 1}
       payload = %{"body_text" => "hello"}
       sink_opts = [adapter: IncomingAdapterStub, mailbox: "INBOX"]
 
-      assert :ok = EmailBridge.from_listener(config, payload, sink_opts)
+      assert :ok = EmailBridge.from_listener(config, payload, Keyword.merge(sink_opts, opts))
     end
 
     test "returns pipeline error when NodeRouter responds with {:error, reason}" do
-      Application.put_env(:zaq, :email_bridge_node_router_module, NodeRouterErrorPipelineStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_node_router_module, NodeRouterErrorPipelineStub)
 
       config = %{provider: "email:imap", id: 1}
       payload = %{"body_text" => "hello"}
@@ -639,14 +646,15 @@ defmodule Zaq.Channels.EmailBridgeTest do
       log =
         capture_log(fn ->
           assert {:error, :pipeline_failed} =
-                   EmailBridge.from_listener(config, payload, sink_opts)
+                   EmailBridge.from_listener(config, payload, Keyword.merge(sink_opts, opts))
         end)
 
       assert log =~ "Failed to process inbound message"
     end
 
     test "routes with email imap channel config id for provider rule lookup" do
-      Application.put_env(:zaq, :email_bridge_node_router_module, CapturingNodeRouterStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_node_router_module, CapturingNodeRouterStub)
 
       config = insert_imap_channel_config(%{})
       provider_agent = insert_configured_agent(true)
@@ -657,7 +665,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
       payload = %{"body_text" => "hello"}
       sink_opts = [adapter: IncomingAdapterStub, mailbox: "INBOX"]
 
-      assert :ok = EmailBridge.from_listener(config, payload, sink_opts)
+      assert :ok = EmailBridge.from_listener(config, payload, Keyword.merge(sink_opts, opts))
       assert_received {:node_router_route_incoming_event, event}
 
       assert event.request.routing_context.channel_config_id == config.id
@@ -671,7 +679,8 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "runtime-normalized email imap config preserves channel config id for routing" do
-      Application.put_env(:zaq, :email_bridge_node_router_module, CapturingNodeRouterStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_node_router_module, CapturingNodeRouterStub)
 
       config = insert_imap_channel_config(%{})
       normalized = ImapConfigHelpers.normalize_bridge_config(config)
@@ -679,26 +688,21 @@ defmodule Zaq.Channels.EmailBridgeTest do
       payload = %{"body_text" => "hello"}
       sink_opts = [adapter: IncomingAdapterStub, mailbox: "INBOX"]
 
-      assert :ok = EmailBridge.from_listener(normalized, payload, sink_opts)
+      assert :ok = EmailBridge.from_listener(normalized, payload, Keyword.merge(sink_opts, opts))
       assert_received {:node_router_route_incoming_event, event}
 
       assert event.request.routing_context.channel_config_id == config.id
     end
 
     test "route_incoming_message event carries channel actor" do
-      Application.put_env(:zaq, :email_bridge_node_router_module, CapturingNodeRouterStub)
-
-      Application.put_env(
-        :zaq,
-        :communication_bridge_identity_resolver,
-        UnresolvedIdentityResolver
-      )
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_node_router_module, CapturingNodeRouterStub)
 
       config = insert_imap_channel_config(%{})
       payload = %{"body_text" => "hello"}
       sink_opts = [adapter: IncomingAdapterStub, mailbox: "INBOX"]
 
-      assert :ok = EmailBridge.from_listener(config, payload, sink_opts)
+      assert :ok = EmailBridge.from_listener(config, payload, Keyword.merge(sink_opts, opts))
       assert_received {:node_router_route_incoming_event, event}
 
       assert event.actor == %{
@@ -709,11 +713,8 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "routes with global default when provider default is absent" do
-      Application.put_env(:zaq, :email_bridge_node_router_module, CapturingNodeRouterStub)
-
-      on_exit(fn ->
-        :ok = Zaq.System.set_global_default_agent_id(nil)
-      end)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_node_router_module, CapturingNodeRouterStub)
 
       config = insert_imap_channel_config(%{})
       global_agent = insert_configured_agent(true)
@@ -722,7 +723,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
       payload = %{"body_text" => "hello"}
       sink_opts = [adapter: IncomingAdapterStub, mailbox: "INBOX"]
 
-      assert :ok = EmailBridge.from_listener(config, payload, sink_opts)
+      assert :ok = EmailBridge.from_listener(config, payload, Keyword.merge(sink_opts, opts))
       assert_received {:node_router_route_incoming_event, event}
 
       assert %{source: :global, configured_agent_id: configured_agent_id} =
@@ -732,11 +733,8 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "routes to default ZAQ agent when no explicit or global selection is configured" do
-      Application.put_env(:zaq, :email_bridge_node_router_module, CapturingNodeRouterStub)
-
-      on_exit(fn ->
-        :ok = Zaq.System.set_global_default_agent_id(nil)
-      end)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_node_router_module, CapturingNodeRouterStub)
 
       :ok = Zaq.System.set_global_default_agent_id(nil)
 
@@ -746,7 +744,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
       payload = %{"body_text" => "hello"}
       sink_opts = [adapter: IncomingAdapterStub, mailbox: "INBOX"]
 
-      assert :ok = EmailBridge.from_listener(config, payload, sink_opts)
+      assert :ok = EmailBridge.from_listener(config, payload, Keyword.merge(sink_opts, opts))
       assert_received {:node_router_route_incoming_event, event}
 
       assert %{source: :default_zaq_agent, configured_agent_id: nil} =
@@ -754,11 +752,8 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "keeps mailbox-specific agent routing when using runtime-prepared config" do
-      Application.put_env(:zaq, :email_bridge_node_router_module, CapturingNodeRouterStub)
-
-      on_exit(fn ->
-        :ok = Zaq.System.set_global_default_agent_id(nil)
-      end)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_node_router_module, CapturingNodeRouterStub)
 
       :ok = Zaq.System.set_global_default_agent_id(nil)
 
@@ -773,7 +768,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
       payload = %{"body_text" => "hello"}
       sink_opts = [adapter: IncomingAdapterStub, mailbox: "INBOX"]
 
-      assert :ok = EmailBridge.from_listener(prepared, payload, sink_opts)
+      assert :ok = EmailBridge.from_listener(prepared, payload, Keyword.merge(sink_opts, opts))
       assert_received {:node_router_route_incoming_event, event}
 
       assert event.opts[:action] == :route_incoming_message
@@ -782,11 +777,8 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "NONE mailbox routing fires trigger event without agent dispatch" do
-      Application.put_env(:zaq, :email_bridge_node_router_module, CapturingNodeRouterStub)
-
-      on_exit(fn ->
-        :ok = Zaq.System.set_global_default_agent_id(nil)
-      end)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_node_router_module, CapturingNodeRouterStub)
 
       config = %{
         provider: "email:imap",
@@ -799,7 +791,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
       payload = %{"body_text" => "hello"}
       sink_opts = [adapter: IncomingAdapterStub, mailbox: "INBOX"]
 
-      assert :ok = EmailBridge.from_listener(prepared, payload, sink_opts)
+      assert :ok = EmailBridge.from_listener(prepared, payload, Keyword.merge(sink_opts, opts))
       assert_received {:node_router_route_incoming_event, event}
       assert event.request.content == "incoming"
       assert event.name == :incoming_message_routing_requested
@@ -833,6 +825,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply sets In-Reply-To and References headers" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -849,7 +842,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         }
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Re: Support request"
@@ -859,6 +852,8 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply uses SMTP from_name for IMAP replies" do
+      opts = [config: TestConfig]
+
       upsert_smtp_channel(%{
         settings: smtp_settings(%{"from_name" => "Zaq local"})
       })
@@ -876,7 +871,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         }
       }
 
-      assert {:ok, _} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Re: Support request"
@@ -885,6 +880,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "reply without email metadata map does not set reply_from" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -895,7 +891,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"email" => "invalid", "subject" => "Question"}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Re: Question"
@@ -904,6 +900,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply keeps subject unchanged for non-reply emails" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -913,7 +910,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"subject" => "Security alert"}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Security alert"
@@ -922,6 +919,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply relays formatter format for html delivery" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -931,7 +929,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"subject" => "Formatted", "format" => "html"}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Formatted"
@@ -940,6 +938,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply keeps canonical message-id casing for threading headers" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -956,7 +955,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         }
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Re: Threaded question"
@@ -966,6 +965,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply keeps already-prefixed subject and falls back to reply_from when from_email is blank" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -981,7 +981,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         }
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Re: Existing thread"
@@ -991,6 +991,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply uses default reply subject for blank subject and dedupes list references" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1014,7 +1015,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         }
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Re: Notification from ZAQ"
@@ -1023,6 +1024,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply parses string references from incoming headers and appends in_reply_to once" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1040,7 +1042,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         }
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert {"In-Reply-To", "<Msg-2@Example.com>"} in email.headers
@@ -1048,6 +1050,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply resolves sender from tuple and map address forms" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       tuple_outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1057,7 +1060,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"from" => {"  Tuple Name  ", " tuple@example.com "}}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(tuple_outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(tuple_outgoing, %{}, opts)
       assert_receive {:email, tuple_email}
       assert tuple_email.from == {"Tuple Name", "tuple@example.com"}
 
@@ -1068,12 +1071,13 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"from" => %{"address" => " addr@example.com "}}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(map_outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(map_outgoing, %{}, opts)
       assert_receive {:email, map_email}
       assert map_email.from == {"ZAQ", "addr@example.com"}
     end
 
     test "send_reply uses nested email subject when top-level subject is absent" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1083,13 +1087,14 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"email" => %{"subject" => "Nested Subject"}}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Nested Subject"
     end
 
     test "send_reply falls back to default subject when metadata is not a map" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1099,13 +1104,14 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: :invalid
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Notification from ZAQ"
     end
 
     test "send_reply does not treat blank in_reply_to as reply" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1116,7 +1122,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"subject" => "Plain subject"}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.subject == "Plain subject"
@@ -1124,6 +1130,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply prefers explicit from_name and from_email" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1137,13 +1144,14 @@ defmodule Zaq.Channels.EmailBridgeTest do
         }
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.from == {"Explicit Name", "explicit@example.com"}
     end
 
     test "send_reply with non-binary thread metadata omits threading headers" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1157,7 +1165,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         }
       }
 
-      assert {:ok, receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       refute Enum.any?(email.headers, fn {k, _} -> k in ["In-Reply-To", "References"] end)
@@ -1166,6 +1174,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "send_reply with nil in_reply_to omits threading headers" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1176,13 +1185,14 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"threading" => %{"references" => []}}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       refute Enum.any?(email.headers, fn {k, _} -> k in ["In-Reply-To", "References"] end)
     end
 
     test "send_reply omits threading headers when message ids normalize to nil" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1193,13 +1203,14 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"threading" => %{"references" => 123}}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       refute Enum.any?(email.headers, fn {k, _} -> k in ["In-Reply-To", "References"] end)
     end
 
     test "send_reply derives sender from map and binary variants" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing_map = %Zaq.Engine.Messages.Outgoing{
@@ -1209,7 +1220,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"from" => %{"email" => " map@example.com ", "name" => " Map Name "}}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing_map, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing_map, %{}, opts)
       assert_receive {:email, email_map}
       assert email_map.from == {"Map Name", "map@example.com"}
 
@@ -1220,12 +1231,13 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"from" => " binary@example.com "}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing_binary, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing_binary, %{}, opts)
       assert_receive {:email, email_binary}
       assert email_binary.from == {"ZAQ", "binary@example.com"}
     end
 
     test "send_reply derives sender from atom-key map variants" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1235,13 +1247,14 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{from: %{name: " Atom Name ", email: " atom@example.com "}}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.from == {"Atom Name", "atom@example.com"}
     end
 
     test "send_reply derives sender email from atom :address key" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1251,13 +1264,14 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{from: %{address: " atom-address@example.com "}}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.from == {"ZAQ", "atom-address@example.com"}
     end
 
     test "send_reply ignores blank explicit from_name" do
+      opts = [config: TestConfig]
       upsert_smtp_channel()
 
       outgoing = %Zaq.Engine.Messages.Outgoing{
@@ -1267,7 +1281,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         metadata: %{"from_name" => "", "from_email" => "sender@example.com"}
       }
 
-      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{})
+      assert {:ok, _receipt} = EmailBridge.send_reply(outgoing, %{}, opts)
 
       assert_receive {:email, email}
       assert email.from == {"ZAQ", "sender@example.com"}
@@ -1276,67 +1290,62 @@ defmodule Zaq.Channels.EmailBridgeTest do
 
   describe "list_mailboxes/2" do
     test "normalizes tuple mailbox entries from adapter" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: MailboxTupleAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: MailboxTupleAdapterStub}
+        })
 
       assert {:ok, ["HR", "INBOX"]} =
-               EmailBridge.list_mailboxes(%{provider: "email:imap"}, %{})
+               EmailBridge.list_mailboxes(%{provider: "email:imap"}, %{}, opts)
     end
 
     test "accepts legacy wrapped list_mailboxes_failed ok payload" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: LegacyMailboxTupleAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: LegacyMailboxTupleAdapterStub}
+        })
 
       assert {:ok, ["HR", "INBOX"]} =
-               EmailBridge.list_mailboxes(%{provider: "email:imap"}, %{})
+               EmailBridge.list_mailboxes(%{provider: "email:imap"}, %{}, opts)
     end
 
     test "returns unsupported provider when provider is missing" do
-      assert {:error, {:unsupported_provider, nil}} = EmailBridge.list_mailboxes(%{}, %{})
+      opts = [config: TestConfig]
+      assert {:error, {:unsupported_provider, nil}} = EmailBridge.list_mailboxes(%{}, %{}, opts)
     end
 
     test "passes through adapter list_mailboxes errors" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: MailboxErrorAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: MailboxErrorAdapterStub}
+        })
 
       assert {:error, :imap_unreachable} =
-               EmailBridge.list_mailboxes(%{provider: "email:imap"}, %{})
+               EmailBridge.list_mailboxes(%{provider: "email:imap"}, %{}, opts)
     end
 
     test "falls back to the real IMAP adapter when email config is absent" do
-      previous = Application.get_env(:zaq, :channels)
-      channels = if is_map(previous), do: Map.delete(previous, :email), else: %{}
-      Application.put_env(:zaq, :channels, channels)
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts = [config: TestConfig]
+      channels = %{}
+      opts = Keyword.put(opts, :channels, channels)
 
       assert {:error, :invalid_imap_url} =
-               EmailBridge.list_mailboxes(%{provider: "email:imap"}, %{})
+               EmailBridge.list_mailboxes(%{provider: "email:imap"}, %{}, opts)
     end
 
     test "normalizes nested IMAP settings into adapter config" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: CaptureMailboxAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: CaptureMailboxAdapterStub}
+        })
 
       config = %{
         provider: "unknown-provider",
@@ -1353,7 +1362,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
         token: "imap-token"
       }
 
-      assert {:ok, ["INBOX"]} = EmailBridge.list_mailboxes(config, %{})
+      assert {:ok, ["INBOX"]} = EmailBridge.list_mailboxes(config, %{}, opts)
       assert_receive {:captured_mailbox_config, prepared}
       assert prepared.provider == "unknown-provider"
       assert prepared.username == "imap-user"
@@ -1366,101 +1375,81 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "keeps selected_mailboxes list and tolerates non-map settings" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: CaptureMailboxAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: CaptureMailboxAdapterStub}
+        })
 
       config = %{provider: :"email:imap", settings: "bad", selected_mailboxes: ["INBOX", "Sales"]}
 
-      assert {:ok, ["INBOX"]} = EmailBridge.list_mailboxes(config, %{})
+      assert {:ok, ["INBOX"]} = EmailBridge.list_mailboxes(config, %{}, opts)
       assert_receive {:captured_mailbox_config, prepared}
       assert prepared.selected_mailboxes == ["INBOX", "Sales"]
     end
 
     test "normalization tolerates missing map values with string-key config" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: CaptureMailboxAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: CaptureMailboxAdapterStub}
+        })
 
       config = %{"provider" => "email:imap", "settings" => "not-a-map"}
 
-      assert {:ok, ["INBOX"]} = EmailBridge.list_mailboxes(config, %{})
+      assert {:ok, ["INBOX"]} = EmailBridge.list_mailboxes(config, %{}, opts)
       assert_receive {:captured_mailbox_config, prepared}
       assert prepared.selected_mailboxes == []
     end
 
     test "normalization handles non-map imap settings" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: CaptureMailboxAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: CaptureMailboxAdapterStub}
+        })
 
       config = %{provider: "email:imap", settings: %{"imap" => "oops"}}
 
-      assert {:ok, ["INBOX"]} = EmailBridge.list_mailboxes(config, %{})
+      assert {:ok, ["INBOX"]} = EmailBridge.list_mailboxes(config, %{}, opts)
       assert_receive {:captured_mailbox_config, prepared}
       assert prepared.selected_mailboxes == []
     end
 
     test "accepts atom provider key" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: MailboxTupleAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: MailboxTupleAdapterStub}
+        })
 
       assert {:ok, ["HR", "INBOX"]} =
-               EmailBridge.list_mailboxes(%{provider: :"email:imap"}, %{})
+               EmailBridge.list_mailboxes(%{provider: :"email:imap"}, %{}, opts)
     end
 
     test "normalizes map and string mailbox entries from adapter" do
-      previous = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: MixedMailboxAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: MixedMailboxAdapterStub}
+        })
 
       assert {:ok, ["INBOX", "Sales", "Support"]} =
-               EmailBridge.list_mailboxes(%{provider: :"email:imap"}, %{})
+               EmailBridge.list_mailboxes(%{provider: :"email:imap"}, %{}, opts)
     end
   end
 
   describe "from_listener/3" do
-    setup do
-      previous_pipeline = Application.get_env(:zaq, :email_bridge_pipeline_module)
-      previous_router = Application.get_env(:zaq, :email_bridge_router_module)
-      previous_conversations = Application.get_env(:zaq, :email_bridge_conversations_module)
-      previous_node_router = Application.get_env(:zaq, :email_bridge_node_router_module)
-
-      on_exit(fn ->
-        Application.put_env(:zaq, :email_bridge_pipeline_module, previous_pipeline)
-        Application.put_env(:zaq, :email_bridge_router_module, previous_router)
-        Application.put_env(:zaq, :email_bridge_conversations_module, previous_conversations)
-        Application.put_env(:zaq, :email_bridge_node_router_module, previous_node_router)
-      end)
-
-      :ok
-    end
-
     test "processes inbound payload end-to-end" do
-      Application.put_env(:zaq, :email_bridge_pipeline_module, PipelineOkStub)
-      Application.put_env(:zaq, :email_bridge_router_module, RouterOkStub)
-      Application.put_env(:zaq, :email_bridge_conversations_module, ConversationsOkStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_pipeline_module, PipelineOkStub)
+      opts = Keyword.put(opts, :email_bridge_router_module, RouterOkStub)
+      opts = Keyword.put(opts, :email_bridge_conversations_module, ConversationsOkStub)
 
       config = %{provider: "email:imap"}
 
@@ -1468,15 +1457,18 @@ defmodule Zaq.Channels.EmailBridgeTest do
                EmailBridge.from_listener(
                  config,
                  %{"body_text" => "hello"},
-                 adapter: IncomingAdapterStub,
-                 mailbox: "INBOX"
+                 Keyword.merge(
+                   [adapter: IncomingAdapterStub, mailbox: "INBOX"],
+                   opts
+                 )
                )
     end
 
     test "returns adapter conversion error" do
-      Application.put_env(:zaq, :email_bridge_pipeline_module, PipelineOkStub)
-      Application.put_env(:zaq, :email_bridge_router_module, RouterOkStub)
-      Application.put_env(:zaq, :email_bridge_conversations_module, ConversationsOkStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_pipeline_module, PipelineOkStub)
+      opts = Keyword.put(opts, :email_bridge_router_module, RouterOkStub)
+      opts = Keyword.put(opts, :email_bridge_conversations_module, ConversationsOkStub)
 
       config = %{provider: "email:imap"}
 
@@ -1486,8 +1478,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
                    EmailBridge.from_listener(
                      config,
                      %{"body_text" => "hello"},
-                     adapter: IncomingAdapterErrorStub,
-                     mailbox: "INBOX"
+                     Keyword.merge(
+                       [adapter: IncomingAdapterErrorStub, mailbox: "INBOX"],
+                       opts
+                     )
                    )
         end)
 
@@ -1495,9 +1489,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "returns delivery error" do
-      Application.put_env(:zaq, :email_bridge_pipeline_module, PipelineOkStub)
-      Application.put_env(:zaq, :email_bridge_router_module, RouterErrorStub)
-      Application.put_env(:zaq, :email_bridge_conversations_module, ConversationsOkStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_pipeline_module, PipelineOkStub)
+      opts = Keyword.put(opts, :email_bridge_router_module, RouterErrorStub)
+      opts = Keyword.put(opts, :email_bridge_conversations_module, ConversationsOkStub)
 
       config = %{provider: "email:imap"}
 
@@ -1507,8 +1502,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
                    EmailBridge.from_listener(
                      config,
                      %{"body_text" => "hello"},
-                     adapter: IncomingAdapterStub,
-                     mailbox: "INBOX"
+                     Keyword.merge(
+                       [adapter: IncomingAdapterStub, mailbox: "INBOX"],
+                       opts
+                     )
                    )
         end)
 
@@ -1516,9 +1513,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "wraps unexpected direct pipeline value" do
-      Application.put_env(:zaq, :email_bridge_pipeline_module, PipelineUnexpectedValueStub)
-      Application.put_env(:zaq, :email_bridge_router_module, RouterOkStub)
-      Application.put_env(:zaq, :email_bridge_conversations_module, ConversationsOkStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_pipeline_module, PipelineUnexpectedValueStub)
+      opts = Keyword.put(opts, :email_bridge_router_module, RouterOkStub)
+      opts = Keyword.put(opts, :email_bridge_conversations_module, ConversationsOkStub)
 
       config = %{provider: "email:imap"}
 
@@ -1528,8 +1526,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
                    EmailBridge.from_listener(
                      config,
                      %{"body_text" => "hello"},
-                     adapter: IncomingAdapterStub,
-                     mailbox: "INBOX"
+                     Keyword.merge(
+                       [adapter: IncomingAdapterStub, mailbox: "INBOX"],
+                       opts
+                     )
                    )
         end)
 
@@ -1537,10 +1537,11 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "delivers outgoing through NodeRouter when router module is Channels Api" do
-      Application.put_env(:zaq, :email_bridge_pipeline_module, PipelineOkStub)
-      Application.put_env(:zaq, :email_bridge_router_module, Zaq.Channels.Api)
-      Application.put_env(:zaq, :email_bridge_node_router_module, ApiDeliveryNodeRouterStub)
-      Application.put_env(:zaq, :email_bridge_conversations_module, ConversationsOkStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_pipeline_module, PipelineOkStub)
+      opts = Keyword.put(opts, :email_bridge_router_module, Zaq.Channels.Api)
+      opts = Keyword.put(opts, :email_bridge_node_router_module, ApiDeliveryNodeRouterStub)
+      opts = Keyword.put(opts, :email_bridge_conversations_module, ConversationsOkStub)
 
       config = %{provider: "email:imap"}
 
@@ -1548,8 +1549,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
                EmailBridge.from_listener(
                  config,
                  %{"body_text" => "hello"},
-                 adapter: IncomingAdapterStub,
-                 mailbox: "INBOX"
+                 Keyword.merge(
+                   [adapter: IncomingAdapterStub, mailbox: "INBOX"],
+                   opts
+                 )
                )
 
       assert_receive {:api_delivery_event, event}
@@ -1559,9 +1562,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "ignores persistence module in bridge path" do
-      Application.put_env(:zaq, :email_bridge_pipeline_module, PipelineOkStub)
-      Application.put_env(:zaq, :email_bridge_router_module, RouterOkStub)
-      Application.put_env(:zaq, :email_bridge_conversations_module, ConversationsErrorStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_pipeline_module, PipelineOkStub)
+      opts = Keyword.put(opts, :email_bridge_router_module, RouterOkStub)
+      opts = Keyword.put(opts, :email_bridge_conversations_module, ConversationsErrorStub)
 
       config = %{provider: "email:imap"}
 
@@ -1571,8 +1575,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
                    EmailBridge.from_listener(
                      config,
                      %{"body_text" => "hello"},
-                     adapter: IncomingAdapterStub,
-                     mailbox: "INBOX"
+                     Keyword.merge(
+                       [adapter: IncomingAdapterStub, mailbox: "INBOX"],
+                       opts
+                     )
                    )
         end)
 
@@ -1580,9 +1586,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "returns wrapped error for unexpected non-error pipeline chain value" do
-      Application.put_env(:zaq, :email_bridge_pipeline_module, PipelineOkStub)
-      Application.put_env(:zaq, :email_bridge_router_module, RouterUnexpectedStub)
-      Application.put_env(:zaq, :email_bridge_conversations_module, ConversationsOkStub)
+      opts = [config: TestConfig]
+      opts = Keyword.put(opts, :email_bridge_pipeline_module, PipelineOkStub)
+      opts = Keyword.put(opts, :email_bridge_router_module, RouterUnexpectedStub)
+      opts = Keyword.put(opts, :email_bridge_conversations_module, ConversationsOkStub)
 
       config = %{provider: "email:imap"}
 
@@ -1592,8 +1599,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
                    EmailBridge.from_listener(
                      config,
                      %{"body_text" => "hello"},
-                     adapter: IncomingAdapterStub,
-                     mailbox: "INBOX"
+                     Keyword.merge(
+                       [adapter: IncomingAdapterStub, mailbox: "INBOX"],
+                       opts
+                     )
                    )
         end)
 
@@ -1603,11 +1612,12 @@ defmodule Zaq.Channels.EmailBridgeTest do
 
   describe "start_runtime/1" do
     test "passes routing settings into runtime-prepared listener config" do
-      previous_channels = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: RuntimeCaptureAdapterStub}
-      })
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: RuntimeCaptureAdapterStub}
+        })
 
       config_id = System.unique_integer([:positive])
 
@@ -1626,10 +1636,9 @@ defmodule Zaq.Channels.EmailBridgeTest do
 
       on_exit(fn ->
         _ = EmailBridge.stop_runtime(config)
-        Application.put_env(:zaq, :channels, previous_channels)
       end)
 
-      assert :ok = EmailBridge.start_runtime(config)
+      assert :ok = EmailBridge.start_runtime(config, opts)
       assert_receive {:captured_runtime_config, prepared}
       assert prepared.selected_mailboxes == ["INBOX"]
       assert prepared.settings["routing"]["default_agent_id"] == 123
@@ -1637,11 +1646,12 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "restarts running runtime to apply updated selected mailboxes" do
-      previous_channels = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: RuntimeAdapterStub}
-      })
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: RuntimeAdapterStub}
+        })
 
       config_id = System.unique_integer([:positive])
       bridge_id = "email:imap_#{config_id}"
@@ -1657,16 +1667,15 @@ defmodule Zaq.Channels.EmailBridgeTest do
 
       on_exit(fn ->
         _ = EmailBridge.stop_runtime(initial_config)
-        Application.put_env(:zaq, :channels, previous_channels)
       end)
 
-      assert :ok = EmailBridge.start_runtime(initial_config)
+      assert :ok = EmailBridge.start_runtime(initial_config, opts)
       assert_receive {:runtime_listener_started, "INBOX", _pid}, 500
 
       assert {:ok, runtime} = Zaq.Channels.Supervisor.lookup_runtime(bridge_id)
       assert Enum.sort(Enum.map(runtime.listener_pids, &listener_mailbox/1)) == ["INBOX"]
 
-      assert :ok = EmailBridge.start_runtime(updated_config)
+      assert :ok = EmailBridge.start_runtime(updated_config, opts)
       assert_receive {:runtime_listener_started, "Support", _pid}, 500
       assert_receive {:runtime_listener_started, "Sales", _pid}, 500
 
@@ -1677,39 +1686,43 @@ defmodule Zaq.Channels.EmailBridgeTest do
     end
 
     test "returns adapter runtime error" do
-      previous_channels = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: RuntimeErrorAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous_channels) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: RuntimeErrorAdapterStub}
+        })
 
       assert {:error, :runtime_failed} =
-               EmailBridge.start_runtime(%{
-                 id: 99,
-                 provider: "email:imap",
-                 settings: %{"imap" => %{}}
-               })
+               EmailBridge.start_runtime(
+                 %{
+                   id: 99,
+                   provider: "email:imap",
+                   settings: %{"imap" => %{}}
+                 },
+                 opts
+               )
     end
 
     test "returns runtime start error when supervisor rejects listener specs" do
-      previous_channels = Application.get_env(:zaq, :channels)
+      opts = [config: TestConfig]
 
-      Application.put_env(:zaq, :channels, %{
-        :email => %{adapter: RuntimeInvalidSpecAdapterStub}
-      })
-
-      on_exit(fn -> Application.put_env(:zaq, :channels, previous_channels) end)
+      opts =
+        Keyword.put(opts, :channels, %{
+          :email => %{adapter: RuntimeInvalidSpecAdapterStub}
+        })
 
       log =
         capture_log(fn ->
           assert {:error, _reason} =
-                   EmailBridge.start_runtime(%{
-                     id: 100,
-                     provider: "email:imap",
-                     settings: %{"imap" => %{}}
-                   })
+                   EmailBridge.start_runtime(
+                     %{
+                       id: System.unique_integer([:positive]),
+                       provider: "email:imap",
+                       settings: %{"imap" => %{}}
+                     },
+                     opts
+                   )
         end)
 
       assert log =~ "invalid_child_spec"
@@ -1723,6 +1736,115 @@ defmodule Zaq.Channels.EmailBridgeTest do
                  id: System.unique_integer([:positive]),
                  provider: "email:imap"
                })
+    end
+  end
+
+  describe "config injection" do
+    test "preserves errors from an injected SMTP sender" do
+      outgoing = %Zaq.Engine.Messages.Outgoing{
+        provider: :email,
+        channel_id: "recipient@example.com",
+        body: "Message",
+        metadata: %{}
+      }
+
+      assert {:error, :smtp_unavailable} =
+               EmailBridge.send_reply(outgoing, %{},
+                 config: TestConfig,
+                 email_bridge_smtp_module: SmtpErrorStub
+               )
+    end
+
+    test "falls back to NodeRouter when the configured router does not implement deliver" do
+      opts = [
+        config: TestConfig,
+        adapter: IncomingAdapterStub,
+        email_bridge_pipeline_module: PipelineOkStub,
+        email_bridge_router_module: DynamicAdapterStub,
+        email_bridge_node_router_module: ApiDeliveryNodeRouterStub
+      ]
+
+      assert :ok =
+               EmailBridge.from_listener(
+                 %{provider: "email:imap"},
+                 %{"body_text" => "hello"},
+                 opts
+               )
+
+      assert_receive {:api_delivery_event, event}
+      assert event.opts == [action: :deliver_outgoing]
+      assert event.request.body == "outgoing"
+    end
+
+    test "uses the SMTP module from connection config opts" do
+      outgoing = %Zaq.Engine.Messages.Outgoing{
+        provider: :email,
+        channel_id: "recipient@example.com",
+        body: "Injected delivery",
+        metadata: %{subject: "Subject"}
+      }
+
+      details = %{config_opts: [config: TestConfig, email_bridge_smtp_module: SmtpSenderStub]}
+
+      assert {:ok, %{message_id: message_id}} = EmailBridge.send_reply(outgoing, details)
+      assert_receive {:smtp_notification, "recipient@example.com", payload, %{}}
+      assert payload["subject"] == "Subject"
+      assert payload["body"] == "Injected delivery"
+      assert payload["headers"]["Message-ID"] == "<#{message_id}>"
+    end
+
+    test "explicit opts override connection config opts" do
+      details = %{
+        config_opts: [config: TestConfig, channels: %{email: %{adapter: MailboxErrorAdapterStub}}]
+      }
+
+      assert {:ok, ["HR", "INBOX"]} =
+               EmailBridge.list_mailboxes(%{provider: "email:imap"}, details,
+                 channels: %{email: %{adapter: MailboxTupleAdapterStub}}
+               )
+    end
+
+    test "materialization uses injected default byte limit from config_opts" do
+      details = %{
+        config_opts: [
+          config: TestConfig,
+          channels: %{email: %{adapter: MaterializationAdapterStub}},
+          message_trace_artifact_max_bytes: 7
+        ]
+      }
+
+      assert {:error, :media_too_large} =
+               EmailBridge.materialize_record(%{provider: "email:imap"}, %{"size" => 8}, details)
+
+      refute_received {:download_attachment, _, _}
+    end
+
+    test "runtime specs carry config overrides into the listener sink" do
+      opts = [
+        config: TestConfig,
+        channels: %{email: %{adapter: RuntimeCaptureAdapterStub}},
+        email_bridge_pipeline_module: PipelineOkStub,
+        email_bridge_router_module: RouterOkStub
+      ]
+
+      config = %{
+        id: System.unique_integer([:positive]),
+        provider: "email:imap",
+        config_opts: opts
+      }
+
+      assert {:ok, {nil, []}} = EmailBridge.build_runtime_specs(config)
+      assert_receive {:captured_runtime_config, prepared}
+      assert_receive {:captured_runtime_opts, runtime_opts}
+      assert runtime_opts[:sink_mfa] == {EmailBridge, :from_listener, []}
+      assert Keyword.delete(runtime_opts[:sink_opts], :bridge_id) == opts
+
+      assert :ok =
+               EmailBridge.from_listener(
+                 prepared,
+                 %{"body_text" => "hello"},
+                 Keyword.put(runtime_opts[:sink_opts], :adapter, IncomingAdapterStub)
+               )
     end
   end
 
