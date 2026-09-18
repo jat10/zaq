@@ -26,7 +26,7 @@
         <CardShell.card_shell
           id="category-card-retrieval"
           as={:article}
-          class="group relative gap-4 overflow-hidden bg-white p-6 rounded-2xl border border-black/10 transition-all duration-200 cursor-pointer hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/5"
+          class="group relative gap-4 overflow-hidden bg-white p-6 rounded-2xl border border-black/10 cursor-pointer"
           primary_link={%{destination: ~p"/bo/channels/retrieval"}}
         >
           <:header>
@@ -45,26 +45,26 @@
               </div>
               <% retrieval_count =
                 ZaqWeb.Live.BO.Communication.ChannelsIndexLive.retrieval_total(@stats) %>
-              <span class={[
-                "font-mono text-[0.6rem] px-2 py-1 rounded-full uppercase tracking-wider",
-                if(retrieval_count > 0,
-                  do: "bg-emerald-100 text-emerald-700",
-                  else: "bg-black/5 text-black/30"
-                )
-              ]}>
-                {if retrieval_count > 0, do: "#{retrieval_count} active", else: "Not configured"}
-              </span>
+              <.hub_config_count_badge count={retrieval_count} />
             </div>
           </:header>
           <div>
-            <h3 class="font-mono text-sm font-bold text-black mb-1">Communication Channels</h3>
-            <p class="font-mono text-[0.7rem] text-black/40 leading-relaxed">
+            <h3
+              class="zaq-text-h4 mb-1"
+              style="color: var(--zaq-text-color-body-default)"
+            >
+              Communication Channels
+            </h3>
+            <p
+              class="zaq-text-body-sm leading-relaxed"
+              style="color: var(--zaq-text-color-body-tertiary)"
+            >
               Messaging platforms that receive user questions and return answers from ZAQ.
             </p>
           </div>
           <:footer>
             <div
-              class="flex items-center gap-2 mt-auto"
+              class="zaq-layout-inline-compact mt-auto"
               data-testid="channels-index-retrieval-icons"
             >
               <div
@@ -75,7 +75,12 @@
               >
                 <ZaqWeb.Components.ChannelIcons.icon provider={provider} class="w-3.5 h-3.5" />
               </div>
-              <span class="font-mono text-[0.6rem] text-black/25 ml-1">+more</span>
+              <span
+                class="zaq-text-caption ml-1"
+                style="color: var(--zaq-text-color-body-tertiary)"
+              >
+                +more
+              </span>
             </div>
           </:footer>
         </CardShell.card_shell>
@@ -84,7 +89,7 @@
         <CardShell.card_shell
           id="category-card-data-source"
           as={:article}
-          class="group relative gap-4 overflow-hidden bg-white p-6 rounded-2xl border border-black/10 transition-all duration-200 cursor-pointer hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/5"
+          class="group relative gap-4 overflow-hidden bg-white p-6 rounded-2xl border border-black/10 cursor-pointer"
           primary_link={%{destination: ~p"/bo/channels/data_source"}}
         >
           <:header>
@@ -106,28 +111,26 @@
               </div>
               <% data_source_count =
                 ZaqWeb.Live.BO.Communication.ChannelsIndexLive.data_source_total(@stats) %>
-              <span class={[
-                "font-mono text-[0.6rem] px-2 py-1 rounded-full uppercase tracking-wider",
-                if(data_source_count > 0,
-                  do: "bg-emerald-100 text-emerald-700",
-                  else: "bg-black/5 text-black/30"
-                )
-              ]}>
-                {if data_source_count > 0,
-                  do: "#{data_source_count} active",
-                  else: "Not configured"}
-              </span>
+              <.hub_config_count_badge count={data_source_count} />
             </div>
           </:header>
           <div>
-            <h3 class="font-mono text-sm font-bold text-black mb-1">Data Sources</h3>
-            <p class="font-mono text-[0.7rem] text-black/40 leading-relaxed">
+            <h3
+              class="zaq-text-h4 mb-1"
+              style="color: var(--zaq-text-color-body-default)"
+            >
+              Data Sources
+            </h3>
+            <p
+              class="zaq-text-body-sm leading-relaxed"
+              style="color: var(--zaq-text-color-body-tertiary)"
+            >
               Document sources that feed the knowledge base with files and content.
             </p>
           </div>
           <:footer>
             <div
-              class="flex items-center gap-2 mt-auto"
+              class="zaq-layout-inline-compact mt-auto"
               data-testid="channels-index-data-source-icons"
             >
               <div
@@ -147,24 +150,30 @@
           id="category-card-ai-agents"
           as={:article}
           variant={:muted}
-          class="relative gap-4 overflow-hidden bg-white p-6 rounded-2xl border border-dashed border-black/10 opacity-60"
+          class="relative overflow-hidden zaq-card-shell-muted"
         >
           <:header>
             <div class="flex items-start justify-between">
-              <div class="w-12 h-12 rounded-xl bg-[#03b6d4]/10 grid place-items-center">
-                <ZaqWeb.Components.ChannelIcons.icon
-                  provider="ai_agents"
-                  class="w-6 h-6 text-[#03b6d4]"
-                />
+              <div
+                class="zaq-channel-card-icon-tile"
+                style="background-color: var(--zaq-surface-color-accent); color: var(--zaq-text-color-body-accent)"
+              >
+                <ZaqWeb.Components.ChannelIcons.icon provider="ai_agents" class="zaq-icon-md" />
               </div>
-              <span class="font-mono text-[0.6rem] px-2 py-1 rounded-full uppercase tracking-wider bg-black/5 text-black/30">
-                Coming soon
-              </span>
+              <.hub_coming_soon_badge />
             </div>
           </:header>
           <div>
-            <h3 class="font-mono text-sm font-bold text-black mb-1">AI Agents</h3>
-            <p class="font-mono text-[0.7rem] text-black/40 leading-relaxed">
+            <h3
+              class="zaq-text-h4 mb-1"
+              style="color: var(--zaq-text-color-body-default)"
+            >
+              AI Agents
+            </h3>
+            <p
+              class="zaq-text-body-sm leading-relaxed"
+              style="color: var(--zaq-text-color-body-tertiary)"
+            >
               Connect autonomous agents that read, respond, and act on messages across your stack.
             </p>
           </div>
@@ -175,21 +184,14 @@
       <!-- SUB-PAGE — Provider grid for :retrieval or :data_source           -->
       <!-- ============================================================== -->
       <div class="mb-6">
-        <.link
+        <ZaqWeb.Components.DesignSystem.Button.button
+          variant={:ghost}
+          icon="hero-arrow-left"
           navigate={~p"/bo/channels"}
-          class="inline-flex items-center gap-1.5 font-mono text-[0.7rem] text-black/40 hover:text-black transition-colors mb-4"
+          class="mb-4"
         >
-          <svg
-            class="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path d="M19 12H5M12 5l-7 7 7 7" />
-          </svg>
           All Channels
-        </.link>
+        </ZaqWeb.Components.DesignSystem.Button.button>
         <div :if={@kind == :notification} class="flex justify-end">
           <.link
             navigate={~p"/bo/channels/notifications/logs"}
@@ -218,7 +220,7 @@
           :for={card <- @cards}
           id={"channel-card-#{card.id}"}
           as={:article}
-          class="group relative gap-4 overflow-hidden bg-white p-6 rounded-2xl border border-black/10 transition-all duration-200 cursor-pointer hover:shadow-lg"
+          class="group relative gap-4 overflow-hidden bg-white p-6 rounded-2xl border border-black/10 cursor-pointer"
           primary_link={
             %{
               destination:
@@ -249,20 +251,14 @@
                 <ZaqWeb.Components.ChannelIcons.icon provider={card.id} class="w-6 h-6" />
               </div>
               <% count = ZaqWeb.Live.BO.Communication.ChannelsIndexLive.stat_for(@stats, card.id) %>
-              <span class={[
-                "font-mono text-[0.6rem] px-2 py-1 rounded-full uppercase tracking-wider",
-                if(count > 0,
-                  do: "bg-emerald-100 text-emerald-700",
-                  else: "bg-black/5 text-black/30"
-                )
-              ]}>
-                {if count > 0, do: "#{count} active", else: "Not configured"}
-              </span>
+              <.hub_config_count_badge count={count} />
             </div>
           </:header>
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <h3 class="font-mono text-sm font-bold text-black">{card.label}</h3>
+              <h3 class="zaq-text-h4" style="color: var(--zaq-text-color-body-default)">
+                {card.label}
+              </h3>
               <button
                 :if={
                   @kind == :retrieval and
@@ -284,7 +280,12 @@
                 ]} />
               </button>
             </div>
-            <p class="font-mono text-[0.7rem] text-black/40 leading-relaxed">{card.desc}</p>
+            <p
+              class="zaq-text-body-sm leading-relaxed"
+              style="color: var(--zaq-text-color-body-tertiary)"
+            >
+              {card.desc}
+            </p>
           </div>
         </CardShell.card_shell>
       </div>
