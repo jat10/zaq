@@ -53,6 +53,7 @@ defmodule Zaq.Engine.Workflows.StepRunner do
   use Jido.Action, name: "workflow_step_runner", schema: []
 
   alias Jido.Action.Error
+  alias Jido.Action.Tool, as: ActionTool
   alias Zaq.Engine.Workflows
   alias Zaq.Engine.Workflows.Action
   alias Zaq.Engine.Workflows.ExecutionOutcome
@@ -261,6 +262,7 @@ defmodule Zaq.Engine.Workflows.StepRunner do
     prev_cascade = Map.get(params, :__cascade__, Map.get(params, "__cascade__", %{}))
 
     action_params = Map.drop(params, @wrapper_keys ++ @map_keys ++ [:__cascade__, "__cascade__"])
+    execution_params = ActionTool.convert_params_using_schema(action_params, mod.schema())
 
     {:ok, step_run} =
       Workflows.create_step_run(%WorkflowRun{id: run_id}, %{
@@ -275,7 +277,7 @@ defmodule Zaq.Engine.Workflows.StepRunner do
     try do
       outcome =
         with {:ok, opts} <- ExecutionPolicy.inner_options(timeout_ms, strategy) do
-          Jido.Exec.run(mod, action_params, enriched_context, opts)
+          Jido.Exec.run(mod, execution_params, enriched_context, opts)
         end
 
       case execution_outcome(outcome, mod, run_id, step_name) do

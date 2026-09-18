@@ -18,7 +18,9 @@ defmodule Zaq.Engine.Workflows.StepRunnerTest do
     ErrorAction,
     ExecutionProbe,
     OkAction,
-    OkWithLogsAction
+    OkWithLogsAction,
+    ParamCapture,
+    ParamProbe
   }
 
   setup do
@@ -203,6 +205,21 @@ defmodule Zaq.Engine.Workflows.StepRunnerTest do
       params = wp(run, OkAction, "step", 0) |> Map.put(:extra, "value")
 
       assert {:ok, _} = StepRunner.run(params, %{})
+    end
+
+    test "normalizes schema keys for execution while preserving unknown workflow params" do
+      start_supervised!(ParamCapture)
+      run = create_run()
+
+      params =
+        wp(run, ParamProbe, "params", 0)
+        |> Map.merge(%{"input" => "hello", "who" => "world"})
+
+      assert {:ok, _} = StepRunner.run(params, %{})
+      assert %{"who" => "world", input: "hello"} = ParamCapture.get_params()
+
+      [step] = Workflows.list_step_runs(run.id)
+      assert step.input == %{"input" => "hello", "who" => "world"}
     end
 
     test "calls wrapped module returning 3-tuple with logs and writes completed StepRun" do

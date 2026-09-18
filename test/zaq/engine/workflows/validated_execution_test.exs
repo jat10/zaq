@@ -223,4 +223,72 @@ defmodule Zaq.Engine.Workflows.ValidatedExecutionTest do
 
     assert length(Workflows.list_step_runs(run.id)) == 2
   end
+
+  test "persists structured non-retryable failures after one workflow-boundary attempt" do
+    {:ok, counter} = Agent.start_link(fn -> 0 end)
+    on_exit(fn -> if Process.alive?(counter), do: Agent.stop(counter) end)
+
+    {:ok, run} = Workflows.create_run(workflow([], []), @event)
+
+    params = %{
+      wrapped_module: AttemptProbe,
+      run_id: run.id,
+      step_name: "structured_failure",
+      step_index: 0
+    }
+
+    assert {:error, error} =
+             Jido.Exec.run(
+               StepRunner,
+               params,
+               %{counter: counter, mode: :deterministic},
+               ExecutionPolicy.outer_options()
+             )
+
+    assert Error.to_map(error).type == :execution_error
+    assert Error.to_map(error).message == "rejected"
+    assert Agent.get(counter, & &1) == 1
+
+    step = Workflows.get_terminal_step_run(run.id, "structured_failure")
+    assert step.status == "failed"
+    assert step.results == nil
+    assert step.errors["type"] == "execution_error"
+    assert step.errors["message"] == "rejected"
+    assert step.errors["details"]["retry"] == false
+    assert step.errors["retryable?"] == false
+  end
+
+  test "times out an action process, persists failure, and performs no extra attempt" do
+    counter = start_supervised!({Agent, fn -> 0 end})
+    {:ok, run} = Workflows.create_run(workflow([], []), @event)
+
+    params = %{
+      wrapped_module: AttemptProbe,
+      run_id: run.id,
+      step_name: "timed_failure",
+      step_index: 0,
+      timeout_ms: 30
+    }
+
+    assert {:error, error} =
+             Jido.Exec.run(
+               StepRunner,
+               params,
+               %{counter: counter, mode: :timeout, owner: self()},
+               ExecutionPolicy.outer_options()
+             )
+
+    assert Error.to_map(error).type == :timeout
+    assert_receive {:attempt_started, pid, 1}
+    monitor = Process.monitor(pid)
+    assert_receive {:DOWN, ^monitor, :process, ^pid, _reason}
+    refute Process.alive?(pid)
+    assert Agent.get(counter, & &1) == 1
+
+    step = Workflows.get_terminal_step_run(run.id, "timed_failure")
+    assert step.status == "failed"
+    assert step.results == nil
+    assert step.errors["type"] == "timeout"
+    assert step.errors["reason"] =~ "timed out after 30ms"
+  end
 end
