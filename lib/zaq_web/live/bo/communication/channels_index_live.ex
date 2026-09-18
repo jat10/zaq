@@ -8,6 +8,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsIndexLive do
   alias Zaq.Event
   alias Zaq.NodeRouter
   alias Zaq.Repo
+  alias ZaqWeb.Components.DesignSystem.CardShell
   alias ZaqWeb.Live.BO.Communication.IngressStatusUI
 
   import Ecto.Query

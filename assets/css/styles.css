@@ -45,6 +45,12 @@
   border-color: var(--zaq-border-color-accent);
 }
 
+/* Split card shell: raised surface on outer article; primary link is a child. */
+.zaq-card-hover:has(> :is(a, button, [role="button"], [role="link"]):hover),
+.zaq-card-hover:has(> :is(a, button, [role="button"], [role="link"]):focus-visible) {
+  border-color: var(--zaq-border-color-accent);
+}
+
 /* ── Border ────────────────────────────────────────────────────────────────── */
 .zaq-border-default {
   border:var(--zaq-border-color-default) solid var(--zaq-border-thickness-default);
