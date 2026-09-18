@@ -55,6 +55,34 @@ defmodule Zaq.Engine.Workflows.ValidatedExecutionTest do
     end
   end
 
+  test "workflow EncodeBase64 applies omitted defaults through the execution seam" do
+    wf =
+      workflow(
+        [
+          %{
+            name: "encode",
+            type: "action",
+            module: "Zaq.Agent.Tools.General.EncodeBase64",
+            params: %{"data" => "hello"},
+            index: 0
+          }
+        ],
+        []
+      )
+
+    assert {:ok, %{status: "completed"} = run} = Workflows.create_and_start_run(wf, @event)
+
+    step = Workflows.get_terminal_step_run(run.id, "encode")
+
+    assert step.status == "completed"
+    assert step.input == %{"data" => "hello"}
+
+    # `aGVsbG8=` proves both declared defaults were applied: the standard
+    # alphabet and enabled padding. A direct `EncodeBase64.run/2` call would
+    # fail its required `variant`/`padding` pattern match instead.
+    assert step.results["encoded"] == "aGVsbG8="
+  end
+
   test "required, type and enum violations persist validation failures" do
     wf = workflow([], [])
     {:ok, run} = Workflows.create_run(wf, @event)
