@@ -18,7 +18,9 @@ defmodule ZaqWeb.Components.DesignSystem.CardShell do
   import ZaqWeb.Components.DesignSystem.Button, only: [button: 1]
   import ZaqWeb.Components.DesignSystem.Link, only: [nav_link: 1]
 
-  attr :id, :string, required: true
+  attr :id, :string,
+    required: true,
+    doc: "DOM identity assigned once to the card surface or its whole-card navigation link."
 
   attr :as, :atom,
     default: :article,
@@ -127,7 +129,7 @@ defmodule ZaqWeb.Components.DesignSystem.CardShell do
       <% @split_footer? and @primary -> %>
         <.card_root id={@id} as={@as} class={@surface_class} style={@style}>
           <.link
-            id={link_dom_id(@primary, @id)}
+            id={split_link_dom_id(@primary, @id)}
             class="group block min-h-0 flex-1 flex flex-col"
             {primary_destination_attrs(@primary)}
           >
@@ -327,9 +329,15 @@ defmodule ZaqWeb.Components.DesignSystem.CardShell do
   defp link_dom_id(%{id: id}, _surface_id) when is_binary(id) and id != "", do: id
   defp link_dom_id(_primary, surface_id), do: surface_id
 
+  defp split_link_dom_id(%{id: id}, surface_id)
+       when is_binary(id) and id != "" and id != surface_id,
+       do: id
+
+  defp split_link_dom_id(_primary, _surface_id), do: nil
+
   defp surface_dom_id(%{id: id}, surface_id) when is_binary(id) and id != "" and id != surface_id,
     do: surface_id
 
   defp surface_dom_id(%{id: id}, surface_id) when is_binary(id) and id == surface_id, do: nil
-  defp surface_dom_id(_primary, surface_id), do: surface_id
+  defp surface_dom_id(_primary, _surface_id), do: nil
 end
