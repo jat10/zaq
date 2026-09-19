@@ -46,10 +46,17 @@ Do not skip human validation tables in migrate/replace/extract reports.
 | `storybook/` (extract skill) | daisyUI, legacy `app.css` classes |
 
 Role CSS files (`btn.css`, `form.css`, etc.) are read-only unless the design lead approves a token change.
+Fonts, stylesheets, icon sets, and decorative assets used by the product must be
+bundled and served locally as required by `DESIGN.md`; do not add public runtime
+asset URLs. Preserve upstream licenses when adding redistributable assets.
 
 ## Step 4: Verify
 
 Read and follow the validation lifecycle in `docs/WORKFLOW_AGENT.md`, including isolated tests for the design changes and the final approval gate.
+
+Verify that product styling resolves from local static paths and that touched
+templates/CSS introduce no public runtime asset URLs. Development-only tooling and
+content from deliberately enabled providers retain the exceptions in `DESIGN.md`.
 
 Follow `docs/testing-approach.md#feature-e2e-approval-gate`. Keep the same feature
 E2E issue current through production wiring and UI corrections; defer feature E2E

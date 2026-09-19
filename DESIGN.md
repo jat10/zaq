@@ -79,6 +79,17 @@ Target users: internal operators, knowledge managers, and IT admins. The UI must
 
 **When uncertain:** Storybook → role CSS file (see catalog below) → `/design-migrate` constraints → ask a human.
 
+### Styling assets and offline operation
+
+Product styling must not depend on public runtime URLs. Bundle fonts, stylesheets,
+icon sets, and decorative assets in the repository and serve them through ZAQ's
+static asset paths so deployed interfaces work in air-gapped environments. Include
+the upstream license for redistributed assets.
+
+This restriction does not apply to development-only tooling that is explicitly
+enabled only in development, or to content supplied by a provider that an operator
+has deliberately connected and enabled.
+
 ### Agent workflow
 
 Human confirmation is required at the validation gate of each skill (extraction report, migration table, replacement report).

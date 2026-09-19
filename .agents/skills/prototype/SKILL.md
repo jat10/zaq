@@ -186,6 +186,7 @@ Use role CSS / `styles.css` per **`DESIGN.md`** rules when DS classes alone are 
 | **Token-first** | Use `var(--zaq-*)` — raw hex only when no semantic token exists |
 | **Not app.css** | Never edit `assets/css/app.css` |
 | **Disposable staging** | Prototype CSS is staging; **`/design`** hardens patterns in role CSS |
+| **Local assets** | Do not load product fonts, stylesheets, icon sets, or decorative assets from public runtime URLs; use bundled static assets per `DESIGN.md` |
 
 ### 7. Register route and sidebar
 
@@ -217,6 +218,7 @@ Grep touched files for violations:
 | Form screen (`phx-submit` / `<.form`) with **no** `DesignSystem.Input`, `Select`, `SearchableSelect`, or `Checkbox` import | **Fail** |
 | Tailwind `border`, `border-b`, `border-t`, `divide-*`, `outline-*` on BO chrome when a `.zaq-*` role class exists | **Fail** |
 | Inline `style=` setting `border`, `border-color`, `divide-color`, or `background` on panels/lists/chips | **Fail** |
+| Public runtime URL for a product styling asset | **Fail** |
 | `[NEW COMPONENT]` in UX plan implemented as LiveView `defp` instead of `DesignSystem.*` | **Fail** |
 | UX plan §5 row implemented with a different pattern than mapped (unless documented `[GAP]` in `@moduledoc`) | **Fail** |
 
@@ -270,6 +272,7 @@ Grep touched files for violations:
 - [ ] **`[NEW COMPONENT]` rows** → `DesignSystem.*` module exists (not LiveView `defp`)
 - [ ] **No Tailwind border/divide chrome** — panels/lists use `form.css` / `table.css` role classes
 - [ ] **Design system audit passes** (§8 grep, including border/divide/inline-style checks)
+- [ ] Product styling assets are bundled and served locally; no public runtime asset URLs were introduced
 
 ---
 

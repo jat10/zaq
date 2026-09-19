@@ -20,7 +20,7 @@ ZAQ is an AI-powered company brain built with Elixir/Phoenix. This file is the d
 - Read a module's `@moduledoc` before adding a function; respect its responsibility.
 - Before touching keys, tokens, passwords or encrypted fields, read [system configuration](docs/services/system-config.md).
 - Before changing `lib/zaq/agent/`, read the [Agent service checks](docs/services/agent.md#harness-critical-checks-for-coding-agents) and applicable service sections. Nil identity is never implicit permission.
-- For BO/UI work, read [DESIGN.md](DESIGN.md) first; use [BO components](docs/bo-components.md) for layout, flash and PR checklist. Do not load design docs for unrelated work.
+- For BO/UI work, read [DESIGN.md](DESIGN.md) first; use [BO components](docs/bo-components.md) for layout, flash and PR checklist. Product styling assets must be bundled and served locally per the design contract. Do not load design docs for unrelated work.
 - For code changes, follow [testing guidance](docs/testing-approach.md), including property tests for invariants/broad input spaces and the human UX/UI approval gate for new feature E2E. Never weaken existing assertions to hide regressions.
 - Validation summary: `mix q` (includes formatting) plus isolated tests per issue; final `mix precommit` **before requesting final human approval**. Read and follow the authoritative [validation lifecycle](docs/WORKFLOW_AGENT.md#phase-4--validate), including failure handling, coverage and repeat gates. Documentation-only work needs no application tests.
 - Batch independent related operations in one message; sequence dependent operations safely.
