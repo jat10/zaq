@@ -2,6 +2,8 @@ defmodule Zaq.Engine.Workflows.WorkflowsCoreTest do
   use Zaq.DataCase, async: true
   use ExUnitProperties
 
+  import ExUnit.CaptureLog
+
   alias Zaq.Engine.Workflows
   alias Zaq.Engine.Workflows.Step.Run, as: StepRun
   alias Zaq.Engine.Workflows.{StepApproval, Trigger, Workflow, WorkflowRun}
@@ -907,6 +909,37 @@ defmodule Zaq.Engine.Workflows.WorkflowsCoreTest do
       {:ok, running} = Workflows.update_run(run, %{status: "running"})
 
       assert {:error, {:invalid_run_status, "running"}} = Workflows.start_run(running)
+    end
+
+    test "preserves the DAG preparation error when failure notification dispatch exits" do
+      {:ok, workflow} =
+        Workflows.create_workflow(%{
+          name: "Failed Preparation Notification #{System.unique_integer()}",
+          status: "draft",
+          nodes: [],
+          edges: []
+        })
+
+      {:ok, run} = Workflows.create_run(workflow, @valid_source_event)
+
+      stub(Zaq.NodeRouterMock, :dispatch, fn %Zaq.Event{} = event ->
+        case event.request do
+          %{action: "run.failed"} -> exit(:preparation_notification_failed)
+          _ -> event
+        end
+      end)
+
+      log =
+        capture_log(fn ->
+          assert {:error, :empty_dag} = Workflows.start_run(run)
+        end)
+
+      assert Workflows.get_run!(run.id).status == "failed"
+      assert log =~ "lifecycle notification failed"
+      assert log =~ "event_name=run.failed"
+      assert log =~ "run_id=#{run.id}"
+      assert log =~ "failure_kind=exit"
+      assert log =~ "reason=:preparation_notification_failed"
     end
 
     test "dispatches run_started via async Channels broadcast when starting" do
