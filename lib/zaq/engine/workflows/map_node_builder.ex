@@ -173,16 +173,21 @@ defmodule Zaq.Engine.Workflows.MapNodeBuilder do
 
   # Threads the fork fact through each sub-step via `StepRunner`. An isolated fork
   # failure surfaces from `StepRunner` as `{:ok, sentinel}` and flows on (later
-  # sub-steps short-circuit on it); a non-isolated failure (`:fail_workflow`) returns
-  # `{:error, _}` — its `StepRun` row is already `"failed"`, so we emit the sentinel
-  # to keep the FanIn cardinality intact and let `finalize/2` fail the run.
+  # sub-steps short-circuit on it). For any returned error, emit a sentinel only
+  # when the exact fork already has a durable failed cursor; otherwise raise the
+  # normalized Jido exception so Runic fails the fork and cannot advance FanIn.
   defp run_fork(fact, specs) do
     specs
     |> Enum.reduce_while({:ok, fact}, fn spec, {:ok, prev} ->
       case Jido.Exec.run(StepRunner, Map.merge(prev, spec), %{}, ExecutionPolicy.outer_options()) do
-        {:ok, %{}, workflow_control: %PendingApproval{} = control} -> {:halt, {:pending, control}}
-        {:ok, result} -> {:cont, {:ok, result}}
-        {:error, _} -> {:halt, {:error, map_index_of(prev)}}
+        {:ok, %{}, workflow_control: %PendingApproval{} = control} ->
+          {:halt, {:pending, control}}
+
+        {:ok, result} ->
+          {:cont, {:ok, result}}
+
+        {:error, error} ->
+          handle_fork_error(error, spec, prev)
       end
     end)
     |> case do
@@ -196,6 +201,29 @@ defmodule Zaq.Engine.Workflows.MapNodeBuilder do
     do: Map.get(fact, "__map_index__") || Map.get(fact, :__map_index__)
 
   defp map_index_of(_), do: nil
+
+  defp handle_fork_error(error, spec, fact) do
+    if durable_failed_fork?(spec, fact) do
+      {:halt, {:error, map_index_of(fact)}}
+    else
+      raise error
+    end
+  end
+
+  defp durable_failed_fork?(spec, fact) do
+    run_id = Map.get(spec, :run_id)
+    step_name = Map.get(spec, :step_name)
+    map_index = map_index_of(fact)
+
+    if is_binary(run_id) and is_binary(step_name) and not is_nil(map_index) do
+      case Workflows.get_terminal_step_run(run_id, "#{step_name}[#{map_index}]") do
+        %{status: status} when status in ["failed", "failed_fatal"] -> true
+        _ -> false
+      end
+    else
+      false
+    end
+  end
 
   defp build_map_reduce(name, map_component) do
     reduce_name = DagBuilder.node_atom("#{name}__map_reduce")

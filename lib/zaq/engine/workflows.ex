@@ -1094,6 +1094,9 @@ defmodule Zaq.Engine.Workflows do
       [%StepRun{status: "running"} = row] ->
         recovery_wait(row)
 
+      [%StepRun{status: "paused"} = row] ->
+        recovery_wait(row)
+
       [%StepRun{status: "failed", errors: %{"reason" => reason}} = row]
       when reason in [
              "node_shutdown",
