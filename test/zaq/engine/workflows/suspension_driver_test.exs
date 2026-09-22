@@ -111,6 +111,67 @@ defmodule Zaq.Engine.Workflows.SuspensionDriverTest do
     end
   end
 
+  test "a paused map approval cursor resumes to waiting without reaching MapCollect" do
+    wf =
+      workflow(
+        [
+          %{
+            name: "emit",
+            type: "action",
+            module: "Zaq.Engine.Workflows.Test.EmitIndexedItems",
+            params: %{count: 1},
+            index: 0
+          },
+          %{
+            name: "m",
+            type: "map",
+            index: 1,
+            params: %{
+              "over" => "items",
+              "strategy" => "fail_workflow",
+              "body" => [
+                %{"name" => "review", "type" => "action", "module" => @hitl, "params" => %{}}
+              ]
+            }
+          }
+        ],
+        [%{from: "emit", to: "m"}]
+      )
+
+    {:ok, run} = Workflows.create_run(wf, @event)
+    {:ok, running} = Workflows.update_run(run, %{status: "running"})
+
+    {:ok, cursor} =
+      Workflows.create_step_run(run, %{
+        step_name: "m/review[0]",
+        step_index: 0,
+        status: "running"
+      })
+
+    {:ok, approval} =
+      Workflows.ensure_pending_approval(%{
+        workflow_run_id: run.id,
+        step_name: "m/review[0]"
+      })
+
+    assert {:ok, paused} = Workflows.pause_run(running)
+    assert paused.status == "paused"
+    assert Workflows.get_step_run_by_name(run.id, "m/review[0]").status == "paused"
+    assert Workflows.get_step_run_by_name(run.id, "m") == nil
+
+    assert {:ok, resumed} = Workflows.resume_run(paused)
+
+    resumed_cursor = Workflows.get_step_run_by_name(run.id, "m/review[0]")
+    resumed_approval = Workflows.get_step_approval(run.id, "m/review[0]")
+
+    assert resumed.status == "waiting"
+    assert resumed_cursor.id == cursor.id
+    assert resumed_cursor.status == "waiting"
+    assert resumed_approval.id == approval.id
+    assert resumed_approval.status == "pending"
+    assert Workflows.get_step_run_by_name(run.id, "m") == nil
+  end
+
   test "real inner Jido validates the empty HITL output and reuses its approval" do
     wf = workflow([action("review", @hitl)], [])
     {:ok, run} = Workflows.create_run(wf, @event)
