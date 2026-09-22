@@ -2,6 +2,7 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgentTest do
   use Zaq.DataCase, async: false
 
   import Ecto.Query
+  import ExUnit.CaptureLog
 
   alias Zaq.Accounts.People
   alias Zaq.Engine.Workflows
@@ -637,6 +638,62 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgentTest do
       assert completed.request[:action] == "run.completed"
       assert completed.request[:run_id] == run.id
       assert completed.actor == run.source_event.actor
+    end
+
+    test "completed state survives a post-commit lifecycle notification failure" do
+      run = create_run()
+      flush_dispatched()
+
+      stub(Zaq.NodeRouterMock, :dispatch, fn event ->
+        case event.request do
+          %{action: "run.completed"} ->
+            assert Workflows.get_run!(run.id).status == "completed"
+            raise "completed notification failed"
+
+          _ ->
+            event
+        end
+      end)
+
+      log =
+        capture_log(fn ->
+          assert {:ok, %{status: "completed"}} = WorkflowRunAgent.execute(run)
+        end)
+
+      assert Workflows.get_run!(run.id).status == "completed"
+      assert log =~ "lifecycle notification failed"
+      assert log =~ "event_name=run.completed"
+      assert log =~ "run_id=#{run.id}"
+      assert log =~ "reason=completed notification failed"
+    end
+
+    test "waiting state survives a post-commit lifecycle notification failure" do
+      wf = hitl_workflow()
+      {:ok, run} = Workflows.create_run(wf, @source_event)
+      flush_dispatched()
+
+      stub(Zaq.NodeRouterMock, :dispatch, fn event ->
+        case event.request do
+          %{action: "run.waiting"} ->
+            assert Workflows.get_run!(run.id).status == "waiting"
+            exit(:waiting_notification_failed)
+
+          _ ->
+            event
+        end
+      end)
+
+      log =
+        capture_log(fn ->
+          assert {:ok, %{status: "waiting"}} = WorkflowRunAgent.execute(run)
+        end)
+
+      assert Workflows.get_run!(run.id).status == "waiting"
+      assert log =~ "lifecycle notification failed"
+      assert log =~ "event_name=run.waiting"
+      assert log =~ "run_id=#{run.id}"
+      assert log =~ "failure_kind=exit"
+      assert log =~ "reason=:waiting_notification_failed"
     end
 
     test "step failure dispatches run.started then run.failed" do
