@@ -3,7 +3,9 @@ defmodule Zaq.Agent.Tools.Workflow.ConditionContractTest do
   use ExUnitProperties
 
   alias Jido.Action.Error
+  alias Jido.Action.Tool
   alias Zaq.Agent.Tools.Workflow.Condition
+  alias Zaq.Engine.Workflows.EdgeCondition
 
   @opts [timeout: 0, max_retries: 0, backoff: 0, telemetry: :silent]
 
@@ -64,6 +66,115 @@ defmodule Zaq.Agent.Tools.Workflow.ConditionContractTest do
         assert {:error, error} = Jido.Exec.run(Condition, params, %{}, @opts)
         refute Error.retryable?(error)
       end
+    end
+  end
+
+  # The agent calls this action through `Jido.Action.Tool`, never `run/2`: params arrive
+  # string-keyed and pass through `convert_params_using_schema/2` first. The direct
+  # `Jido.Exec` tests above cannot see a regression on that seam.
+  describe "agent tool execution (Jido.Action.Tool.execute_action/3)" do
+    test "accepts string-keyed condition objects exactly as an agent sends them" do
+      args = %{
+        "input" => %{"active" => true, "flagged" => false},
+        "conditions" => [
+          %{"key" => "active", "value" => true},
+          %{"key" => "flagged", "op" => "eq", "value" => false}
+        ],
+        "on_fail" => "halt"
+      }
+
+      assert {:ok, json} = Tool.execute_action(Condition, args, %{})
+
+      assert %{"passed" => true, "input" => %{"active" => true, "flagged" => false}} =
+               Jason.decode!(json)
+    end
+
+    test ~s|"halt" still halts through the tool seam| do
+      args = %{
+        "input" => %{"position" => "CTO"},
+        "conditions" => [%{"key" => "position", "value" => "CFO"}],
+        "on_fail" => "halt"
+      }
+
+      assert {:error, json} = Tool.execute_action(Condition, args, %{})
+      # The tool seam inspects the error, so quotes arrive escaped inside the payload.
+      assert %{"error" => message} = Jason.decode!(json)
+      assert message =~ "Condition not met"
+      assert message =~ "position must equal"
+      assert message =~ "CFO"
+      assert message =~ "CTO"
+    end
+
+    test ~s|"continue" still routes through the tool seam and keeps condition objects| do
+      args = %{
+        "input" => %{"position" => "CTO"},
+        "conditions" => [%{"key" => "position", "op" => "eq", "value" => "CFO"}],
+        "on_fail" => "continue"
+      }
+
+      assert {:ok, json} = Tool.execute_action(Condition, args, %{})
+      decoded = Jason.decode!(json)
+
+      assert decoded["passed"] == false
+      refute Map.has_key?(decoded, "input")
+
+      assert [%{"key" => "position", "op" => "eq", "value" => "CFO"}] =
+               decoded["failed_conditions"]
+    end
+  end
+
+  describe "condition object validation" do
+    test "an unsupported op fails input validation instead of raising inside evaluation" do
+      refute "contains" in Enum.map(EdgeCondition.ops(), &to_string/1)
+
+      params = %{
+        input: %{"a" => 1},
+        conditions: [%{"key" => "a", "op" => "contains", "value" => 1}]
+      }
+
+      assert {:error, error} = Jido.Exec.run(Condition, params, %{}, @opts)
+      assert Error.to_map(error).type == :validation_error
+      refute Error.retryable?(error)
+    end
+
+    test "an unsupported type fails input validation instead of silently comparing by term order" do
+      params = %{
+        input: %{"a" => 1},
+        conditions: [%{"key" => "a", "type" => "fortnight", "value" => 1}]
+      }
+
+      assert {:error, error} = Jido.Exec.run(Condition, params, %{}, @opts)
+      assert Error.to_map(error).type == :validation_error
+      refute Error.retryable?(error)
+    end
+
+    test "value stays optional for the operators that do not take one" do
+      params = %{
+        input: %{"name" => "John", "blank" => ""},
+        conditions: [
+          %{"key" => "name", "op" => "not_empty"},
+          %{"key" => "blank", "op" => "empty"}
+        ]
+      }
+
+      assert {:ok, %{passed: true}} = Jido.Exec.run(Condition, params, %{}, @opts)
+    end
+
+    test "default survives validation and still supplies the actual value" do
+      params = %{
+        input: %{"a" => 1},
+        conditions: [%{"key" => "tier", "op" => "eq", "value" => "gold", "default" => "gold"}]
+      }
+
+      assert {:ok, %{passed: true}} = Jido.Exec.run(Condition, params, %{}, @opts)
+
+      assert {:error, _} =
+               Jido.Exec.run(
+                 Condition,
+                 put_in(params.conditions, [%{"key" => "tier", "value" => "gold"}]),
+                 %{},
+                 @opts
+               )
     end
   end
 end

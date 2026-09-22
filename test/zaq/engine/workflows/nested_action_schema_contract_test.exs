@@ -2,11 +2,13 @@ defmodule Zaq.Engine.Workflows.NestedActionSchemaContractTest do
   use Zaq.DataCase, async: false
   use Oban.Testing, repo: Zaq.Repo
 
+  alias Jido.Action.Schema
   alias Jido.Action.Tool
   alias Zaq.Agent.Tools.People.NotifyPerson
-  alias Zaq.Agent.Tools.Workflow.{ScheduleAction, ToUtcDateTime}
+  alias Zaq.Agent.Tools.Workflow.{Condition, ScheduleAction, ToUtcDateTime}
   alias Zaq.Engine.ActionSchedules
   alias Zaq.Engine.Workflows
+  alias Zaq.Engine.Workflows.EdgeCondition
 
   @source_event %{
     "request" => nil,
@@ -188,6 +190,104 @@ defmodule Zaq.Engine.Workflows.NestedActionSchemaContractTest do
     end
   end
 
+  describe "Condition structured conditions contract" do
+    test "evaluates structured conditions against a map input after the JSONB round-trip" do
+      conditions = [
+        %{"key" => "role", "op" => "eq", "value" => "CFO"},
+        %{"key" => "age", "op" => "gte", "value" => 18},
+        %{"key" => "tier", "op" => "eq", "value" => "gold", "default" => "gold"}
+      ]
+
+      {run, persisted_params} =
+        persisted_run(Condition, %{
+          input: %{"role" => "CFO", "age" => 24},
+          conditions: conditions
+        })
+
+      # The condition objects must survive persistence and StepRunner/Jido conversion
+      # as objects — this is the shape the published tool schema has to describe.
+      assert persisted_params["conditions"] == conditions
+      assert persisted_params["input"] == %{"role" => "CFO", "age" => 24}
+      assert {:ok, %{status: "completed"}} = Workflows.start_run(run)
+
+      result = Workflows.get_terminal_step_run(run.id, "action").results
+      assert result["passed"] == true
+      assert result["input"] == %{"role" => "CFO", "age" => 24}
+    end
+
+    test "routing mode returns condition objects, not strings, after the JSONB round-trip" do
+      {run, _persisted_params} =
+        persisted_run(Condition, %{
+          input: %{"role" => "CTO"},
+          conditions: [%{"key" => "role", "op" => "eq", "value" => "CFO"}],
+          on_fail: "continue"
+        })
+
+      assert {:ok, %{status: "completed"}} = Workflows.start_run(run)
+
+      result = Workflows.get_terminal_step_run(run.id, "action").results
+      assert result["passed"] == false
+      refute Map.has_key?(result, "input")
+
+      assert [%{"key" => "role", "op" => "eq", "value" => "CFO"}] = result["failed_conditions"]
+    end
+
+    test "generated tool schema publishes input as object-or-string" do
+      input = Condition |> tool_schema() |> property(:input)
+
+      assert MapSet.member?(required_keys(tool_schema(Condition)), "input")
+
+      assert is_list(schema_value(input, :anyOf)),
+             "input must publish both branches of its union, got: #{inspect(input)}"
+
+      assert input |> schema_value(:anyOf) |> MapSet.new(&schema_type/1) ==
+               MapSet.new(["object", "string"])
+    end
+
+    test "generated tool schema publishes conditions as structured objects" do
+      conditions = Condition |> tool_schema() |> property(:conditions)
+      items = schema_value(conditions, :items)
+      properties = schema_value(items, :properties)
+
+      assert schema_type(conditions) == "array"
+      assert schema_type(items) == "object"
+      assert is_map(properties)
+      assert required_keys(items) == MapSet.new(["key"])
+
+      assert properties |> Map.keys() |> MapSet.new(&to_string/1) ==
+               MapSet.new(~w[key value op type default])
+
+      assert schema_type(schema_value(properties, :key)) == "string"
+
+      assert properties |> schema_value(:op) |> schema_value(:enum) |> MapSet.new(&to_string/1) ==
+               MapSet.new(EdgeCondition.ops(), &to_string/1)
+
+      assert properties |> schema_value(:type) |> schema_value(:enum) |> MapSet.new(&to_string/1) ==
+               MapSet.new(~w[date datetime])
+    end
+
+    test "generated tool schema publishes the documented defaults" do
+      schema = tool_schema(Condition)
+      on_fail = property(schema, :on_fail)
+
+      assert MapSet.new(schema_value(on_fail, :enum), &to_string/1) ==
+               MapSet.new(~w[halt continue])
+
+      assert schema_value(on_fail, :default) == "halt"
+      assert schema_value(property(schema, :conditions), :default) == []
+    end
+
+    test "generated output schema describes the passthrough input and failed conditions" do
+      schema = output_schema(Condition)
+      failed_conditions = property(schema, :failed_conditions)
+
+      assert schema_type(property(schema, :passed)) == "boolean"
+      assert schema_type(property(schema, :input)) == "object"
+      assert schema_type(failed_conditions) == "array"
+      assert schema_type(schema_value(failed_conditions, :items)) == "object"
+    end
+  end
+
   defp persisted_run(action, params) do
     {:ok, workflow} =
       Workflows.create_workflow(%{
@@ -213,6 +313,8 @@ defmodule Zaq.Engine.Workflows.NestedActionSchemaContractTest do
   end
 
   defp tool_schema(action), do: Tool.to_tool(action).parameters_schema
+
+  defp output_schema(action), do: Schema.to_json_schema(action.output_schema())
 
   defp property(schema, key) do
     schema
