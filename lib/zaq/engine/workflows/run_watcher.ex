@@ -20,9 +20,10 @@ defmodule Zaq.Engine.Workflows.RunWatcher do
   ## Lifecycle
 
   The sentinel's job ends the instant either:
-  - `done/1` is called — the run's own `execute/2` call reached a normal,
-    finalized outcome (completed, failed-via-`finalize/2`, waiting for
-    approval, or paused). None of those are orphans; stop watching.
+  - `done/1` is called — the run's own `execute/2` call reached a durable,
+    handled outcome (completed, failed-via-`finalize/2`, waiting for approval,
+    paused, or explicitly interrupted after a rescued exception). None of
+    those are orphans; stop watching.
   - the driver dies unexpectedly (a `:DOWN` with any reason other than a
     `done/1` signal) — after a short grace window (to let a concurrent,
     *intentional* kill — `Workflows.cancel_run/1` / `pause_run/1` also
@@ -36,8 +37,9 @@ defmodule Zaq.Engine.Workflows.RunWatcher do
   `WorkflowRunAgent` deliberately lets an unexpected Runic-level crash
   propagate to its caller uncaught (see its moduledoc), and if `done/1` fired
   unconditionally on that unwind, orphan-recovery would be defeated for
-  exactly the case it exists to catch. `done/1` is therefore only called from
-  `WorkflowRunAgent`'s normal, non-raising return points.
+  exactly the case it exists to catch. `done/1` is therefore only called after
+  `WorkflowRunAgent` has produced a handled outcome or durably recovered a
+  rescued exception.
   """
 
   require Logger

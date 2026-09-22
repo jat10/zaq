@@ -42,7 +42,8 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgent do
   If a step raises, `StepRunner` marks its `StepRun` row as `"failed"` before
   re-raising. `finalize/2` treats any `"running"` or `"failed"` rows as failures and
   marks the run accordingly. Unexpected driver crashes mark the run interrupted
-  and propagate to the caller. Watchers are released on every exit.
+  and propagate to the caller. Handled outcomes release their watchers; unhandled
+  exits leave the watcher armed to recover the run.
 
   ## Lifecycle Events
 
@@ -69,10 +70,17 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgent do
   alias Runic.Workflow
   alias Runic.Workflow.{Fact, Runnable, Step}
   alias Zaq.Engine.Workflows
-  alias Zaq.Engine.Workflows.{ExecutionOutcome, MapNodeBuilder, PendingApproval, StepRunner}
+
+  alias Zaq.Engine.Workflows.{
+    ExecutionOutcome,
+    LifecycleNotifier,
+    MapNodeBuilder,
+    PendingApproval,
+    StepRunner
+  }
+
   alias Zaq.Engine.Workflows.RunWatcher
   alias Zaq.Engine.Workflows.WorkflowRun
-  alias Zaq.Event
 
   @spec execute(WorkflowRun.t(), keyword()) :: {:ok, WorkflowRun.t()} | {:error, term()}
   def execute(run, opts \\ [])
@@ -170,13 +178,18 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgent do
           message: Exception.message(exception)
         )
 
+        RunWatcher.done(watcher)
         reraise exception, __STACKTRACE__
     catch
       :throw, :pause_requested ->
         Logger.info("[workflow] run paused", run_id: run.id)
-        {:ok, Workflows.get_run!(run.id)}
-    after
-      RunWatcher.done(watcher)
+        result = {:ok, Workflows.get_run!(run.id)}
+        RunWatcher.done(watcher)
+        result
+    else
+      outcome ->
+        RunWatcher.done(watcher)
+        outcome
     end
   end
 
@@ -516,16 +529,8 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgent do
   end
 
   defp dispatch_workflow_event(action, run) do
-    event =
-      Event.new(%{action: action, run_id: run.id, workflow_id: run.workflow_id}, :engine,
-        name: :workflow,
-        actor: run.source_event && run.source_event.actor
-      )
-
-    node_router().dispatch(event)
+    LifecycleNotifier.notify(action, run)
   end
-
-  defp node_router, do: Application.get_env(:zaq, :node_router, Zaq.NodeRouter)
 
   defp workflows_mod,
     do: Application.get_env(:zaq, :workflow_run_agent_workflows_mod, Workflows)

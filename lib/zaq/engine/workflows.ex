@@ -19,6 +19,7 @@ defmodule Zaq.Engine.Workflows do
     Composition,
     CronTriggerWorker,
     DagBuilder,
+    LifecycleNotifier,
     StepApproval,
     Trigger,
     Workflow,
@@ -1693,15 +1694,10 @@ defmodule Zaq.Engine.Workflows do
   defp node_router, do: Application.get_env(:zaq, :node_router, Zaq.NodeRouter)
 
   # Dispatches a `:workflow` lifecycle event (e.g. `run.failed`) via NodeRouter.
-  # Mirrors the agent's lifecycle dispatch; used here for the build-failure path
-  # in `ensure_prepared_dag/1`, which the agent no longer owns.
+  # Used here for the build-failure path in `ensure_prepared_dag/1`, which the
+  # agent no longer owns.
   defp dispatch_workflow_event(action, run) do
-    %{action: action, run_id: run.id, workflow_id: run.workflow_id}
-    |> Zaq.Event.new(:engine,
-      name: :workflow,
-      actor: run.source_event && run.source_event.actor
-    )
-    |> node_router().dispatch()
+    LifecycleNotifier.notify(action, run)
   end
 
   # Renders a DAG build error into a human-readable run `log_summary` message.

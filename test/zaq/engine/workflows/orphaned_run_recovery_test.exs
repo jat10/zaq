@@ -33,6 +33,7 @@ defmodule Zaq.Engine.Workflows.OrphanedRunRecoveryTest do
 
   use Zaq.DataCase, async: false
 
+  alias Runic.Workflow.Step
   alias Zaq.Engine.Workflows
   alias Zaq.Engine.Workflows.Test.SignalListener
   alias Zaq.Engine.Workflows.WorkflowRunAgent
@@ -348,6 +349,76 @@ defmodule Zaq.Engine.Workflows.OrphanedRunRecoveryTest do
     assert recovered_step.errors["reason"] == "process_terminated"
     assert recovered_step.errors["message"] =~ "killed"
     assert recovered_run.status == "interrupted"
+  end
+
+  test "an internal Runic exit keeps RunWatcher armed to recover the run" do
+    {:ok, wf} =
+      Workflows.create_workflow(%{
+        name: "Internal Runic Exit #{System.unique_integer()}",
+        status: "active",
+        nodes: [%{name: "boom", type: "action", module: @ok_module, params: %{}, index: 0}],
+        edges: []
+      })
+
+    {:ok, run} = Workflows.create_run(wf, @source_event)
+    test_pid = self()
+
+    exit_step =
+      Step.new(%{
+        name: :internal_exit,
+        work: fn _input ->
+          {:ok, _step_run} =
+            Workflows.create_step_run(run, %{
+              step_name: "internal_exit",
+              step_index: 0,
+              status: "running"
+            })
+
+          send(test_pid, {:runic_step_ready, self()})
+
+          receive do
+            :exit_from_runic -> exit(:internal_runic_exit)
+          end
+        end
+      })
+
+    prepared_dag =
+      Runic.Workflow.new(:workflow)
+      |> Runic.Workflow.add(exit_step)
+
+    driver = spawn_driver(%{run | prepared_dag: prepared_dag})
+    driver_ref = Process.monitor(driver)
+
+    assert_receive {:runic_step_ready, ^driver}, 1_000
+
+    {:monitored_by, driver_monitors} = Process.info(driver, :monitored_by)
+
+    watcher =
+      Zaq.TaskSupervisor
+      |> Task.Supervisor.children()
+      |> Enum.find(&(&1 in driver_monitors))
+
+    assert is_pid(watcher), "expected RunWatcher to monitor the workflow driver"
+    watcher_ref = Process.monitor(watcher)
+
+    send(driver, :exit_from_runic)
+
+    assert_receive {:DOWN, ^driver_ref, :process, ^driver, :internal_runic_exit}, 1_000
+    assert_receive {:DOWN, ^watcher_ref, :process, ^watcher, :normal}, 1_000
+
+    recovered_run = Workflows.get_run!(run.id)
+
+    recovered_step =
+      run.id
+      |> Workflows.list_step_runs()
+      |> Enum.find(&(&1.step_name == "internal_exit"))
+
+    assert recovered_run.status == "interrupted"
+    assert recovered_run.finished_at
+    assert recovered_step.status == "failed"
+    assert recovered_step.errors["reason"] == "process_terminated"
+    assert recovered_step.errors["message"] =~ "internal_runic_exit"
+    assert recovered_step.finished_at
   end
 
   test "a realistic multi-fork batch run completes normally — RunWatcher never fires" do
