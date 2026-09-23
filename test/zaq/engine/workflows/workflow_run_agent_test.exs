@@ -696,6 +696,51 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgentTest do
       assert log =~ "reason=:waiting_notification_failed"
     end
 
+    for status <- ["completed", "waiting"] do
+      test "#{status} state survives a post-commit UI broadcast failure" do
+        status = unquote(status)
+
+        run =
+          if status == "waiting" do
+            {:ok, run} = Workflows.create_run(hitl_workflow(), @source_event)
+            run
+          else
+            create_run()
+          end
+
+        run_id = run.id
+        flush_dispatched()
+
+        stub(Zaq.NodeRouterMock, :dispatch, fn %Event{} = event ->
+          case event.request do
+            {:broadcast, _topic, {:run_updated, %{id: ^run_id, status: ^status}}} ->
+              assert Workflows.get_run!(run_id).status == status
+              raise "post-commit UI broadcast failed"
+
+            _ ->
+              event
+          end
+        end)
+
+        # Inspect the durable outcome even when dispatch unwinds through the driver.
+        # A caught notification error must not let the stale running struct overwrite it.
+        result =
+          try do
+            WorkflowRunAgent.execute(run)
+          rescue
+            error in RuntimeError -> {:raised, error}
+          end
+
+        assert Workflows.get_run!(run_id).status == status
+        assert {:ok, %{id: ^run_id, status: ^status}} = result
+
+        if status == "waiting" do
+          assert %{status: "pending", step_name: "hitl"} =
+                   Workflows.get_pending_approval(run_id)
+        end
+      end
+    end
+
     test "step failure dispatches run.started then run.failed" do
       run = create_run(@error_module)
       flush_dispatched()
