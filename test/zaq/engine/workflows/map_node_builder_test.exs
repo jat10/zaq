@@ -124,33 +124,71 @@ defmodule Zaq.Engine.Workflows.MapNodeBuilderTest do
       refute finished.status == "completed"
       assert Workflows.get_step_run_by_name(run.id, "m") == nil
     end
+
+    test "a completed sibling cannot hide an outer map error without a failed cursor" do
+      sibling =
+        struct(Step.Node, %{
+          name: "sibling",
+          type: "action",
+          module: "Zaq.Engine.Workflows.Test.OkAction",
+          params: %{},
+          index: 2
+        })
+
+      {:ok, run} = Workflows.create_run(one_item_hitl_map([sibling]), @source_event)
+
+      {:ok, cursor} =
+        Workflows.create_step_run(run, %{
+          step_name: "m/review[0]",
+          step_index: 0,
+          status: "running"
+        })
+
+      # Use the same inconsistent approval/cursor boundary as the single-map case.
+      # This time an independent leaf completes, so quiescence alone cannot prove
+      # that the native Runic fork's exception reached the durable run outcome.
+      {:ok, _} = Workflows.complete_step_run(cursor, %{})
+
+      {:ok, approval} =
+        Workflows.ensure_pending_approval(%{
+          workflow_run_id: run.id,
+          step_name: "m/review[0]"
+        })
+
+      assert {:ok, finished} = Workflows.start_run(run)
+      assert Workflows.get_terminal_step_run(run.id, "sibling").status == "completed"
+      assert Workflows.get_approval_by_token(approval.approval_token).status == "pending"
+      assert finished.status in ["failed", "interrupted"]
+      assert Workflows.get_run!(run.id).status == finished.status
+    end
   end
 
-  defp one_item_hitl_map do
+  defp one_item_hitl_map(extra_nodes \\ []) do
     Zaq.Repo.insert!(%Workflow{
       name: "Map fork failure #{System.unique_integer([:positive])}",
       status: "active",
-      nodes: [
-        struct(Step.Node, %{
-          name: "emit",
-          type: "action",
-          module: "Zaq.Engine.Workflows.Test.EmitIndexedItems",
-          params: %{count: 1},
-          index: 0
-        }),
-        struct(Step.Node, %{
-          name: "m",
-          type: "map",
-          params: %{
-            "over" => "items",
-            "strategy" => "fail_workflow",
-            "body" => [
-              %{"name" => "review", "type" => "action", "module" => @hitl, "params" => %{}}
-            ]
-          },
-          index: 1
-        })
-      ],
+      nodes:
+        [
+          struct(Step.Node, %{
+            name: "emit",
+            type: "action",
+            module: "Zaq.Engine.Workflows.Test.EmitIndexedItems",
+            params: %{count: 1},
+            index: 0
+          }),
+          struct(Step.Node, %{
+            name: "m",
+            type: "map",
+            params: %{
+              "over" => "items",
+              "strategy" => "fail_workflow",
+              "body" => [
+                %{"name" => "review", "type" => "action", "module" => @hitl, "params" => %{}}
+              ]
+            },
+            index: 1
+          })
+        ] ++ extra_nodes,
       edges: [struct(Step.Edge, %{from: "emit", to: "m"})]
     })
   end
