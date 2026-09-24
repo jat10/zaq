@@ -27,7 +27,9 @@ defmodule Zaq.Engine.Workflows.RunWatcher do
   - the driver dies unexpectedly (a `:DOWN` with any reason other than a
     `done/1` signal) — after a short grace window it re-checks the run's live
     status and calls
-    `Workflows.interrupt_run/1` only if the run is still non-terminal.
+    `Workflows.interrupt_run/1` only if the run is still `"pending"` or
+    `"running"`. Intentional pause/cancel commits under the run row lock before
+    the watcher can change that row; the grace window only debounces recovery.
 
   Either way the sentinel terminates immediately after — it is scoped to *this
   invocation's* outcome, not to the calling process's entire remaining

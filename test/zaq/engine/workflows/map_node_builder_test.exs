@@ -161,6 +161,68 @@ defmodule Zaq.Engine.Workflows.MapNodeBuilderTest do
       assert finished.status in ["failed", "interrupted"]
       assert Workflows.get_run!(run.id).status == finished.status
     end
+
+    test "a durable failed map item wins over a waiting item" do
+      wf =
+        Zaq.Repo.insert!(%Workflow{
+          name: "Failed then waiting map #{System.unique_integer([:positive])}",
+          status: "active",
+          nodes: [
+            struct(Step.Node, %{
+              name: "emit",
+              type: "action",
+              module: "Zaq.Engine.Workflows.Test.EmitItems",
+              params: %{},
+              index: 0
+            }),
+            struct(Step.Node, %{
+              name: "m",
+              type: "map",
+              params: %{
+                "over" => "items",
+                "strategy" => "fail_workflow",
+                "body" => [
+                  %{
+                    "name" => "maybe_fail",
+                    "type" => "action",
+                    "module" => "Zaq.Engine.Workflows.Test.FailOddN",
+                    "params" => %{}
+                  },
+                  %{"name" => "review", "type" => "action", "module" => @hitl, "params" => %{}}
+                ]
+              },
+              index: 1
+            })
+          ],
+          edges: [struct(Step.Edge, %{from: "emit", to: "m"})]
+        })
+
+      {:ok, run} = Workflows.create_run(wf, @source_event)
+
+      # Persist the first failed fork before dispatch. Runic may prepare fork
+      # runnables in either order; both orders must honor the durable failure.
+      {:ok, cursor} =
+        Workflows.create_step_run(run, %{
+          step_name: "m/maybe_fail[0]",
+          step_index: 0,
+          status: "running"
+        })
+
+      {:ok, _} = Workflows.fail_step_run(cursor, %{reason: "odd_n:1"})
+
+      assert {:ok, run} = Workflows.start_run(run)
+      assert Workflows.get_terminal_step_run(run.id, "m/maybe_fail[0]").status == "failed"
+      assert Workflows.get_terminal_step_run(run.id, "m/review[1]").status == "waiting"
+      assert run.status == "failed"
+      assert Workflows.get_run!(run.id).status == "failed"
+
+      approval = Workflows.get_step_approval(run.id, "m/review[1]")
+
+      assert {:error, :not_waiting} =
+               Workflows.approve_step(%{run | status: "waiting"}, approval, %{}, nil)
+
+      assert Workflows.get_run!(run.id).status == "failed"
+    end
   end
 
   defp one_item_hitl_map(extra_nodes \\ []) do

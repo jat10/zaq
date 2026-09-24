@@ -830,6 +830,22 @@ defmodule Zaq.Engine.Workflows.Test.FailEvenN do
   end
 end
 
+defmodule Zaq.Engine.Workflows.Test.FailOddN do
+  @moduledoc "Fails the first odd map item while later even items may wait for approval."
+
+  use Jido.Action,
+    name: "test_fail_odd_n",
+    schema: [n: [type: :any, required: true]],
+    output_schema: [doubled: [type: :integer, required: true]]
+
+  use Zaq.Engine.Workflows.Action
+
+  @impl Jido.Action
+  def run(%{n: n}, _context) do
+    if rem(n, 2) == 1, do: {:error, "odd_n:#{n}"}, else: {:ok, %{doubled: n * 2}}
+  end
+end
+
 defmodule Zaq.Engine.Workflows.Test.FlakyTwice do
   @moduledoc """
   Map body step that fails its first two attempts per item, then succeeds — proves
