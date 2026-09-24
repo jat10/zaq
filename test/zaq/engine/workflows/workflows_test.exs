@@ -1090,6 +1090,28 @@ defmodule Zaq.Engine.Workflows.WorkflowsCoreTest do
       assert completed.finished_at != nil
       assert completed.errors == nil
     end
+
+    test "does not overwrite a newer terminal cursor through a stale running struct" do
+      workflow = create_workflow()
+      run = create_run(workflow)
+
+      {:ok, stale_running} =
+        Workflows.create_step_run(run, %{
+          step_name: "fetch",
+          step_index: 0,
+          status: "running"
+        })
+
+      newer_failure =
+        stale_running
+        |> Ecto.Changeset.change(status: "failed", errors: %{reason: "recovered"})
+        |> Repo.update!()
+
+      assert {:ok, returned} = Workflows.complete_step_run(stale_running, %{value: "late"})
+      assert returned.status == "failed"
+      assert Repo.reload!(newer_failure).status == "failed"
+      assert Repo.reload!(newer_failure).results == nil
+    end
   end
 
   describe "fail_step_run/3" do
@@ -1335,6 +1357,18 @@ defmodule Zaq.Engine.Workflows.WorkflowsCoreTest do
     end
   end
 
+  describe "cancel_run/2" do
+    test "a stale running struct cannot cancel a run already completed in the database" do
+      wf = create_workflow(@valid_active_attrs)
+      run = create_run(wf)
+      {:ok, stale_running} = Workflows.update_run(run, %{status: "running"})
+      {:ok, completed} = Workflows.update_run(stale_running, %{status: "completed"})
+
+      assert {:error, :already_finished} = Workflows.cancel_run(stale_running)
+      assert Workflows.get_run!(completed.id).status == "completed"
+    end
+  end
+
   # --- pause_run/2 ---
 
   describe "pause_run/2" do
@@ -1361,6 +1395,16 @@ defmodule Zaq.Engine.Workflows.WorkflowsCoreTest do
       {:ok, completed} = Workflows.update_run(run, %{status: "completed"})
 
       assert {:error, :not_running} = Workflows.pause_run(completed)
+    end
+
+    test "a stale running struct cannot pause a run already completed in the database" do
+      wf = create_workflow(@valid_active_attrs)
+      run = create_run(wf)
+      {:ok, stale_running} = Workflows.update_run(run, %{status: "running"})
+      {:ok, completed} = Workflows.update_run(stale_running, %{status: "completed"})
+
+      assert {:error, :not_running} = Workflows.pause_run(stale_running)
+      assert Workflows.get_run!(completed.id).status == "completed"
     end
 
     test "returns :not_running for a failed run" do

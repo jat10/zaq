@@ -20,7 +20,7 @@ defmodule Zaq.Engine.Workflows.WorkflowRun do
                      completing: a branch was pruned by a false edge condition or
                      starved before reaching the workflow's end. Not a failure (no
                      step errored) but not a success either — the run stopped short
-                     of its end. See `WorkflowRunAgent.finalize/2`.
+                     of its end. See `WorkflowRunAgent.finalize/3`.
   - `failed`       — a step exceeded retries or a fatal error occurred
   - `cancelled`    — explicitly cancelled before completion
   - `interrupted`  — node restarted while run was executing; use
