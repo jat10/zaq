@@ -94,10 +94,9 @@ Trigger fires → Workflows.create_run/4   # snapshot steps + settings → Workf
   └─> Workflows.start_run/2
         ├─ ensure_prepared_dag/1
         │    ├─ reuse run.prepared_dag if present, else DagBuilder.build(steps_snapshot, run_id: run.id)
-        │    └─ [build failure] → update_run "failed" + dispatch "run.failed" → {:error, reason}  (no run.started)
-        ├─ dispatch_async {:run_started, run}
+        │    └─ [build failure] → lock and fail only pending/paused row + dispatch "run.failed" → {:error, reason}  (no run.started)
         └─> WorkflowRunAgent.execute/2          # requires run.prepared_dag, else {:error, :missing_prepared_dag}
-              ├─ update_run status: "running"
+              ├─ lock current row: pending/paused → running; pending start emits {:run_started, run}
               ├─ dispatch "run.started"
               ├─ seed root → prepare_for_dispatch → execute one runnable → inspect → apply
               │    └─ StepRunner.run/2 (per step; map forks each write their own Step.Run)
@@ -242,7 +241,7 @@ pending → running → completed
 
 - `waiting` means a `HumanInTheLoop` step has suspended execution pending approval. Call `Engine.Api.handle_event(event, :workflow, ctx)` with `action: "run.approve"` or `action: "run.reject"` to proceed.
 - `incomplete` means execution reached quiescence without any terminal (leaf) node of the authored DAG completing — a branch was pruned by a false edge condition (`EdgeStep` leaves the downstream subgraph rowless) or otherwise starved. No step errored, so it is not `failed`; but the run stopped short of its end, so it is not `completed` either. `finalize/3` records the unreached leaves in `log_summary.unreached_leaves`. Note: a guarded "nothing to do" terminal step (e.g. `notify` behind `count > 0` when `count == 0`) also yields `incomplete` — give such workflows an explicit else-branch to a real leaf if a `completed` outcome is desired.
-- A run can also reach `cancelled` (via `Workflows.cancel_run/2`) or `interrupted`. `interrupt_run/2` locks and reloads the authoritative row and only transitions `pending`/`running`; stale caller structs cannot overwrite `waiting`, completed, or other newer durable states. On engine boot, `Zaq.Engine.Workflows.StartupRecovery` finds runs stuck in `"running"`/`"pending"` (node restarted mid-flight) and enqueues one `RunRecoveryWorker` Oban job per run, which marks each run `"interrupted"` via `Workflows.interrupt_run/1`.
+- A run can also reach `cancelled` (via `Workflows.cancel_run/2`) or `interrupted`. Start and resume use a locked row to permit only `pending → running` or `paused → running`; stale caller structs cannot reopen newer states. Pause and cancel lock the current row, update the run and active steps, terminate the driver, then commit. RunWatcher does not depend on its grace interval to distinguish an intentional stop. `interrupt_run/2` locks and reloads the authoritative row and only transitions `pending`/`running`; stale caller structs cannot overwrite `waiting`, completed, or other newer durable states. On engine boot, `Zaq.Engine.Workflows.StartupRecovery` finds runs stuck in `"running"`/`"pending"` (node restarted mid-flight) and enqueues one `RunRecoveryWorker` Oban job per run, which marks each run `"interrupted"` via `Workflows.interrupt_run/1`.
 
 ---
 

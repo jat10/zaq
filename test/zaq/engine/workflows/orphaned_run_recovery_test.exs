@@ -255,14 +255,102 @@ defmodule Zaq.Engine.Workflows.OrphanedRunRecoveryTest do
     assert finished.status == "completed"
   end
 
-  # cancel_run/1 and pause_run/1 both hard-kill the driver (via
-  # `Registry.lookup(RunRegistry, run.id)` + `Process.exit(pid, :kill)`) and
-  # then commit their own status update — the exact race RunWatcher's grace
-  # period exists to lose gracefully. These prove it with a *real* driver
+  # cancel_run/1 and pause_run/1 persist their status before hard-killing the
+  # driver (via `Registry.lookup(RunRegistry, run.id)` + `Process.exit(pid, :kill)`).
+  # These prove it with a *real* driver
   # process (registered via the real `Registry.register/3` call inside
   # `WorkflowRunAgent.execute/2`), not the synthetic one in
   # `run_watcher_test.exs`.
   describe "cancel_run/1 and pause_run/1 race RunWatcher — the intentional kill must win" do
+    for {operation, expected} <- [{:pause_run, "paused"}, {:cancel_run, "cancelled"}] do
+      test "#{operation} cannot lose when persistence is held beyond watcher recovery" do
+        wf = sleep_workflow(2_000)
+        {:ok, run} = Workflows.create_run(wf, @source_event)
+        driver = spawn_driver(run)
+        assert :ok = wait_until_running(run.id, "sleep_step", 1_000)
+        assert :ok = await_driver_parked_in_sleep(driver)
+
+        parent = self()
+
+        stub(Zaq.NodeRouterMock, :dispatch, fn event ->
+          send(parent, {:lifecycle_event, event})
+          event
+        end)
+
+        {:monitored_by, driver_monitors} = Process.info(driver, :monitored_by)
+
+        watcher =
+          Zaq.TaskSupervisor
+          |> Task.Supervisor.children()
+          |> Enum.find(&(&1 in driver_monitors))
+
+        assert is_pid(watcher)
+        watcher_ref = Process.monitor(watcher)
+        callers = [parent | Process.get(:"$callers", [])]
+        operation = unquote(operation)
+        handler_id = "workflow-settle-#{System.unique_integer([:positive])}"
+
+        :ok =
+          :telemetry.attach(
+            handler_id,
+            [:zaq, :repo, :query],
+            fn _event, _measurements, metadata, _config ->
+              if Process.get(:hold_workflow_settle) &&
+                   String.starts_with?(metadata.query, "UPDATE") &&
+                   String.contains?(metadata.query, "workflow_action_results") do
+                count = Process.get(:workflow_step_updates, 0) + 1
+                Process.put(:workflow_step_updates, count)
+
+                if count == 2 do
+                  send(parent, {:held_after_driver_kill, self()})
+
+                  receive do
+                    :release_persistence -> :ok
+                  end
+                end
+              end
+            end,
+            nil
+          )
+
+        api =
+          spawn(fn ->
+            Process.put(:"$callers", callers)
+            Process.put(:hold_workflow_settle, true)
+
+            receive do
+              :go -> :ok
+            end
+
+            send(parent, {:api_result, apply(Workflows, operation, [Workflows.get_run!(run.id)])})
+          end)
+
+        :erlang.trace_pattern({Workflows, :get_run, 1}, true, [:local])
+        :erlang.trace(watcher, true, [:call, {:tracer, self()}])
+        send(api, :go)
+
+        try do
+          assert_receive {:held_after_driver_kill, ^api}, 1_000
+          assert_receive {:trace, ^watcher, :call, {Workflows, :get_run, [run_id]}}, 1_000
+          assert run_id == run.id
+          send(api, :release_persistence)
+          assert_receive {:api_result, result}, 1_000
+          assert match?({:ok, %{status: unquote(expected)}}, result)
+          assert_receive {:DOWN, ^watcher_ref, :process, ^watcher, :normal}, 1_000
+          assert Workflows.get_run!(run.id).status == unquote(expected)
+
+          assert Enum.find(Workflows.list_step_runs(run.id), &(&1.step_name == "sleep_step")).status ==
+                   unquote(expected)
+
+          refute_received {:lifecycle_event, %{request: %{action: "run.interrupted"}}}
+        after
+          if Process.alive?(api), do: send(api, :release_persistence)
+          :erlang.trace_pattern({Workflows, :get_run, 1}, false, [:local])
+          :telemetry.detach(handler_id)
+        end
+      end
+    end
+
     test "cancel_run/1 during a live step ends the run cancelled, not interrupted" do
       wf = sleep_workflow(2_000)
       {:ok, run} = Workflows.create_run(wf, @source_event)
