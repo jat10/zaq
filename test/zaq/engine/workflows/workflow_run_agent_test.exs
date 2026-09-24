@@ -49,6 +49,18 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgentTest do
     run
   end
 
+  defp collect_dispatched_actions(actions) do
+    receive do
+      {:dispatched, %Event{request: %{action: action}}} ->
+        collect_dispatched_actions([action | actions])
+
+      {:dispatched, _event} ->
+        collect_dispatched_actions(actions)
+    after
+      0 -> Enum.reverse(actions)
+    end
+  end
+
   defp probe_workflow do
     {:ok, wf} =
       Workflows.create_workflow(%{
@@ -116,6 +128,63 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgentTest do
 
       {:ok, updated} = WorkflowRunAgent.execute(run)
       assert updated.status == "completed"
+    end
+  end
+
+  describe "execute/1 — competing terminal transitions" do
+    for {finalization, module, step_status, forbidden_event} <- [
+          {:completed, @ok_module, "completed", "run.completed"},
+          {:failed, @error_module, "failed", "run.failed"}
+        ] do
+      test "a committed interruption survives stale #{finalization} finalization" do
+        run = create_run(unquote(module))
+        test_pid = self()
+        step_status = unquote(step_status)
+
+        stub(Zaq.NodeRouterMock, :dispatch, fn event ->
+          case event.request do
+            {:broadcast, _topic, {:step_updated, %{status: ^step_status}}} ->
+              send(test_pid, {:driver_ready_to_finalize, self()})
+
+              receive do
+                :continue_after_interruption -> :ok
+              end
+
+            _ ->
+              :ok
+          end
+
+          send(test_pid, {:dispatched, event})
+          event
+        end)
+
+        callers = [self() | Process.get(:"$callers", [])]
+
+        driver =
+          spawn(fn ->
+            Process.put(:"$callers", callers)
+            send(test_pid, {:driver_result, WorkflowRunAgent.execute(run)})
+          end)
+
+        assert_receive {:driver_ready_to_finalize, ^driver}, 3_000
+        assert Workflows.get_run!(run.id).status == "running"
+
+        assert {:ok, %{status: "interrupted"}} =
+                 run.id
+                 |> Workflows.get_run!()
+                 |> Workflows.interrupt_run(reason: "recovery", message: "driver presumed lost")
+
+        send(driver, :continue_after_interruption)
+
+        assert_receive {:driver_result, {:ok, %{status: "interrupted"}}}, 3_000
+        assert Workflows.get_run!(run.id).status == "interrupted"
+        assert [%{status: ^step_status}] = Workflows.list_step_runs(run.id)
+
+        events = collect_dispatched_actions([])
+        assert "run.started" in events
+        assert "run.interrupted" in events
+        refute unquote(forbidden_event) in events
+      end
     end
   end
 

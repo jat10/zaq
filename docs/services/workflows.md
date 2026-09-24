@@ -68,6 +68,21 @@ before applying it. Pending results never reach graph reducers, deferred apply
 hooks, downstream steps or FanIn; no remaining sibling executes in that pass.
 The existing authorized approval lifecycle owns continuation after process exit.
 
+### Action reuse assessment (#706)
+
+| Operation | Decision and contract | Execution / permission boundary | Verification |
+|---|---|---|---|
+| Validated action execution | **Reuse** `Jido.Exec.run/4`. It owns input defaults and validation, hooks, output validation, structured errors, retries, per-attempt timeouts and process cleanup. | `StepRunner` supplies normalized params, actor/source/permission context and explicit `ExecutionPolicy` options. The engine never calls action `run/2` directly. Workflow eligibility does not imply Registry exposure as an agent tool. | `validated_execution_test.exs`, `execution_policy_test.exs`, `step_runner_test.exs`, and the production nested-schema contract suite exercise the real Jido boundary. |
+| Workflow execution policy | **Local-only** `ExecutionPolicy`: selects wrapper/inner Jido options and rejects an inherited wrapper deadline. It has no independently useful business side effect, actor permission, or standalone Action contract. | Consumed only by DAG, map and step execution; Jido remains the executor. | Policy tests cover retryability, retry count, timeout and deadline rejection. |
+| Execution result interpretation | **Local-only** `ExecutionOutcome`: a pure adapter from Jido result envelopes to workflow success, failure, skip or candidate pending control. | It cannot suspend or persist; `StepRunner`/the driver must verify typed control against durable state. | Outcome tests cover pairs/triples, malformed metadata, retained error metadata and untrusted control. |
+| Durable approval control | **Local-only** `PendingApproval` plus `HumanInTheLoop` and `Workflows` approval transactions. Control carries run, step and token identity; it is not business output. | Suspension requires exact durable association. Approval/rejection mutations enter through `Engine.Api` authorization; nil identity is not implicit permission. No agent-tool key is added. | Suspension-driver and workflow integration tests cover producer trust, reload, repeated resume, approval, rejection and map replay. |
+| Lifecycle arbitration and notification | **Local-only** locked transitions in `Workflows`; **local-only** observational dispatch in `LifecycleNotifier`. These are internal state-machine/notification boundaries, not composable user operations. | The database row and cursor are reloaded under a lock before competing terminal writes. `NodeRouter` notification happens after commit and cannot redefine state on error, raise, throw or exit. | Workflow lifecycle, orphan recovery, notifier and reverse-race regressions assert final durable state and emitted events. |
+
+No new business operation or missing reusable Action was introduced. `Batch`
+remains an intentional build-time `Node` translator rather than a runtime Action;
+existing action modules remain the reusable unit for code, workflows and (only
+when explicitly allowlisted) agent tools.
+
 ### Current execution lifecycle
 
 DAG preparation is owned by the run module (`Workflows`), not the agent. `ensure_prepared_dag/1` builds the DAG before the agent ever runs; a build failure marks the run `failed` and dispatches `run.failed` **before** the run starts (so a build failure never emits `run.started`). The agent only *runs* a pre-built DAG.
@@ -93,11 +108,12 @@ Trigger fires → Workflows.create_run/4   # snapshot steps + settings → Workf
               │         └─ update Step.Run status: "completed" | "failed" | "waiting"
               │    └─ pending → discard result before apply → stop this pass
               ├─ catch :pause_requested → return paused run (no dispatch)
-              └─ finalize/2
-                   ├─ any Step.Run "waiting"  → run = "waiting" + dispatch "run.waiting"
-                   ├─ any Step.Run "failed" or "running" → run = "failed" + dispatch "run.failed"
-                   ├─ no leaf (terminal) node completed → run = "incomplete" + dispatch "run.incomplete"
-                   └─ a leaf node completed → run = "completed" + dispatch "run.completed"
+              └─ finalize/3
+                   └─ Workflows.finalize_run/3 locks and reloads the run
+                        ├─ current "running" → persist waiting/failed/incomplete/completed
+                        │                      then dispatch the matching event
+                        └─ newer paused/cancelled/interrupted/terminal state → unchanged,
+                                                                                 no event
 ```
 
 ---
@@ -190,11 +206,11 @@ Audit input preserves submitted parameters before Jido defaults and transforms. 
 |---|---|---|---|
 | condition true (or absent) + mapping succeeds | `completed` | only after the mapping has been applied — a crash can never leave a `completed` row for an edge that produced no fact | downstream node runs normally |
 | condition false (`ConditionNotMet`) | `skipped` | before the raise | downstream subgraph pruned (no row for it); run may finalize `incomplete` if no leaf is ever reached |
-| any other unexpected raise (bad op, mapping crash, etc.) | `failed` | before re-raising the original exception | downstream subgraph pruned; `finalize/2` sees the `failed` row and marks the run `"failed"` with the edge in `failed_steps`, instead of a silent `incomplete` |
+| any other unexpected raise (bad op, mapping crash, etc.) | `failed` | before re-raising the original exception | downstream subgraph pruned; `finalize/3` sees the `failed` row and marks the run `"failed"` with the edge in `failed_steps`, instead of a silent `incomplete` |
 
 An edge with no `run_id` (uninstrumented evaluation) writes no row in any of the three cases.
 
-After the sequential execute/inspect/apply driver returns, `WorkflowRunAgent.finalize/2` queries all `Step.Run` rows for the run — this includes `EdgeStep`'s own guard rows, not just `StepRunner`-wrapped node rows. Any row still at `"running"` (process crash mid-action) or `"failed"` causes the run to be marked `"failed"`.
+The sequential driver classifies each executed Runic `Runnable` before applying it. A failed Runnable without a normal failed/running cursor is persisted immediately as a failed workflow run, then carried to `WorkflowRunAgent.finalize/3`; independent graph work cannot erase that observation. A false `EdgeStep` condition remains handled routing because its durable cursor is `skipped`. After the driver returns, `finalize/3` also queries all `Step.Run` rows for the run — including `EdgeStep` guard rows. Any observed failed Runnable or row still at `"running"`/`"failed"` causes the run to remain `"failed"`.
 
 On resume, `StepRunner` reads the most recent replayable row for the exact effective
 step name, including composition/fork suffixes. Completed rows replay business
@@ -225,8 +241,8 @@ pending → running → completed
 ```
 
 - `waiting` means a `HumanInTheLoop` step has suspended execution pending approval. Call `Engine.Api.handle_event(event, :workflow, ctx)` with `action: "run.approve"` or `action: "run.reject"` to proceed.
-- `incomplete` means execution reached quiescence without any terminal (leaf) node of the authored DAG completing — a branch was pruned by a false edge condition (`EdgeStep` leaves the downstream subgraph rowless) or otherwise starved. No step errored, so it is not `failed`; but the run stopped short of its end, so it is not `completed` either. `finalize/2` records the unreached leaves in `log_summary.unreached_leaves`. Note: a guarded "nothing to do" terminal step (e.g. `notify` behind `count > 0` when `count == 0`) also yields `incomplete` — give such workflows an explicit else-branch to a real leaf if a `completed` outcome is desired.
-- A run can also reach `cancelled` (via `Workflows.cancel_run/2`) or `interrupted`. On engine boot, `Zaq.Engine.Workflows.StartupRecovery` finds runs stuck in `"running"`/`"pending"` (node restarted mid-flight) and enqueues one `RunRecoveryWorker` Oban job per run, which marks each run `"interrupted"` via `Workflows.interrupt_run/1`.
+- `incomplete` means execution reached quiescence without any terminal (leaf) node of the authored DAG completing — a branch was pruned by a false edge condition (`EdgeStep` leaves the downstream subgraph rowless) or otherwise starved. No step errored, so it is not `failed`; but the run stopped short of its end, so it is not `completed` either. `finalize/3` records the unreached leaves in `log_summary.unreached_leaves`. Note: a guarded "nothing to do" terminal step (e.g. `notify` behind `count > 0` when `count == 0`) also yields `incomplete` — give such workflows an explicit else-branch to a real leaf if a `completed` outcome is desired.
+- A run can also reach `cancelled` (via `Workflows.cancel_run/2`) or `interrupted`. `interrupt_run/2` locks and reloads the authoritative row and only transitions `pending`/`running`; stale caller structs cannot overwrite `waiting`, completed, or other newer durable states. On engine boot, `Zaq.Engine.Workflows.StartupRecovery` finds runs stuck in `"running"`/`"pending"` (node restarted mid-flight) and enqueues one `RunRecoveryWorker` Oban job per run, which marks each run `"interrupted"` via `Workflows.interrupt_run/1`.
 
 ---
 
@@ -243,9 +259,9 @@ All workflow lifecycle changes are broadcast as a single `:workflow` `NodeRouter
 | `"run.failed"` | `Zaq.Engine.Workflows.WorkflowRunAgent` (runtime) / `Zaq.Engine.Workflows.ensure_prepared_dag/1` (build failure, before `run.started`) | `run_id`, `workflow_id` |
 | `"run.waiting"` | `Zaq.Engine.Workflows.WorkflowRunAgent` | `run_id`, `workflow_id` |
 
-`"run.waiting"` is dispatched by `finalize/2` when a `HumanInTheLoop` step has suspended the run. See [Human-in-the-Loop](#human-in-the-loop).
+`"run.waiting"` is dispatched by `finalize/3` when a `HumanInTheLoop` step has suspended the run. See [Human-in-the-Loop](#human-in-the-loop).
 
-Dispatch goes through `NodeRouter.dispatch/1` (async) to the Channels role, which re-broadcasts over `Zaq.PubSub` via `Zaq.Channels.Api` — engine code never calls `Phoenix.PubSub` directly.
+Dispatch goes through `NodeRouter.dispatch/1` (async) to the Channels role, which re-broadcasts over `Zaq.PubSub` via `Zaq.Channels.Api` — engine code never calls `Phoenix.PubSub` directly. UI broadcasts and lifecycle notifications occur after persistence and are observational: returned errors, raises, throws, or exits are logged and cannot unwind or redefine the committed run state.
 
 ### Subscribing
 
@@ -465,25 +481,56 @@ The prepared DAG is built once (by `ensure_prepared_dag/1`) from `run.steps_snap
 
 ### Executor migration rollout (#706)
 
-Before deploying the validated executor, inventory authorable workflow definitions
-and nonterminal `WorkflowRun.steps_snapshot` values, including nested map/Batch
-bodies. Check referenced modules against `Action.validate/1`, validate their input
-and output schemas, and review Condition inputs and `on_fail` values. Missing
-static Condition input needs a mapping review: a Batch item or explicit edge/
-trigger mapping may supply it. Normalize JSON aliases in the owning Action's
-validation hook; preserve required fields and output validation.
+Rollout ownership and environment-specific evidence belong in `zaq-qzr.8`. Before
+deployment, inventory both authorable definitions and every nonterminal
+`WorkflowRun.steps_snapshot` (`pending`, `running`, `waiting`, `paused`). Recursively
+inspect nested map/Batch bodies, not only top-level nodes. Resolve runtime Actions
+with `Action.validate/1`; validate translator nodes through their `Node.validate/1`
+contract. Review input/output schemas, Condition `input`/`on_fail`, edge mappings,
+HITL cursors and pending approvals. A Condition without static input is compatible
+only when its Batch delivery or explicit edge/trigger mapping supplies that input.
 
-Repair authorable definitions for future runs through the normal changeset/API
-boundary. Active snapshots remain immutable: drain incompatible runs or explicitly
-manage their cancellation/restart before changing executors. Deploy the HITL
-producer, sequential driver, replay readers and Jido boundary together; old and
-new workers must not execute the same active run. Rollback must retain compatible
-readers for new suspensions or first drain those runs. Verify approval/rejection
-through Engine API after reloading a suspended run from the database.
+Classify each stored object as compatible, repairable authorable definition, or
+incompatible immutable snapshot. Repair only authorable definitions through their
+normal changeset/API. Never rewrite an active snapshot: drain it, finish it with the
+old deployment, or record an explicit cancellation/restart disposition.
 
-Record the target-environment inventory and disposition of incompatible snapshots
-in the rollout issue before deploying; local test success does not establish
-compatibility of deployed definitions.
+Deployment sequence:
+
+1. Record the target inventory and dispositions in `zaq-qzr.8`; block deployment on
+   unresolved modules, schemas, Condition mappings, approvals or snapshots.
+2. Stop new workflow admission and drain/quiesce old workers. Confirm no old and new
+   worker can claim the same active run.
+3. Deploy `HumanInTheLoop`, typed control, `StepRunner`, sequential driver, replay
+   readers, execution policy/outcome handling and Jido boundary as one compatible set.
+4. Run compatibility probes, then reload a suspended run and exercise approve and
+   reject through `Engine.Api`; verify durable status/cursor/approval state and that
+   downstream effects occur at most once.
+5. Re-enable admission and monitor failed/interrupted/waiting counts plus lifecycle
+   notification errors.
+
+Rollback must first stop new workers and admissions. If the old release cannot read
+new typed suspensions, keep the new compatible readers available until those runs
+are approved, rejected or explicitly drained; otherwise roll back the atomic set and
+verify the same reload/approval probes before resuming traffic. Never allow mixed
+old/new workers to execute one active run.
+
+The repository and branch-local database inventory is pre-merge evidence only; it
+does not establish target compatibility. Actual target inventory, drain/quiescence,
+single-version worker confirmation and smoke results are pre-deployment gates.
+
+#### E2E disposition
+
+No new browser E2E is required: this migration changes backend execution and durable
+lifecycle contracts, not approval-card UX or routing. `workflow_run_live_test.exs`
+already covers rendering and clicking approval/rejection plus dispatch failures.
+`engine/api_test.exs` covers authorized and denied approve/reject requests through
+the API boundary, which reloads the run and approval by id. Backend integration/
+property suites provide the stronger seam for process exit, database reload, replay,
+repeated resume and nested map suspension: see `workflows_test.exs`,
+`suspension_driver_test.exs` and `step_runner_test.exs`.
+Existing browser suites remain required when otherwise selected by the validation
+workflow, but browser coverage is not evidence of snapshot compatibility.
 
 ### Approval lifecycle
 
