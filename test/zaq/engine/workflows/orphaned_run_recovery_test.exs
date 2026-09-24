@@ -752,7 +752,33 @@ defmodule Zaq.Engine.Workflows.OrphanedRunRecoveryTest do
           status: "running"
         })
 
+      test_pid = self()
+
+      stub(Zaq.NodeRouterMock, :dispatch, fn event ->
+        case event.request do
+          {:broadcast, _, {:step_updated, %{step_name: "abandoned_step", status: status}}} ->
+            send(test_pid, {:orphan_step_broadcast, status})
+
+          {:broadcast, _, {:run_updated, %{status: "failed"}}} ->
+            status =
+              run.id
+              |> Workflows.list_step_runs()
+              |> Enum.find(&(&1.step_name == "abandoned_step"))
+              |> Map.fetch!(:status)
+
+            send(test_pid, {:step_status_at_failed_broadcast, status})
+
+          _ ->
+            :ok
+        end
+
+        event
+      end)
+
       assert {:ok, finished_run} = WorkflowRunAgent.execute(run)
+      assert_received {:orphan_step_broadcast, "failed"}
+      refute_received {:step_status_at_failed_broadcast, "running"}
+      assert_received {:step_status_at_failed_broadcast, "failed"}
 
       # finalize/2 notices the stray "running" row and correctly fails the run
       # because of it ("crash cursor")...
@@ -773,6 +799,10 @@ defmodule Zaq.Engine.Workflows.OrphanedRunRecoveryTest do
       assert reloaded_stray.status == "failed"
       assert reloaded_stray.errors["reason"] == "orphaned_step"
       refute is_nil(reloaded_stray.finished_at)
+
+      assert Enum.any?(Workflows.get_run!(run.id).log_summary["timeline"], fn entry ->
+               entry["step_name"] == "abandoned_step" and entry["status"] == "failed"
+             end)
     end
   end
 end

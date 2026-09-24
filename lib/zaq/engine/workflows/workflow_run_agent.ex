@@ -354,6 +354,15 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgent do
       failed_runnable ->
         fail_run(run, step_runs, duration_ms, runnable_failure_message(failed_runnable))
 
+      # A row stuck at "running" after execution means the action raised and
+      # never updated itself — treat it as a failure (crash cursor).
+      # `failed_fatal` rows (isolated per-fork `map` failures under
+      # :skip_and_continue/:retry) are recorded for visibility but never fail the
+      # run. A failed row wins over a later waiting sibling so the failure cannot
+      # disappear behind a suspension.
+      Enum.any?(step_runs, &(&1.status in ["failed", "running"])) ->
+        fail_run(run, step_runs, duration_ms)
+
       # A "waiting" StepRun means a HumanInTheLoop step suspended execution.
       # StepRunner already marked the StepRun; we transition the run here.
       Enum.any?(step_runs, &(&1.status == "waiting")) ->
@@ -364,15 +373,6 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgent do
         )
 
         persist_finalization(run, %{status: "waiting"}, "run.waiting")
-
-      # A row stuck at "running" after execution means the action raised and
-      # never updated itself — treat it as a failure (crash cursor).
-      # `failed_fatal` rows (isolated per-fork `map` failures under
-      # :skip_and_continue/:retry) are recorded for visibility but never fail the
-      # run — they are not in this list, so the aggregate map row carries the
-      # run-relevant status.
-      Enum.any?(step_runs, &(&1.status in ["failed", "running"])) ->
-        fail_run(run, step_runs, duration_ms)
 
       # No step errored, yet no terminal (leaf) step of the authored DAG completed.
       # Execution reached quiescence short of the workflow's end — a branch was
@@ -453,23 +453,15 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgent do
       duration_ms: duration_ms
     )
 
-    result =
-      persist_finalization(
-        run,
-        %{
-          status: "failed",
-          finished_at: DateTime.utc_now(:second),
-          log_summary: log_summary
-        },
-        "run.failed"
-      )
-
-    # Resolve the stuck row(s) themselves, not just the run's aggregate
-    # status — otherwise a step is left "running" forever alongside a run
-    # that shows "failed".
-    Workflows.fail_orphaned_step_runs(run.id)
-
-    result
+    persist_finalization(
+      run,
+      %{
+        status: "failed",
+        finished_at: DateTime.utc_now(:second),
+        log_summary: log_summary
+      },
+      "run.failed"
+    )
   end
 
   defp persist_finalization(run, attrs, event_name) do

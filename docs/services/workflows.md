@@ -110,6 +110,7 @@ Trigger fires → Workflows.create_run/4   # snapshot steps + settings → Workf
               └─ finalize/3
                    └─ Workflows.finalize_run/3 locks and reloads the run
                         ├─ current "running" → persist waiting/failed/incomplete/completed
+                        │                      (failed also settles orphaned running steps atomically)
                         │                      then dispatch the matching event
                         └─ newer paused/cancelled/interrupted/terminal state → unchanged,
                                                                                  no event
@@ -229,7 +230,7 @@ status, so stale decisions cannot mutate a later lifecycle state.
 pending → running → completed
                  → incomplete
                  → failed
-                 → waiting → running (on approve → resume)
+                 → waiting → paused → running (on approve → resume)
                                → completed
                                → failed (if downstream step fails)
                           → failed (on reject)
@@ -240,14 +241,16 @@ pending → running → completed
 ```
 
 - `waiting` means a `HumanInTheLoop` step has suspended execution pending approval. Call `Engine.Api.handle_event(event, :workflow, ctx)` with `action: "run.approve"` or `action: "run.reject"` to proceed.
-- `incomplete` means execution reached quiescence without any terminal (leaf) node of the authored DAG completing — a branch was pruned by a false edge condition (`EdgeStep` leaves the downstream subgraph rowless) or otherwise starved. No step errored, so it is not `failed`; but the run stopped short of its end, so it is not `completed` either. `finalize/3` records the unreached leaves in `log_summary.unreached_leaves`. Note: a guarded "nothing to do" terminal step (e.g. `notify` behind `count > 0` when `count == 0`) also yields `incomplete` — give such workflows an explicit else-branch to a real leaf if a `completed` outcome is desired.
+- `incomplete` means execution reached quiescence without any terminal (leaf) node of the authored DAG completing — a branch was pruned by a false edge condition (`EdgeStep` leaves the downstream subgraph rowless) or otherwise starved. No run-fatal step failed, but the run stopped short of its end. `finalize/3` records the unreached leaves in `log_summary.unreached_leaves`. Note: a guarded "nothing to do" terminal step (e.g. `notify` behind `count > 0` when `count == 0`) also yields `incomplete` — give such workflows an explicit else-branch to a real leaf if a `completed` outcome is desired.
 - A run can also reach `cancelled` (via `Workflows.cancel_run/2`) or `interrupted`. Start and resume use a locked row to permit only `pending → running` or `paused → running`; stale caller structs cannot reopen newer states. Pause and cancel lock the current row, update the run and active steps, terminate the driver, then commit. RunWatcher does not depend on its grace interval to distinguish an intentional stop. `interrupt_run/2` locks and reloads the authoritative row and only transitions `pending`/`running`; stale caller structs cannot overwrite `waiting`, completed, or other newer durable states. On engine boot, `Zaq.Engine.Workflows.StartupRecovery` finds runs stuck in `"running"`/`"pending"` (node restarted mid-flight) and enqueues one `RunRecoveryWorker` Oban job per run, which marks each run `"interrupted"` via `Workflows.interrupt_run/1`.
 
 ---
 
 ## Workflow Events
 
-All workflow lifecycle changes are broadcast as a single `:workflow` `NodeRouter` event. The operation is encoded in `event.request.action`.
+The execution lifecycle events below use a `:workflow` `NodeRouter` event,
+with the operation in `event.request.action`. Pause, cancel, approval and
+rejection update the UI topics but do not dispatch these lifecycle events.
 
 | Action | Source module | Payload fields |
 |---|---|---|
@@ -257,6 +260,7 @@ All workflow lifecycle changes are broadcast as a single `:workflow` `NodeRouter
 | `"run.incomplete"` | `Zaq.Engine.Workflows.WorkflowRunAgent` | `run_id`, `workflow_id` |
 | `"run.failed"` | `Zaq.Engine.Workflows.WorkflowRunAgent` (runtime) / `Zaq.Engine.Workflows.ensure_prepared_dag/1` (build failure, before `run.started`) | `run_id`, `workflow_id` |
 | `"run.waiting"` | `Zaq.Engine.Workflows.WorkflowRunAgent` | `run_id`, `workflow_id` |
+| `"run.interrupted"` | `Zaq.Engine.Workflows.interrupt_run/2` | `run_id`, `workflow_id` |
 
 `"run.waiting"` is dispatched by `finalize/3` when a `HumanInTheLoop` step has suspended the run. See [Human-in-the-Loop](#human-in-the-loop).
 
@@ -559,6 +563,7 @@ Engine.Api.handle_event(event, :workflow, ctx)   # event.request.action == "run.
         │    ├─ StepApproval → status: "approved", decision, approved_by, approved_at
         │    ├─ StepRun{step_name} → status: "completed", results: %{approved: true, decision: ..., approved_by: ...}
         │    └─ WorkflowRun → status: "paused"
+        ├─ after commit: broadcast the step and run updates
         └─> Workflows.resume_run(run)
               └─> ensure_prepared_dag/1 (rebuilds DAG — virtual prepared_dag dropped on reload)
               └─> WorkflowRunAgent.execute
@@ -576,6 +581,7 @@ Engine.Api.handle_event(event, :workflow, ctx)   # event.request.action == "run.
         │    ├─ StepApproval → status: "rejected", approved_by, approved_at
         │    ├─ StepRun{step_name} → status: "failed"
         │    └─ WorkflowRun → status: "failed", finished_at, log_summary
+        ├─ after commit: broadcast the step and run updates
         └─> {:ok, failed_run}   # no resume
 ```
 

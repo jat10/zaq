@@ -63,8 +63,8 @@ defmodule Zaq.Engine.Workflows do
 
   Guarantees the run carries an executable DAG (`ensure_prepared_dag/1`) before
   handing it to the agent, which then only *runs* it. Drives each step
-  synchronously, writes `StepRun` rows per step, and updates
-  `WorkflowRun.status` to `"completed"` or `"failed"`.
+  synchronously, writes `StepRun` rows per step, and persists the resulting
+  completed, incomplete, waiting, or failed run status.
 
   Emits the `{:run_started, run}` UI broadcast on `"workflow:<workflow_id>"`
   (via the Channels role) — the counterpart to `create_run/4`'s `:run_created`.
@@ -72,9 +72,9 @@ defmodule Zaq.Engine.Workflows do
   DAG cannot be prepared is failed (no `:run_started` is emitted) and the build
   error is returned.
 
-  Returns `{:ok, updated_run}` on success, `{:error, reason}` on a build or
-  execution failure, or `{:error, {:invalid_run_status, status}}` when the run is
-  not pending.
+  Returns `{:ok, updated_run}` for a handled execution outcome (including a
+  failed run), `{:error, reason}` on a build or driver error, or
+  `{:error, {:invalid_run_status, status}}` when the run is not pending.
   """
   @spec start_run(WorkflowRun.t(), keyword()) :: {:ok, WorkflowRun.t()} | {:error, term()}
   def start_run(%WorkflowRun{status: "pending"} = run, opts) do
@@ -256,8 +256,9 @@ defmodule Zaq.Engine.Workflows do
   @doc """
   Cancels a workflow run that is still in progress.
 
-  Accepts runs in `"pending"`, `"running"`, or `"waiting"` status. Marks the
-  run as `"cancelled"` and marks any in-progress step runs accordingly.
+  Accepts runs in `"pending"`, `"running"`, `"waiting"`, or `"paused"` status.
+  Under the run row lock, marks the run and active step runs `"cancelled"`,
+  stops the driver, settles any late in-flight step rows, then commits.
   Returns `{:error, :already_finished}` if the run has already reached a
   terminal state.
   """
@@ -307,9 +308,9 @@ defmodule Zaq.Engine.Workflows do
   @doc """
   Pauses a running workflow run immediately.
 
-  Hard-kills the executing `WorkflowRunAgent` process so the current step stops
-  at once, then in a single transaction marks the run `"paused"` and any
-  in-flight `StepRun` rows `"paused"`.
+  Under the run row lock, marks the run and active step runs `"paused"`,
+  hard-kills the executing `WorkflowRunAgent`, settles any late in-flight step
+  rows, then commits.
 
   On resume, `StepRunner` sees the `"paused"` step_run as non-terminal
   (not in `completed/failed/skipped/waiting`) and re-executes it from the
@@ -817,9 +818,10 @@ defmodule Zaq.Engine.Workflows do
 
   The row is reloaded under `FOR UPDATE`; only an actively `"running"` run can
   transition to the requested status. A previously staged `"failed"` run may
-  be updated with its final failure summary. If recovery, cancellation, pause,
-  or another terminal transition won the race, the current row is returned
-  unchanged and no UI broadcast is emitted.
+  be updated with its final failure summary. Failed finalization also settles
+  orphaned running step rows in the same transaction before broadcasting. If
+  recovery, cancellation, pause, or another terminal transition won the race,
+  the current row is returned unchanged and no UI broadcast is emitted.
   """
   @spec finalize_run(WorkflowRun.t(), map(), keyword()) ::
           {:ok, {:transitioned | :unchanged, WorkflowRun.t()}}
@@ -833,22 +835,26 @@ defmodule Zaq.Engine.Workflows do
 
         if current_run.status == "running" or
              (current_run.status == "failed" and target_status == "failed") do
+          settled_steps = maybe_settle_failed_run_steps(run.id, target_status)
+          attrs = refresh_failure_timeline(attrs, settled_steps, run.id)
+
           finalized_run =
             current_run
             |> WorkflowRun.changeset(attrs)
             |> Repo.update()
             |> unwrap_transaction_update()
 
-          {:transitioned, finalized_run}
+          {:transitioned, finalized_run, settled_steps}
         else
           {:unchanged, current_run}
         end
       end)
 
     case result do
-      {:ok, {:transitioned, finalized_run}} = transitioned ->
+      {:ok, {:transitioned, finalized_run, settled_steps}} ->
+        Enum.each(settled_steps, &broadcast_step({:ok, &1}))
         broadcast_run({:ok, finalized_run})
-        transitioned
+        {:ok, {:transitioned, finalized_run}}
 
       {:ok, {:unchanged, _current_run}} = unchanged ->
         unchanged
@@ -858,11 +864,47 @@ defmodule Zaq.Engine.Workflows do
     end
   end
 
+  defp maybe_settle_failed_run_steps(run_id, "failed") do
+    ids =
+      Repo.all(
+        from sr in StepRun,
+          where: sr.workflow_run_id == ^run_id and sr.status == "running",
+          select: sr.id
+      )
+
+    fail_orphaned_step_runs(run_id)
+    Repo.all(from sr in StepRun, where: sr.id in ^ids and sr.status == "failed")
+  end
+
+  defp maybe_settle_failed_run_steps(_run_id, _status), do: []
+
+  defp refresh_failure_timeline(attrs, [], _run_id), do: attrs
+
+  defp refresh_failure_timeline(%{log_summary: %{timeline: _} = summary} = attrs, _steps, run_id) do
+    timeline =
+      run_id
+      |> list_step_runs()
+      |> Enum.map(fn sr ->
+        %{
+          step_name: sr.step_name,
+          step_index: sr.step_index,
+          status: sr.status,
+          started_at: sr.started_at,
+          finished_at: sr.finished_at,
+          logs: sr.logs || []
+        }
+      end)
+
+    Map.put(attrs, :log_summary, Map.put(summary, :timeline, timeline))
+  end
+
+  defp refresh_failure_timeline(attrs, _steps, _run_id), do: attrs
+
   @doc """
   Snapshots the current step state into `log_summary` on the run.
 
-  Called by `StepRunner` after every terminal step transition so the summary
-  reflects live progress rather than only the final outcome.
+  Called by `StepRunner` after terminal step transitions while the run is
+  still running. A staged failure summary remains authoritative until finalization.
   """
   @spec tick_log_summary(binary()) :: :ok
   def tick_log_summary(run_id) when is_binary(run_id) do
@@ -890,7 +932,10 @@ defmodule Zaq.Engine.Workflows do
         end)
     }
 
-    from(r in WorkflowRun, where: r.id == ^run_id)
+    # A Runic failure may already have staged a durable failed status and its
+    # execution_error while independent siblings finish. Their progress ticks
+    # must not replace that failure evidence before finalization.
+    from(r in WorkflowRun, where: r.id == ^run_id and r.status == "running")
     |> Repo.update_all(set: [log_summary: log_summary])
 
     :ok
@@ -1110,7 +1155,7 @@ defmodule Zaq.Engine.Workflows do
   @doc """
   Bulk-fails any `StepRun` rows still `"running"` for `run_id`.
 
-  Used by `WorkflowRunAgent.finalize/2`'s "crash cursor" path: a row stuck at
+  Called inside `finalize_run/3`'s locked failure transaction: a row stuck at
   `"running"` after a react cycle means that step's own execution never wrote
   back an outcome (typically left behind by an earlier interrupted/crashed
   attempt this run's DAG traversal does not revisit). That's already reason
@@ -1387,13 +1432,23 @@ defmodule Zaq.Engine.Workflows do
           |> Repo.update()
 
         results = %{approved: true, decision: decision, approved_by: approved_by}
-        complete_waiting_step(run.id, approval.step_name, results)
-        {:ok, paused_run} = update_run(run, %{status: "paused"})
-        paused_run
+        step_run = complete_waiting_step(run.id, approval.step_name, results)
+
+        paused_run =
+          run
+          |> WorkflowRun.changeset(%{status: "paused"})
+          |> Repo.update()
+          |> unwrap_transaction_update()
+
+        {paused_run, step_run}
       end)
       |> case do
-        {:ok, paused_run} -> resume_run(paused_run)
-        {:error, reason} -> {:error, reason}
+        {:ok, {paused_run, step_run}} ->
+          broadcast_approval_updates(step_run, paused_run)
+          resume_run(paused_run)
+
+        {:error, reason} ->
+          {:error, reason}
       end
     end
   end
@@ -1428,23 +1483,29 @@ defmodule Zaq.Engine.Workflows do
           })
           |> Repo.update()
 
-        fail_waiting_step(run.id, approval.step_name, reason)
+        step_run = fail_waiting_step(run.id, approval.step_name, reason)
 
         step_runs = list_step_runs(run.id)
         log_summary = build_rejection_log_summary(step_runs, approval.step_name, reason)
 
-        {:ok, failed_run} =
-          update_run(run, %{
+        failed_run =
+          run
+          |> WorkflowRun.changeset(%{
             status: "failed",
             finished_at: now,
             log_summary: log_summary
           })
+          |> Repo.update()
+          |> unwrap_transaction_update()
 
-        failed_run
+        {failed_run, step_run}
       end)
       |> case do
-        {:ok, failed_run} -> {:ok, failed_run}
-        {:error, reason} -> {:error, reason}
+        {:ok, {failed_run, step_run}} ->
+          broadcast_approval_updates(step_run, failed_run)
+
+        {:error, reason} ->
+          {:error, reason}
       end
     end
   end
@@ -1454,10 +1515,18 @@ defmodule Zaq.Engine.Workflows do
       %StepRun{step_index: waiting_index} = step_run ->
         prior_cascade = rebuild_cascade_before(run_id, waiting_index)
         cascaded = Map.put(results, :__cascade__, Map.put(prior_cascade, step_name, results))
-        {:ok, _} = complete_step_run(step_run, cascaded)
+
+        step_run
+        |> StepRun.changeset(%{
+          status: "completed",
+          results: cascaded,
+          finished_at: DateTime.utc_now(:second)
+        })
+        |> Repo.update()
+        |> unwrap_transaction_update()
 
       nil ->
-        :ok
+        nil
     end
   end
 
@@ -1490,11 +1559,25 @@ defmodule Zaq.Engine.Workflows do
   defp fail_waiting_step(run_id, step_name, reason) do
     case Repo.get_by(StepRun, workflow_run_id: run_id, step_name: step_name, status: "waiting") do
       %StepRun{} = step_run ->
-        {:ok, _} = fail_step_run(step_run, %{rejected: true, reason: reason})
+        step_run
+        |> StepRun.changeset(%{
+          status: "failed",
+          errors: %{rejected: true, reason: reason},
+          finished_at: DateTime.utc_now(:second)
+        })
+        |> Repo.update()
+        |> unwrap_transaction_update()
 
       nil ->
-        :ok
+        nil
     end
+  end
+
+  defp broadcast_approval_updates(nil, run), do: broadcast_run({:ok, run})
+
+  defp broadcast_approval_updates(step_run, run) do
+    broadcast_step({:ok, step_run})
+    broadcast_run({:ok, run})
   end
 
   defp lock_pending_approval!(run, approval) do
