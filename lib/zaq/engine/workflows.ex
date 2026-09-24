@@ -78,9 +78,12 @@ defmodule Zaq.Engine.Workflows do
   """
   @spec start_run(WorkflowRun.t(), keyword()) :: {:ok, WorkflowRun.t()} | {:error, term()}
   def start_run(%WorkflowRun{status: "pending"} = run, opts) do
-    with {:ok, run} <- ensure_prepared_dag(run) do
-      dispatch_async("workflow:#{run.workflow_id}", {:run_started, run})
+    with %WorkflowRun{status: "pending"} <- get_run!(run.id),
+         {:ok, run} <- ensure_prepared_dag(run) do
       WorkflowRunAgent.execute(run, opts)
+    else
+      %WorkflowRun{status: status} -> {:error, {:invalid_run_status, status}}
+      error -> error
     end
   end
 
@@ -157,21 +160,98 @@ defmodule Zaq.Engine.Workflows do
           error: inspect(reason)
         )
 
-        update_run(run, %{
-          status: "failed",
-          finished_at: DateTime.utc_now(:second),
-          log_summary: %{
-            error: format_build_error(reason),
-            failed_step_count: 0,
-            failed_steps: [],
-            step_count: 0
-          }
-        })
+        fail_run_preparation(run, reason)
+    end
+  end
 
-        dispatch_workflow_event("run.failed", run)
+  defp fail_run_preparation(run, reason) do
+    result =
+      Repo.transaction(fn ->
+        current_run = lock_run!(run.id)
+
+        if current_run.status == run.status and run.status in ["pending", "paused"] do
+          failed_run =
+            current_run
+            |> WorkflowRun.changeset(%{
+              status: "failed",
+              finished_at: DateTime.utc_now(:second),
+              log_summary: %{
+                error: format_build_error(reason),
+                failed_step_count: 0,
+                failed_steps: [],
+                step_count: 0
+              }
+            })
+            |> Repo.update()
+            |> unwrap_transaction_update()
+
+          {:failed, failed_run}
+        else
+          {:unchanged, current_run}
+        end
+      end)
+
+    case result do
+      {:ok, {:failed, failed_run}} ->
+        broadcast_run({:ok, failed_run})
+        dispatch_workflow_event("run.failed", preserve_notification_actor(failed_run, run))
+        {:error, reason}
+
+      {:ok, {:unchanged, current_run}} ->
+        run_status_error(run.status, current_run.status)
+
+      {:error, update_reason} ->
+        {:error, update_reason}
+    end
+  end
+
+  @doc "Transitions a pending or paused run to running from the locked database row."
+  @spec transition_run_to_running(WorkflowRun.t()) :: {:ok, WorkflowRun.t()} | {:error, term()}
+  def transition_run_to_running(%WorkflowRun{} = run) do
+    result =
+      Repo.transaction(fn ->
+        current_run = lock_run!(run.id)
+
+        if current_run.status == run.status and run.status in ["pending", "paused"] do
+          running_run =
+            current_run
+            |> WorkflowRun.changeset(running_attrs(current_run))
+            |> Repo.update()
+            |> unwrap_transaction_update()
+
+          {:started, running_run}
+        else
+          {:unchanged, current_run}
+        end
+      end)
+
+    case result do
+      {:ok, {:started, running_run}} ->
+        broadcast_run({:ok, running_run})
+
+        if run.status == "pending" do
+          dispatch_async("workflow:#{running_run.workflow_id}", {:run_started, running_run})
+        end
+
+        {:ok, %{running_run | source_event: run.source_event, prepared_dag: run.prepared_dag}}
+
+      {:ok, {:unchanged, current_run}} ->
+        run_status_error(run.status, current_run.status)
+
+      {:error, reason} ->
         {:error, reason}
     end
   end
+
+  defp run_status_error("paused", _current_status), do: {:error, :not_paused}
+
+  defp run_status_error(_expected_status, current_status),
+    do: {:error, {:invalid_run_status, current_status}}
+
+  defp running_attrs(%WorkflowRun{started_at: nil}),
+    do: %{status: "running", started_at: DateTime.utc_now(:second)}
+
+  defp running_attrs(%WorkflowRun{}), do: %{status: "running"}
 
   @doc """
   Cancels a workflow run that is still in progress.
@@ -184,10 +264,6 @@ defmodule Zaq.Engine.Workflows do
   @spec cancel_run(WorkflowRun.t(), keyword()) ::
           {:ok, WorkflowRun.t()} | {:error, :already_finished | Ecto.Changeset.t()}
   def cancel_run(%WorkflowRun{} = run, _opts \\ []) do
-    # Hard-kill any executing WorkflowRunAgent process for this run.
-    Registry.lookup(Zaq.Engine.Workflows.RunRegistry, run.id)
-    |> Enum.each(fn {pid, _} -> Process.exit(pid, :kill) end)
-
     result =
       Repo.transaction(fn ->
         current_run = lock_run!(run.id)
@@ -208,6 +284,8 @@ defmodule Zaq.Engine.Workflows do
           )
           |> Repo.update_all(set: [status: "cancelled", updated_at: now])
 
+          stop_run_driver(run.id)
+          settle_in_flight_steps(run.id, "cancelled")
           {:cancelled, cancelled_run}
         else
           {:unchanged, current_run}
@@ -242,10 +320,6 @@ defmodule Zaq.Engine.Workflows do
   @spec pause_run(WorkflowRun.t(), keyword()) ::
           {:ok, WorkflowRun.t()} | {:error, :not_running | Ecto.Changeset.t()}
   def pause_run(%WorkflowRun{} = run, _opts \\ []) do
-    # Kill the agent so the current step stops immediately.
-    Registry.lookup(Zaq.Engine.Workflows.RunRegistry, run.id)
-    |> Enum.each(fn {pid, _} -> Process.exit(pid, :kill) end)
-
     result =
       Repo.transaction(fn ->
         current_run = lock_run!(run.id)
@@ -264,6 +338,8 @@ defmodule Zaq.Engine.Workflows do
           )
           |> Repo.update_all(set: [status: "paused", finished_at: now, updated_at: now])
 
+          stop_run_driver(run.id)
+          settle_in_flight_steps(run.id, "paused")
           {:paused, paused_run}
         else
           {:unchanged, current_run}
@@ -303,8 +379,12 @@ defmodule Zaq.Engine.Workflows do
   def resume_run(%WorkflowRun{} = run, opts \\ []) do
     case run.status do
       "paused" ->
-        with {:ok, run} <- ensure_prepared_dag(run) do
+        with %WorkflowRun{status: "paused"} <- get_run!(run.id),
+             {:ok, run} <- ensure_prepared_dag(run) do
           WorkflowRunAgent.execute(run, opts)
+        else
+          %WorkflowRun{} -> {:error, :not_paused}
+          error -> error
         end
 
       _ ->
@@ -947,6 +1027,25 @@ defmodule Zaq.Engine.Workflows do
         where: current.id == ^run_id,
         lock: "FOR UPDATE"
     )
+  end
+
+  defp stop_run_driver(run_id) do
+    Registry.lookup(Zaq.Engine.Workflows.RunRegistry, run_id)
+    |> Enum.each(fn {pid, _} ->
+      ref = Process.monitor(pid)
+      Process.exit(pid, :kill)
+
+      receive do
+        {:DOWN, ^ref, :process, ^pid, _reason} -> :ok
+      end
+    end)
+  end
+
+  defp settle_in_flight_steps(run_id, status) do
+    now = DateTime.utc_now(:second)
+
+    from(sr in StepRun, where: sr.workflow_run_id == ^run_id and sr.status == "running")
+    |> Repo.update_all(set: [status: status, finished_at: now, updated_at: now])
   end
 
   defp preserve_notification_actor(interrupted_run, %{source_event: %{actor: actor}})

@@ -101,7 +101,6 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgent do
     Registry.register(Zaq.Engine.Workflows.RunRegistry, run.id, self())
     watcher = start_watcher(run.id)
 
-    now = DateTime.utc_now(:second)
     started_ms = System.monotonic_time(:millisecond)
 
     Logger.info("[workflow] run started",
@@ -110,10 +109,7 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgent do
       trigger_type: run.source_event && fetch_trigger_type(run.source_event.assigns)
     )
 
-    start_attrs =
-      if run.started_at, do: %{status: "running"}, else: %{status: "running", started_at: now}
-
-    case workflows_mod().update_run(run, start_attrs) do
+    case workflows_mod().transition_run_to_running(run) do
       {:ok, run} ->
         dispatch_workflow_event("run.started", run)
         execute_dag_with_pause(dag, run, started_ms, watcher)
@@ -124,11 +120,6 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgent do
           run_id: run.id,
           error: inspect(reason)
         )
-
-        workflows_mod().update_run(run, %{
-          status: "failed",
-          finished_at: DateTime.utc_now(:second)
-        })
 
         RunWatcher.done(watcher)
         {:error, reason}

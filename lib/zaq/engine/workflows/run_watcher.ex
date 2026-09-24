@@ -25,10 +25,8 @@ defmodule Zaq.Engine.Workflows.RunWatcher do
     paused, or explicitly interrupted after a rescued exception). None of
     those are orphans; stop watching.
   - the driver dies unexpectedly (a `:DOWN` with any reason other than a
-    `done/1` signal) — after a short grace window (to let a concurrent,
-    *intentional* kill — `Workflows.cancel_run/1` / `pause_run/1` also
-    hard-kill the driver, then immediately commit their own status update — win
-    the race), it re-checks the run's live status and calls
+    `done/1` signal) — after a short grace window it re-checks the run's live
+    status and calls
     `Workflows.interrupt_run/1` only if the run is still non-terminal.
 
   Either way the sentinel terminates immediately after — it is scoped to *this
@@ -99,9 +97,8 @@ defmodule Zaq.Engine.Workflows.RunWatcher do
   end
 
   defp handle_driver_down(run_id, reason) do
-    # `cancel_run/1` and `pause_run/1` also hard-kill the driver, then commit
-    # their own status update immediately after, synchronously. Give that
-    # legitimate path a moment to land before treating this as an orphan.
+    # Intentional pause/cancel commits under the row lock while terminating
+    # the driver. The delay remains a recovery debounce, not the correctness boundary.
     Process.sleep(@grace_period_ms)
 
     case Workflows.get_run(run_id) do

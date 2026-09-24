@@ -908,17 +908,13 @@ defmodule Zaq.Engine.Workflows.WorkflowRunAgentTest do
     end
   end
 
-  describe "execute/1 — update_run failure at start (lines 110-116)" do
+  describe "execute/1 — locked transition failure at start" do
     test "returns {:error, reason} when the initial status transition fails" do
       run = create_run()
 
-      # Inject a stub workflows module that returns {:error, :forced} for the
-      # first update_run call (status transition to "running").
+      # Inject a stub workflows module that rejects the initial transition.
       defmodule FailingStartWorkflows do
-        alias Zaq.Engine.Workflows
-        def update_run(_run, %{status: "running"} = _attrs), do: {:error, :start_blocked}
-        def update_run(run, attrs), do: Workflows.update_run(run, attrs)
-        def list_step_runs(id), do: Workflows.list_step_runs(id)
+        def transition_run_to_running(_run), do: {:error, :start_blocked}
       end
 
       Application.put_env(:zaq, :workflow_run_agent_workflows_mod, FailingStartWorkflows)

@@ -885,6 +885,42 @@ defmodule Zaq.Engine.Workflows.WorkflowsCoreTest do
   end
 
   describe "start_run/2" do
+    test "a stale pending run cannot start after cancellation" do
+      {:ok, workflow} = Workflows.create_workflow(@valid_active_attrs)
+      {:ok, stale_pending} = Workflows.create_run(workflow, @valid_source_event)
+      {:ok, cancelled} = Workflows.cancel_run(Workflows.get_run!(stale_pending.id))
+      test_pid = self()
+
+      stub(Zaq.NodeRouterMock, :dispatch, fn event ->
+        send(test_pid, {:lifecycle_event, event})
+        event
+      end)
+
+      assert {:error, {:invalid_run_status, "cancelled"}} = Workflows.start_run(stale_pending)
+      assert Workflows.get_run!(cancelled.id).status == "cancelled"
+      assert Workflows.list_step_runs(cancelled.id) == []
+      refute_received {:lifecycle_event, %{request: %{action: "run.started"}}}
+    end
+
+    test "a stale DAG build failure cannot overwrite cancellation" do
+      {:ok, workflow} =
+        Workflows.create_workflow(%{name: "Stale build", status: "draft", nodes: [], edges: []})
+
+      {:ok, stale_pending} = Workflows.create_run(workflow, @valid_source_event)
+      {:ok, cancelled} = Workflows.cancel_run(Workflows.get_run!(stale_pending.id))
+      test_pid = self()
+
+      stub(Zaq.NodeRouterMock, :dispatch, fn event ->
+        send(test_pid, {:lifecycle_event, event})
+        event
+      end)
+
+      assert {:error, {:invalid_run_status, "cancelled"}} = Workflows.start_run(stale_pending)
+      assert Workflows.get_run!(cancelled.id).status == "cancelled"
+      assert Workflows.list_step_runs(cancelled.id) == []
+      refute_received {:lifecycle_event, %{request: %{action: "run.failed"}}}
+    end
+
     test "executes a pending run and writes step rows" do
       {:ok, workflow} =
         Workflows.create_workflow(%{
@@ -1434,6 +1470,25 @@ defmodule Zaq.Engine.Workflows.WorkflowsCoreTest do
   # --- resume_run/2 ---
 
   describe "resume_run/2" do
+    test "a stale paused run cannot resume after cancellation" do
+      {:ok, workflow} = Workflows.create_workflow(@valid_active_attrs)
+      {:ok, run} = Workflows.create_run(workflow, @valid_source_event)
+      {:ok, running} = Workflows.update_run(run, %{status: "running"})
+      {:ok, stale_paused} = Workflows.pause_run(running)
+      {:ok, cancelled} = Workflows.cancel_run(Workflows.get_run!(run.id))
+      test_pid = self()
+
+      stub(Zaq.NodeRouterMock, :dispatch, fn event ->
+        send(test_pid, {:lifecycle_event, event})
+        event
+      end)
+
+      assert {:error, :not_paused} = Workflows.resume_run(stale_paused)
+      assert Workflows.get_run!(cancelled.id).status == "cancelled"
+      assert Workflows.list_step_runs(cancelled.id) == []
+      refute_received {:lifecycle_event, %{request: %{action: "run.started"}}}
+    end
+
     test "returns :not_paused for a pending run" do
       wf = create_workflow(@valid_active_attrs)
       run = create_run(wf)
