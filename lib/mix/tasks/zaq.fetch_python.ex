@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Zaq.Python.Fetch do
 
   ## Options
 
-      * `--branch <name>` - The branch name to fetch from (default: "main")
+      * `--branch <name>` - Resolve and fetch the named branch
       * `--commit <sha>` - The specific commit SHA to fetch (overrides --branch)
       * `--dest <path>` - The destination directory (default: "priv/python/crawler-ingest")
       * `--repo <url>` - The GitHub repository (default: "www-zaq-ai/crawler-ingest")
@@ -18,8 +18,8 @@ defmodule Mix.Tasks.Zaq.Python.Fetch do
   require Logger
 
   @default_repo "www-zaq-ai/crawler-ingest"
-  @default_branch "main"
   @default_dest "priv/python/crawler-ingest"
+  @revision_file "priv/python/crawler-ingest.revision"
   @required_files ~w(
     web_crawler.py
     pipeline.py
@@ -32,6 +32,7 @@ defmodule Mix.Tasks.Zaq.Python.Fetch do
     clean_md.py
     inject_descriptions.py
     requirements.txt
+    requirements.lock
   )
 
   @doc false
@@ -49,13 +50,11 @@ defmodule Mix.Tasks.Zaq.Python.Fetch do
     repo = opts[:repo] || @default_repo
     dest = opts[:dest] || @default_dest
 
-    # Determine commit SHA
     commit_sha =
-      if opts[:commit] do
-        opts[:commit]
-      else
-        branch = opts[:branch] || @default_branch
-        resolve_branch_sha(repo, branch)
+      cond do
+        opts[:commit] -> opts[:commit]
+        opts[:branch] -> resolve_branch_sha(repo, opts[:branch])
+        true -> @revision_file |> File.read!() |> String.trim()
       end
 
     if is_nil(commit_sha) do

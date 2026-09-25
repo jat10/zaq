@@ -76,9 +76,31 @@ defmodule Mix.Tasks.Zaq.Python.FetchTest do
 
     requirements_mode = File.stat!(Path.join(dest, "requirements.txt")).mode
     assert (requirements_mode &&& 0o111) == 0
+    assert File.read!(Path.join(dest, "requirements.lock")) == "# file: requirements.lock\n"
   end
 
-  test "resolves default branch and default repo when commit is not provided", %{tmp_dir: tmp_dir} do
+  test "fetches the committed revision by default without resolving main", %{tmp_dir: tmp_dir} do
+    sha = "priv/python/crawler-ingest.revision" |> File.read!() |> String.trim()
+    dest = Path.join(tmp_dir, "python")
+    raw_prefix = "https://raw.githubusercontent.com/#{@default_repo}/#{sha}/"
+
+    Zaq.FetchPythonHTTPClientStub.put_responder(fn url, _opts ->
+      if String.starts_with?(url, raw_prefix) do
+        {:ok, %{status: 200, body: "ok\n"}}
+      else
+        raise "unexpected url: #{url}"
+      end
+    end)
+
+    Fetch.run(["--dest", dest])
+
+    manifest = dest |> Path.join("manifest.json") |> File.read!() |> Jason.decode!()
+    assert manifest["repo"] == @default_repo
+    assert manifest["commit"] == sha
+    assert File.read!(Path.join(dest, "requirements.lock")) == "ok\n"
+  end
+
+  test "resolves an explicit branch", %{tmp_dir: tmp_dir} do
     sha = "mainsha123"
     dest = Path.join(tmp_dir, "python")
     branch_url = "https://api.github.com/repos/#{@default_repo}/commits/main"
@@ -99,10 +121,11 @@ defmodule Mix.Tasks.Zaq.Python.FetchTest do
       end
     end)
 
-    Fetch.run(["--dest", dest])
+    Fetch.run(["--branch", "main", "--dest", dest])
 
     assert_received {:http_get, ^branch_url, _opts}
-    assert File.exists?(Path.join(dest, "manifest.json"))
+    manifest = dest |> Path.join("manifest.json") |> File.read!() |> Jason.decode!()
+    assert manifest["commit"] == sha
   end
 
   test "raises when branch does not exist", %{tmp_dir: tmp_dir} do
