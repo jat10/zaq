@@ -41,7 +41,8 @@ zaq-*.tar
 npm-debug.log
 /assets/node_modules/
 
-/priv/python/
+/priv/python/*
+!/priv/python/crawler-ingest.revision
 /.venv/
 # Playwright E2E artifacts
 /test/e2e/node_modules/
