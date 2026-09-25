@@ -32,7 +32,6 @@ defmodule Mix.Tasks.Zaq.Python.Fetch do
     clean_md.py
     inject_descriptions.py
     requirements.txt
-    requirements.lock
   )
 
   @doc false

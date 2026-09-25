@@ -76,7 +76,7 @@ defmodule Mix.Tasks.Zaq.Python.FetchTest do
 
     requirements_mode = File.stat!(Path.join(dest, "requirements.txt")).mode
     assert (requirements_mode &&& 0o111) == 0
-    assert File.read!(Path.join(dest, "requirements.lock")) == "# file: requirements.lock\n"
+    assert File.read!(Path.join(dest, "requirements.txt")) == "# file: requirements.txt\n"
   end
 
   test "fetches the committed revision by default without resolving main", %{tmp_dir: tmp_dir} do
@@ -97,7 +97,7 @@ defmodule Mix.Tasks.Zaq.Python.FetchTest do
     manifest = dest |> Path.join("manifest.json") |> File.read!() |> Jason.decode!()
     assert manifest["repo"] == @default_repo
     assert manifest["commit"] == sha
-    assert File.read!(Path.join(dest, "requirements.lock")) == "ok\n"
+    assert File.read!(Path.join(dest, "requirements.txt")) == "ok\n"
   end
 
   test "resolves an explicit branch", %{tmp_dir: tmp_dir} do
