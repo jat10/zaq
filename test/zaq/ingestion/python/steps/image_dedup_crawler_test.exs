@@ -1,7 +1,5 @@
-defmodule Zaq.Ingestion.Python.Steps.ImageDedupRealPythonTest do
+defmodule Zaq.Ingestion.Python.Steps.ImageDedupCrawlerTest do
   use ExUnit.Case, async: true
-
-  @moduletag :real_python
 
   alias Zaq.Ingestion.Python.Runner
   alias Zaq.Ingestion.Python.Steps.ImageDedup

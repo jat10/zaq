@@ -94,6 +94,7 @@ jobs:
     env:
       MIX_ENV: test
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/zaq_test
+      PYTHON_VERSION: "3.13"
 
     steps:
       - name: Checkout code
@@ -116,6 +117,26 @@ jobs:
 
       - name: Install dependencies
         run: mix deps.get
+
+      - name: Fetch reviewed crawler revision
+        run: mix zaq.python.fetch
+
+      - name: Set up CPython
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Restore pip downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-${{ runner.arch }}-py${{ env.PYTHON_VERSION }}-pip-${{ hashFiles('priv/python/crawler-ingest/requirements.txt', 'priv/python/crawler-ingest.revision') }}
+
+      - name: Build and validate a fresh Python environment
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r priv/python/crawler-ingest/requirements.txt
+          .venv/bin/python -m pip check
 
       # Fallback caches may predate Logger's compile-time session-dump purge.
       - name: Recompile LiveView with current logging policy
@@ -175,6 +196,7 @@ jobs:
     env:
       MIX_ENV: test
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/zaq_test
+      PYTHON_VERSION: "3.13"
 
     steps:
       - name: Checkout code
@@ -197,6 +219,26 @@ jobs:
 
       - name: Install dependencies
         run: mix deps.get
+
+      - name: Fetch reviewed crawler revision
+        run: mix zaq.python.fetch
+
+      - name: Set up CPython
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Restore pip downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-${{ runner.arch }}-py${{ env.PYTHON_VERSION }}-pip-${{ hashFiles('priv/python/crawler-ingest/requirements.txt', 'priv/python/crawler-ingest.revision') }}
+
+      - name: Build and validate a fresh Python environment
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r priv/python/crawler-ingest/requirements.txt
+          .venv/bin/python -m pip check
 
       - name: Recompile LiveView with current logging policy
         run: |
@@ -236,6 +278,7 @@ jobs:
     env:
       MIX_ENV: test
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/zaq_test
+      PYTHON_VERSION: "3.13"
 
     steps:
       - name: Checkout code
@@ -258,6 +301,26 @@ jobs:
 
       - name: Install dependencies
         run: mix deps.get
+
+      - name: Fetch reviewed crawler revision
+        run: mix zaq.python.fetch
+
+      - name: Set up CPython
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Restore pip downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-${{ runner.arch }}-py${{ env.PYTHON_VERSION }}-pip-${{ hashFiles('priv/python/crawler-ingest/requirements.txt', 'priv/python/crawler-ingest.revision') }}
+
+      - name: Build and validate a fresh Python environment
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r priv/python/crawler-ingest/requirements.txt
+          .venv/bin/python -m pip check
 
       - name: Recompile LiveView with current logging policy
         run: |
