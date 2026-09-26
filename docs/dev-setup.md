@@ -141,18 +141,21 @@ Use it in `test/support/e2e/bootstrap.exs` or via the E2E controller from Playwr
 
 ## Python Pipeline
 
-Required for PDF/DOCX/XLSX ingestion. `mix setup` fetches Python scripts automatically.
+Python 3.10+ and a populated `.venv` are required for document ingestion and the
+default `mix test` suite. `mix setup` fetches the pinned crawler scripts, but does
+not install their Python dependencies. After setup, run:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r priv/python/crawler-ingest/requirements.txt
+python -m pip check
 ```
 
 To re-fetch or pin Python scripts:
 ```bash
-mix zaq.python.fetch                # latest main
-mix zaq.python.fetch --commit <sha> # pin to commit
+mix zaq.python.fetch                # reviewed revision in priv/python/crawler-ingest.revision
+mix zaq.python.fetch --commit <sha> # fetch a specific commit
 ```
 
 ---
