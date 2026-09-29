@@ -355,6 +355,10 @@ authentication adapter. Agent cold starts use the explicit synchronous
 a validated trusted actor and `confidential: true`. Engine loads and projects the
 provider configuration before canonical resolution. Generic internal invocation remains
 trusted infrastructure and must not be exposed to browser input.
+The standalone LiveRAG corpus loader uses the same local confidential resolver
+with `reject_oauth: true`. The resolver rejects an OAuth configuration after its
+credential row is locked and before any grant refresh. The default runtime path
+continues to accept OAuth.
 
 `ActorNormalizer.person_id/1` supplies canonical nested and legacy flat ID compatibility,
 not authentication. Every supplied non-null nested/flat claim must be valid and agree.

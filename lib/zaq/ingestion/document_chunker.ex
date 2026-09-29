@@ -68,6 +68,8 @@ defmodule Zaq.Ingestion.DocumentChunker do
         `section_path`, and changing this derivation invalidates all
         previously stored vectors (requires a re-embed migration).
     """
+    alias Zaq.Ingestion.DocumentChunker
+
     defstruct [
       :section_id,
       :content,
@@ -115,7 +117,7 @@ defmodule Zaq.Ingestion.DocumentChunker do
     end
 
     defp chunk_max_tokens do
-      Zaq.System.get_embedding_config().chunk_max_tokens
+      DocumentChunker.chunk_limits().chunk_max_tokens
     end
   end
 
@@ -123,12 +125,32 @@ defmodule Zaq.Ingestion.DocumentChunker do
   # Config helpers
   # ---------------------------------------------------------------------------
 
+  @limits_key {__MODULE__, :limits}
+
+  @doc "Runs chunk preparation with one immutable, process-local token budget snapshot."
+  @spec with_limits(map(), (-> result)) :: result when result: var
+  def with_limits(%{chunk_min_tokens: min, chunk_max_tokens: max} = limits, fun)
+      when is_integer(min) and min > 0 and is_integer(max) and max >= min and is_function(fun, 0) do
+    previous = Process.get(@limits_key)
+    Process.put(@limits_key, limits)
+
+    try do
+      fun.()
+    after
+      if previous, do: Process.put(@limits_key, previous), else: Process.delete(@limits_key)
+    end
+  end
+
+  @doc "Returns the scoped token limits or the normal persisted configuration."
+  @spec chunk_limits() :: map()
+  def chunk_limits, do: Process.get(@limits_key) || Zaq.System.get_embedding_config()
+
   defp chunk_min_tokens do
-    Zaq.System.get_embedding_config().chunk_min_tokens
+    chunk_limits().chunk_min_tokens
   end
 
   defp chunk_max_tokens do
-    Zaq.System.get_embedding_config().chunk_max_tokens
+    chunk_limits().chunk_max_tokens
   end
 
   # ---------------------------------------------------------------------------

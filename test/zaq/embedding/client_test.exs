@@ -60,6 +60,102 @@ defmodule Zaq.Embedding.ClientTest do
   end
 
   describe "embed/2" do
+    test "uses an explicit snapshot for the configured zaq_router endpoint" do
+      Req.Test.stub(Client, fn conn ->
+        assert conn.host == "router.example"
+        assert conn.request_path == "/v1/embeddings"
+        assert Plug.Conn.get_req_header(conn, "authorization") == ["Bearer router-secret"]
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        assert Jason.decode!(body)["model"] == "router-embedding-model"
+        Req.Test.json(conn, %{"data" => [%{"embedding" => [0.1, 0.2]}]})
+      end)
+
+      config = %{
+        provider: "zaq_router",
+        endpoint: "https://router.example/v1",
+        model: "router-embedding-model",
+        api_key: "router-secret"
+      }
+
+      assert {:ok, [0.1, 0.2]} = Client.embed("text", config: config, redact_errors: true)
+    end
+
+    test "redacted errors omit provider body and authentication" do
+      Req.Test.stub(Client, fn conn ->
+        conn
+        |> Plug.Conn.put_status(401)
+        |> Req.Test.json(%{"error" => "router-secret rejected"})
+      end)
+
+      config = %{endpoint: "https://router.example/v1", model: "model", api_key: "router-secret"}
+
+      log =
+        ExUnit.CaptureLog.capture_log(fn ->
+          assert {:error, {:api_error, 401}} =
+                   Client.embed("text", config: config, redact_errors: true)
+        end)
+
+      refute log =~ "router-secret"
+    end
+
+    test "bounded 429 retries use capped delay and stop after success" do
+      counter = start_supervised!({Agent, fn -> 0 end})
+      test_pid = self()
+
+      Req.Test.stub(Client, fn conn ->
+        attempt = Agent.get_and_update(counter, fn count -> {count + 1, count + 1} end)
+
+        if attempt < 3 do
+          conn
+          |> Plug.Conn.put_resp_header("retry-after", "120")
+          |> Plug.Conn.put_status(429)
+          |> Req.Test.json(%{"error" => "busy"})
+        else
+          Req.Test.json(conn, %{"data" => [%{"embedding" => [0.1, 0.2]}]})
+        end
+      end)
+
+      config = %{endpoint: "https://router.example/v1", model: "model", api_key: "secret"}
+
+      assert {:ok, [0.1, 0.2]} =
+               Client.embed("text",
+                 config: config,
+                 redact_errors: true,
+                 max_attempts: 3,
+                 max_retry_delay_ms: 1_000,
+                 sleep_fun: fn delay -> send(test_pid, {:sleep, delay}) end
+               )
+
+      assert_receive {:sleep, 1_000}
+      assert_receive {:sleep, 1_000}
+      assert Agent.get(counter, & &1) == 3
+    end
+
+    test "bounded retries stop at the configured attempt limit" do
+      counter = start_supervised!({Agent, fn -> 0 end})
+
+      Req.Test.stub(Client, fn conn ->
+        Agent.update(counter, &(&1 + 1))
+
+        conn
+        |> Plug.Conn.put_resp_header("retry-after", "1")
+        |> Plug.Conn.put_status(429)
+        |> Req.Test.json(%{"error" => "secret-provider-body"})
+      end)
+
+      config = %{endpoint: "https://router.example/v1", model: "model", api_key: "secret"}
+
+      assert {:error, {:rate_limited, 1, %{status: 429}}} =
+               Client.embed("text",
+                 config: config,
+                 redact_errors: true,
+                 max_attempts: 2,
+                 sleep_fun: fn _ -> :ok end
+               )
+
+      assert Agent.get(counter, & &1) == 2
+    end
+
     test "returns embedding on successful response" do
       embedding = List.duplicate(0.1, 10)
 

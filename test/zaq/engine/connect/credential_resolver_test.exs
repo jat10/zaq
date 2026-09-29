@@ -304,6 +304,29 @@ defmodule Zaq.Engine.Connect.CredentialResolverTest do
     refute inspect(Map.from_struct(r)) =~ "refresh-secret"
   end
 
+  test "explicit OAuth refusal happens after credential locking and before refresh", %{
+    person: person
+  } do
+    c = credential(:optional, "oauth2")
+    grant = slot(c, {:person, person.id}, :expired)
+
+    assert Connect.resolve_credential(
+             c.id,
+             %{person_id: person.id},
+             Keyword.put(@opts, :reject_oauth, true)
+           ) == error(c, :unsupported_auth_kind, nil)
+
+    assert Repo.get!(Grant, grant.id).status == "expired"
+  end
+
+  test "OAuth refusal does not reveal configuration to an inactive Person", %{person: person} do
+    c = credential(:optional, "oauth2")
+    Repo.update!(Person.update_changeset(person, %{status: "inactive"}))
+
+    assert Connect.resolve_credential(c.id, %{person_id: person.id}, reject_oauth: true) ==
+             error(c, :person_unavailable)
+  end
+
   for mode <- [:failure, :delete_person, :delete_config, :change_config, :replace, :revoke] do
     @mode mode
     test "OAuth #{@mode} during HTTP fails without fallback", %{person: person} do

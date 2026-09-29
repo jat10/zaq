@@ -1,0 +1,7 @@
+{
+  "dataset": "LiveRAG/Benchmark",
+  "revision": "9deaaa8efdbf4e04be758a0333736a2ccd0216a2",
+  "filename": "LiveRAG_banchmark_20250910.parquet",
+  "source_sha256": "8282bd5cf806030a432674abefe2f02d8f8134561dbe42c1e14b784a1f67010e",
+  "source_size": 4718428
+}

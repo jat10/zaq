@@ -42,11 +42,12 @@ defmodule Zaq.Engine.Connect.CredentialResolver do
           | :credential_unavailable
           | :credential_refresh_failed
           | :credential_refresh_busy
+          | :unsupported_auth_kind
   @type result ::
           {:ok, ResolvedCredential.t()}
           | {:error, %{credential_id: pos_integer() | nil, reason: reason()}}
 
-  @doc "Resolves one canonical owner slot; opts carry the existing now/config/refresh window seams."
+  @doc "Resolves one canonical owner slot; `reject_oauth: true` refuses OAuth under the configuration lock."
   @spec resolve_credential(credential_ref(), ActorNormalizer.actor(), keyword()) :: result()
   def resolve_credential(reference, actor, opts \\ []) do
     id = credential_id(reference)
@@ -124,10 +125,17 @@ defmodule Zaq.Engine.Connect.CredentialResolver do
     Repo.transaction(fn ->
       c = configuration(id)
       require_person(person_id)
+      reject_oauth(c, opts)
       now = DateUtils.now(opts)
       select_loaded_credential(c, person_id, now)
     end)
   end
+
+  defp reject_oauth(%Credential{auth_kind: "oauth2"}, opts) do
+    if Keyword.get(opts, :reject_oauth, false), do: Repo.rollback(:unsupported_auth_kind)
+  end
+
+  defp reject_oauth(_, _), do: :ok
 
   defp select_loaded_credential(%Credential{auth_kind: "none"} = credential, _person_id, now),
     do: resolved_without_auth(credential, now)

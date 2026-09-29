@@ -6,6 +6,23 @@ defmodule Zaq.Ingestion.DocumentChunkerTest do
   alias Zaq.Ingestion.DocumentChunker.{Chunk, Section}
   alias Zaq.System
 
+  test "scoped token limits restore the previous snapshot after nested work and exceptions" do
+    original = DocumentChunker.chunk_limits()
+    outer = %{chunk_min_tokens: 1, chunk_max_tokens: 20}
+    inner = %{chunk_min_tokens: 2, chunk_max_tokens: 10}
+
+    assert_raise RuntimeError, "stop", fn ->
+      DocumentChunker.with_limits(outer, fn ->
+        assert DocumentChunker.chunk_limits() == outer
+        assert DocumentChunker.with_limits(inner, &DocumentChunker.chunk_limits/0) == inner
+        assert DocumentChunker.chunk_limits() == outer
+        raise "stop"
+      end)
+    end
+
+    assert DocumentChunker.chunk_limits() == original
+  end
+
   # ---------------------------------------------------------------------------
   # parse_layout/2 — basics
   # ---------------------------------------------------------------------------

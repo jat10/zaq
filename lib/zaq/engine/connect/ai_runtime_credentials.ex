@@ -64,7 +64,14 @@ defmodule Zaq.Engine.Connect.AIRuntimeCredentials do
        when is_integer(connect_credential_id) do
     connect_module = Keyword.get(opts, :connect_module, Connect)
 
-    with {:ok, resolved} <- connect_module.resolve_credential(connect_credential_id, actor) do
+    resolution =
+      if Keyword.get(opts, :reject_oauth, false) do
+        connect_module.resolve_credential(connect_credential_id, actor, reject_oauth: true)
+      else
+        connect_module.resolve_credential(connect_credential_id, actor)
+      end
+
+    with {:ok, resolved} <- resolution do
       {:ok,
        %{
          credential: Map.take(credential, @provider_fields),
