@@ -13,11 +13,19 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
   setup :verify_on_exit!
 
   setup %{conn: conn} do
-    previous_mailer_config = Application.get_env(:zaq, Zaq.Mailer)
-    Application.put_env(:zaq, Zaq.Mailer, adapter: Swoosh.Adapters.Local)
+    previous_sender = Application.get_env(:zaq, :email_bridge_smtp_module)
+    Application.put_env(:zaq, :email_bridge_smtp_module, ZaqWeb.NotificationSmtpLiveTest.Sender)
+    Application.put_env(:zaq, :smtp_live_test_owner, self())
 
     on_exit(fn ->
-      Application.put_env(:zaq, Zaq.Mailer, previous_mailer_config)
+      if previous_sender do
+        Application.put_env(:zaq, :email_bridge_smtp_module, previous_sender)
+      else
+        Application.delete_env(:zaq, :email_bridge_smtp_module)
+      end
+
+      Application.delete_env(:zaq, :smtp_live_test_owner)
+      Application.delete_env(:zaq, :smtp_live_test_result)
     end)
 
     user = user_fixture(%{username: "testadmin"})
@@ -382,6 +390,79 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     assert render(view) =~ "plain smtp failure"
   end
 
+  test "test_connection uses the outgoing email bridge with the saved SMTP settings", %{
+    conn: conn
+  } do
+    insert_enabled_smtp_channel(%{"from_email" => "sender@example.com"})
+
+    {:ok, view, _html} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+    view |> element("#test-email-form") |> render_submit(%{"recipient" => "user@example.com"})
+
+    assert :ok = current_test_status(view)
+    assert_receive {:smtp_send, "user@example.com", payload, %{}}
+    assert payload["subject"] == "ZAQ — Email configuration test"
+    assert payload["body"] =~ "This is a test email"
+    assert render(view) =~ "Test email sent"
+  end
+
+  test "test_connection sends through the selected SMTP account rather than the default", %{
+    conn: conn
+  } do
+    first = insert_enabled_smtp_channel(%{"from_email" => "default@example.com"})
+    assert {:ok, _} = ChannelConfig.set_default_smtp_connector(first.id)
+
+    second =
+      %ChannelConfig{}
+      |> ChannelConfig.changeset(%{
+        name: "Selected SMTP",
+        provider: "email:smtp",
+        kind: "retrieval",
+        enabled: true,
+        url: "smtp://configured-in-settings",
+        token: "smtp-unused",
+        settings: %{"relay" => "smtp.other.example", "from_email" => "selected@example.com"}
+      })
+      |> Repo.insert!()
+
+    {:ok, view, _html} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+
+    view
+    |> element("#smtp-connector-#{second.id} [phx-click='select_connector']")
+    |> render_click()
+
+    view |> element("#test-email-form") |> render_submit(%{"recipient" => "user@example.com"})
+
+    assert :ok = current_test_status(view)
+    assert_receive {:smtp_send, "user@example.com", _, %{"smtp_config_id" => id}}
+    assert id == second.id
+    refute id == first.id
+  end
+
+  test "test_connection reaches the production SMTP sender", %{conn: conn} do
+    insert_enabled_smtp_channel(%{"relay" => "127.0.0.1", "port" => "1"})
+    Application.put_env(:zaq, :email_bridge_smtp_module, Zaq.Channels.EmailBridge.SmtpSender)
+
+    {:ok, view, _html} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+    view |> element("#test-email-form") |> render_submit(%{"recipient" => "user@example.com"})
+
+    assert {:error, message} = current_test_status(view)
+    assert message =~ "Could not reach the SMTP server."
+    assert render(view) =~ "Could not reach the SMTP server."
+  end
+
+  test "test_connection reports an adapter exit without crashing the page", %{conn: conn} do
+    insert_enabled_smtp_channel()
+    Application.put_env(:zaq, :smtp_live_test_result, :exit)
+
+    {:ok, view, _html} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+    view |> element("#test-email-form") |> render_submit(%{"recipient" => "user@example.com"})
+
+    assert {:error, "Email delivery failed unexpectedly. Check the server logs."} =
+             current_test_status(view)
+
+    assert render(view) =~ "Email delivery failed unexpectedly. Check the server logs."
+  end
+
   test "test_connection formats retry exhaustion reasons", %{conn: conn} do
     for {reason, expected, detail} <- [
           {{:retries_exceeded, {:missing_requirement, "smtp.example.com", :auth}},
@@ -445,7 +526,7 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     end
   end
 
-  test "test_connection uses enabled tls fallback mode", %{conn: conn} do
+  test "test_connection dispatches when optional TLS is selected", %{conn: conn} do
     insert_enabled_smtp_channel(%{
       "tls" => "enabled",
       "tls_verify" => "verify_none",
@@ -459,117 +540,21 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     _ = :sys.get_state(view.pid)
 
     assert :ok = current_test_status(view)
+    assert_receive {:smtp_send, "user@example.com", _, %{}}
   end
 
-  test "test_connection reports missing encryption key while decrypting password", %{conn: conn} do
-    insert_smtp_channel(%{
-      enabled: true,
-      settings: %{
-        "relay" => "smtp.example.com",
-        "port" => "587",
-        "transport_mode" => "starttls",
-        "tls" => "enabled",
-        "tls_verify" => "verify_peer",
-        "username" => "mailer@example.com",
-        "password" => "enc:test-v1:AAAA:AAAA:AAAA",
-        "from_email" => "noreply@example.com",
-        "from_name" => "ZAQ"
-      }
-    })
-
-    with_secret_config([encryption_key: nil, key_id: "test-v1"], fn ->
-      {:ok, view, _html} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
-
-      send(view.pid, {:send_test, "user@example.com"})
-      _ = :sys.get_state(view.pid)
-
-      assert render(view) =~ "missing_encryption_key"
-    end)
-  end
-
-  test "test_connection reports invalid encryption key while decrypting password", %{conn: conn} do
-    insert_smtp_channel(%{
-      enabled: true,
-      settings: %{
-        "relay" => "smtp.example.com",
-        "port" => "587",
-        "transport_mode" => "starttls",
-        "tls" => "enabled",
-        "tls_verify" => "verify_peer",
-        "username" => "mailer@example.com",
-        "password" => "enc:test-v1:AAAA:AAAA:AAAA",
-        "from_email" => "noreply@example.com",
-        "from_name" => "ZAQ"
-      }
-    })
-
-    with_secret_config([encryption_key: "bad-key", key_id: "test-v1"], fn ->
-      {:ok, view, _html} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
-
-      send(view.pid, {:send_test, "user@example.com"})
-      _ = :sys.get_state(view.pid)
-
-      assert render(view) =~ "invalid_encryption_key"
-    end)
-  end
-
-  test "test_connection reports invalid ciphertext while decrypting password", %{conn: conn} do
-    insert_smtp_channel(%{
-      enabled: true,
-      settings: %{
-        "relay" => "smtp.example.com",
-        "port" => "587",
-        "transport_mode" => "starttls",
-        "tls" => "enabled",
-        "tls_verify" => "verify_peer",
-        "username" => "mailer@example.com",
-        "password" => "enc:test-v1:not-b64:not-b64:not-b64",
-        "from_email" => "noreply@example.com",
-        "from_name" => "ZAQ"
-      }
-    })
+  test "test_connection delegates password handling to the real email sender", %{conn: conn} do
+    insert_enabled_smtp_channel(%{"password" => "enc:test-v1:not-b64:not-b64:not-b64"})
+    put_failing_mailer({:network_failure, :econnrefused})
 
     {:ok, view, _html} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+    view |> element("#test-email-form") |> render_submit(%{"recipient" => "user@example.com"})
 
-    send(view.pid, {:send_test, "user@example.com"})
-    _ = :sys.get_state(view.pid)
-
-    assert render(view) =~ "invalid_ciphertext"
+    assert_receive {:smtp_send, "user@example.com", _, %{}}
+    assert {:error, "Network error while contacting the SMTP server."} = current_test_status(view)
   end
 
-  test "test_connection surfaces unknown key id details", %{conn: conn} do
-    insert_smtp_channel(%{
-      enabled: true,
-      settings: %{
-        "relay" => "smtp.example.com",
-        "port" => "587",
-        "transport_mode" => "starttls",
-        "tls" => "enabled",
-        "tls_verify" => "verify_peer",
-        "username" => "mailer@example.com",
-        "password" => "enc:test-v1:AAAA:AAAA:AAAA",
-        "from_email" => "noreply@example.com",
-        "from_name" => "ZAQ"
-      }
-    })
-
-    with_secret_config(
-      [
-        encryption_key: "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
-        key_id: "test-v2"
-      ],
-      fn ->
-        {:ok, view, _html} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
-
-        send(view.pid, {:send_test, "user@example.com"})
-        _ = :sys.get_state(view.pid)
-
-        assert render(view) =~ "unknown_key_id"
-      end
-    )
-  end
-
-  test "test_connection attempts delivery with username omitted (auth never)", %{conn: conn} do
+  test "test_connection dispatches with no SMTP username", %{conn: conn} do
     insert_smtp_channel(%{
       enabled: true,
       settings: %{
@@ -592,9 +577,10 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     _ = :sys.get_state(view.pid)
 
     assert :ok = current_test_status(view)
+    assert_receive {:smtp_send, "user@example.com", _, %{}}
   end
 
-  test "test_connection attempts delivery with verify_none tls options", %{conn: conn} do
+  test "test_connection dispatches with verify_none configured", %{conn: conn} do
     insert_smtp_channel(%{
       enabled: true,
       settings: %{
@@ -617,9 +603,10 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     _ = :sys.get_state(view.pid)
 
     assert :ok = current_test_status(view)
+    assert_receive {:smtp_send, "user@example.com", _, %{}}
   end
 
-  test "test_connection attempts delivery with required tls and custom ca path", %{conn: conn} do
+  test "test_connection dispatches with required TLS and custom CA", %{conn: conn} do
     insert_smtp_channel(%{
       enabled: true,
       settings: %{
@@ -642,9 +629,10 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     _ = :sys.get_state(view.pid)
 
     assert :ok = current_test_status(view)
+    assert_receive {:smtp_send, "user@example.com", _, %{}}
   end
 
-  test "test_connection attempts delivery with ssl transport", %{conn: conn} do
+  test "test_connection dispatches with SSL transport", %{conn: conn} do
     insert_smtp_channel(%{
       enabled: true,
       settings: %{
@@ -667,9 +655,10 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     _ = :sys.get_state(view.pid)
 
     assert :ok = current_test_status(view)
+    assert_receive {:smtp_send, "user@example.com", _, %{}}
   end
 
-  test "test_connection attempts delivery with unknown tls mode fallback", %{conn: conn} do
+  test "test_connection dispatches with an unknown TLS mode", %{conn: conn} do
     insert_smtp_channel(%{
       enabled: true,
       settings: %{
@@ -692,6 +681,7 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     _ = :sys.get_state(view.pid)
 
     assert :ok = current_test_status(view)
+    assert_receive {:smtp_send, "user@example.com", _, %{}}
   end
 
   defp with_secret_config(config, fun) do
@@ -721,9 +711,6 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
   defp put_failing_mailer(reason) do
     previous_error = Application.get_env(:zaq, :smtp_live_test_error)
-
-    Application.put_env(:zaq, Zaq.Mailer, adapter: ZaqWeb.NotificationSmtpLiveTest.ErrorAdapter)
-
     Application.put_env(:zaq, :smtp_live_test_error, reason)
 
     on_exit(fn ->
@@ -785,15 +772,26 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
   end
 end
 
-defmodule ZaqWeb.NotificationSmtpLiveTest.ErrorAdapter do
-  @behaviour Swoosh.Adapter
+defmodule ZaqWeb.NotificationSmtpLiveTest.Sender do
+  def send_notification(identifier, payload, metadata) do
+    send(
+      Application.fetch_env!(:zaq, :smtp_live_test_owner),
+      {:smtp_send, identifier, payload, metadata}
+    )
 
-  @impl true
-  def deliver(_email, _config), do: {:error, Application.fetch_env!(:zaq, :smtp_live_test_error)}
+    case Application.get_env(:zaq, :smtp_live_test_result, :ok) do
+      :exit ->
+        exit(:noproc)
 
-  @impl true
-  def deliver_many(emails, config), do: Enum.map(emails, &deliver(&1, config))
+      :ok ->
+        case Application.get_env(:zaq, :smtp_live_test_error) do
+          nil -> :ok
+          reason -> {:error, reason}
+        end
+    end
+  end
 
-  @impl true
-  def validate_config(_config), do: :ok
+  def send_notification(identifier, payload, metadata, config_id) do
+    send_notification(identifier, payload, Map.put(metadata, "smtp_config_id", config_id))
+  end
 end
