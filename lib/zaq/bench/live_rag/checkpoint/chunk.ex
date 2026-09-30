@@ -12,6 +12,7 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint.Chunk do
     belongs_to :persisted_chunk, IndexedChunk
     field :chunk_index, :integer
     field :content_sha256, :string
+    field :embedding_input_sha256, :string
     field :payload, :map
     field :status, :string, default: "pending"
 
@@ -29,10 +30,18 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint.Chunk do
       :persisted_chunk_id,
       :chunk_index,
       :content_sha256,
+      :embedding_input_sha256,
       :payload,
       :status
     ])
-    |> validate_required([:run_document_id, :chunk_index, :content_sha256, :payload, :status])
+    |> validate_required([
+      :run_document_id,
+      :chunk_index,
+      :content_sha256,
+      :embedding_input_sha256,
+      :payload,
+      :status
+    ])
     |> validate_number(:chunk_index, greater_than: 0)
     |> validate_inclusion(:status, ~w(pending completed failed))
     |> validate_success_row()

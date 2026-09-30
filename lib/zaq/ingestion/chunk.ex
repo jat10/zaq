@@ -211,9 +211,9 @@ defmodule Zaq.Ingestion.Chunk do
     rows != []
   end
 
-  @doc "Creates the chunks table with the given dimension. Corpus callers may supply a dedicated pool."
+  @doc "Creates the chunks table using the current dynamic repository binding."
   def create_table(dimension, opts \\ []) when is_integer(dimension) and is_list(opts) do
-    repo = Keyword.get(opts, :repo, Repo)
+    repo = Repo.get_dynamic_repo()
     ExtensionChecks.require!(repo, :vector)
 
     EctoSQL.query!(

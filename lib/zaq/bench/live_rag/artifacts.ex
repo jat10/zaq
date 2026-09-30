@@ -58,6 +58,7 @@ defmodule Zaq.Bench.LiveRAG.Artifacts do
          {:ok, dataset} <- Dataset.load(Path.join(directory, "sources")),
          true <- manifest["source"] == source_identity(dataset.manifest),
          true <- get_in(manifest, ["corpus", "input_sha256"]) == dataset.manifest["source_sha256"],
+         true <- valid_contract?(manifest["preparation_contract"], manifest["corpus"]),
          {:ok, database} <- Database.open(source_options, target_options) do
       try do
         with :ok <- empty_target(database),
@@ -109,13 +110,25 @@ defmodule Zaq.Bench.LiveRAG.Artifacts do
     %{
       version: 1,
       source: source_identity(source),
-      corpus: fingerprint,
+      corpus: Map.delete(fingerprint, :preparation_contract),
+      preparation_contract: fingerprint.preparation_contract,
       sha256: Map.new(files, &{&1, file_sha256(Path.join(directory, &1))})
     }
   end
 
   defp source_identity(source),
     do: Map.take(source, ["dataset", "revision", "filename", "source_sha256", "source_size"])
+
+  defp valid_contract?(contract, corpus) when is_map(contract) and is_map(corpus) do
+    required =
+      ~w(model dimension chunk_min_tokens chunk_max_tokens code_revision dependency_revision)
+
+    Enum.all?(required, &Map.has_key?(contract, &1)) and
+      is_integer(contract["dimension"]) and
+      contract["dimension"] == corpus["dimension"]
+  end
+
+  defp valid_contract?(_, _), do: false
 
   defp read_manifest(directory) do
     with {:ok, bytes} <- File.read(Path.join(directory, "manifest.json")),

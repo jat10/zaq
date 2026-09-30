@@ -49,11 +49,10 @@ defmodule Mix.Tasks.Liverag.Corpus do
     {opts, command, invalid} = OptionParser.parse(args, strict: @switches)
 
     if invalid != [], do: Mix.raise("Invalid LiveRAG corpus option")
+    Mix.Task.run("app.config")
+    start_dependencies(command)
 
     if command == ["extract"] do
-      Mix.Task.run("app.config")
-      {:ok, _} = Application.ensure_all_started(:explorer)
-      {:ok, _} = Application.ensure_all_started(:req)
       directory = opts[:data_dir] || Application.app_dir(:zaq, "priv/bench/liverag/data")
 
       directory
@@ -61,7 +60,6 @@ defmodule Mix.Tasks.Liverag.Corpus do
       |> Map.fetch!("counts")
       |> print_json()
     else
-      Mix.Task.run("app.start")
       corpus_url = opts[:corpus_url] || Mix.raise("--corpus-url is required")
       source_options = pool_options(opts[:source_url])
       corpus_options = pool_options(corpus_url)
@@ -72,6 +70,17 @@ defmodule Mix.Tasks.Liverag.Corpus do
         open_and_dispatch(command, opts, source_options, corpus_options)
       end
     end
+  end
+
+  defp start_dependencies(["extract"]) do
+    {:ok, _} = Application.ensure_all_started(:explorer)
+    {:ok, _} = Application.ensure_all_started(:req)
+  end
+
+  defp start_dependencies(_) do
+    {:ok, _} = Application.ensure_all_started(:ecto_sql)
+    {:ok, _} = Application.ensure_all_started(:postgrex)
+    {:ok, _} = Application.ensure_all_started(:req)
   end
 
   defp open_and_dispatch(command, opts, source_options, corpus_options) do
@@ -116,7 +125,13 @@ defmodule Mix.Tasks.Liverag.Corpus do
          {:ok, dataset} <- load_dataset(opts),
          {:ok, snapshot} <- load_snapshot(database, opts),
          {:ok, retried} <-
-           Runner.retry(database, dataset.manifest["source_sha256"], snapshot.fingerprint, ids) do
+           Runner.retry(
+             database,
+             dataset.manifest["source_sha256"],
+             snapshot.fingerprint,
+             ids,
+             snapshot.contract
+           ) do
       print_json(%{retried: retried})
     else
       {:error, :run_busy} -> Mix.raise("LiveRAG corpus is busy")

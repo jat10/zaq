@@ -34,7 +34,7 @@ defmodule Zaq.Bench.LiveRAG.Bootstrap do
         Zaq.Repo.Migrations.CreateLiveragCorpusBase
       )
 
-      Chunk.create_table(dimension, repo: Repo.get_dynamic_repo(), native_fts: true)
+      Chunk.create_table(dimension, native_fts: true)
 
       with :ok <- check_dimension(dimension) do
         migrate(

@@ -12,7 +12,7 @@ defmodule Zaq.Bench.LiveRAG.Runner do
   alias Zaq.Bench.LiveRAG.{Checkpoint, Configuration, Database}
   alias Zaq.Bench.LiveRAG.Checkpoint.{Attempt, Chunk, Document, Run}
   alias Zaq.Embedding.Client
-  alias Zaq.Ingestion.DocumentChunker
+  alias Zaq.Ingestion.{DocumentChunker, DocumentProcessor}
   alias Zaq.Ingestion.DocumentChunker.Chunk, as: PreparedChunk
   alias Zaq.Repo
 
@@ -30,8 +30,17 @@ defmodule Zaq.Bench.LiveRAG.Runner do
         database,
         manifest["source_sha256"],
         snapshot.fingerprint,
-        fn lease -> ingest_locked(lease, documents, snapshot, client_config, policy, opts) end
+        fn lease ->
+          ingest_with_limit(lease, documents, snapshot, client_config, policy, opts)
+        end,
+        snapshot.contract
       )
+    end
+  end
+
+  defp ingest_with_limit(lease, documents, snapshot, client_config, policy, opts) do
+    with :ok <- Checkpoint.ensure_attempt_limit(lease, policy.attempts) do
+      ingest_locked(lease, documents, snapshot, client_config, policy, opts)
     end
   end
 
@@ -47,7 +56,10 @@ defmodule Zaq.Bench.LiveRAG.Runner do
                 status: r.status,
                 generation: r.generation,
                 input_sha256: r.input_sha256,
-                config_fingerprint: r.config_fingerprint
+                config_fingerprint: r.config_fingerprint,
+                request_count: r.request_count,
+                attempt_limit: r.attempt_limit,
+                cooldown_until: r.cooldown_until
               }
           ),
         documents:
@@ -69,18 +81,26 @@ defmodule Zaq.Bench.LiveRAG.Runner do
   end
 
   @doc "Explicitly reopens listed failed chunk IDs under the run lease."
-  @spec retry(map(), String.t(), String.t(), [integer()]) :: {:ok, [integer()]} | {:error, term()}
-  def retry(database, input_sha256, fingerprint, ids) when is_list(ids) and ids != [] do
+  @spec retry(map(), String.t(), String.t(), [integer()], map()) ::
+          {:ok, [integer()]} | {:error, term()}
+  def retry(database, input_sha256, fingerprint, ids, contract \\ %{})
+
+  def retry(database, input_sha256, fingerprint, ids, contract)
+      when is_list(ids) and ids != [] do
     if Enum.all?(ids, &(is_integer(&1) and &1 > 0)) and Enum.uniq(ids) == ids do
-      Checkpoint.with_lease(database, input_sha256, fingerprint, fn lease ->
-        retry_ids(lease, ids)
-      end)
+      Checkpoint.with_lease(
+        database,
+        input_sha256,
+        fingerprint,
+        fn lease -> retry_ids(lease, ids) end,
+        contract
+      )
     else
       {:error, :invalid_retry_ids}
     end
   end
 
-  def retry(_, _, _, _), do: {:error, :invalid_retry_ids}
+  def retry(_, _, _, _, _), do: {:error, :invalid_retry_ids}
 
   defp retry_ids(lease, ids) do
     Repo.transaction(fn -> Enum.map(ids, &retry_id!(lease, &1)) end)
@@ -118,7 +138,7 @@ defmodule Zaq.Bench.LiveRAG.Runner do
   defp ingest_locked(lease, documents, snapshot, client_config, policy, opts) do
     selected = select_documents(lease, documents, policy.limit)
     deadline = System.monotonic_time(:millisecond) + policy.deadline_ms
-    embed = Keyword.get(opts, :embed_fun, &default_embed(&1, client_config, policy))
+    embed = Keyword.get(opts, :embed_fun, &default_embed(&1, client_config))
     sleep = Keyword.get(opts, :sleep_fun, &Process.sleep/1)
 
     result =
@@ -158,14 +178,12 @@ defmodule Zaq.Bench.LiveRAG.Runner do
   end
 
   defp ingest_document(lease, source, snapshot, state, policy, deadline, embed, sleep) do
-    chunks =
+    {content, chunks} =
       DocumentChunker.with_limits(snapshot.embedding, fn ->
-        source["content"]
-        |> DocumentChunker.parse_layout(format: :markdown)
-        |> DocumentChunker.chunk_sections()
+        DocumentProcessor.prepare_markdown_chunks(source["content"])
       end)
 
-    case Checkpoint.prepare_document(lease, source["doc_id"], source["content"], chunks) do
+    case Checkpoint.prepare_document(lease, source["doc_id"], content, chunks) do
       {:ok, document} ->
         rows =
           Repo.all(
@@ -195,26 +213,99 @@ defmodule Zaq.Bench.LiveRAG.Runner do
       if budget_exhausted?(lease, acc, policy, deadline) do
         {:halt, {:halt, %{acc | stopped: stop_reason(lease, acc, policy, deadline)}}}
       else
-        process_chunk(lease, row, snapshot, acc, policy, embed, sleep)
+        process_chunk(lease, row, snapshot, acc, policy, deadline, embed, sleep)
       end
     end)
   end
 
-  defp process_chunk(lease, row, snapshot, state, policy, embed, sleep) do
-    prepared = hydrate_chunk(row.payload, snapshot.embedding)
-    response = embed.(prepared.embedding_input)
-    next = %{state | requests: state.requests + 1}
+  defp process_chunk(lease, row, snapshot, state, policy, deadline, embed, sleep) do
+    input = row.payload["embedding_input"]
 
-    outcome =
-      case response do
-        {:ok, vector} ->
-          persist_vector(lease, row.id, prepared, vector, snapshot.embedding.dimension)
+    if is_binary(input) and sha256(input) == row.embedding_input_sha256 do
+      context = %{
+        lease: lease,
+        row: row,
+        prepared: hydrate_chunk(row.payload),
+        dimension: snapshot.embedding.dimension,
+        policy: policy,
+        deadline: deadline,
+        embed: embed,
+        sleep: sleep
+      }
 
-        {:error, reason} ->
-          Checkpoint.fail(lease, row.id, error_code(reason))
-      end
+      request_chunk(context, state)
+    else
+      {:halt, {:halt, %{state | stopped: :embedding_input_mismatch}}}
+    end
+  end
 
-    reduce_outcome(outcome, next, sleep, policy.pace_ms)
+  defp request_chunk(context, state) do
+    remaining = Checkpoint.cooldown_remaining(context.lease)
+    time_left = context.deadline - System.monotonic_time(:millisecond)
+
+    cond do
+      budget_exhausted?(context.lease, state, context.policy, context.deadline) ->
+        reason = stop_reason(context.lease, state, context.policy, context.deadline)
+        {:halt, {:halt, %{state | stopped: reason}}}
+
+      remaining > time_left ->
+        {:halt, {:halt, %{state | stopped: :cooldown}}}
+
+      remaining > 0 ->
+        context.sleep.(remaining)
+        request_chunk(context, state)
+
+      true ->
+        send_request(context, state)
+    end
+  end
+
+  defp send_request(context, state) do
+    case Checkpoint.reserve_request(context.lease, context.row.id, context.policy.attempts) do
+      {:ok, attempt} ->
+        next = %{state | requests: state.requests + 1}
+        response = context.embed.(context.prepared.embedding_input)
+        handle_response(response, attempt, context, next)
+
+      {:error, :attempt_budget} ->
+        Checkpoint.fail(context.lease, context.row.id, :attempt_budget)
+        |> reduce_outcome(state, context.sleep, context.policy.pace_ms)
+
+      {:error, reason} ->
+        {:halt, {:halt, %{state | stopped: reason}}}
+    end
+  end
+
+  defp handle_response({:ok, vector}, _attempt, context, state) do
+    persist_vector(
+      context.lease,
+      context.row.id,
+      context.prepared,
+      vector,
+      context.dimension
+    )
+    |> reduce_outcome(state, context.sleep, context.policy.pace_ms)
+  end
+
+  defp handle_response({:error, {:rate_limited, seconds, _}}, attempt, context, state)
+       when is_integer(seconds) and seconds >= 0 do
+    case Checkpoint.cooldown(context.lease, seconds) do
+      {:ok, _} when attempt < context.policy.attempts ->
+        sleep_after(context.sleep, context.policy.pace_ms)
+        request_chunk(context, state)
+
+      {:ok, _} ->
+        Checkpoint.fail(context.lease, context.row.id, :rate_limited)
+        |> reduce_outcome(state, context.sleep, context.policy.pace_ms)
+
+      {:error, reason} ->
+        {:halt, {:halt, %{state | stopped: reason}}}
+    end
+  end
+
+  defp handle_response({:error, reason}, _attempt, context, state) do
+    Checkpoint.fail(context.lease, context.row.id, error_code(reason))
+    |> reduce_outcome(state, context.sleep, context.policy.pace_ms)
   end
 
   defp persist_vector(lease, chunk_id, prepared, vector, dimension) do
@@ -241,22 +332,14 @@ defmodule Zaq.Bench.LiveRAG.Runner do
   defp reduce_outcome({:error, reason}, state, _sleep, _pace),
     do: {:halt, {:halt, %{state | stopped: reason}}}
 
-  defp hydrate_chunk(payload, limits) do
+  defp hydrate_chunk(payload) do
     fields =
       PreparedChunk.__struct__()
       |> Map.from_struct()
       |> Map.keys()
-      |> List.delete(:embedding_input)
 
     attrs = Map.new(fields, &{&1, payload[Atom.to_string(&1)]})
-    chunk = struct(PreparedChunk, attrs)
-
-    input =
-      DocumentChunker.with_limits(limits, fn ->
-        PreparedChunk.embedding_input(chunk.content, chunk.section_path)
-      end)
-
-    %{chunk | embedding_input: input}
+    struct(PreparedChunk, attrs)
   end
 
   defp maybe_complete(lease, documents, %{stopped: nil} = result) do
@@ -282,14 +365,7 @@ defmodule Zaq.Bench.LiveRAG.Runner do
     end
   end
 
-  defp default_embed(input, config, policy) do
-    Client.embed(input,
-      config: config,
-      redact_errors: true,
-      max_attempts: policy.attempts,
-      max_retry_delay_ms: min(policy.deadline_ms, 2_000)
-    )
-  end
+  defp default_embed(input, config), do: Client.embed(input, config: config, redact_errors: true)
 
   defp error_code({:api_error, _status}), do: :provider_error
   defp error_code({:rate_limited, _, _}), do: :rate_limited
@@ -299,4 +375,5 @@ defmodule Zaq.Bench.LiveRAG.Runner do
 
   defp sleep_after(_, 0), do: :ok
   defp sleep_after(sleep, duration), do: sleep.(duration)
+  defp sha256(value), do: :crypto.hash(:sha256, value) |> Base.encode16(case: :lower)
 end

@@ -34,9 +34,6 @@ defmodule Zaq.Embedding.Client do
     * `:model` — override the configured model for this call
     * `:config` — an already resolved embedding snapshot with endpoint/model/api_key
     * `:redact_errors` — omit provider bodies and transport details from errors/logs
-    * `:max_attempts` — bounded attempts for HTTP 429 responses (default `1`, max `10`)
-    * `:max_retry_delay_ms` — cap each 429 wait (default `60_000`)
-    * `:sleep_fun` — one-argument wait callback, for a caller-controlled scheduler
 
   ## Examples
 
@@ -67,34 +64,9 @@ defmodule Zaq.Embedding.Client do
     req_opts =
       [url: url, json: body, headers: headers, receive_timeout: 60_000]
       |> Keyword.merge(req_options())
+      |> Keyword.merge(retry: false, redirect: false)
 
-    with {:ok, attempts, max_delay, sleep_fun} <- retry_policy(opts) do
-      do_embed(req_opts, attempts, max_delay, sleep_fun, Keyword.get(opts, :redact_errors, false))
-    end
-  end
-
-  defp retry_policy(opts) do
-    attempts = Keyword.get(opts, :max_attempts, 1)
-    max_delay = Keyword.get(opts, :max_retry_delay_ms, 60_000)
-    sleep_fun = Keyword.get(opts, :sleep_fun, &Process.sleep/1)
-
-    if is_integer(attempts) and attempts in 1..10 and is_integer(max_delay) and
-         max_delay >= 0 and max_delay <= 300_000 and is_function(sleep_fun, 1),
-       do: {:ok, attempts, max_delay, sleep_fun},
-       else: {:error, :invalid_retry_policy}
-  end
-
-  defp do_embed(req_opts, attempts, max_delay, sleep_fun, redact?) do
-    result = request_once(req_opts, redact?)
-
-    case result do
-      {:error, {:rate_limited, delay_seconds, _}} when attempts > 1 ->
-        sleep_fun.(min(delay_seconds * 1_000, max_delay))
-        do_embed(req_opts, attempts - 1, max_delay, sleep_fun, redact?)
-
-      _ ->
-        result
-    end
+    request_once(req_opts, Keyword.get(opts, :redact_errors, false))
   end
 
   defp request_once(req_opts, redact?) do
@@ -130,7 +102,7 @@ defmodule Zaq.Embedding.Client do
     delay_seconds = rate_limit_delay_seconds(headers)
 
     Logger.warning(
-      "Embedding API rate limited (429). Retrying in #{delay_seconds}s. Body: #{inspect(body)}"
+      "Embedding API rate limited (429). Retry after #{delay_seconds}s. Body: #{inspect(body)}"
     )
 
     {:error, {:rate_limited, delay_seconds, %{status: 429, body: body}}}

@@ -11,6 +11,7 @@ defmodule Zaq.Bench.LiveRAG.CorpusIntegrity do
   alias Zaq.Bench.LiveRAG.Checkpoint.{Document, Run}
   alias Zaq.Bench.LiveRAG.Database
   alias Zaq.Ingestion.Document, as: IndexedDocument
+  alias Zaq.Ingestion.FTSBackend
   alias Zaq.Repo
 
   @doc "Checks every source document, chunk checkpoint and vector before export."
@@ -26,8 +27,12 @@ defmodule Zaq.Bench.LiveRAG.CorpusIntegrity do
   end
 
   defp complete_in_corpus(sources, manifest) do
-    with %Run{status: "complete", input_sha256: input_sha256, config_fingerprint: config} <-
-           Repo.get(Run, 1),
+    with %Run{
+           status: "complete",
+           input_sha256: input_sha256,
+           config_fingerprint: config,
+           preparation_contract: contract
+         } <- Repo.get(Run, 1),
          true <- input_sha256 == manifest["source_sha256"],
          :ok <- reconcile_documents(sources),
          {:ok, dimension} <- reconcile_chunks() do
@@ -35,14 +40,15 @@ defmodule Zaq.Bench.LiveRAG.CorpusIntegrity do
        fingerprint_in_corpus()
        |> Map.put(:dimension, dimension)
        |> Map.put(:input_sha256, input_sha256)
-       |> Map.put(:config_fingerprint, config)}
+       |> Map.put(:config_fingerprint, config)
+       |> Map.put(:preparation_contract, contract)}
     else
       _ -> {:error, :corpus_incomplete_or_mismatched}
     end
   end
 
   defp reconcile_documents(sources) do
-    expected = Map.new(sources, &{&1["doc_id"], &1["content"]})
+    expected = Map.new(sources, &{&1["doc_id"], FTSBackend.sanitize_utf8_text(&1["content"])})
 
     rows =
       Repo.all(

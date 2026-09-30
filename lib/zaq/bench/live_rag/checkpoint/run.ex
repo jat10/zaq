@@ -8,8 +8,12 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint.Run do
   schema "liverag_runs" do
     field :input_sha256, :string
     field :config_fingerprint, :string
+    field :preparation_contract, :map, default: %{}
     field :status, :string, default: "running"
     field :generation, :integer, default: 0
+    field :request_count, :integer, default: 0
+    field :attempt_limit, :integer
+    field :cooldown_until, :utc_datetime_usec
     field :lease_token, Ecto.UUID
     field :backend_pid, :integer
 
@@ -26,16 +30,24 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint.Run do
       :id,
       :input_sha256,
       :config_fingerprint,
+      :preparation_contract,
       :status,
       :generation,
+      :request_count,
+      :attempt_limit,
+      :cooldown_until,
       :lease_token,
       :backend_pid
     ])
     |> validate_required([:id, :input_sha256, :config_fingerprint, :status])
     |> validate_inclusion(:status, ~w(running complete))
     |> validate_number(:generation, greater_than_or_equal_to: 0)
+    |> validate_number(:request_count, greater_than_or_equal_to: 0)
+    |> validate_number(:attempt_limit, greater_than: 0)
     |> check_constraint(:id, name: :liverag_runs_singleton)
     |> check_constraint(:generation, name: :liverag_runs_generation_nonnegative)
+    |> check_constraint(:request_count, name: :liverag_runs_requests_nonnegative)
+    |> check_constraint(:attempt_limit, name: :liverag_runs_attempt_limit_positive)
     |> check_constraint(:status, name: :liverag_runs_status_valid)
   end
 end

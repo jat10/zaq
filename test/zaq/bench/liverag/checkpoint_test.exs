@@ -71,7 +71,7 @@ defmodule Zaq.Bench.LiveRAG.CheckpointTest do
     refute Checkpoint.owned?(first)
   end
 
-  test "prepares document and chunk checkpoints atomically without persisting embedding input" do
+  test "prepares document and chunk checkpoints atomically with exact embedding input" do
     chunk = %DocumentChunker.Chunk{
       content: "A supporting paragraph",
       embedding_input: "Secret transient prefix\n\nA supporting paragraph",
@@ -95,7 +95,11 @@ defmodule Zaq.Bench.LiveRAG.CheckpointTest do
     assert Repo.aggregate(Document, :count) == 1
     assert Repo.aggregate(Chunk, :count) == 1
     stored = Repo.one!(Chunk)
-    refute inspect(stored.payload) =~ "Secret transient prefix"
+
+    assert stored.payload["embedding_input"] ==
+             "Secret transient prefix\n\nA supporting paragraph"
+
+    assert stored.embedding_input_sha256 == sha256(stored.payload["embedding_input"])
     assert stored.payload["content"] == "A supporting paragraph"
   end
 
@@ -216,6 +220,14 @@ defmodule Zaq.Bench.LiveRAG.CheckpointTest do
                           [chunk]
                         )
 
+               assert {:error, :preparation_conflict} =
+                        Checkpoint.prepare_document(
+                          lease,
+                          "source-a",
+                          chunk.content,
+                          [%{chunk | embedding_input: "changed input"}]
+                        )
+
                {:ok, same}
              end)
 
@@ -253,6 +265,7 @@ defmodule Zaq.Bench.LiveRAG.CheckpointTest do
       )
 
   defp embedding, do: [1.0 | List.duplicate(0.0, 1535)]
+  defp sha256(value), do: :crypto.hash(:sha256, value) |> Base.encode16(case: :lower)
 
   defp prepared_chunk do
     %DocumentChunker.Chunk{

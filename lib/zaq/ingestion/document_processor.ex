@@ -166,6 +166,7 @@ defmodule Zaq.Ingestion.DocumentProcessor do
     Logger.info("Preparing file chunks: #{file_path}")
 
     with {:ok, content} <- read_as_markdown(file_path, opts),
+         {content, chunks} <- prepare_markdown_chunks(content),
          {:ok, source} <- extract_source(content, file_path, opts),
          {:ok, document} <-
            store_document(
@@ -174,9 +175,6 @@ defmodule Zaq.Ingestion.DocumentProcessor do
              source_metadata(opts),
              document_title(opts)
            ) do
-      sections = DocumentChunker.parse_layout(content, format: :markdown)
-      chunks = DocumentChunker.chunk_sections(sections)
-
       indexed_payloads =
         chunks
         |> Enum.with_index(1)
@@ -188,6 +186,19 @@ defmodule Zaq.Ingestion.DocumentProcessor do
         Logger.error("Failed to prepare chunks for #{file_path}: #{inspect(reason)}")
         error
     end
+  end
+
+  @doc "Sanitizes Markdown and prepares the same layout-aware chunks used by file ingestion."
+  @spec prepare_markdown_chunks(String.t()) :: {String.t(), [struct()]}
+  def prepare_markdown_chunks(content) when is_binary(content) do
+    sanitized = FTSBackend.sanitize_utf8_text(content)
+
+    chunks =
+      sanitized
+      |> DocumentChunker.parse_layout(format: :markdown)
+      |> DocumentChunker.chunk_sections()
+
+    {sanitized, chunks}
   end
 
   @doc """
@@ -607,8 +618,7 @@ defmodule Zaq.Ingestion.DocumentProcessor do
       Chunk.delete_by_document(document_id)
     end
 
-    sections = DocumentChunker.parse_layout(content, format: :markdown)
-    chunks = DocumentChunker.chunk_sections(sections)
+    {_sanitized, chunks} = prepare_markdown_chunks(content)
 
     Logger.info("Created #{length(chunks)} layout-aware chunks for document_id: #{document_id}")
 

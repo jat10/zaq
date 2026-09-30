@@ -1,5 +1,5 @@
 defmodule Zaq.Bench.LiveRAG.Checkpoint.Attempt do
-  @moduledoc "Redacted, numbered outcome or explicit retry request for one chunk."
+  @moduledoc "Redacted, numbered provider requests, outcomes, and explicit retry requests."
 
   use Ecto.Schema
   import Ecto.Changeset
@@ -22,7 +22,7 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint.Attempt do
     |> cast(attrs, [:run_chunk_id, :attempt_number, :kind, :error_code])
     |> validate_required([:run_chunk_id, :attempt_number, :kind])
     |> validate_number(:attempt_number, greater_than: 0)
-    |> validate_inclusion(:kind, ~w(success failure retry_requested))
+    |> validate_inclusion(:kind, ~w(request success failure retry_requested))
     |> validate_format(:error_code, ~r/\A[a-z][a-z0-9_]*\z/)
     |> validate_length(:error_code, max: 64)
     |> unique_constraint([:run_chunk_id, :attempt_number])

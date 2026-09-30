@@ -2,7 +2,7 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
   @moduledoc """
   Owns persisted corpus progress and a session-bound, generation-fenced run lease.
 
-  A caller holds `with_lease/4` across bounded embedding work. The checked-out
+  A caller holds `with_lease/5` across bounded embedding work. The checked-out
   PostgreSQL session owns the advisory lock; every state transition verifies that
   same session still holds it and that the persisted generation matches. No
   transaction is kept open during provider requests.
@@ -20,14 +20,20 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
   @lock_key2 1_129_270_865
 
   @doc "Runs one callback while holding the corpus database's exclusive session lock."
-  @spec with_lease(%{corpus: pid() | atom()}, String.t(), String.t(), (Lease.t() -> result)) ::
+  @spec with_lease(
+          %{corpus: pid() | atom()},
+          String.t(),
+          String.t(),
+          (Lease.t() -> result),
+          map()
+        ) ::
           result | {:error, atom()}
         when result: var
-  def with_lease(database, input_sha256, config_fingerprint, fun)
+  def with_lease(database, input_sha256, config_fingerprint, fun, contract \\ %{})
       when is_function(fun, 1) do
-    if valid_hash?(input_sha256) and valid_hash?(config_fingerprint) do
+    if valid_hash?(input_sha256) and valid_hash?(config_fingerprint) and is_map(contract) do
       Database.with_corpus(database, fn ->
-        checkout_lock(input_sha256, config_fingerprint, fun)
+        checkout_lock(input_sha256, config_fingerprint, contract, fun)
       end)
     else
       {:error, :invalid_run_contract}
@@ -53,8 +59,8 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
     end
   end
 
-  defp checkout_lock(input_sha256, config_fingerprint, fun) do
-    Repo.checkout(fn -> run_with_lock(input_sha256, config_fingerprint, fun) end,
+  defp checkout_lock(input_sha256, config_fingerprint, contract, fun) do
+    Repo.checkout(fn -> run_with_lock(input_sha256, config_fingerprint, contract, fun) end,
       timeout: :infinity
     )
   end
@@ -79,6 +85,82 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
       )
     else
       {:error, :stale_lease}
+    end
+  end
+
+  @doc "Freezes the per-chunk request limit for every resumed invocation."
+  def ensure_attempt_limit(%Lease{} = lease, limit) when is_integer(limit) and limit > 0 do
+    case transact(lease, fn -> freeze_attempt_limit!(lease, limit) end) do
+      {:ok, :ok} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp freeze_attempt_limit!(lease, limit) do
+    run = Repo.get!(Run, lease.run_id)
+
+    cond do
+      is_nil(run.attempt_limit) ->
+        run |> Run.changeset(%{attempt_limit: limit}) |> Repo.update!()
+        :ok
+
+      run.attempt_limit == limit ->
+        :ok
+
+      true ->
+        Repo.rollback(:attempt_limit_mismatch)
+    end
+  end
+
+  @doc "Reserves one provider request and its per-chunk attempt before sending it."
+  def reserve_request(%Lease{} = lease, chunk_id, max_attempts) do
+    transact(lease, fn ->
+      {_chunk, _document} = pending_chunk!(lease, chunk_id)
+
+      latest_retry =
+        Repo.one(
+          from a in Attempt,
+            where: a.run_chunk_id == ^chunk_id and a.kind == "retry_requested",
+            select: max(a.id)
+        ) || 0
+
+      used =
+        Repo.aggregate(
+          from(a in Attempt,
+            where: a.run_chunk_id == ^chunk_id and a.kind == "request" and a.id > ^latest_retry
+          ),
+          :count
+        )
+
+      if used >= max_attempts, do: Repo.rollback(:attempt_budget)
+      record_attempt!(chunk_id, "request")
+      run = Repo.get!(Run, lease.run_id)
+      run |> Run.changeset(%{request_count: run.request_count + 1}) |> Repo.update!()
+      used + 1
+    end)
+  end
+
+  @doc "Persists the provider-wide Retry-After deadline for a later invocation."
+  def cooldown(%Lease{} = lease, seconds) when is_integer(seconds) and seconds >= 0 do
+    transact(lease, fn ->
+      until = DateTime.add(DateTime.utc_now(), seconds, :second)
+      run = Repo.get!(Run, lease.run_id)
+
+      until =
+        if run.cooldown_until && DateTime.compare(run.cooldown_until, until) == :gt,
+          do: run.cooldown_until,
+          else: until
+
+      run |> Run.changeset(%{cooldown_until: until}) |> Repo.update!()
+      until
+    end)
+  end
+
+  @doc "Returns milliseconds remaining on the persisted provider cooldown."
+  def cooldown_remaining(%Lease{} = lease) do
+    case Repo.get!(Run, lease.run_id).cooldown_until do
+      nil -> 0
+      until -> max(DateTime.diff(until, DateTime.utc_now(), :millisecond), 0)
     end
   end
 
@@ -185,6 +267,7 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
     if prepared_chunk &&
          (not match?(%DocumentChunker.Chunk{}, prepared_chunk) or
             chunk.content_sha256 != sha256(prepared_chunk.content) or
+            chunk.embedding_input_sha256 != sha256(prepared_chunk.embedding_input) or
             chunk.payload != payload(prepared_chunk)),
        do: Repo.rollback(:chunk_identity_mismatch)
 
@@ -236,7 +319,11 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
          String.trim(content) != "" and is_list(chunks) and chunks != [] and
          Enum.all?(
            chunks,
-           &match?(%DocumentChunker.Chunk{content: value} when is_binary(value), &1)
+           &match?(
+             %DocumentChunker.Chunk{content: value, embedding_input: input}
+             when is_binary(value) and is_binary(input),
+             &1
+           )
          ),
        do: :ok,
        else: {:error, :invalid_preparation}
@@ -270,6 +357,7 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
         run_document_id: prepared.id,
         chunk_index: index,
         content_sha256: sha256(chunk.content),
+        embedding_input_sha256: sha256(chunk.embedding_input),
         payload: payload(chunk)
       })
       |> Repo.insert!()
@@ -286,10 +374,10 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
           order_by: chunk.chunk_index
       )
 
-    expected_hashes = Enum.map(chunks, &sha256(&1.content))
+    expected_hashes = Enum.map(chunks, &{sha256(&1.content), sha256(&1.embedding_input)})
 
     if existing.source_sha256 == sha256(content) and existing.expected_chunks == length(chunks) and
-         Enum.map(stored, & &1.content_sha256) == expected_hashes,
+         Enum.map(stored, &{&1.content_sha256, &1.embedding_input_sha256}) == expected_hashes,
        do: existing,
        else: Repo.rollback(:preparation_conflict)
   end
@@ -297,7 +385,6 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
   defp payload(chunk) do
     chunk
     |> Map.from_struct()
-    |> Map.delete(:embedding_input)
     |> Jason.encode!()
     |> Jason.decode!()
   end
@@ -310,11 +397,11 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
 
   defp sha256(value), do: :crypto.hash(:sha256, value) |> Base.encode16(case: :lower)
 
-  defp run_with_lock(input_sha256, config_fingerprint, fun) do
+  defp run_with_lock(input_sha256, config_fingerprint, contract, fun) do
     case Repo.query("SELECT pg_try_advisory_lock($1, $2)", [@lock_key1, @lock_key2], log: false) do
       {:ok, %{rows: [[true]]}} ->
         try do
-          case claim_run(input_sha256, config_fingerprint) do
+          case claim_run(input_sha256, config_fingerprint, contract) do
             {:ok, lease} -> fun.(lease)
             error -> error
           end
@@ -330,7 +417,7 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
     end
   end
 
-  defp claim_run(input_sha256, config_fingerprint) do
+  defp claim_run(input_sha256, config_fingerprint, contract) do
     {:ok, %{rows: [[backend_pid]]}} = Repo.query("SELECT pg_backend_pid()", [], log: false)
     token = Ecto.UUID.generate()
 
@@ -343,6 +430,7 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
               id: 1,
               input_sha256: input_sha256,
               config_fingerprint: config_fingerprint,
+              preparation_contract: contract,
               generation: 1,
               lease_token: token,
               backend_pid: backend_pid
@@ -350,7 +438,7 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
             |> Repo.insert!()
 
           %Run{} = run ->
-            resume_run(run, input_sha256, config_fingerprint, token, backend_pid)
+            resume_run(run, input_sha256, config_fingerprint, contract, token, backend_pid)
         end
       end)
 
@@ -371,9 +459,10 @@ defmodule Zaq.Bench.LiveRAG.Checkpoint do
     end
   end
 
-  defp resume_run(%Run{} = run, input_sha256, config_fingerprint, token, backend_pid) do
+  defp resume_run(%Run{} = run, input_sha256, config_fingerprint, contract, token, backend_pid) do
     cond do
-      run.input_sha256 != input_sha256 or run.config_fingerprint != config_fingerprint ->
+      run.input_sha256 != input_sha256 or run.config_fingerprint != config_fingerprint or
+          run.preparation_contract != Jason.decode!(Jason.encode!(contract)) ->
         Repo.rollback(:run_contract_mismatch)
 
       run.status == "complete" ->

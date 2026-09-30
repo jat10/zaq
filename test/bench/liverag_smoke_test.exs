@@ -95,7 +95,18 @@ defmodule Zaq.Bench.LiveRAG.SmokeTest do
 
       export_directory = Path.join(context.directory, "artifact")
 
-      assert {:ok, %{corpus: %{documents: 2, chunks: 2, valid_vectors: true}}} =
+      assert {:ok,
+              %{
+                corpus: %{documents: 2, chunks: 2, valid_vectors: true},
+                preparation_contract: %{
+                  "model" => "stub",
+                  "dimension" => 2,
+                  "chunk_min_tokens" => 1,
+                  "chunk_max_tokens" => 100,
+                  "code_revision" => code_revision,
+                  "dependency_revision" => dependency_revision
+                }
+              }} =
                Artifacts.export(
                  database,
                  dataset,
@@ -103,6 +114,9 @@ defmodule Zaq.Bench.LiveRAG.SmokeTest do
                  export_directory,
                  context.source_options
                )
+
+      assert byte_size(code_revision) == 64
+      assert byte_size(dependency_revision) == 64
 
       assert {:ok, %{documents: 2, chunks: 2, valid_vectors: true}} =
                Artifacts.restore_verify(
@@ -131,6 +145,55 @@ defmodule Zaq.Bench.LiveRAG.SmokeTest do
     after
       Database.close(database)
     end
+  end
+
+  test "CLI inspect starts standalone against an empty source configuration database", context do
+    {:ok, database} = Database.open(context.source_options, context.target_options)
+
+    try do
+      assert :ok = Bootstrap.ensure(database, 2)
+    after
+      Database.close(database)
+    end
+
+    {output, status} =
+      System.cmd(
+        "mix",
+        [
+          "liverag.corpus",
+          "inspect",
+          "--source-url",
+          connection_url(context.source_options),
+          "--corpus-url",
+          connection_url(context.target_options)
+        ],
+        env: [{"MIX_ENV", "test"}],
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+    assert output =~ "\"documents\""
+
+    {:ok, source} = Repo.start_link(Keyword.put(context.source_options, :name, nil))
+
+    try do
+      assert %{rows: [[0]]} =
+               SQL.query!(
+                 source,
+                 "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'",
+                 []
+               )
+    after
+      Supervisor.stop(source)
+    end
+  end
+
+  defp connection_url(options) do
+    username = URI.encode(options[:username] || System.get_env("USER"))
+    password = if options[:password], do: ":" <> URI.encode(options[:password]), else: ""
+    host = options[:hostname] || "localhost"
+    port = options[:port] || 5432
+    "postgres://#{username}#{password}@#{host}:#{port}/#{options[:database]}"
   end
 
   defp install_vector(options) do
@@ -190,7 +253,14 @@ defmodule Zaq.Bench.LiveRAG.SmokeTest do
       embedding: %{dimension: 2, model: "stub", chunk_min_tokens: 1, chunk_max_tokens: 100},
       provider: %{endpoint: "http://localhost"},
       resolved_credential: %{auth_kind: "none", authentication: %{}},
-      fingerprint: String.duplicate("b", 64)
+      fingerprint: String.duplicate("b", 64),
+      contract:
+        Configuration.preparation_contract(%{
+          dimension: 2,
+          model: "stub",
+          chunk_min_tokens: 1,
+          chunk_max_tokens: 100
+        })
     }
   end
 end

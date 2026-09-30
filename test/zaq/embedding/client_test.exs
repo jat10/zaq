@@ -98,40 +98,27 @@ defmodule Zaq.Embedding.ClientTest do
       refute log =~ "router-secret"
     end
 
-    test "bounded 429 retries use capped delay and stop after success" do
+    test "429 returns Retry-After to the runner after exactly one HTTP request" do
       counter = start_supervised!({Agent, fn -> 0 end})
-      test_pid = self()
 
       Req.Test.stub(Client, fn conn ->
-        attempt = Agent.get_and_update(counter, fn count -> {count + 1, count + 1} end)
+        Agent.update(counter, &(&1 + 1))
 
-        if attempt < 3 do
-          conn
-          |> Plug.Conn.put_resp_header("retry-after", "120")
-          |> Plug.Conn.put_status(429)
-          |> Req.Test.json(%{"error" => "busy"})
-        else
-          Req.Test.json(conn, %{"data" => [%{"embedding" => [0.1, 0.2]}]})
-        end
+        conn
+        |> Plug.Conn.put_resp_header("retry-after", "120")
+        |> Plug.Conn.put_status(429)
+        |> Req.Test.json(%{"error" => "busy"})
       end)
 
       config = %{endpoint: "https://router.example/v1", model: "model", api_key: "secret"}
 
-      assert {:ok, [0.1, 0.2]} =
-               Client.embed("text",
-                 config: config,
-                 redact_errors: true,
-                 max_attempts: 3,
-                 max_retry_delay_ms: 1_000,
-                 sleep_fun: fn delay -> send(test_pid, {:sleep, delay}) end
-               )
+      assert {:error, {:rate_limited, 120, %{status: 429}}} =
+               Client.embed("text", config: config, redact_errors: true)
 
-      assert_receive {:sleep, 1_000}
-      assert_receive {:sleep, 1_000}
-      assert Agent.get(counter, & &1) == 3
+      assert Agent.get(counter, & &1) == 1
     end
 
-    test "bounded retries stop at the configured attempt limit" do
+    test "implicit Req retries are disabled for this path" do
       counter = start_supervised!({Agent, fn -> 0 end})
 
       Req.Test.stub(Client, fn conn ->
@@ -146,14 +133,9 @@ defmodule Zaq.Embedding.ClientTest do
       config = %{endpoint: "https://router.example/v1", model: "model", api_key: "secret"}
 
       assert {:error, {:rate_limited, 1, %{status: 429}}} =
-               Client.embed("text",
-                 config: config,
-                 redact_errors: true,
-                 max_attempts: 2,
-                 sleep_fun: fn _ -> :ok end
-               )
+               Client.embed("text", config: config, redact_errors: true)
 
-      assert Agent.get(counter, & &1) == 2
+      assert Agent.get(counter, & &1) == 1
     end
 
     test "returns embedding on successful response" do

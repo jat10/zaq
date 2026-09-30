@@ -87,9 +87,15 @@ defmodule Zaq.Bench.LiveRAG.RunnerTest do
     assert [%{code: "embedding_failed"}] = Runner.inspect(database).failures
 
     assert {:ok, [^chunk_id]} =
-             Runner.retry(database, dataset.manifest["source_sha256"], snapshot.fingerprint, [
-               chunk_id
-             ])
+             Runner.retry(
+               database,
+               dataset.manifest["source_sha256"],
+               snapshot.fingerprint,
+               [
+                 chunk_id
+               ],
+               snapshot.contract
+             )
 
     assert {:ok, %{complete: true}} =
              Runner.ingest(dataset, database, snapshot,
@@ -98,7 +104,13 @@ defmodule Zaq.Bench.LiveRAG.RunnerTest do
                pace_ms: 0
              )
 
-    assert Enum.map(Repo.all(Attempt), & &1.kind) == ["failure", "retry_requested", "success"]
+    assert Enum.map(Repo.all(Attempt), & &1.kind) == [
+             "request",
+             "failure",
+             "retry_requested",
+             "request",
+             "success"
+           ]
   end
 
   test "request budget stops scheduling and the next invocation resumes" do
@@ -124,6 +136,147 @@ defmodule Zaq.Bench.LiveRAG.RunnerTest do
                embed_fun: embed,
                pace_ms: 0
              )
+  end
+
+  test "provider cooldown survives restart and blocks requests until Retry-After expires" do
+    dataset = %{dataset() | documents: [%{"doc_id" => "a", "content" => "Alpha"}]}
+    database = %{corpus: Repo}
+    snapshot = snapshot()
+    first = fn _ -> {:error, {:rate_limited, 1, %{status: 429}}} end
+
+    assert {:ok, %{requests: 1, stopped: :cooldown}} =
+             Runner.ingest(dataset, database, snapshot,
+               limit: 1,
+               deadline_ms: 100,
+               pace_ms: 0,
+               embed_fun: first
+             )
+
+    assert Runner.inspect(database).run.request_count == 1
+    assert Runner.inspect(database).run.attempt_limit == 3
+    assert Repo.one!(Chunk).status == "pending"
+
+    assert {:ok, %{requests: 0, stopped: :cooldown}} =
+             Runner.ingest(dataset, database, snapshot,
+               limit: 1,
+               deadline_ms: 100,
+               pace_ms: 0,
+               embed_fun: fn _ -> flunk("request sent during cooldown") end
+             )
+
+    Process.sleep(1_050)
+
+    assert {:ok, %{requests: 1, complete: true}} =
+             Runner.ingest(dataset, database, snapshot,
+               limit: 1,
+               pace_ms: 0,
+               embed_fun: fn _ -> {:ok, embedding()} end
+             )
+
+    assert Runner.inspect(database).run.request_count == 2
+    assert Enum.count(Repo.all(Attempt), &(&1.kind == "request")) == 2
+  end
+
+  test "attempt budget persists across invocations and explicit retry resets it" do
+    dataset = %{dataset() | documents: [%{"doc_id" => "a", "content" => "Alpha"}]}
+    database = %{corpus: Repo}
+    snapshot = snapshot()
+    rate_limit = fn _ -> {:error, {:rate_limited, 0, %{status: 429}}} end
+
+    assert {:ok, %{requests: 1, stopped: :request_budget}} =
+             Runner.ingest(dataset, database, snapshot,
+               limit: 1,
+               attempts: 2,
+               max_requests: 1,
+               pace_ms: 0,
+               embed_fun: rate_limit
+             )
+
+    assert {:error, :attempt_limit_mismatch} =
+             Runner.ingest(dataset, database, snapshot,
+               limit: 1,
+               attempts: 3,
+               max_requests: 1,
+               pace_ms: 0,
+               embed_fun: fn _ -> flunk("changed attempt limit resumed") end
+             )
+
+    assert {:ok, %{requests: 1, failed: 1}} =
+             Runner.ingest(dataset, database, snapshot,
+               limit: 1,
+               attempts: 2,
+               max_requests: 1,
+               pace_ms: 0,
+               embed_fun: rate_limit
+             )
+
+    chunk_id = Repo.one!(Chunk).id
+    assert Repo.one!(Chunk).status == "failed"
+    assert Runner.inspect(database).run.request_count == 2
+
+    assert {:ok, [^chunk_id]} =
+             Runner.retry(
+               database,
+               dataset.manifest["source_sha256"],
+               snapshot.fingerprint,
+               [
+                 chunk_id
+               ],
+               snapshot.contract
+             )
+
+    assert {:ok, %{requests: 1, complete: true}} =
+             Runner.ingest(dataset, database, snapshot,
+               limit: 1,
+               attempts: 2,
+               pace_ms: 0,
+               embed_fun: fn _ -> {:ok, embedding()} end
+             )
+
+    assert Runner.inspect(database).run.request_count == 3
+  end
+
+  test "resume rejects a changed preparation contract without re-embedding completed chunks" do
+    dataset = dataset()
+    database = %{corpus: Repo}
+    snapshot = snapshot()
+
+    assert {:ok, %{requests: 1}} =
+             Runner.ingest(dataset, database, snapshot,
+               limit: 1,
+               pace_ms: 0,
+               embed_fun: fn _ -> {:ok, embedding()} end
+             )
+
+    changed = %{snapshot | contract: Map.put(snapshot.contract, "code_revision", "changed")}
+
+    assert {:error, :run_contract_mismatch} =
+             Runner.ingest(dataset, database, changed,
+               limit: 2,
+               pace_ms: 0,
+               embed_fun: fn _ -> flunk("incompatible code resumed") end
+             )
+
+    assert Runner.inspect(database).run.request_count == 1
+    assert Repo.aggregate(Zaq.Ingestion.Chunk, :count) == 1
+  end
+
+  test "benchmark preparation applies the production Markdown sanitizer" do
+    dataset = %{dataset() | documents: [%{"doc_id" => "a", "content" => "Al\0pha"}]}
+    database = %{corpus: Repo}
+
+    assert {:ok, %{complete: true}} =
+             Runner.ingest(dataset, database, snapshot(),
+               limit: 1,
+               pace_ms: 0,
+               embed_fun: fn input ->
+                 assert input == "Alpha"
+                 {:ok, embedding()}
+               end
+             )
+
+    assert Repo.one!(Zaq.Ingestion.Document).content == "Alpha"
+    assert {:ok, %{documents: 1}} = CorpusIntegrity.complete(database, dataset)
   end
 
   test "invalid vector is a fixed failed attempt and cannot be marked complete" do
@@ -182,7 +335,14 @@ defmodule Zaq.Bench.LiveRAG.RunnerTest do
       },
       provider: %{endpoint: "http://localhost:1234"},
       resolved_credential: %{auth_kind: "none", authentication: %{}},
-      fingerprint: String.duplicate("b", 64)
+      fingerprint: String.duplicate("b", 64),
+      contract:
+        Configuration.preparation_contract(%{
+          dimension: 1536,
+          model: "test-model",
+          chunk_min_tokens: 1,
+          chunk_max_tokens: 100
+        })
     }
   end
 
