@@ -26,6 +26,9 @@ persisted in `system_configs`.
 
 - LLM config is read via `Zaq.System.get_llm_config/0`
 - Embedding config is read via `Zaq.System.get_embedding_config/0`
+- Standalone corpus preparation reads parsed embedding fields without runtime
+  authentication through `Zaq.System.get_embedding_config_snapshot/0`, then
+  resolves authentication through the canonical confidential Engine/Connect path.
 - Image-to-text config is read via `Zaq.System.get_image_to_text_config/0`
 
 ### LLM Keys

@@ -155,6 +155,11 @@ if those continue failing, investigate provider access and metadata-fetch errors
 - Non-Markdown converters write temporary `.md` files next to job-scoped materialized inputs because the Python pipeline expects output paths; those files are scratch artifacts, not indexed documents.
 - `process_folder/1` — processes supported files in a directory (`.md .pdf .docx .pptx .xlsx .csv .png .jpg .jpeg`)
 - `store_chunk_with_metadata/3` — embeds `embedding_input || content`, validates dimension, inserts verbatim `content`
+- `ChunkPersistence.insert/5` is the shared storage boundary used by ordinary
+  ingestion and standalone corpus preparation. It preserves language, section
+  metadata, search configuration, half-vector validation, and chunk changesets.
+  Callers wrapping inserts in a transaction may suppress immediate language
+  inventory invalidation and invalidate after commit.
 - `rrf_merge/2` — fuses full-text and vector candidates with RRF (Reciprocal Rank Fusion, k=60) keyed by `(document_id, chunk_index)`; only a chunk found in both legs receives both contributions. `query_extraction/2` accepts optional `:source_filter` path prefixes — files matched by exact source, folders matched by `LIKE prefix/%`.
 - `similarity_search/2` — vector-only search with configurable distance threshold
 - `similarity_search_count/1` — count of unique chunks matching via hybrid union

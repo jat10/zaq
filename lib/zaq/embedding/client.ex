@@ -32,6 +32,8 @@ defmodule Zaq.Embedding.Client do
   ## Options
 
     * `:model` — override the configured model for this call
+    * `:config` — an already resolved embedding snapshot with endpoint/model/api_key
+    * `:redact_errors` — omit provider bodies and transport details from errors/logs
 
   ## Examples
 
@@ -43,7 +45,7 @@ defmodule Zaq.Embedding.Client do
   """
   @spec embed(String.t(), keyword()) :: {:ok, [float()]} | {:error, term()}
   def embed(text, opts \\ []) when is_binary(text) do
-    cfg = Zaq.System.get_embedding_config()
+    cfg = Keyword.get(opts, :config) || Zaq.System.get_embedding_config()
     model = Keyword.get(opts, :model, cfg.model)
     url = cfg.endpoint <> "/embeddings"
 
@@ -62,31 +64,68 @@ defmodule Zaq.Embedding.Client do
     req_opts =
       [url: url, json: body, headers: headers, receive_timeout: 60_000]
       |> Keyword.merge(req_options())
+      |> Keyword.merge(retry: false, redirect: false)
 
+    request_once(req_opts, Keyword.get(opts, :redact_errors, false))
+  end
+
+  defp request_once(req_opts, redact?) do
     case Req.post(req_opts) do
       {:ok, %Req.Response{status: 200, body: %{"data" => [%{"embedding" => embedding} | _]}}} ->
         {:ok, embedding}
 
       {:ok, %Req.Response{status: 200, body: response_body}} ->
-        {:error, "Unexpected response format: #{inspect(response_body)}"}
+        unexpected_response(response_body, redact?)
 
       {:ok, %Req.Response{status: 429, headers: response_headers, body: response_body}} ->
-        delay_seconds = rate_limit_delay_seconds(response_headers)
-
-        Logger.warning(
-          "Embedding API rate limited (429). Retrying in #{delay_seconds}s. Body: #{inspect(response_body)}"
-        )
-
-        {:error, {:rate_limited, delay_seconds, %{status: 429, body: response_body}}}
+        rate_limited(response_headers, response_body, redact?)
 
       {:ok, %Req.Response{status: status, body: response_body}} ->
-        Logger.error("Embedding API error (#{status}): #{inspect(response_body)}")
-        {:error, "API error (#{status}): #{inspect(response_body)}"}
+        api_error(status, response_body, redact?)
 
       {:error, reason} ->
-        Logger.error("Embedding HTTP request failed: #{inspect(reason)}")
-        {:error, "HTTP request failed: #{inspect(reason)}"}
+        transport_error(reason, redact?)
     end
+  end
+
+  defp unexpected_response(_body, true), do: {:error, :invalid_embedding_response}
+
+  defp unexpected_response(body, false),
+    do: {:error, "Unexpected response format: #{inspect(body)}"}
+
+  defp rate_limited(headers, _body, true) do
+    Logger.warning("Embedding API rate limited (429)")
+    {:error, {:rate_limited, rate_limit_delay_seconds(headers), %{status: 429}}}
+  end
+
+  defp rate_limited(headers, body, false) do
+    delay_seconds = rate_limit_delay_seconds(headers)
+
+    Logger.warning(
+      "Embedding API rate limited (429). Retry after #{delay_seconds}s. Body: #{inspect(body)}"
+    )
+
+    {:error, {:rate_limited, delay_seconds, %{status: 429, body: body}}}
+  end
+
+  defp api_error(status, _body, true) do
+    Logger.error("Embedding API error (#{status})")
+    {:error, {:api_error, status}}
+  end
+
+  defp api_error(status, body, false) do
+    Logger.error("Embedding API error (#{status}): #{inspect(body)}")
+    {:error, "API error (#{status}): #{inspect(body)}"}
+  end
+
+  defp transport_error(_reason, true) do
+    Logger.error("Embedding HTTP request failed")
+    {:error, :embedding_transport_error}
+  end
+
+  defp transport_error(reason, false) do
+    Logger.error("Embedding HTTP request failed: #{inspect(reason)}")
+    {:error, "HTTP request failed: #{inspect(reason)}"}
   end
 
   @doc """

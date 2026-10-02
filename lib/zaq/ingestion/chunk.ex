@@ -211,12 +211,13 @@ defmodule Zaq.Ingestion.Chunk do
     rows != []
   end
 
-  @doc "Creates the chunks table with the given dimension. No-op if the table already exists."
-  def create_table(dimension) when is_integer(dimension) do
-    ExtensionChecks.require!(Repo, :vector)
+  @doc "Creates the chunks table using the current dynamic repository binding."
+  def create_table(dimension, opts \\ []) when is_integer(dimension) and is_list(opts) do
+    repo = Repo.get_dynamic_repo()
+    ExtensionChecks.require!(repo, :vector)
 
     EctoSQL.query!(
-      Repo,
+      repo,
       """
       CREATE TABLE IF NOT EXISTS chunks (
         id bigserial PRIMARY KEY,
@@ -234,13 +235,13 @@ defmodule Zaq.Ingestion.Chunk do
     )
 
     EctoSQL.query!(
-      Repo,
+      repo,
       "ALTER TABLE chunks ADD COLUMN IF NOT EXISTS embedding halfvec(#{dimension})",
       []
     )
 
     EctoSQL.query!(
-      Repo,
+      repo,
       """
       CREATE INDEX IF NOT EXISTS chunks_embedding_idx
       ON chunks
@@ -251,14 +252,16 @@ defmodule Zaq.Ingestion.Chunk do
     )
 
     EctoSQL.query!(
-      Repo,
+      repo,
       """
       CREATE INDEX IF NOT EXISTS chunks_document_id_index ON chunks (document_id)
       """,
       []
     )
 
-    FTSBackend.setup_index(Repo, dimension)
+    if Keyword.get(opts, :native_fts, false),
+      do: FTSBackend.Native.setup_bm25_index(repo, dimension),
+      else: FTSBackend.setup_index(repo, dimension)
 
     :ok
   end

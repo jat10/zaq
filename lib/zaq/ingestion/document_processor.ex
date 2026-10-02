@@ -23,7 +23,7 @@ defmodule Zaq.Ingestion.DocumentProcessor do
 
   alias Zaq.Ingestion.{
     Chunk,
-    ChunkLanguages,
+    ChunkPersistence,
     Document,
     DocumentAccess,
     DocumentChunker,
@@ -65,17 +65,10 @@ defmodule Zaq.Ingestion.DocumentProcessor do
     Zaq.System.get_llm_config().max_cosine_distance
   end
 
-  # Check the stored precision rather than the source floats: a small nonzero
-  # provider vector can round entirely to zero on halfvec conversion.
-  defp zero_halfvec?(embedding) do
-    %Pgvector.HalfVector{data: <<_dimension::16, _reserved::16, values::binary>>} =
-      Pgvector.HalfVector.new(embedding)
-
-    not Enum.any?(for(<<value::float-16 <- values>>, do: value), &(&1 != 0.0))
-  end
-
   defp validate_query_embedding(embedding) do
-    if zero_halfvec?(embedding), do: {:error, :zero_norm_embedding}, else: :ok
+    if ChunkPersistence.zero_halfvec?(embedding),
+      do: {:error, :zero_norm_embedding},
+      else: :ok
   end
 
   defp hybrid_search_limit do
@@ -173,6 +166,7 @@ defmodule Zaq.Ingestion.DocumentProcessor do
     Logger.info("Preparing file chunks: #{file_path}")
 
     with {:ok, content} <- read_as_markdown(file_path, opts),
+         {content, chunks} <- prepare_markdown_chunks(content),
          {:ok, source} <- extract_source(content, file_path, opts),
          {:ok, document} <-
            store_document(
@@ -181,9 +175,6 @@ defmodule Zaq.Ingestion.DocumentProcessor do
              source_metadata(opts),
              document_title(opts)
            ) do
-      sections = DocumentChunker.parse_layout(content, format: :markdown)
-      chunks = DocumentChunker.chunk_sections(sections)
-
       indexed_payloads =
         chunks
         |> Enum.with_index(1)
@@ -195,6 +186,19 @@ defmodule Zaq.Ingestion.DocumentProcessor do
         Logger.error("Failed to prepare chunks for #{file_path}: #{inspect(reason)}")
         error
     end
+  end
+
+  @doc "Sanitizes Markdown and prepares the same layout-aware chunks used by file ingestion."
+  @spec prepare_markdown_chunks(String.t()) :: {String.t(), [struct()]}
+  def prepare_markdown_chunks(content) when is_binary(content) do
+    sanitized = FTSBackend.sanitize_utf8_text(content)
+
+    chunks =
+      sanitized
+      |> DocumentChunker.parse_layout(format: :markdown)
+      |> DocumentChunker.chunk_sections()
+
+    {sanitized, chunks}
   end
 
   @doc """
@@ -614,8 +618,7 @@ defmodule Zaq.Ingestion.DocumentProcessor do
       Chunk.delete_by_document(document_id)
     end
 
-    sections = DocumentChunker.parse_layout(content, format: :markdown)
-    chunks = DocumentChunker.chunk_sections(sections)
+    {_sanitized, chunks} = prepare_markdown_chunks(content)
 
     Logger.info("Created #{length(chunks)} layout-aware chunks for document_id: #{document_id}")
 
@@ -718,69 +721,11 @@ defmodule Zaq.Ingestion.DocumentProcessor do
     # query-time callers that must receive plain text.
     case EmbeddingClient.embed(chunk.embedding_input || chunk.content) do
       {:ok, embedding} ->
-        expected_dim = EmbeddingClient.dimension()
-
-        if length(embedding) != expected_dim do
-          Logger.error(
-            "Embedding dimension mismatch: expected #{expected_dim}, got #{length(embedding)}"
-          )
-
-          {:error, :dimension_mismatch}
-        else
-          insert_nonzero_chunk(chunk, document_id, index, embedding)
-        end
+        ChunkPersistence.insert(chunk, document_id, index, embedding, EmbeddingClient.dimension())
 
       {:error, reason} ->
         Logger.error("Failed to generate embedding for chunk #{index}: #{inspect(reason)}")
         {:error, reason}
-    end
-  end
-
-  defp insert_nonzero_chunk(chunk, document_id, index, embedding) do
-    if zero_halfvec?(embedding),
-      do: {:error, :zero_norm_embedding},
-      else: insert_chunk(chunk, document_id, index, embedding)
-  end
-
-  # ---------------------------------------------------------------------------
-  # Chunk insertion (Ecto)
-  # ---------------------------------------------------------------------------
-
-  defp insert_chunk(%DocumentChunker.Chunk{} = chunk, document_id, index, embedding) do
-    language = LanguageDetector.detect(chunk.content)
-
-    search_configuration =
-      case FTSBackend.impl() do
-        FTSBackend.Native ->
-          FTSBackend.Native.configuration_for(language) |> String.split(".") |> List.last()
-
-        # The current ParadeDB index has no language-specific analyzer. Until
-        # one is provisioned this is the language-neutral equivalent of simple.
-        FTSBackend.ParadeDB ->
-          "simple"
-      end
-
-    attrs = %{
-      document_id: document_id,
-      content: chunk.content,
-      chunk_index: index,
-      section_path: chunk.section_path,
-      metadata: Map.put(build_metadata(chunk), "search_configuration", search_configuration),
-      embedding: Pgvector.HalfVector.new(embedding),
-      language: language
-    }
-
-    %Chunk{}
-    |> Chunk.changeset(attrs)
-    |> Repo.insert()
-    |> case do
-      {:ok, record} ->
-        ChunkLanguages.invalidate()
-        {:ok, record}
-
-      {:error, changeset} ->
-        Logger.error("Failed to insert chunk #{index}: #{inspect(changeset)}")
-        {:error, changeset}
     end
   end
 
@@ -793,46 +738,8 @@ defmodule Zaq.Ingestion.DocumentProcessor do
   `start`/`end` as `"P<page>|L<line>"` strings. Locator keys are omitted
   entirely when the chunker struct carries no locators (legacy path).
   """
-  def build_metadata(%DocumentChunker.Chunk{} = chunk) do
-    section_type = metadata_field(chunk.metadata, :section_type)
-
-    base = %{
-      section_id: chunk.section_id,
-      section_type: section_type,
-      section_level: metadata_field(chunk.metadata, :section_level),
-      position: metadata_field(chunk.metadata, :position),
-      tokens: chunk.tokens
-    }
-
-    base = put_locators(base, chunk)
-
-    case section_type do
-      value when value in [:figure, "figure"] ->
-        figure_title = List.last(chunk.section_path) || ""
-        Map.put(base, :figure_title, figure_title)
-
-      _ ->
-        base
-    end
-  end
-
-  defp put_locators(meta, %DocumentChunker.Chunk{} = chunk) do
-    meta
-    |> put_page_line(:start, chunk.start_page, chunk.start_line)
-    |> put_page_line(:end, chunk.end_page, chunk.end_line)
-  end
-
-  defp put_page_line(meta, key, page, line) when is_integer(page) and is_integer(line) do
-    Map.put(meta, key, "P#{page}|L#{line}")
-  end
-
-  defp put_page_line(meta, _key, _page, _line), do: meta
-
-  defp metadata_field(metadata, key) when is_map(metadata) do
-    Map.get(metadata, key) || Map.get(metadata, Atom.to_string(key))
-  end
-
-  defp metadata_field(_metadata, _key), do: nil
+  def build_metadata(%DocumentChunker.Chunk{} = chunk),
+    do: ChunkPersistence.build_metadata(chunk)
 
   # ---------------------------------------------------------------------------
   # Query extraction (token-limited context for answering agent)

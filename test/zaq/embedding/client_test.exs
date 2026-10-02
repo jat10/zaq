@@ -60,6 +60,84 @@ defmodule Zaq.Embedding.ClientTest do
   end
 
   describe "embed/2" do
+    test "uses an explicit snapshot for the configured zaq_router endpoint" do
+      Req.Test.stub(Client, fn conn ->
+        assert conn.host == "router.example"
+        assert conn.request_path == "/v1/embeddings"
+        assert Plug.Conn.get_req_header(conn, "authorization") == ["Bearer router-secret"]
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        assert Jason.decode!(body)["model"] == "router-embedding-model"
+        Req.Test.json(conn, %{"data" => [%{"embedding" => [0.1, 0.2]}]})
+      end)
+
+      config = %{
+        provider: "zaq_router",
+        endpoint: "https://router.example/v1",
+        model: "router-embedding-model",
+        api_key: "router-secret"
+      }
+
+      assert {:ok, [0.1, 0.2]} = Client.embed("text", config: config, redact_errors: true)
+    end
+
+    test "redacted errors omit provider body and authentication" do
+      Req.Test.stub(Client, fn conn ->
+        conn
+        |> Plug.Conn.put_status(401)
+        |> Req.Test.json(%{"error" => "router-secret rejected"})
+      end)
+
+      config = %{endpoint: "https://router.example/v1", model: "model", api_key: "router-secret"}
+
+      log =
+        ExUnit.CaptureLog.capture_log(fn ->
+          assert {:error, {:api_error, 401}} =
+                   Client.embed("text", config: config, redact_errors: true)
+        end)
+
+      refute log =~ "router-secret"
+    end
+
+    test "429 returns Retry-After to the runner after exactly one HTTP request" do
+      counter = start_supervised!({Agent, fn -> 0 end})
+
+      Req.Test.stub(Client, fn conn ->
+        Agent.update(counter, &(&1 + 1))
+
+        conn
+        |> Plug.Conn.put_resp_header("retry-after", "120")
+        |> Plug.Conn.put_status(429)
+        |> Req.Test.json(%{"error" => "busy"})
+      end)
+
+      config = %{endpoint: "https://router.example/v1", model: "model", api_key: "secret"}
+
+      assert {:error, {:rate_limited, 120, %{status: 429}}} =
+               Client.embed("text", config: config, redact_errors: true)
+
+      assert Agent.get(counter, & &1) == 1
+    end
+
+    test "implicit Req retries are disabled for this path" do
+      counter = start_supervised!({Agent, fn -> 0 end})
+
+      Req.Test.stub(Client, fn conn ->
+        Agent.update(counter, &(&1 + 1))
+
+        conn
+        |> Plug.Conn.put_resp_header("retry-after", "1")
+        |> Plug.Conn.put_status(429)
+        |> Req.Test.json(%{"error" => "secret-provider-body"})
+      end)
+
+      config = %{endpoint: "https://router.example/v1", model: "model", api_key: "secret"}
+
+      assert {:error, {:rate_limited, 1, %{status: 429}}} =
+               Client.embed("text", config: config, redact_errors: true)
+
+      assert Agent.get(counter, & &1) == 1
+    end
+
     test "returns embedding on successful response" do
       embedding = List.duplicate(0.1, 10)
 

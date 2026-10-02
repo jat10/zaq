@@ -556,6 +556,12 @@ defmodule Zaq.System do
 
   @doc "Loads Embedding configuration from DB as `%EmbeddingConfig{}`."
   def get_embedding_config do
+    get_embedding_config_snapshot() |> merge_connection_fields_from_credential()
+  end
+
+  @doc "Loads persisted embedding settings without resolving or exposing runtime authentication."
+  @spec get_embedding_config_snapshot() :: struct()
+  def get_embedding_config_snapshot do
     keys = Enum.map(@embedding_read_fields, &"embedding.#{&1}")
     rows = Repo.all(from c in Config, where: c.key in ^keys)
 
@@ -578,7 +584,7 @@ defmodule Zaq.System do
         chunk_max_tokens: ParseUtils.parse_int(raw["chunk_max_tokens"], 900)
       }
 
-    merge_connection_fields_from_credential(config)
+    config
   end
 
   @doc "Returns true when the chunks table exists in the database."

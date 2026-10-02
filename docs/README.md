@@ -50,6 +50,7 @@ Coding agents start at [AGENTS.md](../AGENTS.md).
 ## Planning and historical context
 
 - [Planning strategy](exec-plans/PLAN_STRATEGY.md): new execution plans and progress belong in Beadwork.
+- [LiveRAG corpus preparation contract](exec-plans/liverag-corpus-preparation.md) (Beadwork `zaq-f9w`).
 - [Quality assessment](QUALITY_SCORE.md) and [debt tracker](exec-plans/tech-debt-tracker.md).
 - [Completed plan archive](exec-plans/completed/), [design/roadmap documents](plans/), and [UX artifacts](ux/)
   provide historical or proposed context; verify status before treating them as current contracts.

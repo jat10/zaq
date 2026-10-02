@@ -92,6 +92,7 @@ defmodule Zaq.MixProject do
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:mime, "~> 2.0"},
+      {:explorer, "~> 0.12", only: [:dev, :test]},
       {:jsonc, "~> 0.9.0"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},

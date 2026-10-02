@@ -419,6 +419,26 @@ defmodule Zaq.SystemTest do
   # ── Embedding ─────────────────────────────────────────────────────────
 
   describe "get_embedding_config/0" do
+    test "secret-free snapshot parses persisted embedding values without resolving authentication" do
+      credential =
+        SystemConfigFixtures.ai_credential_fixture(%{
+          provider: "openai",
+          endpoint: "https://provider.example/v1",
+          api_key: "secret-value"
+        })
+
+      System.set_config("embedding.credential_id", credential.id)
+      System.set_config("embedding.model", "snapshot-model")
+      System.set_config("embedding.dimension", "1536")
+
+      snapshot = System.get_embedding_config_snapshot()
+      assert snapshot.credential_id == credential.id
+      assert snapshot.model == "snapshot-model"
+      assert snapshot.dimension == 1536
+      assert snapshot.api_key == ""
+      refute inspect(snapshot) =~ "secret-value"
+    end
+
     test "returns EmbeddingConfig defaults when no rows exist" do
       config = System.get_embedding_config()
       assert %EmbeddingConfig{} = config
