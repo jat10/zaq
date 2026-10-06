@@ -4,6 +4,7 @@ defmodule ZaqWeb.Router do
   use ZaqWeb, :router
 
   import JidoStudio.Router
+  import WebWidget.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -41,6 +42,11 @@ defmodule ZaqWeb.Router do
 
   pipeline :api_stream do
     plug :fetch_query_params
+  end
+
+  scope "/" do
+    pipe_through :browser
+    web_widget("/widget")
   end
 
   scope "/", ZaqWeb do

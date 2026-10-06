@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM elixir:1.19.5-otp-28 AS build
+FROM elixir:1.19.5-otp-28 AS dependencies
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends build-essential git curl ca-certificates && \
@@ -14,6 +14,15 @@ ENV MIX_ENV=prod
 
 COPY mix.exs mix.lock ./
 RUN mix deps.get --only $MIX_ENV
+
+# Build the pinned widget's browser bundle using the host's resolved dependencies.
+FROM node:22-bookworm-slim AS widget-assets
+COPY --from=dependencies /app/deps /app/deps
+WORKDIR /app/deps/web_widget
+RUN ln -s .. deps && npm --prefix assets ci && npm --prefix assets run build
+
+FROM dependencies AS build
+COPY --from=widget-assets /app/deps/web_widget/priv/static/assets /app/deps/web_widget/priv/static/assets
 
 RUN mkdir config
 COPY config/config.exs config/prod.exs config/
@@ -34,6 +43,14 @@ COPY config/runtime.exs config/
 RUN mix zaq.python.fetch
 
 RUN mix release
+
+# Check the release itself, which is the only application tree copied to runtime.
+RUN set -- /app/_build/prod/rel/zaq/lib/web_widget-*/priv/static/assets; \
+    test "$#" -eq 1 && \
+    for asset in embed.js app.js app.css web-widget.js web-widget.css widget-client.js; do \
+      test -s "$1/$asset" || \
+        { echo "Missing web_widget release asset: $asset" >&2; exit 1; }; \
+    done
 
 # Keep a stable path to the release-bundled Python requirements
 RUN cp /app/_build/prod/rel/zaq/lib/zaq-*/priv/python/crawler-ingest/requirements.txt /app/release-requirements.txt

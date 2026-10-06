@@ -8,7 +8,7 @@ defmodule ZaqWeb.Endpoint do
                      store: :cookie,
                      key: "_zaq_key",
                      signing_salt: "DzhRrJN1",
-                     same_site: "Lax",
+                     same_site: Application.compile_env(:zaq, :session_same_site, "Lax"),
                      http_only: true
                    ] ++
                      if(Application.compile_env(:zaq, :secure_session_cookie, false),
@@ -19,6 +19,8 @@ defmodule ZaqWeb.Endpoint do
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
+
+  plug WebWidget.Static
 
   # Serve at "/" the static files from "priv/static" directory.
   #

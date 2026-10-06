@@ -50,9 +50,19 @@ config :zaq, :channels, %{
     message_format: :html
   },
   web: %{bridge: Zaq.Channels.WebBridge},
-  web_widget: %{bridge: Zaq.Channels.WebBridge},
+  web_widget: %{
+    bridge: Zaq.Channels.WebBridge,
+    runtime_builder: WebWidget.Integration.RuntimeBuilder
+  },
   disk: %{bridge: Zaq.Channels.DiskBridge}
 }
+
+# Parent backend signs widget identity with the connector's authentication key.
+config :web_widget, :integration,
+  pubsub_server: Zaq.PubSub,
+  identity_verifier: :connector_key,
+  identity_issuer: "test-widget",
+  identity_audience: "zaq-web-widget"
 
 config :zaq,
   ecto_repos: [Zaq.Repo],

@@ -1,5 +1,8 @@
 import Config
 
+# HTTPS tunnels embed the widget cross-site and require both cookie attributes.
+config :zaq, session_same_site: "None", secure_session_cookie: true
+
 # Configure your database
 # Database name is derived from the current git branch so each worktree gets isolation automatically.
 dev_db_name =
