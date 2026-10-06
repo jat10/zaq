@@ -220,3 +220,37 @@ export SYSTEM_CONFIG_ENCRYPTION_KEY_ID="v1"
 ```
 
 See `docs/services/system-config.md` for full secret configuration details.
+
+## Build a widget test image on GitHub
+
+The [Widget development image workflow](../.github/workflows/widget-dev-image.yml)
+triggers on pushes to `feat/web-widget-wire`. It can also be dispatched on that
+branch once GitHub has registered the workflow. A new manually dispatched workflow
+normally needs to exist on the default branch first; the push trigger works for
+this feature branch without merging it into `main`.
+
+The workflow uses the Git-pinned widget dependency in `mix.lock` and the current
+Dockerfile, including its widget asset build. It builds `linux/amd64` and
+`linux/arm64` on separate native runners, then publishes one multi-platform image
+to `ghcr.io/<repository-owner>/zaq-dev`. The `latest` tag advances only after both
+architecture builds succeed; `sha-<full-commit-sha>` identifies the source commit.
+It does not create a GitHub release or update the production `zaq` image.
+
+For the `jat10/zaq` fork, after committing and pushing the workflow:
+
+```bash
+gh run list --repo jat10/zaq --branch feat/web-widget-wire \
+  --workflow widget-dev-image.yml
+gh run watch <run-id> --repo jat10/zaq
+
+docker pull ghcr.io/jat10/zaq-dev:latest
+docker tag ghcr.io/jat10/zaq-dev:latest zaq-dev:latest
+```
+
+The runner authenticates to GHCR with its automatic `GITHUB_TOKEN` and
+`packages: write`; no registry secret is needed for this repository's own package.
+If the package is private, log in locally with a token permitted to read packages
+before pulling, or explicitly make the development package public in its GitHub
+package settings. Configure runtime environment, database and storage as described
+in the [deployment guide](operations/deployment.md). Pulling the image automatically
+selects your machine's architecture; it does not build anything locally.
