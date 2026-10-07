@@ -1,5 +1,5 @@
 x-zaq-image: &zaq-image
-  image: ghcr.io/jat10/zaq-dev:latest
+  image: zaq-local:dev
   build:
     context: .
     dockerfile: Dockerfile
