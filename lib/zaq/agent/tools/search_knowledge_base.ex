@@ -201,6 +201,8 @@ defmodule Zaq.Agent.Tools.SearchKnowledgeBase do
     |> Enum.map(&elem(&1, 0))
   end
 
+  def tool_timeout_ms, do: 120_000
+
   defp dispatch(router, action, request, processor) do
     event = Event.new(request, :ingestion, opts: [action: action, document_processor: processor])
     router.dispatch(event).response
