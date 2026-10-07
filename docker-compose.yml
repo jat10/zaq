@@ -1,5 +1,5 @@
 x-zaq-image: &zaq-image
-  image: zaq-local:dev
+  image: ghcr.io/jat10/zaq-dev:latest
   build:
     context: .
     dockerfile: Dockerfile
@@ -69,7 +69,7 @@ services:
       # Runtime filesystem base; keep aligned with the bind-mount destination below.
       STORAGE_VOLUMES_BASE: "${STORAGE_VOLUMES_BASE:-/zaq/volumes}"
       SYSTEM_CONFIG_ENCRYPTION_KEY: "${SYSTEM_CONFIG_ENCRYPTION_KEY}"
-      SYSTEM_CONFIG_ENCRYPTION_KEY_ID: "${SYSTEM_CONFIG_ENCRYPTION_KEY_ID}"
+      SYSTEM_CONFIG_ENCRYPTION_KEY_ID: "${SYSTEM_CONFIG_ENCRYPTION_KEY_ID:-v1}"
       WORKFLOWS_ENABLED: "${WORKFLOWS_ENABLED:-true}"
     volumes:
       - ./ingestion-volumes:/zaq/volumes
