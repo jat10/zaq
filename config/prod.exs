@@ -1,6 +1,6 @@
 import Config
 
-config :zaq, :secure_session_cookie, true
+config :zaq, session_same_site: "None", secure_session_cookie: true
 
 # Note we also include the path to a cache manifest
 # containing the digested version of static files. This
