@@ -17,6 +17,7 @@ defmodule Zaq.Engine.Api do
   alias Zaq.Engine.ChannelHistoryMembership
   alias Zaq.Engine.Connect
   alias Zaq.Engine.Connect.DeviceAttempts
+  alias Zaq.Engine.Connect.LinkedDeviceStorage
   alias Zaq.Engine.Connect.OAuth
   alias Zaq.Engine.Connect.OAuth.Registry, as: OAuthBehaviourRegistry
   alias Zaq.Engine.Connect.OAuthAttempts
@@ -56,6 +57,20 @@ defmodule Zaq.Engine.Api do
         result
       else
         _ -> {:error, :unauthorized}
+      end
+
+    %{event | response: response}
+  end
+
+  def handle_event(%Event{} = event, :linked_device_storage, _context) do
+    hop = event.next_hop || List.last(event.hops)
+
+    response =
+      if event.opts[:confidential] == true and event.opts[:linked_device_runtime] == true and
+           match?(%{destination: :engine, type: :sync}, hop) do
+        LinkedDeviceStorage.dispatch(event.request)
+      else
+        {:error, :unauthorized}
       end
 
     %{event | response: response}

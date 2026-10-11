@@ -19,6 +19,26 @@ owner per connector across Channels nodes; Amarula's default registry alone only
 provides node-local uniqueness. The bridge must pass custom storage without
 `storage_root`, which would cause the upstream adapter to select file storage.
 
+`LinkedDevice.WhatsAppStorage` translates Amarula's storage callbacks into the
+confidential synchronous Engine `:linked_device_storage` event. Its binding fixes
+the connector, credential and profile; it cannot enumerate another account's
+state. Engine's `Connect.LinkedDeviceStorage` provisions one `linked_device`
+credential association per connector under a row lock, revalidates enabled and
+unarchived connector/provider identity, and persists individually encrypted
+protocol records. Replacing a container can reload those records from the database.
+The encryption key must remain available through normal ZAQ secret configuration.
+This auth kind is not an OAuth token grant and is not resolved as bearer auth.
+
+Storage events require explicit trusted `linked_device_runtime: true` and
+`confidential: true` options and a synchronous Engine hop. This is an internal
+runtime contract, not authentication of arbitrary callers to NodeRouter; BO and
+agent tools must not expose this primitive. Write results reflect persistence;
+read/decryption failures fail the connection instead of looking like absent state.
+Disabling a connector denies storage access but preserves its state for re-enable.
+The callback adapter never calls an Amarula process while a protocol lock is held.
+Remote dispatch and database operations use bounded timeouts; a timeout means
+unknown completion, not a successful write. Record replacement is idempotent.
+
 For normalization, identity resolution and confirmed delivery call chains across
 roles, see the [message lifecycle sequences](message-lifecycle.md).
 
