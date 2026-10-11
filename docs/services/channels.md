@@ -36,6 +36,20 @@ cannot update the new attempt. WhatsApp reports connected only after socket open
 Event with a super-admin actor for linked devices. Both resolve the exact enabled
 connector from storage. Retry returns the actual runtime restart result.
 
+In BO, choose Communication Channels → WhatsApp, create a named configuration,
+then choose **Connect device** on that configuration. A super-admin scans the QR
+from the phone's Linked devices screen. Each card connects a separate account.
+Disabling a card stops its runtime while retaining encrypted state for a later
+reconnect. The pairing modal polls only its selected connector, rejects obsolete
+results after navigation/retry and stops after three minutes. Reopen or retry to
+continue. Keep the database and the application's encryption key across deployments;
+the WhatsApp session does not rely on the container filesystem.
+
+The shared pairing component and its example states are in Storybook under
+`/storybook/modals/linked_device_pairing`. BO reads provider connection mode through
+the secret-free `:channel_connection_mode` query; status and retry retain their
+separate privileged contracts. This query performs no account operation.
+
 The bridge starts adapter-created decoders under `LinkedDevice.Runtime`, whose
 rest-for-one tree owns the provider connection separately from the decoder.
 Restarting a decoder reattaches it; restarting an owner adopts its orphaned
