@@ -212,21 +212,16 @@ defmodule Zaq.Channels.Api do
   end
 
   def handle_event(
-        %Event{request: %{provider: provider, channel_id: channel_id}} = event,
+        %Event{request: %{provider: provider, channel_id: channel_id} = request} = event,
         :send_typing,
         _context
       ) do
     bridge_module = bridge_module(event)
 
     with {:ok, bridge} <- resolve_bridge(bridge_module, provider),
-         true <- supports_callback?(bridge, :send_typing, 3) || {:error, :unsupported} do
-      config = bridge_module.fetch_channel_config(provider)
-      details = bridge_module.fetch_connection_details(provider)
-
-      case config do
-        {:ok, cfg} -> %{event | response: bridge.send_typing(cfg, channel_id, details)}
-        {:error, reason} -> %{event | response: {:error, reason}}
-      end
+         true <- supports_callback?(bridge, :send_typing, 3) || {:error, :unsupported},
+         {:ok, config, details} <- identity_connection(bridge_module, provider, request) do
+      %{event | response: bridge.send_typing(config, channel_id, details)}
     else
       {:error, reason} -> %{event | response: {:error, reason}}
     end
