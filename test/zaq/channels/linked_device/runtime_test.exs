@@ -6,6 +6,34 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
   alias Zaq.TestSupport.LinkedDeviceConnectionStub, as: Transport
   alias Zaq.TestSupport.LinkedDeviceFailingListener
 
+  test "unexpected history batches never reach the decoder, ordinary queued messages do" do
+    {_runtime, profile} = runtime()
+    owner = Agent.get(connection(profile), & &1)
+    send(owner, {:amarula, :history_sync, %{messages: [%{text: "old"}]}})
+
+    send(
+      owner,
+      {:amarula, :messages_upsert,
+       %{
+         messages: [
+           %Amarula.Msg{
+             id: "queued-1",
+             channel: Amarula.Address.parse("peer@s.whatsapp.net"),
+             from: Amarula.Address.parse("peer@s.whatsapp.net"),
+             to: Amarula.Address.parse("self@s.whatsapp.net"),
+             type: :text,
+             content: "queued",
+             timestamp: 1_700_000_000,
+             raw: %{}
+           }
+         ]
+       }}
+    )
+
+    assert_receive {:payload, %{id: "queued-1", text: "queued"}, _opts}
+    refute_receive {:payload, _, _}
+  end
+
   test "failed decoder startup rolls back the connection owner" do
     profile = "failed_#{System.unique_integer([:positive])}"
     listener = %{id: :failed, start: {LinkedDeviceFailingListener, :start_link, [[]]}}
