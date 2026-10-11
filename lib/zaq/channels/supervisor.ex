@@ -2,9 +2,9 @@ defmodule Zaq.Channels.Supervisor do
   @moduledoc """
   Static supervisor and public runtime facade for the Channels role.
 
-  Starts `Zaq.Channels.PeopleAuthRateLimiter` before the dynamic
-  `Zaq.Channels.BridgeSupervisor` with `:one_for_one` restart isolation.
-  Stopping this parent stops both subtrees and releases the runtime ETS table.
+  Starts the rate limiter and provider infrastructure before the dynamic bridge
+  supervisor. Rest-for-one ordering rebuilds runtimes after shared infrastructure
+  failures. Stopping this parent stops all subtrees and releases the ETS table.
 
   `Zaq.NodeRouter` discovers Channels through this registered name. Registration
   identifies the role, not child readiness. Runtime operations delegate directly
@@ -13,7 +13,7 @@ defmodule Zaq.Channels.Supervisor do
 
   use Supervisor
 
-  alias Zaq.Channels.{BridgeSupervisor, PeopleAuthRateLimiter}
+  alias Zaq.Channels.{BridgeSupervisor, LinkedDevice, PeopleAuthRateLimiter}
 
   @type runtime :: %{listener_pids: [pid()], state_pid: pid() | nil}
 
@@ -22,7 +22,10 @@ defmodule Zaq.Channels.Supervisor do
 
   @impl true
   def init(opts) do
-    Supervisor.init([PeopleAuthRateLimiter, {BridgeSupervisor, opts}], strategy: :one_for_one)
+    children =
+      [PeopleAuthRateLimiter] ++ LinkedDevice.infrastructure_children(opts) ++ [{BridgeSupervisor, opts}]
+
+    Supervisor.init(children, strategy: :rest_for_one)
   end
 
   @doc "Starts runtime for a config via router bridge delegation."
