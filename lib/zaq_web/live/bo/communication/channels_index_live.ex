@@ -18,7 +18,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsIndexLive do
   @pending_ingress_status_retry_ms 200
   @pending_ingress_status_max_attempts 25
 
-  @retrieval_providers ~w(slack teams mattermost discord telegram webhook email web_widget)
+  @retrieval_providers ~w(slack teams mattermost discord telegram whatsapp webhook email web_widget)
   @data_source_providers ~w(disk google_drive sharepoint)
   @notification_providers ~w(email:smtp)
 
@@ -66,6 +66,12 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsIndexLive do
       color: "#26A5E4",
       desc:
         "Send and receive messages via Telegram Bot API. Ideal for ops alerts and lightweight bots."
+    },
+    %{
+      id: "whatsapp",
+      label: "WhatsApp",
+      color: "#128C7E",
+      desc: "Connect a WhatsApp account by scanning a QR code. History sync stays disabled."
     },
     %{
       id: "webhook",
