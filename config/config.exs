@@ -36,6 +36,13 @@ config :zaq, :channels, %{
     adapter: Jido.Chat.Telegram.Adapter,
     ingress_mode: :webhook
   },
+  whatsapp: %{
+    bridge: Zaq.Channels.JidoChatBridge,
+    adapter: Jido.Chat.WhatsApp.Adapter,
+    ingress_mode: :linked_device,
+    linked_device_provider: Zaq.Channels.LinkedDevice.WhatsApp,
+    sink_mfa: {Zaq.Channels.JidoChatBridge, :from_listener, []}
+  },
   google_drive: %{
     bridge: Zaq.Channels.JidoConnectBridge,
     integration: Jido.Connect.Google.Drive
