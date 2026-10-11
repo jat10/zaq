@@ -44,7 +44,10 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       fetch_state(:sync_runtime_result, :ok)
     end
 
-    def sync_provider_runtime(config), do: record_call(:sync_provider_runtime, config)
+    def sync_provider_runtime(config) do
+      record_call(:sync_provider_runtime, config)
+      fetch_state(:sync_provider_runtime_result, :ok)
+    end
 
     def capability_snapshot(_config) do
       fetch_state(:capability_snapshot, {:ok, %{resolved: %{}}})
@@ -175,6 +178,113 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
 
     view |> element("button", "Cancel") |> render_click()
     refute has_element?(view, "#config-form")
+  end
+
+  test "linked-device setup hides tokens and pairs only the selected configuration", %{conn: conn} do
+    admin = super_admin_fixture()
+    {:ok, admin} = Accounts.change_password(admin, %{password: "StrongPass1!"})
+    conn = init_test_session(conn, %{user_id: admin.id})
+    channels = Application.get_env(:zaq, :channels)
+
+    Application.put_env(
+      :zaq,
+      :channels,
+      Map.put(channels, :whatsapp, %{bridge: BridgeFake, ingress_mode: :linked_device})
+    )
+
+    BridgeFake.put(:capability_snapshot, {:ok, %{resolved: %{mode: "linked_device"}}})
+
+    BridgeFake.put(
+      :channel_ingress_status,
+      {:ok, %{phase: :pairing, status: :pending, summary: "Scan code", qr: "test-only-code"}}
+    )
+
+    first =
+      %ChannelConfig{}
+      |> ChannelConfig.changeset(%{
+        name: "First account",
+        provider: "whatsapp",
+        kind: "retrieval"
+      })
+      |> Repo.insert!()
+
+    second =
+      %ChannelConfig{}
+      |> ChannelConfig.changeset(%{
+        name: "Second account",
+        provider: "whatsapp",
+        kind: "retrieval"
+      })
+      |> Repo.insert!()
+
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+    view |> element("#new-config-button") |> render_click()
+    refute has_element?(view, "input[name='form[token]']")
+    refute has_element?(view, "input[name='form[url]']")
+    assert render(view) =~ "History sync is disabled"
+    view |> element("button", "Cancel") |> render_click()
+    view |> element("#pair-config-#{second.id}") |> render_click()
+    render_async(view)
+    assert has_element?(view, "#linked-device-pairing", "Second account")
+
+    assert has_element?(
+             view,
+             "#linked-device-pairing svg[aria-label='Device connection QR code']"
+           )
+
+    refute has_element?(view, "#linked-device-pairing", "First account")
+    view |> element("#linked-device-pairing button", "Close") |> render_click()
+    refute has_element?(view, "#linked-device-pairing")
+    view |> element("#toggle-config-#{first.id}") |> render_click()
+    refute has_element?(view, "#pair-config-#{first.id}")
+    assert has_element?(view, "#pair-config-#{second.id}")
+  end
+
+  test "linked-device retry displays failure and unprivileged callers cannot open pairing", %{
+    conn: conn
+  } do
+    channels = Application.get_env(:zaq, :channels)
+
+    Application.put_env(
+      :zaq,
+      :channels,
+      Map.put(channels, :whatsapp, %{bridge: BridgeFake, ingress_mode: :linked_device})
+    )
+
+    BridgeFake.put(:capability_snapshot, {:ok, %{resolved: %{mode: "linked_device"}}})
+
+    BridgeFake.put(
+      :channel_ingress_status,
+      {:ok, %{phase: :expired, status: :error, summary: "Expired"}}
+    )
+
+    config =
+      %ChannelConfig{}
+      |> ChannelConfig.changeset(%{
+        name: "Retry account",
+        provider: "whatsapp",
+        kind: "retrieval"
+      })
+      |> Repo.insert!()
+
+    {:ok, denied_view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+    refute has_element?(denied_view, "#pair-config-#{config.id}")
+    render_click(denied_view, "open_linked_device", %{"id" => to_string(config.id)})
+    refute has_element?(denied_view, "#linked-device-pairing")
+    admin = super_admin_fixture()
+    {:ok, admin} = Accounts.change_password(admin, %{password: "StrongPass1!"})
+
+    {:ok, view, _} =
+      live(init_test_session(conn, %{user_id: admin.id}), ~p"/bo/channels/retrieval/whatsapp")
+
+    view |> element("#pair-config-#{config.id}") |> render_click()
+    render_async(view)
+    BridgeFake.put(:sync_provider_runtime_result, {:error, :failed})
+    view |> element("#linked-device-pairing button", "Retry connection") |> render_click()
+    render_async(view)
+    assert has_element?(view, "#linked-device-pairing", "could not be checked or restarted")
+    assert [%{id: id}] = BridgeFake.calls(:sync_provider_runtime)
+    assert id == config.id
   end
 
   test "mount builds data source and fallback navigation labels" do

@@ -119,6 +119,13 @@
           </div>
         </:detail>
         <:actions>
+          <ZaqWeb.Components.DesignSystem.Button.button
+            :if={@linked_device and config.enabled and BOActor.super_admin?(@current_user)}
+            id={"pair-config-#{config.id}"}
+            variant={:secondary}
+            phx-click="open_linked_device"
+            phx-value-id={config.id}
+          >Connect device</ZaqWeb.Components.DesignSystem.Button.button>
           <button
             id={"open-test-config-#{config.id}"}
             phx-click="open_test"
@@ -1201,7 +1208,11 @@
         />
       </div>
 
-      <div :if={@kind != :data_source} class="mb-4">
+      <p :if={@linked_device} class="zaq-text-body-sm">
+        Save this configuration, then choose Connect device to scan a QR code.
+        <span :if={@provider == "whatsapp"}>History sync is disabled.</span>
+      </p>
+      <div :if={@kind != :data_source and not @linked_device} class="mb-4">
         <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
           Instance URL
         </label>
@@ -1214,7 +1225,7 @@
         />
       </div>
 
-      <div :if={@kind != :data_source} class="mb-6">
+      <div :if={@kind != :data_source and not @linked_device} class="mb-6">
         <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
           Bot Token
         </label>
@@ -1766,4 +1777,11 @@
       </div>
     </div>
   </ZaqWeb.Components.BOModal.form_dialog>
+  <ZaqWeb.Components.DesignSystem.LinkedDevicePairing.modal
+    :if={@linked_device_modal}
+    name={@linked_device_modal.name}
+    provider={@provider_label}
+    status={@linked_device_modal.status}
+    history_disabled={@provider == "whatsapp"}
+  />
 </ZaqWeb.Components.BOLayout.bo_layout>
