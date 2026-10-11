@@ -14,6 +14,11 @@ defmodule Zaq.Channels.LinkedDevice.WhatsApp do
   @impl true
   def infrastructure_children, do: [Amarula.Supervisor]
 
+  @doc "History imports never enter the message decoder; queued ordinary messages do."
+  @impl true
+  def forward_event?({:amarula, :history_sync, _}), do: false
+  def forward_event?(_), do: true
+
   @doc "Binds Amarula's persistence to the Engine-issued credential association."
   @impl true
   def storage(binding), do: {WhatsAppStorage, binding: binding}
