@@ -27,7 +27,7 @@ defmodule Zaq.Engine.ChannelConfig do
   @smtp_provider "email:smtp"
   @imap_provider "email:imap"
   @valid_kinds ~w(data_source retrieval)
-  @valid_providers ~w(mattermost slack teams google_drive sharepoint email:smtp email:imap telegram discord disk web_widget)
+  @valid_providers ~w(mattermost slack teams google_drive sharepoint email:smtp email:imap telegram discord whatsapp disk web_widget)
 
   schema "channel_configs" do
     field :name, :string
@@ -128,6 +128,11 @@ defmodule Zaq.Engine.ChannelConfig do
     kind = get_field(changeset, :kind)
 
     case {kind, get_field(changeset, :provider)} do
+      {"retrieval", "whatsapp"} ->
+        changeset
+        |> maybe_put_placeholder(:url)
+        |> maybe_put_placeholder(:token)
+
       {"data_source", _provider} ->
         changeset
         |> maybe_put_placeholder(:url)
