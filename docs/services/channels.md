@@ -2,6 +2,23 @@
 
 ## Overview
 
+### Linked-device configuration foundation
+
+`LinkedDevice.Config` builds provider-neutral ingress options from a persisted
+connector ID, a trusted provider implementation, and an explicit storage binding.
+The stable `zaq_linked_device_<connector_id>` profile must be used for both ingress
+and outgoing operations. Connector settings cannot override profile or storage.
+`LinkedDevice.WhatsApp` supplies the WhatsApp policy: both `sync_history` and
+`sync_full_history` are false. Its settings are not imposed on other providers.
+WhatsApp retrieval configurations do not require an HTTP URL or bearer token.
+
+This is configuration infrastructure; linked-device startup, credential-backed
+storage and pairing UI are tracked by `zaq-0l7` and are not enabled by registration
+alone. Before enabling startup, the lifecycle implementation must enforce one
+owner per connector across Channels nodes; Amarula's default registry alone only
+provides node-local uniqueness. The bridge must pass custom storage without
+`storage_root`, which would cause the upstream adapter to select file storage.
+
 For normalization, identity resolution and confirmed delivery call chains across
 roles, see the [message lifecycle sequences](message-lifecycle.md).
 
