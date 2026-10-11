@@ -29,9 +29,8 @@ defmodule Zaq.Engine.Connect.LinkedDeviceStorageTest do
     other = WhatsAppStorage.new(binding: second_binding)
     assert :error = WhatsAppStorage.get(other, second_binding.profile, :creds, :self)
 
-    assert_raise ArgumentError, fn ->
-      WhatsAppStorage.get(state, second_binding.profile, :creds, :self)
-    end
+    assert catch_exit(WhatsAppStorage.get(state, second_binding.profile, :creds, :self)) ==
+             {:shutdown, :linked_device_storage_unavailable}
 
     assert {:ok, [:self]} = WhatsAppStorage.list_keys(state, first_binding.profile, :creds)
     assert :ok = WhatsAppStorage.delete(state, first_binding.profile, :creds, :self)
@@ -68,8 +67,8 @@ defmodule Zaq.Engine.Connect.LinkedDeviceStorageTest do
     assert :ok = WhatsAppStorage.put(state, profile, :session, "peer", %{v: 1})
     disabled = config |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
 
-    assert {:error, :connector_unavailable} =
-             WhatsAppStorage.put(state, profile, :session, "peer", %{v: 2})
+    assert catch_exit(WhatsAppStorage.put(state, profile, :session, "peer", %{v: 2})) ==
+             {:shutdown, :linked_device_storage_unavailable}
 
     disabled |> Ecto.Changeset.change(enabled: true) |> Repo.update!()
     assert {:ok, %{v: 1}} = WhatsAppStorage.get(state, profile, :session, "peer")
@@ -91,9 +90,34 @@ defmodule Zaq.Engine.Connect.LinkedDeviceStorageTest do
     assert :ok = WhatsAppStorage.put(state, binding.profile, :creds, :self, %{key: "secret"})
     Repo.query!("UPDATE connect_linked_device_states SET encrypted_value = 'plaintext'")
 
-    assert_raise RuntimeError, "Linked-device storage read failed", fn ->
-      WhatsAppStorage.get(state, binding.profile, :creds, :self)
-    end
+    assert catch_exit(WhatsAppStorage.get(state, binding.profile, :creds, :self)) ==
+             {:shutdown, :linked_device_storage_unavailable}
+  end
+
+  test "Amarula cannot continue or announce success after a failed credentials write" do
+    config = connector("Write failure")
+    assert {:ok, binding} = LinkedDeviceStorage.bind(config.id)
+    scope = Amarula.Storage.scope({WhatsAppStorage, binding: binding})
+
+    assert :ok =
+             Amarula.Storage.put(scope, binding.profile, :creds, :self, %{secret: "persisted"})
+
+    disabled = config |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
+    parent = self()
+
+    {pid, ref} =
+      spawn_monitor(fn ->
+        # Mirrors Amarula.update_creds: its write result is not matched.
+        Amarula.Storage.put(scope, binding.profile, :creds, :self, %{secret: "must-not-continue"})
+        send(parent, :pairing_succeeded)
+      end)
+
+    assert_receive {:DOWN, ^ref, :process, ^pid, {:shutdown, :linked_device_storage_unavailable}}
+    refute_receive :pairing_succeeded
+    disabled |> Ecto.Changeset.change(enabled: true) |> Repo.update!()
+
+    assert {:ok, %{secret: "persisted"}} =
+             Amarula.Storage.get(scope, binding.profile, :creds, :self)
   end
 
   test "concurrent updates preserve separate protocol records and support replacement" do
