@@ -13,10 +13,12 @@ defmodule Zaq.Channels.LinkedDevice.Provider do
   @callback stop(map()) :: :ok | {:error, term()}
   @callback infrastructure_children() :: list()
   @callback forward_event?(term()) :: boolean()
+  @callback pairing_event(term(), map()) :: term()
 
   @optional_callbacks storage: 1,
                       connect: 2,
                       stop: 1,
                       infrastructure_children: 0,
-                      forward_event?: 1
+                      forward_event?: 1,
+                      pairing_event: 2
 end

@@ -27,6 +27,15 @@ does not distinguish offline catchup from live `messages_upsert` events; timesta
 age is not used to discard messages. Disabling history import therefore does not
 discard messages sent while ZAQ was offline.
 
+Linked-device ingress status is owned by the connection owner, with an attempt ID,
+phase, optional QR value and expiry. QR material stays in memory and is cleared on
+expiry, disconnect and completed pairing. Native control events do not enter chat
+handlers. A replaced owner has a new attempt ID; events addressed to its old PID
+cannot update the new attempt. WhatsApp reports connected only after socket open.
+`:channel_ingress_status` and `:channel_retry_linked_device` require a confidential
+Event with a super-admin actor for linked devices. Both resolve the exact enabled
+connector from storage. Retry returns the actual runtime restart result.
+
 The bridge starts adapter-created decoders under `LinkedDevice.Runtime`, whose
 rest-for-one tree owns the provider connection separately from the decoder.
 Restarting a decoder reattaches it; restarting an owner adopts its orphaned

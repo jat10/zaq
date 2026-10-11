@@ -6,6 +6,28 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
   alias Zaq.TestSupport.LinkedDeviceConnectionStub, as: Transport
   alias Zaq.TestSupport.LinkedDeviceFailingListener
 
+  test "pairing status belongs to one owner and restart replaces the attempt" do
+    {runtime, profile} = runtime()
+    {_other, other_profile} = runtime()
+    conn = connection(profile)
+    owner = Agent.get(conn, & &1)
+    send(owner, {:amarula, :connection_update, %{qr: "private-qr"}})
+
+    assert {:ok, %{qr: "private-qr", phase: :pairing, attempt_id: attempt}} =
+             Owner.status(profile)
+
+    assert {:ok, %{qr: nil, phase: :pending}} = Owner.status(other_profile)
+    send(owner, {:amarula, :connection_update, %{connection: :open}})
+    assert {:ok, %{qr: nil, phase: :connected}} = Owner.status(profile)
+    [{_, decoder, _, _}, _] = Supervisor.which_children(runtime)
+    ref = Process.monitor(decoder)
+    Process.exit(owner, :kill)
+    assert_receive {:DOWN, ^ref, :process, ^decoder, _}
+    await_owner(profile, owner)
+    assert {:ok, %{attempt_id: replacement, qr: nil}} = Owner.status(profile)
+    refute replacement == attempt
+  end
+
   test "unexpected history batches never reach the decoder, ordinary queued messages do" do
     {_runtime, profile} = runtime()
     owner = Agent.get(connection(profile), & &1)
