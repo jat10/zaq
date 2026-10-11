@@ -76,8 +76,12 @@ This auth kind is not an OAuth token grant and is not resolved as bearer auth.
 Storage events require explicit trusted `linked_device_runtime: true` and
 `confidential: true` options and a synchronous Engine hop. This is an internal
 runtime contract, not authentication of arbitrary callers to NodeRouter; BO and
-agent tools must not expose this primitive. Write results reflect persistence;
-read/decryption failures fail the connection instead of looking like absent state.
+agent tools must not expose this primitive. Only committed writes return success.
+Read/decryption and mutation failures shut down the protocol caller with a bounded
+shutdown reason. Amarula ignores some write error return values, so returning an
+error alone would let it continue with unsaved credentials. Normal shutdown also
+avoids abnormal GenServer crash reports containing protocol state. Missing records
+remain ordinary cache misses; unavailable storage never means absent credentials.
 Disabling a connector denies storage access but preserves its state for re-enable.
 The callback adapter never calls an Amarula process while a protocol lock is held.
 Remote dispatch and database operations use bounded timeouts; a timeout means
