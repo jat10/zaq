@@ -8,9 +8,9 @@ defmodule Zaq.Channels.JidoChatBridge.Incoming.WhatsApp do
   alias Zaq.Engine.Messages.ConversationIdentity
 
   @doc "Promotes upstream raw self/mention facts before Jido chooses message handlers."
-  def prepare(incoming) do
+  def prepare(incoming, own_jids \\ []) do
     raw = incoming.raw || %{}
-    own = account(value(raw, :to_jid))
+    own = [value(raw, :to_jid) | own_jids] |> Enum.map(&account/1) |> Enum.reject(&is_nil/1)
 
     mentions =
       raw
@@ -18,7 +18,7 @@ defmodule Zaq.Channels.JidoChatBridge.Incoming.WhatsApp do
       |> List.wrap()
       |> Enum.filter(&is_binary/1)
       |> Enum.map(fn jid ->
-        Mention.new(%{user_id: jid, is_self: own != nil and account(jid) == own})
+        Mention.new(%{user_id: jid, is_self: account(jid) in own})
       end)
 
     %{
