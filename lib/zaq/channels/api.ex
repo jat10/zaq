@@ -86,6 +86,20 @@ defmodule Zaq.Channels.Api do
     do: %{event | response: {:error, :invalid_web_ingress}}
 
   def handle_event(
+        %Event{request: %{provider: provider}} = event,
+        :channel_connection_mode,
+        _context
+      ) do
+    mode =
+      case Bridge.provider_config(provider) do
+        %{ingress_mode: mode} -> mode
+        _ -> nil
+      end
+
+    %{event | response: {:ok, mode}}
+  end
+
+  def handle_event(
         %Event{
           request: %{channel_config_id: config_id, channel_id: channel_id, message_id: message_id}
         } = event,

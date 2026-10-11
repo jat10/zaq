@@ -1,0 +1,123 @@
+defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
+  @moduledoc "Owns bounded, generation-tagged pairing polling for the selected BO connector."
+  import Phoenix.Component, only: [assign: 3]
+  import Phoenix.LiveView, only: [start_async: 3]
+  alias Zaq.{Event, NodeRouter}
+  alias ZaqWeb.Live.BO.AI.BOActor
+
+  @doc "Opens one selected connector; previous timers and results become stale."
+  def open(socket, config) do
+    socket = close(socket)
+    generation = make_ref()
+
+    socket
+    |> assign(:linked_device_modal, %{
+      config_id: config.id,
+      name: config.name,
+      generation: generation,
+      attempts: 0,
+      status: %{phase: :pending, summary: "Checking device connection"}
+    })
+    |> refresh(generation, :status)
+  end
+
+  @doc "Clears QR presentation and cancels the next scheduled poll."
+  def close(socket) do
+    if timer = socket.assigns[:linked_device_timer], do: Process.cancel_timer(timer)
+    socket |> assign(:linked_device_timer, nil) |> assign(:linked_device_modal, nil)
+  end
+
+  @doc "Starts a fresh UI generation for an explicit retry."
+  def retry(%{assigns: %{linked_device_modal: %{config_id: id}}} = socket) do
+    config = Enum.find(socket.assigns.configs, &(&1.id == id and &1.enabled))
+
+    if config do
+      socket = close(socket)
+      generation = make_ref()
+
+      socket
+      |> assign(:linked_device_modal, %{
+        config_id: id,
+        name: config.name,
+        generation: generation,
+        attempts: 0,
+        status: %{phase: :pending, summary: "Reconnecting device"}
+      })
+      |> refresh(generation, :retry)
+    else
+      close(socket)
+    end
+  end
+
+  def retry(socket), do: socket
+
+  @doc "Only the current modal generation may initiate or accept a poll."
+  def refresh(socket, generation, operation \\ :status) do
+    case socket.assigns[:linked_device_modal] do
+      %{generation: ^generation, config_id: id} ->
+        provider = socket.assigns.provider
+        actor = BOActor.build(socket.assigns.current_user)
+
+        start_async(socket, {:linked_device, generation}, fn ->
+          request(provider, id, actor, operation)
+        end)
+
+      _ ->
+        socket
+    end
+  end
+
+  @doc "Applies current results and bounds polling to three minutes per open/retry."
+  def result(socket, generation, result) do
+    case socket.assigns[:linked_device_modal] do
+      %{generation: ^generation} = modal ->
+        status =
+          case result do
+            {:ok, {:ok, status}} when is_map(status) -> status
+            _ -> %{phase: :failed, summary: "Device connection could not be checked or restarted"}
+          end
+
+        attempts = modal.attempts + 1
+
+        status =
+          if attempts >= 90 and status[:phase] in [:pending, :pairing],
+            do: %{phase: :expired, summary: "Connection window ended; retry to continue"},
+            else: status
+
+        socket =
+          assign(socket, :linked_device_modal, %{modal | status: status, attempts: attempts})
+
+        if status[:phase] in [:pending, :pairing] do
+          assign(
+            socket,
+            :linked_device_timer,
+            Process.send_after(self(), {:linked_device_poll, generation}, 2000)
+          )
+        else
+          assign(socket, :linked_device_timer, nil)
+        end
+
+      _ ->
+        socket
+    end
+  end
+
+  defp request(provider, id, actor, :retry) do
+    case dispatch(provider, id, actor, :channel_retry_linked_device) do
+      :ok -> request(provider, id, actor, :status)
+      error -> error
+    end
+  end
+
+  defp request(provider, id, actor, :status),
+    do: dispatch(provider, id, actor, :channel_ingress_status)
+
+  defp dispatch(provider, id, actor, action) do
+    Event.new(%{provider: provider, channel_config_id: id}, :channels,
+      actor: actor,
+      opts: [action: action, confidential: true]
+    )
+    |> NodeRouter.dispatch()
+    |> Map.fetch!(:response)
+  end
+end
