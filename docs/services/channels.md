@@ -12,12 +12,18 @@ and outgoing operations. Connector settings cannot override profile or storage.
 `sync_full_history` are false. Its settings are not imposed on other providers.
 WhatsApp retrieval configurations do not require an HTTP URL or bearer token.
 
-This is configuration infrastructure; linked-device startup, credential-backed
-storage and pairing UI are tracked by `zaq-0l7` and are not enabled by registration
-alone. Before enabling startup, the lifecycle implementation must enforce one
-owner per connector across Channels nodes; Amarula's default registry alone only
-provides node-local uniqueness. The bridge must pass custom storage without
-`storage_root`, which would cause the upstream adapter to select file storage.
+The bridge starts adapter-created decoders under `LinkedDevice.Runtime`, whose
+rest-for-one tree owns the provider connection separately from the decoder.
+Restarting a decoder reattaches it; restarting an owner adopts its orphaned
+connection when necessary. Normal stop shuts down the provider connection and
+retains credentials. Partial startup failure rolls back the owner. Shared provider
+infrastructure starts before bridge runtimes and its failure rebuilds them.
+The owner has a global profile name across connected ZAQ nodes. This does not
+provide partition-safe distributed fencing: deployments must avoid concurrent
+owners across disconnected clusters sharing the same credential database.
+The bridge passes custom storage without `storage_root`, which would cause the
+upstream adapter to select file storage. Pairing UI and message admission are
+separate implementation steps in `zaq-0l7`.
 
 `LinkedDevice.WhatsAppStorage` translates Amarula's storage callbacks into the
 confidential synchronous Engine `:linked_device_storage` event. Its binding fixes

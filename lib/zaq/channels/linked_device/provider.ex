@@ -8,4 +8,10 @@ defmodule Zaq.Channels.LinkedDevice.Provider do
   """
 
   @callback connection_config(map()) :: {:ok, map()} | {:error, term()}
+  @callback storage(map()) :: {module(), keyword()}
+  @callback connect(map(), pid()) :: {:ok, term()} | {:error, term()}
+  @callback stop(map()) :: :ok | {:error, term()}
+  @callback infrastructure_children() :: list()
+
+  @optional_callbacks storage: 1, connect: 2, stop: 1, infrastructure_children: 0
 end
