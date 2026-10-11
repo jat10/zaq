@@ -11,6 +11,14 @@ and outgoing operations. Connector settings cannot override profile or storage.
 `LinkedDevice.WhatsApp` supplies the WhatsApp policy: both `sync_history` and
 `sync_full_history` are false. Its settings are not imposed on other providers.
 WhatsApp retrieval configurations do not require an HTTP URL or bearer token.
+The selected connector supplies its profile to shared reply, edit, typing,
+reaction and DM operations. Missing profiles fail closed. WhatsApp mention and
+self-message facts are promoted before Jido handler selection; group agent
+requests require a mention of the receiving account. Unaddressed capture remains
+subject to the existing Engine policy. Unknown/broadcast room kinds do not establish
+conversation membership. The upstream adapter's file/delete capabilities do not
+create new ZAQ operations: the shared bridge currently exposes neither a standalone
+file-send nor message-delete operation.
 
 The bridge starts adapter-created decoders under `LinkedDevice.Runtime`, whose
 rest-for-one tree owns the provider connection separately from the decoder.
