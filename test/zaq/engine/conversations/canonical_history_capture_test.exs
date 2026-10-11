@@ -100,6 +100,33 @@ defmodule Zaq.Engine.Conversations.CanonicalHistoryCaptureTest do
     |> CommunicationBridge.put_conversation_identity()
   end
 
+  test "WhatsApp replay persists across callers and isolates both accounts and rooms" do
+    reader = person("WhatsApp reader")
+    first = connector("whatsapp")
+    second = connector("whatsapp")
+
+    ids =
+      for {config, room} <- [{first, "one@g.us"}, {first, "two@g.us"}, {second, "one@g.us"}] do
+        scope = facts(config, reader, :channel, %{channel_id: room})
+        origin = source(config, %{source_scope: room})
+
+        assert {:ok, captured} =
+                 Conversations.capture_canonical_message(scope, message("same-id"), origin)
+
+        assert {:ok, replay} =
+                 Task.async(fn ->
+                   Conversations.capture_canonical_message(scope, message("same-id"), origin)
+                 end)
+                 |> Task.await()
+
+        assert replay.message_id == captured.message_id
+        captured.message_id
+      end
+
+    assert length(Enum.uniq(ids)) == 3
+    assert Repo.aggregate(Message, :count) == 3
+  end
+
   test "a shared channel stores the root and thread separately and replays at one position" do
     owner = person("Owner")
     stranger = person("Stranger")

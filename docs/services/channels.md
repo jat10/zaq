@@ -20,6 +20,13 @@ conversation membership. The upstream adapter's file/delete capabilities do not
 create new ZAQ operations: the shared bridge currently exposes neither a standalone
 file-send nor message-delete operation.
 
+History-sync events are discarded by the provider policy before the decoder.
+Ordinary queued messages use normal routing/capture and persistent Engine replay
+protection, scoped by connector, room and external message ID. Amarula currently
+does not distinguish offline catchup from live `messages_upsert` events; timestamp
+age is not used to discard messages. Disabling history import therefore does not
+discard messages sent while ZAQ was offline.
+
 The bridge starts adapter-created decoders under `LinkedDevice.Runtime`, whose
 rest-for-one tree owns the provider connection separately from the decoder.
 Restarting a decoder reattaches it; restarting an owner adopts its orphaned
