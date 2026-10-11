@@ -29,6 +29,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
   alias Jido.Chat.Adapter
   alias Jido.Chat.EventEnvelope
   alias Zaq.Channels.JidoChatBridge
+  alias Zaq.Channels.JidoChatBridge.Incoming
   alias Zaq.Channels.JidoChatBridge.ListenerStatus
   alias Zaq.ConnectorConfig.Settings
 
@@ -149,6 +150,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
 
     with {:ok, adapter} <- bridge_module().adapter_for(config.provider),
          {:ok, incoming} <- Adapter.transform_incoming(adapter, payload),
+         incoming <- Incoming.prepare(incoming, config.provider),
          incoming <- with_transport(incoming, transport),
          thread_id <-
            bridge_module().thread_key(

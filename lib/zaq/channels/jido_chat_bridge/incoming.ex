@@ -6,13 +6,22 @@ defmodule Zaq.Channels.JidoChatBridge.Incoming do
   configuration. Integrations interpret transport facts only; Engine owns history.
   """
 
-  alias Zaq.Channels.JidoChatBridge.Incoming.{Discord, Mattermost, Telegram}
+  alias Zaq.Channels.JidoChatBridge.Incoming.{Discord, Mattermost, Telegram, WhatsApp}
 
   @integrations %{
     "discord" => Discord,
     "mattermost" => Mattermost,
-    "telegram" => Telegram
+    "telegram" => Telegram,
+    "whatsapp" => WhatsApp
   }
+
+  @doc "Prepares transport facts needed by Jido's handler selection."
+  def prepare(incoming, provider) do
+    case integration(provider) do
+      WhatsApp -> WhatsApp.prepare(incoming)
+      _ -> incoming
+    end
+  end
 
   @doc "Resolves the local normalization integration for an installed adapter."
   def integration(provider), do: Map.get(@integrations, to_string(provider))

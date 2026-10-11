@@ -15,6 +15,7 @@ defmodule Zaq.Channels.Bridge do
   """
 
   alias Zaq.Channels.{CommunicationBridge, DataSourceBridge}
+  alias Zaq.Channels.LinkedDevice.Config
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Event
@@ -370,7 +371,7 @@ defmodule Zaq.Channels.Bridge do
   def fetch_connection_details(provider) do
     case ChannelConfig.get_by_provider(to_string(provider)) do
       nil -> %{}
-      config -> %{url: config.url, token: config.token}
+      config -> fetch_connection_details_for_config(config)
     end
   end
 
@@ -381,10 +382,23 @@ defmodule Zaq.Channels.Bridge do
   def fetch_connection_details_for_config(config) when is_map(config) do
     runtime_config = ChannelConfig.to_runtime_config(config)
 
-    %{
+    details = %{
       url: Map.get(runtime_config, :url) || Map.get(runtime_config, "url"),
       token: Map.get(runtime_config, :token) || Map.get(runtime_config, "token")
     }
+
+    case provider_config(
+           Map.get(runtime_config, :provider) || Map.get(runtime_config, "provider")
+         ) do
+      %{ingress_mode: :linked_device} ->
+        case Config.profile(runtime_config) do
+          {:ok, profile} -> Map.put(details, :profile, profile)
+          {:error, _} -> details
+        end
+
+      _ ->
+        details
+    end
   end
 
   @doc "Fetches an enabled connector by provider; supply its ID if the provider is ambiguous."
