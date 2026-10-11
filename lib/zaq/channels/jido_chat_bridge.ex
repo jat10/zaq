@@ -43,6 +43,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Zaq.Channels.JidoChatBridge.ListenerStatus
   alias Zaq.Channels.JidoChatBridge.ReactionMapper
   alias Zaq.Channels.JidoChatBridge.State
+  alias Zaq.Channels.LinkedDevice
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.{ConversationIdentity, Incoming, Outgoing}
@@ -218,7 +219,7 @@ defmodule Zaq.Channels.JidoChatBridge do
     ingress_mode = ingress_mode_for(provider)
 
     case ingress_mode do
-      mode when mode in [:websocket, :gateway, :polling] ->
+      mode when mode in [:websocket, :gateway, :polling, :linked_device] ->
         listener_runtime_status(config, mode)
 
       :webhook ->
@@ -1142,12 +1143,20 @@ defmodule Zaq.Channels.JidoChatBridge do
     with {:ok, adapter} <- adapter_for(config.provider),
          true <- ingress_starts_listener?(ingress_mode_for(config.provider)),
          {:ok, specs} <-
-           adapter.listener_child_specs(bridge_id, listener_opts(config, bridge_id, runtime_opts)) do
+           build_listener_specs(adapter, config, bridge_id, runtime_opts) do
       {:ok, Enum.map(specs, &Map.put(&1, :restart, :temporary))}
     else
       false -> {:ok, []}
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  defp build_listener_specs(adapter, config, bridge_id, runtime_opts) do
+    opts = listener_opts(config, bridge_id, runtime_opts)
+
+    if ingress_mode_for(config.provider) == :linked_device,
+      do: LinkedDevice.listener_specs(config, bridge_id, adapter, opts),
+      else: adapter.listener_child_specs(bridge_id, opts)
   end
 
   defp listener_opts(config, bridge_id, runtime_opts) do
@@ -1187,7 +1196,8 @@ defmodule Zaq.Channels.JidoChatBridge do
     |> Kernel.||(:websocket)
   end
 
-  defp ingress_starts_listener?(mode), do: mode in [:websocket, :gateway, :polling]
+  defp ingress_starts_listener?(mode),
+    do: mode in [:websocket, :gateway, :polling, :linked_device]
 
   defp listener_runtime_status(config, mode) do
     bridge_id = runtime_bridge_id(config)
