@@ -158,7 +158,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
 
     with {:ok, adapter} <- bridge_module().adapter_for(config.provider),
          {:ok, incoming} <- Adapter.transform_incoming(adapter, payload),
-         incoming <- Incoming.prepare(incoming, config.provider),
+         incoming <- Incoming.prepare(incoming, config.provider, config),
          incoming <- with_transport(incoming, transport),
          thread_id <-
            bridge_module().thread_key(

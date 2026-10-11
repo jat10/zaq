@@ -7,6 +7,7 @@ defmodule Zaq.Channels.JidoChatBridge.Incoming do
   """
 
   alias Zaq.Channels.JidoChatBridge.Incoming.{Discord, Mattermost, Telegram, WhatsApp}
+  alias Zaq.Channels.LinkedDevice.WhatsApp, as: WhatsAppProvider
 
   @integrations %{
     "discord" => Discord,
@@ -16,9 +17,9 @@ defmodule Zaq.Channels.JidoChatBridge.Incoming do
   }
 
   @doc "Prepares transport facts needed by Jido's handler selection."
-  def prepare(incoming, provider) do
+  def prepare(incoming, provider, config \\ %{}) do
     case integration(provider) do
-      WhatsApp -> WhatsApp.prepare(incoming)
+      WhatsApp -> WhatsApp.prepare(incoming, WhatsAppProvider.own_jids(config))
       _ -> incoming
     end
   end

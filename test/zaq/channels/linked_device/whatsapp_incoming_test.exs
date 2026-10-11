@@ -3,6 +3,14 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppIncomingTest do
 
   alias Jido.Chat.WhatsApp.Adapter
   alias Zaq.Channels.JidoChatBridge.Incoming
+  alias Zaq.Channels.JidoChatBridge.Incoming.WhatsApp
+
+  test "privacy identity matches only the receiving profile's trusted alias" do
+    message = incoming(%{to_jid: "123:7@s.whatsapp.net", mentions: ["987@lid"]})
+    refute message.was_mentioned
+    assert WhatsApp.prepare(message, ["123@s.whatsapp.net", "987:1@lid"]).was_mentioned
+    refute WhatsApp.prepare(message, ["456@s.whatsapp.net", "654@lid"]).was_mentioned
+  end
 
   test "group mention selects the receiving account and ignores another account" do
     for {recipient, expected} <- [{"123:7@s.whatsapp.net", true}, {"456@s.whatsapp.net", false}] do
