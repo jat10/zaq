@@ -57,13 +57,20 @@ defmodule Zaq.Channels.LinkedDevice.Owner do
   def handle_info({:DOWN, ref, :process, _pid, _reason}, %{monitor: ref} = state),
     do: {:noreply, %{state | decoder: nil, monitor: nil}}
 
-  def handle_info(message, %{decoder: nil, pending: pending} = state) do
+  def handle_info(message, state) do
+    if function_exported?(state.provider, :forward_event?, 1) and
+         not state.provider.forward_event?(message),
+       do: {:noreply, state},
+       else: forward(message, state)
+  end
+
+  defp forward(message, %{decoder: nil, pending: pending} = state) do
     if length(pending) < 100,
       do: {:noreply, %{state | pending: [message | pending]}},
       else: {:stop, :decoder_unavailable, state}
   end
 
-  def handle_info(message, state) do
+  defp forward(message, state) do
     send(state.decoder, message)
     {:noreply, state}
   end
