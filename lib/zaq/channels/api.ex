@@ -893,7 +893,8 @@ defmodule Zaq.Channels.Api do
 
     with {:ok, bridge} <- resolve_bridge(bridge_module, provider),
          true <- supports_callback?(bridge, :channel_ingress_status, 1) || {:error, :unsupported},
-         {:ok, config} <- ingress_status_config(bridge_module, provider, request) do
+         :ok <- authorize_pairing_status(provider, event),
+         {:ok, config} <- selected_ingress_status_config(bridge_module, provider, request) do
       response =
         if supports_callback?(bridge, :channel_ingress_status, 2),
           do: bridge.channel_ingress_status(config, event.opts),
@@ -903,6 +904,28 @@ defmodule Zaq.Channels.Api do
     else
       {:error, reason} -> %{event | response: {:error, reason}}
     end
+  end
+
+  def handle_event(
+        %Event{request: %{provider: provider, channel_config_id: id}} = event,
+        :channel_retry_linked_device,
+        _context
+      ) do
+    bridge_module = bridge_module(event)
+
+    response =
+      with :ok <- authorize_pairing_operator(event),
+           true <- is_integer(id) and id > 0,
+           %{ingress_mode: :linked_device} <- Bridge.provider_config(provider),
+           {:ok, config} <- bridge_module.fetch_channel_config(provider, id),
+           {:ok, bridge} <- resolve_bridge(bridge_module, provider) do
+        bridge.sync_provider_runtime(config)
+      else
+        {:error, _} = error -> error
+        _ -> {:error, :unsupported}
+      end
+
+    %{event | response: response}
   end
 
   def handle_event(
@@ -1128,6 +1151,39 @@ defmodule Zaq.Channels.Api do
     do: Keyword.get(opts, :communication_bridge_module, CommunicationBridge)
 
   defp communication_bridge_module(_event), do: CommunicationBridge
+
+  defp selected_ingress_status_config(bridge, provider, request) do
+    case Bridge.provider_config(provider) do
+      %{ingress_mode: :linked_device} ->
+        id = request[:channel_config_id] || get_in(request, [:config, Access.key(:id)])
+
+        if is_integer(id) and id > 0,
+          do: bridge.fetch_channel_config(provider, id),
+          else: {:error, :invalid_connector_id}
+
+      _ ->
+        ingress_status_config(bridge, provider, request)
+    end
+  end
+
+  defp authorize_pairing_status(provider, event) do
+    case Bridge.provider_config(provider) do
+      %{ingress_mode: :linked_device} -> authorize_pairing_operator(event)
+      _ -> :ok
+    end
+  end
+
+  defp authorize_pairing_operator(%Event{actor: %{user_id: id}, opts: opts})
+       when is_integer(id) do
+    with true <- Keyword.get(opts, :confidential) == true,
+         %{role: %{name: "super_admin"}} <- Zaq.Accounts.get_user(id) do
+      :ok
+    else
+      _ -> {:error, :unauthorized}
+    end
+  end
+
+  defp authorize_pairing_operator(_), do: {:error, :unauthorized}
 
   defp ingress_status_config(_bridge_module, _provider, %{config: %ChannelConfig{} = config}),
     do: {:ok, config}

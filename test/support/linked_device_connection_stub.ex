@@ -2,6 +2,7 @@ defmodule Zaq.TestSupport.LinkedDeviceConnectionStub do
   @moduledoc false
 
   defdelegate forward_event?(event), to: Zaq.Channels.LinkedDevice.WhatsApp
+  defdelegate pairing_event(event, state), to: Zaq.Channels.LinkedDevice.WhatsApp
 
   def connect(config, parent) do
     name = {:global, {__MODULE__, config.profile}}

@@ -9,6 +9,16 @@ defmodule Zaq.Channels.LinkedDevice.Owner do
   """
   use GenServer
 
+  alias Zaq.Channels.LinkedDevice.Pairing
+
+  @doc "Reads the selected owner's pairing state without contacting its decoder."
+  def status(profile) do
+    GenServer.call(name(profile), :pairing_status)
+  catch
+    :exit, _ ->
+      {:ok, Pairing.new(nil) |> Map.put(:phase, :disconnected) |> Pairing.presentation()}
+  end
+
   @doc false
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, name: name(opts[:config].profile))
@@ -34,6 +44,7 @@ defmodule Zaq.Channels.LinkedDevice.Owner do
            provider: provider,
            config: config,
            conn: conn,
+           pairing: Pairing.new(Ecto.UUID.generate()),
            decoder: nil,
            monitor: nil,
            pending: []
@@ -45,6 +56,11 @@ defmodule Zaq.Channels.LinkedDevice.Owner do
   end
 
   @impl true
+  def handle_call(:pairing_status, _from, state) do
+    pairing = Pairing.expire(state.pairing, System.system_time(:millisecond))
+    {:reply, {:ok, Pairing.presentation(pairing)}, %{state | pairing: pairing}}
+  end
+
   def handle_call({:attach, pid}, _from, state) do
     if state.monitor, do: Process.demonitor(state.monitor, [:flush])
     Enum.each(Enum.reverse(state.pending), &send(pid, &1))
@@ -58,6 +74,22 @@ defmodule Zaq.Channels.LinkedDevice.Owner do
     do: {:noreply, %{state | decoder: nil, monitor: nil}}
 
   def handle_info(message, state) do
+    pairing =
+      if function_exported?(state.provider, :pairing_event, 2) do
+        event = state.provider.pairing_event(message, state.pairing)
+
+        Pairing.apply_event(
+          state.pairing,
+          state.pairing.attempt_id,
+          event,
+          System.system_time(:millisecond)
+        )
+      else
+        state.pairing
+      end
+
+    state = %{state | pairing: pairing}
+
     if function_exported?(state.provider, :forward_event?, 1) and
          not state.provider.forward_event?(message),
        do: {:noreply, state},

@@ -44,6 +44,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Zaq.Channels.JidoChatBridge.ReactionMapper
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.Channels.LinkedDevice
+  alias Zaq.Channels.LinkedDevice.{Config, Owner}
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.{ConversationIdentity, Incoming, Outgoing}
@@ -222,7 +223,10 @@ defmodule Zaq.Channels.JidoChatBridge do
     ingress_mode = ingress_mode_for(provider)
 
     case ingress_mode do
-      mode when mode in [:websocket, :gateway, :polling, :linked_device] ->
+      :linked_device ->
+        with {:ok, profile} <- Config.profile(config), do: Owner.status(profile)
+
+      mode when mode in [:websocket, :gateway, :polling] ->
         listener_runtime_status(config, mode)
 
       :webhook ->

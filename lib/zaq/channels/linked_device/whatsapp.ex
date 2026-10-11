@@ -19,6 +19,22 @@ defmodule Zaq.Channels.LinkedDevice.WhatsApp do
   def forward_event?({:amarula, :history_sync, _}), do: false
   def forward_event?(_), do: true
 
+  @doc "Translates protocol control events without exposing native errors or credentials."
+  @impl true
+  def pairing_event({:amarula, :connection_update, %{qr: qr}}, state) when is_binary(qr),
+    do: {:qr, qr, if(state.qr_count == 0, do: 60_000, else: 20_000)}
+
+  def pairing_event({:amarula, :connection_update, %{connection: :open}}, _), do: :connected
+
+  def pairing_event({:amarula, :connection_update, %{connection: connection}}, _)
+      when connection in [:closed, :disconnected], do: :disconnected
+
+  def pairing_event({:amarula, :connection_update, %{connection: :connecting}}, _), do: :pending
+  def pairing_event({:amarula, :pairing_success, _}, _), do: :pending
+  def pairing_event({:amarula, :pairing_failure, _}, _), do: :failed
+  def pairing_event({:amarula, :error, _}, _), do: :failed
+  def pairing_event(_, _), do: :ignore
+
   @doc "Binds Amarula's persistence to the Engine-issued credential association."
   @impl true
   def storage(binding), do: {WhatsAppStorage, binding: binding}
@@ -33,6 +49,12 @@ defmodule Zaq.Channels.LinkedDevice.WhatsApp do
       _pid ->
         conn = Amarula.via(config.profile)
         :ok = Amarula.set_parent(conn, parent)
+
+        send(
+          parent,
+          {:amarula, :connection_update, %{connection: Amarula.connection_state(conn)}}
+        )
+
         {:ok, conn}
     end
   end
