@@ -100,6 +100,47 @@ defmodule Zaq.Engine.Conversations.CanonicalHistoryCaptureTest do
     |> CommunicationBridge.put_conversation_identity()
   end
 
+  test "a captured WhatsApp direct message is admitted for agent execution" do
+    sender = person("WhatsApp sender")
+    config = connector("whatsapp")
+    chat_jid = "123456789@lid"
+    external_id = "whatsapp-direct-admission"
+
+    assert {:ok, captured} =
+             Conversations.capture_canonical_message(
+               facts(config, sender, :direct, %{channel_id: chat_jid}),
+               %{message(external_id) | author_id: chat_jid},
+               source(config, %{source_scope: chat_jid})
+             )
+
+    assert Repo.get!(Message, captured.message_id).conversation_id == nil
+
+    incoming =
+      %{
+        content: "hello",
+        channel_id: chat_jid,
+        author_id: chat_jid,
+        message_id: external_id,
+        provider: :whatsapp,
+        person: %{id: sender.id},
+        routing_context: %{
+          channel_config_id: config.id,
+          conversation_type: :one_to_one,
+          source_scope: chat_jid
+        }
+      }
+      |> Incoming.new()
+      |> CommunicationBridge.put_conversation_identity()
+
+    assert {:ok, admitted} = Conversations.admit_incoming(incoming)
+    assert admitted.admitted?
+    assert admitted.user_message_id == captured.message_id
+    assert is_binary(admitted.finalization_token)
+    assert Repo.get!(Message, captured.message_id).conversation_id == admitted.conversation_id
+    assert Repo.get!(Message, captured.message_id).role == "user"
+    assert Repo.aggregate(Message, :count) == 1
+  end
+
   test "WhatsApp replay persists across callers and isolates both accounts and rooms" do
     reader = person("WhatsApp reader")
     first = connector("whatsapp")
