@@ -28,6 +28,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
   alias Jido.Chat
   alias Jido.Chat.Adapter
   alias Jido.Chat.EventEnvelope
+  alias Zaq.Channels.Bridge
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.JidoChatBridge.Incoming
   alias Zaq.Channels.JidoChatBridge.ListenerStatus
@@ -140,7 +141,14 @@ defmodule Zaq.Channels.JidoChatBridge.State do
     # drops `Chat.process_message/5`'s result.
     adapter_name = envelope.adapter_name || JidoChatBridge.provider_to_atom(config.provider)
 
-    chat_module().route_event(state.chat, adapter_name, envelope, [])
+    # Linked-device control events belong to the connection owner, not chat handlers.
+    unless envelope.event_type == :action and
+             match?(
+               %{ingress_mode: :linked_device},
+               Bridge.provider_config(config.provider)
+             ) do
+      chat_module().route_event(state.chat, adapter_name, envelope, [])
+    end
 
     {:reply, :ok, state}
   end
