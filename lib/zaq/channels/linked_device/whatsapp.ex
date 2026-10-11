@@ -9,6 +9,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsApp do
 
   @behaviour Zaq.Channels.LinkedDevice.Provider
 
+  alias Zaq.Channels.LinkedDevice.Config
   alias Zaq.Channels.LinkedDevice.WhatsAppStorage
 
   @impl true
@@ -34,6 +35,19 @@ defmodule Zaq.Channels.LinkedDevice.WhatsApp do
   def pairing_event({:amarula, :pairing_failure, _}, _), do: :failed
   def pairing_event({:amarula, :error, _}, _), do: :failed
   def pairing_event(_, _), do: :ignore
+
+  @doc "Reads the active profile's phone-number and privacy identities for mention matching."
+  def own_jids(config) do
+    with {:ok, profile} <- Config.profile(config),
+         pid when is_pid(pid) <- Amarula.whereis(profile),
+         me when is_map(me) <- Map.get(Amarula.Connection.get_auth_creds(pid), :me) do
+      me |> Map.take([:id, :lid]) |> Map.values() |> Enum.filter(&is_binary/1)
+    else
+      _ -> []
+    end
+  catch
+    :exit, _ -> []
+  end
 
   @doc "Binds Amarula's persistence to the Engine-issued credential association."
   @impl true
