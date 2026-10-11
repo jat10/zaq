@@ -15,7 +15,7 @@ defmodule Zaq.Engine.Connect.Credential do
   alias Zaq.Engine.Connect.OAuth.Registry, as: OAuthBehaviourRegistry
   alias Zaq.Utils.Map, as: MapUtils
 
-  @auth_kinds ~w(api_key oauth2 jwt_bearer none)
+  @auth_kinds ~w(api_key oauth2 jwt_bearer none linked_device)
   @request_formats ~w(bearer raw)
 
   schema "connect_credentials" do
