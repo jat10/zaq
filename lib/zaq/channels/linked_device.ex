@@ -1,56 +1,67 @@
 defmodule Zaq.Channels.LinkedDevice do
   @moduledoc """
-  Shared linked-device integration for JidoChatBridge.
+  Host configuration and lifecycle routing for linked-device adapters.
 
-  Resolves credential bindings through Engine, supplies trusted runtime settings,
-  and supervises adapter-created listener specs under a connection owner. Provider
-  modules own the protocol; this module does not parse QR codes or provider events.
+  Adapters own protocol connections and lifecycle normalization. This module
+  binds an exact connector to credential storage and routes normalized lifecycle
+  notifications separately from message ingress. QR values stay in runtime state.
   """
-
-  alias Zaq.Channels.Bridge
-  alias Zaq.Channels.LinkedDevice.{Config, ListenerTransport, Runtime}
+  alias Zaq.Channels.{Bridge, Supervisor}
+  alias Zaq.Channels.JidoChatBridge.State
+  alias Zaq.Channels.LinkedDevice.{Config, Pairing, Storage}
   alias Zaq.Event
   alias Zaq.NodeRouter
 
-  @doc "Returns shared provider infrastructure to start before account runtimes."
-  @spec infrastructure_children(keyword()) :: list()
-  def infrastructure_children(opts \\ []) do
-    Zaq.Config.get(:zaq, :channels, %{}, opts)
-    |> Map.values()
-    |> Enum.map(&Map.get(&1, :linked_device_provider))
-    |> Enum.reject(&is_nil/1)
-    |> Enum.uniq()
-    |> Enum.flat_map(& &1.infrastructure_children())
-    |> Enum.uniq()
+  @doc "Enriches linked-device options; all other adapters retain their normal options."
+  def listener_opts(config, opts) do
+    case Bridge.provider_config(config.provider) do
+      %{ingress_mode: :linked_device} -> linked_options(config, opts)
+      _ -> {:ok, opts}
+    end
   end
 
-  @doc "Builds a supervised account runtime using the registered provider contract."
-  @spec listener_specs(map(), String.t(), module(), keyword()) :: {:ok, list()} | {:error, term()}
-  def listener_specs(config, bridge_id, adapter, listener_opts) do
-    registration = Bridge.provider_config(config.provider)
-    provider = registration.linked_device_provider
-
+  defp linked_options(config, opts) do
     with {:ok, binding} <- bind(config.id),
-         {:ok, ingress} <- Config.ingress(config, provider, provider.storage(binding)),
-         ingress <- Map.put(ingress, :transport, ListenerTransport),
-         {:ok, [listener]} <-
-           adapter.listener_child_specs(bridge_id, Keyword.put(listener_opts, :ingress, ingress)) do
-      spec =
-        Supervisor.child_spec(
-          {Runtime, provider: provider, config: ingress.config, listener: listener},
-          id: {Runtime, bridge_id}
-        )
-
-      {:ok, [spec]}
-    else
-      {:ok, _listeners} -> {:error, :invalid_linked_device_listener_count}
-      {:error, reason} -> {:error, reason}
+         {:ok, profile} <- Config.profile(config),
+         {:ok, ingress} <- Config.ingress(config, {Storage, binding: binding, profile: profile}) do
+      {:ok,
+       opts
+       |> Keyword.put(:ingress, ingress)
+       |> Keyword.put(
+         :lifecycle_sink_mfa,
+         {__MODULE__, :from_lifecycle, [config.provider, config.id]}
+       )}
     end
+  end
+
+  @doc "Relays normalized lifecycle through the confidential Channels boundary."
+  def from_lifecycle(provider, config_id, payload, _opts) do
+    Event.new(
+      %{provider: provider, channel_config_id: config_id, source: self(), lifecycle: payload},
+      :channels,
+      opts: [action: :channel_ingress_lifecycle, confidential: true, channel_runtime: true]
+    )
+    |> NodeRouter.dispatch()
+
+    :ok
+  end
+
+  @doc "Returns the exact bridge's in-memory pairing presentation."
+  def status(config) do
+    with {:ok, pid} <- Supervisor.lookup_state_pid("#{config.provider}_#{config.id}"),
+         %{mode: "linked_device"} = status <- State.ingress_status(pid) do
+      {:ok, status}
+    else
+      _ -> {:ok, Pairing.from_notification(%{status: :disconnected, attempt_id: nil, qr: nil})}
+    end
+  catch
+    :exit, _ ->
+      {:ok, Pairing.from_notification(%{status: :disconnected, attempt_id: nil, qr: nil})}
   end
 
   defp bind(id) do
     Event.new(%{op: :bind, channel_config_id: id}, :engine,
-      opts: [action: :linked_device_storage, confidential: true, linked_device_runtime: true]
+      opts: [action: :credential_document, confidential: true, credential_document_runtime: true]
     )
     |> NodeRouter.dispatch()
     |> Map.fetch!(:response)

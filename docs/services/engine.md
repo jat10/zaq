@@ -84,6 +84,44 @@ Stored `jido_chat` fields include bot name/user ID, message patterns and ingress
 overrides. SMTP and IMAP lookup helpers live in `Zaq.ConnectorConfig`; bridge/listener
 normalization remains provider-local in Channels.
 
+### Connector credential documents
+
+[`Connect.CredentialDocuments`](../../lib/zaq/engine/connect/credential_documents.ex)
+provides atomic namespaced record operations over an encrypted canonical org
+`api_key` grant. Engine's synchronous `:credential_document` event requires both
+`confidential: true` and explicit trusted `credential_document_runtime: true`.
+It executes the runtime-only `CredentialDocument` Action through `Jido.Exec`.
+These flags are an internal caller contract, not authentication for arbitrary
+NodeRouter callers; BO, agent tools and workflows must not expose this primitive.
+
+The request carries `binding: %{channel_config_id: id, credential_id: id}` and
+`op: :get | :put | :delete | :clear | :list_keys`, with `namespace`, `key` and binary
+`value` where applicable. The connector's `settings["credential_document_id"]`
+must match a grant-bound API-key credential of the same provider, with disabled
+personal policy and metadata `auth_profile_id: "credential_document_v1"`,
+`subject: "channel_config:<id>"`. The operation checks both sides on every call.
+Only the reference is stored in connector settings; document values remain encrypted.
+
+One transaction locks the connector, credential and canonical grant before reading
+and merging. Disabled/archived connectors and revoked, expired, absent or unusable
+grants fail closed. Writes reuse canonical grant replacement and preserve grant
+expiry. Changes enqueue the existing secret-free mutation notification in the same
+transaction; identical puts and absent deletes do not enqueue jobs. Routed success
+follows commit. In-process callers composing an outer transaction own its commit.
+
+Missing records return `:error`; unusable credentials, malformed documents and
+storage failures return sanitized `{:error, reason}` results. Versioned JSON stores
+Base64 binary values, bounded to 1 MiB per value and 16 MiB per document, with
+512-byte UTF-8 namespace/key limits. Consumers must treat the document as private
+runtime state, never as outbound HTTP authentication. See the module contract for
+return shapes and limits.
+
+`op: :bind` with `channel_config_id` provisions the association under the connector
+lock through canonical Connect configuration/grant persistence. Existing bindings
+are revalidated without replacing state or reactivating revoked grants. The forward
+linked-device migration preserves previously paired data before retiring the old
+storage tables; see [Channels](channels.md#linked-device-integration).
+
 ### Conversations
 
 Channel history grant foundation: `Zaq.Permissions.ChannelHistoryResource` identifies

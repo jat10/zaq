@@ -32,6 +32,7 @@ defmodule Zaq.Channels.Api do
 
   alias Zaq.Channels.DeliveryConfirmation
   alias Zaq.Channels.HttpClient
+  alias Zaq.Channels.LinkedDevice.Config, as: LinkedDeviceConfig
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Channels.MessageFormatter
   alias Zaq.Channels.Web.{Command, Context, Message}
@@ -84,6 +85,33 @@ defmodule Zaq.Channels.Api do
 
   def handle_event(%Event{} = event, :web_ingress, _context),
     do: %{event | response: {:error, :invalid_web_ingress}}
+
+  def handle_event(%Event{} = event, :channel_ingress_lifecycle, _context) do
+    hop = event.next_hop || List.last(event.hops)
+
+    response =
+      with true <- event.opts[:confidential] == true and event.opts[:channel_runtime] == true,
+           %{destination: :channels, type: :sync} <- hop,
+           %{
+             provider: provider,
+             channel_config_id: id,
+             source: source,
+             lifecycle: %{profile: profile, attempt_id: _, status: _, qr: _} = payload
+           } <- event.request,
+           true <- is_integer(id) and id > 0 and is_pid(source) and is_binary(profile),
+           {:ok, ^profile} <- LinkedDeviceConfig.profile(%{id: id}),
+           %{ingress_mode: :linked_device} <- Bridge.provider_config(provider),
+           {:ok, pid} <- Zaq.Channels.Supervisor.lookup_state_pid("#{provider}_#{id}") do
+        GenServer.cast(
+          pid,
+          {:lifecycle, source, Map.take(payload, [:profile, :attempt_id, :status, :qr, :event])}
+        )
+      else
+        _ -> {:error, :unauthorized}
+      end
+
+    %{event | response: response}
+  end
 
   def handle_event(
         %Event{request: %{provider: provider}} = event,

@@ -4,6 +4,7 @@ defmodule Zaq.Channels.SupervisionTest do
   alias Zaq.Channels.BridgeSupervisor
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.PeopleAuthRateLimiter, as: Ingress
+  alias Zaq.Channels.RuntimeSupervisor
   alias Zaq.Channels.Supervisor, as: Channels
   alias Zaq.Engine.ChannelConfig
   alias Zaq.TestSupport.Channels.RuntimeAdapterStub, as: StubAdapter
@@ -74,7 +75,7 @@ defmodule Zaq.Channels.SupervisionTest do
 
   test "static parent stays generic and widget infrastructure belongs to bridge subtree" do
     assert {:ok, {%{strategy: :one_for_one}, specs}} = Channels.init([])
-    assert Enum.map(specs, & &1.id) == [Ingress, BridgeSupervisor]
+    assert Enum.map(specs, & &1.id) == [Ingress, RuntimeSupervisor]
 
     children = Supervisor.which_children(Channels)
     assert length(children) == 2
@@ -86,12 +87,12 @@ defmodule Zaq.Channels.SupervisionTest do
 
     assert widget == Process.whereis(WebWidget.Supervisor)
 
-    for module <- [Ingress, BridgeSupervisor] do
+    for module <- [Ingress, RuntimeSupervisor] do
       assert {^module, pid, :supervisor, [^module]} = List.keyfind(children, module, 0)
       assert pid == Process.whereis(module)
     end
 
-    assert :ets.info(:zaq_channels_listeners, :owner) == Process.whereis(Channels)
+    assert :ets.info(:zaq_channels_listeners, :owner) == Process.whereis(RuntimeSupervisor)
     assert Zaq.NodeRouter.supervisor_map().channels == Channels
     assert Zaq.NodeRouter.find_node(Channels) == node()
   end
@@ -107,7 +108,11 @@ defmodule Zaq.Channels.SupervisionTest do
     {:ok, specs} = StubAdapter.listener_child_specs("ephemeral", [])
     assert {:ok, ephemeral} = Channels.start_runtime("ephemeral", nil, specs)
 
-    crash_child(Channels, BridgeSupervisor, runtime_pids(old_runtime) ++ ephemeral.listener_pids)
+    crash_child(
+      RuntimeSupervisor,
+      BridgeSupervisor,
+      runtime_pids(old_runtime) ++ ephemeral.listener_pids
+    )
 
     refute Process.whereis(BridgeSupervisor) == old_bridge
     assert Process.whereis(Ingress) == ingress
@@ -227,6 +232,27 @@ defmodule Zaq.Channels.SupervisionTest do
     assert :ok = Channels.stop_bridge_runtime(%{}, bridge_id)
   end
 
+  test "shared infrastructure failure rebuilds bridges without resetting limiter counters" do
+    bridge_id = configured_runtime()
+    assert {:ok, runtime} = Channels.lookup_runtime(bridge_id)
+    ingress = Process.whereis(Ingress)
+    infrastructure = Process.whereis(Amarula.Supervisor)
+    ip = exhaust_identification_budget()
+    refs = monitor_all(runtime_pids(runtime))
+
+    :ok = Supervisor.stop(infrastructure, :infrastructure_failure)
+    children = Supervisor.which_children(RuntimeSupervisor)
+
+    assert {Amarula.Supervisor, replacement, :supervisor, _} =
+             List.keyfind(children, Amarula.Supervisor, 0)
+
+    refute replacement == infrastructure
+    assert_down(refs)
+    assert Process.whereis(Ingress) == ingress
+    assert {:error, {:rate_limited, _}} = Ingress.check_identification(ip)
+    assert_reloaded(bridge_id, runtime)
+  end
+
   test "parent crash stops all subtrees and recreates ETS before bootstrapping" do
     bridge_id = configured_runtime()
     assert {:ok, old_runtime} = Channels.lookup_runtime(bridge_id)
@@ -235,6 +261,8 @@ defmodule Zaq.Channels.SupervisionTest do
 
     descendants =
       [
+        Process.whereis(RuntimeSupervisor),
+        Process.whereis(Amarula.Supervisor),
         Process.whereis(BridgeSupervisor),
         Process.whereis(Ingress),
         Process.whereis(WebWidget.Supervisor),
@@ -246,7 +274,7 @@ defmodule Zaq.Channels.SupervisionTest do
 
     refute Process.whereis(Channels) == old_parent
     refute :ets.whereis(:zaq_channels_listeners) == old_table
-    assert :ets.info(:zaq_channels_listeners, :owner) == Process.whereis(Channels)
+    assert :ets.info(:zaq_channels_listeners, :owner) == Process.whereis(RuntimeSupervisor)
     assert_reloaded(bridge_id, old_runtime)
     refresh_config()
     assert {:ok, _} = Ingress.Config.get()
@@ -284,7 +312,7 @@ defmodule Zaq.Channels.SupervisionTest do
     assert {:ok, runtime} = Channels.lookup_runtime(bridge_id)
     refs = monitor_all(runtime_pids(runtime))
     table = :ets.whereis(:zaq_channels_listeners)
-    assert :ok = Supervisor.terminate_child(Channels, BridgeSupervisor)
+    assert :ok = Supervisor.terminate_child(RuntimeSupervisor, BridgeSupervisor)
 
     try do
       assert_down(refs)
@@ -295,7 +323,7 @@ defmodule Zaq.Channels.SupervisionTest do
       assert {:error, :not_running} = Channels.stop_bridge_runtime(%{}, bridge_id)
       assert Zaq.NodeRouter.find_node(Channels) == node()
     after
-      assert {:ok, _} = Supervisor.restart_child(Channels, BridgeSupervisor)
+      assert {:ok, _} = Supervisor.restart_child(RuntimeSupervisor, BridgeSupervisor)
     end
 
     assert_reloaded(bridge_id, runtime)
@@ -310,7 +338,7 @@ defmodule Zaq.Channels.SupervisionTest do
     ip = exhaust_identification_budget()
 
     :ok = Supervisor.stop(bridge, :runtime_failure)
-    children = Supervisor.which_children(Channels)
+    children = Supervisor.which_children(RuntimeSupervisor)
 
     assert {BridgeSupervisor, new_bridge, :supervisor, _} =
              List.keyfind(children, BridgeSupervisor, 0)
