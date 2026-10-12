@@ -579,12 +579,19 @@ defmodule Zaq.Channels.JidoChatBridge do
            Map.get(user, :display_name) || Map.get(user, "display_name") ||
              Map.get(user, :full_name) || Map.get(user, "full_name"),
          "username" => Map.get(user, :username) || Map.get(user, "username"),
-         "phone" => Map.get(user, :phone) || Map.get(user, "phone")
+         "phone" => profile_phone(user)
        }}
     end
   end
 
   def fetch_profile(_author_id, _connection_details), do: {:error, :missing_connection_details}
+
+  defp profile_phone(user) do
+    metadata = Map.get(user, :metadata) || Map.get(user, "metadata") || %{}
+
+    Map.get(user, :phone) || Map.get(user, "phone") ||
+      Map.get(metadata, :phone) || Map.get(metadata, "phone")
+  end
 
   @spec send_typing(map() | String.t() | atom(), String.t() | integer(), map()) ::
           :ok | {:error, term()}
@@ -1174,13 +1181,7 @@ defmodule Zaq.Channels.JidoChatBridge do
          true <- ingress_starts_listener?(ingress_mode_for(config.provider)),
          {:ok, specs} <-
            build_listener_specs(adapter, config, bridge_id, runtime_opts) do
-      {:ok,
-       Enum.map(specs, fn spec ->
-         Elixir.Supervisor.child_spec({Zaq.Channels.ListenerRuntime, spec},
-           id: spec.id,
-           restart: :temporary
-         )
-       end)}
+      {:ok, specs}
     else
       false -> {:ok, []}
       {:error, reason} -> {:error, reason}

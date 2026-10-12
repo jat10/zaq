@@ -27,11 +27,19 @@ defmodule Zaq.People.Resolver do
   end
 
   def normalize("whatsapp", attrs) do
-    phone = get(attrs, :phone) || get(attrs, :channel_id)
+    channel_id = get(attrs, :channel_id) || get(attrs, :phone)
+
+    phone =
+      get(attrs, :phone) ||
+        if(is_binary(channel_id) and Regex.match?(~r/^\+?[0-9]+$/, channel_id),
+          do: channel_id
+        )
 
     %{
-      "channel_id" => phone,
-      "phone" => phone
+      "channel_id" => channel_id,
+      "phone" => phone,
+      "display_name" => whatsapp_name(attrs),
+      "dm_channel_id" => get(attrs, :dm_channel_id)
     }
   end
 
@@ -83,6 +91,19 @@ defmodule Zaq.People.Resolver do
       "email" => get(attrs, :email),
       "phone" => get(attrs, :phone)
     }
+  end
+
+  defp whatsapp_name(attrs) do
+    case get(attrs, :display_name) || get(attrs, :full_name) do
+      name when is_binary(name) ->
+        case String.trim(name) do
+          name when name in ["", "~"] -> nil
+          name -> name
+        end
+
+      _ ->
+        nil
+    end
   end
 
   defp normalize_slack_style(attrs) do

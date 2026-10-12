@@ -18,14 +18,16 @@ still enter the normal pipeline and persistent replay protection. Timestamp age 
 not used to discard messages. Unsupported broadcast rooms are rejected by the adapter.
 ZAQ retains only its canonical history/identity mapping.
 
-All Jido listeners run under the shared `ListenerRuntime` supervision handle with
-a bounded abnormal restart budget. Normal stop shuts down the adapter connection
-and retains credentials. Partial startup failures clean up started children and
+All Jido listeners run directly under `BridgeSupervisor` using the adapter's child
+specification and restart policy. BridgeSupervisor refreshes the registered PID on
+restart, so status and explicit stop target the current listener. Restart intensity
+is shared by the dynamic supervisor; there is no separate per-listener budget.
+Explicit runtime stop shuts down the adapter connection and retains credentials. Partial startup failures clean up started children and
 bridge state. Channels starts shared infrastructure from `channels_runtime_children`
-(default `[Amarula.Supervisor]`) before `BridgeSupervisor` inside `RuntimeSupervisor`.
-Its rest-for-one strategy rebuilds runtimes if shared infrastructure fails. The
-Channels parent isolates this subtree from the authentication limiter, so either
-subtree can restart without resetting the other. The adapter refuses
+(default `[Amarula.Supervisor]`) directly under `Channels.Supervisor`, between the
+rate limiter and `BridgeSupervisor`. Rest-for-one ordering rebuilds runtimes after
+infrastructure failure without resetting limiter counters. A limiter supervisor
+failure also rebuilds the later infrastructure and bridge children. The adapter refuses
 duplicate profile ownership rather than adopting another listener's connection.
 This does not provide distributed fencing across disconnected clusters sharing a DB.
 
@@ -37,12 +39,31 @@ no protocol events enter chat handlers. These internal flags are not authenticat
 for arbitrary NodeRouter callers. BO status and retry still require a confidential
 event and current super-admin authorization for the exact enabled configuration.
 
-In BO, choose Communication Channels → WhatsApp, create a named configuration,
-then choose **Connect device** and scan with the phone's Linked devices screen.
-The existing pairing modal polls only its selected account, rejects stale results,
-and stops polling after three minutes. Disabling a configuration stops its runtime
-and preserves encrypted state. The shared pairing component remains in Storybook
-under `/storybook/modals/linked_device_pairing`.
+In BO, choose Communication Channels → WhatsApp → New configuration to scan a QR
+code, then confirm the detected phone number and display name. A missing display
+name falls back to the phone number; an unavailable phone number cannot be confirmed.
+Manual bot ID/mention fields are omitted for WhatsApp, including when editing.
+
+The confidential Channels `:pair_linked_device` Action authorizes current super
+admins. `LinkedDevice.Session` owns an operator-scoped provisional connection with
+bounded, memory-only storage. It discards chat ingress and expires after three
+minutes or browser disconnect. Cancellation attempts logout and stops the temporary
+runtime. QR codes and session records never enter BO persistence or workflow events.
+
+Confirmation stops protocol writes before taking a snapshot. Engine's trusted
+runtime `:confirm_linked_device` Action creates the connector and canonical encrypted
+credential document in one transaction, using an attempt UUID for repeat-request
+idempotence. Failures retain the frozen snapshot for retry within the pairing window.
+Only after persistence does Channels start the normal bridge. A startup failure is
+reported as saved with connection pending, not a failed save. On server restart,
+`BridgeSupervisor` restores enabled connectors through the shared runtime loader;
+disabled and archived connectors stay stopped.
+
+The pairing modal polls only its selected account and rejects stale results. Closing
+an existing connector's status modal leaves its saved connection running; closing a
+new onboarding modal cancels the provisional session. Existing connector retries
+preserve encrypted state. The shared component is in Storybook under
+`/storybook/modals/linked_device_pairing`.
 
 `LinkedDevice.Storage` translates scoped storage callbacks into the
 [canonical credential document operation](engine.md#connector-credential-documents).
@@ -359,7 +380,7 @@ provenance before using those matches for capture.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, beside the independent `Zaq.Channels.RuntimeSupervisor` subtree. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, before shared infrastructure and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -376,7 +397,7 @@ for cache refresh/expiry and eventual-consistency limitations.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, beside the independent `Zaq.Channels.RuntimeSupervisor` subtree. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, before shared infrastructure and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -396,7 +417,7 @@ for cache refresh/expiry and eventual-consistency limitations.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, beside the independent `Zaq.Channels.RuntimeSupervisor` subtree. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, before shared infrastructure and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -1239,17 +1260,16 @@ See [Web transport contracts](#web-transport-contracts) for initialization, hist
 ## Supervisor
 
 `Zaq.Channels.Supervisor` is the single Channels supervisor child of the application.
-It uses `Supervisor` with `:one_for_one` and starts these children in order:
+It uses `Supervisor` with `:rest_for_one` and starts these children in order:
 
 1. `Zaq.Channels.PeopleAuthRateLimiter` — failed-identification counters and config cache.
-2. `Zaq.Channels.BridgeSupervisor` — `DynamicSupervisor` for configured provider
-   infrastructure, bridge state and listener processes. Provider infrastructure
-   starts before enabled connector bootstrap, entirely inside this subtree.
+2. Configured `channels_runtime_children` — shared adapter infrastructure, defaulting to `Amarula.Supervisor`.
+3. `Zaq.Channels.BridgeSupervisor` — `DynamicSupervisor` for bridge state, listeners and temporary pairing sessions.
 
-Each child restarts independently. A bridge-supervisor restart preserves limiter
-counters and cache; a limiter-supervisor restart resets its local counters/cache
-without restarting bridge runtimes. Widget infrastructure restarts are recovered
-inside each stable `WebWidget.Connector` subtree, without restarting unrelated bridges.
+Infrastructure failure restarts later bridge processes and preserves limiter
+counters and cache. A limiter-supervisor failure resets its local resources and
+restarts the later infrastructure and bridges. Parent shutdown stops all children.
+
 The widget's shared `{WebWidget, opts}` and connector supervisors are dynamic bridge
 children; neither the application nor the static Channels parent knows widget options.
 The parent forwards startup options unchanged. Runtime synchronization routes the
