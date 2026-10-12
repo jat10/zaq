@@ -2,9 +2,10 @@ defmodule Zaq.Channels.Supervisor do
   @moduledoc """
   Static supervisor and public runtime facade for the Channels role.
 
-  Isolates the rate limiter from the channel runtime subtree. Shared infrastructure
-  and dynamic bridges live under RuntimeSupervisor; limiter failures do not restart
-  connections. Stopping this parent stops both subtrees and releases the registry.
+  Starts the rate limiter, configured shared infrastructure and BridgeSupervisor
+  directly. Rest-for-one ordering rebuilds connections after infrastructure failure
+  while preserving limiter counters. A limiter supervisor failure also rebuilds
+  later children. This parent owns the bridge registry across child restarts.
 
   `Zaq.NodeRouter` discovers Channels through this registered name. Registration
   identifies the role, not child readiness. Runtime operations delegate directly
@@ -13,7 +14,7 @@ defmodule Zaq.Channels.Supervisor do
 
   use Supervisor
 
-  alias Zaq.Channels.{BridgeSupervisor, PeopleAuthRateLimiter, RuntimeSupervisor}
+  alias Zaq.Channels.{BridgeSupervisor, PeopleAuthRateLimiter}
 
   @type runtime :: %{listener_pids: [pid()], state_pid: pid() | nil}
 
@@ -22,7 +23,11 @@ defmodule Zaq.Channels.Supervisor do
 
   @impl true
   def init(opts) do
-    Supervisor.init([PeopleAuthRateLimiter, {RuntimeSupervisor, opts}], strategy: :one_for_one)
+    children =
+      [PeopleAuthRateLimiter] ++
+        Zaq.Config.get(:zaq, :channels_runtime_children, [], opts) ++ [{BridgeSupervisor, opts}]
+
+    Supervisor.init(children, strategy: :rest_for_one)
   end
 
   @doc "Starts runtime for a config via router bridge delegation."

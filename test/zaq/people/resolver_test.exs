@@ -90,6 +90,16 @@ defmodule Zaq.People.ResolverTest do
   # ── whatsapp ─────────────────────────────────────────────────────────────
 
   describe "normalize/2 - whatsapp" do
+    test "native JIDs are channel identifiers, not phone numbers" do
+      for jid <- ["15551234567@s.whatsapp.net", "1234567890@lid", "1234567890:4@lid"] do
+        assert %{"channel_id" => ^jid, "phone" => nil} =
+                 Resolver.normalize("whatsapp", %{channel_id: jid})
+
+        assert %{"channel_id" => ^jid, "phone" => "+15551234567"} =
+                 Resolver.normalize("whatsapp", %{channel_id: jid, phone: "+15551234567"})
+      end
+    end
+
     test "uses phone as channel_id" do
       attrs = %{phone: "+15551234567"}
       result = Resolver.normalize("whatsapp", attrs)

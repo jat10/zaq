@@ -33,6 +33,19 @@ defmodule Zaq.TestSupport.WhatsAppFlowTransport do
   end
 
   def stop(conn, _opts) when is_pid(conn), do: Agent.stop(conn)
+
+  def account_identity(conn) do
+    {:ok,
+     Agent.get(
+       conn,
+       &Map.get(&1, :identity, %{
+         phone_number: "+15550001",
+         display_name: "Support account",
+         account_jids: ["15550001@s.whatsapp.net"]
+       })
+     )}
+  end
+
   def account_jids(_conn), do: {:ok, ["15550001@s.whatsapp.net"]}
 
   def scan(profile, qr) do

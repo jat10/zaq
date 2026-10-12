@@ -1209,7 +1209,7 @@
       </div>
 
       <p :if={@linked_device} class="zaq-text-body-sm">
-        Save this configuration, then choose Connect device to scan a QR code.
+        Use Connect device to check this account’s connection or reconnect.
         <span :if={@provider == "whatsapp"}>History sync is disabled.</span>
       </p>
       <div :if={@kind != :data_source and not @linked_device} class="mb-4">
@@ -1311,7 +1311,7 @@
         </p>
       </div>
 
-      <div :if={@kind != :data_source} class="mb-4">
+      <div :if={@kind != :data_source and not @linked_device} class="mb-4">
         <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
           Bot Username
         </label>
@@ -1328,7 +1328,7 @@
         </p>
       </div>
 
-      <div :if={@kind != :data_source} class="mb-6">
+      <div :if={@kind != :data_source and not @linked_device} class="mb-6">
         <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
           Bot User ID
         </label>
