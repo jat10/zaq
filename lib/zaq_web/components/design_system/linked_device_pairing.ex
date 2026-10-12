@@ -29,12 +29,24 @@ defmodule ZaqWeb.Components.DesignSystem.LinkedDevicePairing do
           Open {@provider} on your phone, choose Linked devices, and scan this code.
         </p>
         <.qr :if={@matrix} matrix={@matrix} />
+        <div :if={@status[:phase] == :confirm} class="zaq-layout-stack">
+          <p class="zaq-text-body">{@status.identity[:display_name] || "WhatsApp account"}</p>
+          <p class="zaq-text-body" id="linked-device-phone">{@status.identity.phone_number}</p>
+          <p class="zaq-text-body-sm">Confirm to create this channel and start receiving messages.</p>
+        </div>
         <p :if={@history_disabled} class="zaq-text-body-sm">
           History sync is disabled. Messages queued while ZAQ is offline follow your normal routing rules.
         </p>
       </div>
       <:actions>
         <Button.button variant={:secondary} phx-click={@close_event}>Close</Button.button>
+        <Button.button
+          :if={@status[:phase] == :confirm}
+          phx-click="confirm_linked_device"
+          phx-disable-with="Saving…"
+        >
+          Confirm account
+        </Button.button>
         <Button.button
           :if={@status[:phase] in [:expired, :disconnected, :failed]}
           phx-click={@retry_event}

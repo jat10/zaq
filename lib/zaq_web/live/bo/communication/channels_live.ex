@@ -141,6 +141,27 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   def handle_info({:linked_device_poll, generation}, socket),
     do: {:noreply, LinkedDeviceUI.refresh(socket, generation)}
 
+  def handle_info({:linked_device_saved, saved}, socket) do
+    configs = list_configs(socket.assigns.provider)
+    config = Enum.find(configs, &(&1.id == saved.id))
+
+    {:noreply,
+     socket
+     |> LinkedDeviceUI.close()
+     |> assign(:configs, configs)
+     |> assign(:selected_config_id, saved.id)
+     |> assign(:retrieval_channels, load_retrieval_channels(config))
+     |> assign(:grants_by_config, grants_by_config(socket.assigns.kind, configs))
+     |> schedule_ingress_status_refresh(configs)
+     |> put_flash(
+       :info,
+       if(saved.runtime_pending,
+         do: "Account saved. Connection is pending; retry from the channel.",
+         else: "WhatsApp account connected."
+       )
+     )}
+  end
+
   def handle_info(:refresh_pending_ingress_statuses, socket) do
     {:noreply, retry_ingress_status_refresh(socket)}
   end
@@ -167,6 +188,10 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   end
 
   def handle_event("close_linked_device", _, socket), do: {:noreply, LinkedDeviceUI.close(socket)}
+
+  def handle_event("confirm_linked_device", _, socket),
+    do: {:noreply, LinkedDeviceUI.confirm(socket)}
+
   def handle_event("retry_linked_device", _, socket), do: {:noreply, LinkedDeviceUI.retry(socket)}
 
   def handle_event("oauth_popup_result", _params, socket) do
@@ -197,6 +222,17 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   # -------------------------------------------------------------------------
   # Config CRUD events
   # -------------------------------------------------------------------------
+
+  def handle_event(
+        "open_modal",
+        %{"action" => "new"},
+        %{assigns: %{provider: "whatsapp"}} = socket
+      ) do
+    if BOActor.super_admin?(socket.assigns.current_user),
+      do: {:noreply, LinkedDeviceUI.new(socket)},
+      else:
+        {:noreply, put_flash(socket, :error, "Only super admins can link a WhatsApp account.")}
+  end
 
   def handle_event("open_modal", %{"action" => "new"}, socket) do
     changeset =
