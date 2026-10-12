@@ -3,18 +3,25 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppIncomingTest do
 
   alias Jido.Chat.WhatsApp.Adapter
   alias Zaq.Channels.JidoChatBridge.Incoming
-  alias Zaq.Channels.JidoChatBridge.Incoming.WhatsApp
 
   test "privacy identity matches only the receiving profile's trusted alias" do
     message = incoming(%{to_jid: "123:7@s.whatsapp.net", mentions: ["987@lid"]})
     refute message.was_mentioned
-    assert WhatsApp.prepare(message, ["123@s.whatsapp.net", "987:1@lid"]).was_mentioned
-    refute WhatsApp.prepare(message, ["456@s.whatsapp.net", "654@lid"]).was_mentioned
+
+    assert incoming(%{mentions: ["987@lid"], account_jids: ["123@s.whatsapp.net", "987:1@lid"]}).was_mentioned
+
+    refute incoming(%{mentions: ["987@lid"], account_jids: ["456@s.whatsapp.net", "654@lid"]}).was_mentioned
   end
 
   test "group mention selects the receiving account and ignores another account" do
     for {recipient, expected} <- [{"123:7@s.whatsapp.net", true}, {"456@s.whatsapp.net", false}] do
-      incoming = incoming(%{to_jid: recipient, mentions: ["123@s.whatsapp.net"]})
+      incoming =
+        incoming(%{
+          to_jid: recipient,
+          account_jids: [recipient],
+          mentions: ["123@s.whatsapp.net"]
+        })
+
       assert incoming.was_mentioned == expected
       assert [mention] = incoming.mentions
       assert mention.is_self == expected
@@ -42,8 +49,12 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppIncomingTest do
       assert facts.sender_id == "peer@s.whatsapp.net"
     end
 
-    message = incoming(%{channel_jid: "status@broadcast"})
-    assert Incoming.normalize(message, :whatsapp, Adapter) == %{}
+    assert {:error, _} =
+             Adapter.transform_incoming(%{
+               id: "broadcast",
+               channel_jid: "status@broadcast",
+               text: "ignored"
+             })
   end
 
   test "missing recipient never invents a self mention" do
@@ -65,6 +76,6 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppIncomingTest do
       )
 
     {:ok, incoming} = Adapter.transform_incoming(payload)
-    Incoming.prepare(incoming, :whatsapp)
+    incoming
   end
 end
