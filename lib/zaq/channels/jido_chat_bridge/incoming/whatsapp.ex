@@ -3,31 +3,8 @@ defmodule Zaq.Channels.JidoChatBridge.Incoming.WhatsApp do
 
   @behaviour Zaq.Channels.IncomingNormalization
 
-  alias Jido.Chat.Mention
   alias Zaq.Channels.{IncomingNormalization, MessageTimestamp}
   alias Zaq.Engine.Messages.ConversationIdentity
-
-  @doc "Promotes upstream raw self/mention facts before Jido chooses message handlers."
-  def prepare(incoming, own_jids \\ []) do
-    raw = incoming.raw || %{}
-    own = [value(raw, :to_jid) | own_jids] |> Enum.map(&account/1) |> Enum.reject(&is_nil/1)
-
-    mentions =
-      raw
-      |> value(:mentions)
-      |> List.wrap()
-      |> Enum.filter(&is_binary/1)
-      |> Enum.map(fn jid ->
-        Mention.new(%{user_id: jid, is_self: account(jid) in own})
-      end)
-
-    %{
-      incoming
-      | author: %{incoming.author | is_me: value(raw, :from_me) == true},
-        mentions: mentions,
-        was_mentioned: Enum.any?(mentions, & &1.is_self)
-    }
-  end
 
   @impl true
   def normalize(%{chat_type: type, is_dm: dm, external_room_id: room}, raw, timestamp)
@@ -64,16 +41,4 @@ defmodule Zaq.Channels.JidoChatBridge.Incoming.WhatsApp do
 
   defp kind(_, _, _), do: {:error, :unknown_room}
   defp value(map, key), do: Map.get(map, key) || Map.get(map, Atom.to_string(key))
-
-  defp account(jid) when is_binary(jid) do
-    case String.split(jid, "@") do
-      [user, server] when server in ["s.whatsapp.net", "lid"] ->
-        {user |> String.split(":") |> hd(), server}
-
-      _ ->
-        nil
-    end
-  end
-
-  defp account(_), do: nil
 end

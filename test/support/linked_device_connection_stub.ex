@@ -1,31 +1,23 @@
 defmodule Zaq.TestSupport.LinkedDeviceConnectionStub do
   @moduledoc false
+  def connect(config, opts) do
+    parent = Keyword.fetch!(opts, :parent)
 
-  defdelegate forward_event?(event), to: Zaq.Channels.LinkedDevice.WhatsApp
-  defdelegate pairing_event(event, state), to: Zaq.Channels.LinkedDevice.WhatsApp
-
-  def connect(config, parent) do
-    name = {:global, {__MODULE__, config.profile}}
-
-    case Agent.start(fn -> parent end, name: name) do
+    case Agent.start(fn -> parent end, name: {:global, {__MODULE__, config.profile}}) do
       {:ok, pid} ->
+        send(config.observer, {:connection, config.profile, pid, parent})
         {:ok, pid}
 
-      {:error, {:already_started, pid}} ->
-        Agent.update(pid, fn _ -> parent end)
-        {:ok, pid}
+      {:error, _} ->
+        {:error, :already_connected}
     end
   end
 
-  def stop(config) do
-    case :global.whereis_name({__MODULE__, config.profile}) do
-      :undefined -> :ok
-      pid -> Agent.stop(pid)
-    end
-  end
-
-  def deliver(pid, payload, opts) do
-    send(pid, {:payload, payload, opts})
+  def stop(pid, _opts) do
+    if Process.alive?(pid), do: Agent.stop(pid)
     :ok
   end
+
+  def deliver(pid, payload, opts), do: send(pid, {:payload, payload, opts})
+  def lifecycle(pid, payload, _opts), do: send(pid, {:lifecycle, payload})
 end

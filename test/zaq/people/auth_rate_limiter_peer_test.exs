@@ -31,13 +31,21 @@ defmodule Zaq.People.AuthRateLimiterPeerTest do
         children = :peer.call(control, Supervisor, :which_children, [Zaq.Channels.Supervisor])
 
         assert Enum.sort(Enum.map(children, &elem(&1, 0))) ==
-                 Enum.sort([Ingress, Zaq.Channels.BridgeSupervisor])
+                 Enum.sort([Ingress, Zaq.Channels.RuntimeSupervisor])
+
+        runtime_children =
+          :peer.call(control, Supervisor, :which_children, [Zaq.Channels.RuntimeSupervisor])
+
+        assert Enum.sort(Enum.map(runtime_children, &elem(&1, 0))) ==
+                 Enum.sort([Amarula.Supervisor, Zaq.Channels.BridgeSupervisor])
 
         assert peer_node ==
                  :peer.call(control, Zaq.NodeRouter, :find_node, [Zaq.Channels.Supervisor])
       else
         assert nil == :peer.call(control, Process, :whereis, [Zaq.Channels.Supervisor])
         assert nil == :peer.call(control, Process, :whereis, [Zaq.Channels.BridgeSupervisor])
+        assert nil == :peer.call(control, Process, :whereis, [Amarula.Supervisor])
+        assert nil == :peer.call(control, Process, :whereis, [Zaq.Channels.RuntimeSupervisor])
         assert nil == :peer.call(control, Process, :whereis, [Ingress])
       end
 

@@ -1,32 +1,26 @@
 defmodule Zaq.Channels.LinkedDevice.Pairing do
   @moduledoc "Provider-neutral, attempt-scoped pairing presentation state. QR material stays in memory."
 
-  @doc "Starts a fresh attempt. A new owner always creates a new generation."
-  def new(attempt_id),
-    do: %{attempt_id: attempt_id, phase: :pending, qr: nil, expires_at: nil, qr_count: 0}
+  @doc "Projects a normalized adapter lifecycle snapshot into the shared BO contract."
+  def from_notification(%{status: status, attempt_id: attempt, qr: qr}) do
+    phase =
+      case status do
+        :connected -> :connected
+        :pairing -> :pairing
+        :expired -> :expired
+        :failed -> :failed
+        value when value in [:disconnected, :logged_out] -> :disconnected
+        _ -> :pending
+      end
 
-  @doc "Applies only events belonging to this attempt; unknown events preserve state."
-  def apply_event(state, attempt_id, event, now)
-
-  def apply_event(%{attempt_id: expected} = state, attempt_id, _event, _now)
-      when expected != attempt_id, do: state
-
-  def apply_event(state, _attempt, {:qr, qr, ttl}, now)
-      when is_binary(qr) and is_integer(ttl) and ttl > 0 do
-    %{state | phase: :pairing, qr: qr, expires_at: now + ttl, qr_count: state.qr_count + 1}
+    %{
+      attempt_id: inspect(attempt),
+      phase: phase,
+      expires_at: nil,
+      qr: if(phase == :pairing and is_binary(qr), do: qr)
+    }
+    |> presentation()
   end
-
-  def apply_event(state, _attempt, phase, _now)
-      when phase in [:pending, :connected, :disconnected, :expired, :failed],
-      do: %{state | phase: phase, qr: nil, expires_at: nil}
-
-  def apply_event(state, _, _, _), do: state
-
-  @doc "Clears expired QR material before returning bounded presentation data."
-  def expire(%{expires_at: expires} = state, now) when is_integer(expires) and expires <= now,
-    do: %{state | phase: :expired, qr: nil, expires_at: nil}
-
-  def expire(state, _), do: state
 
   @doc "Returns generic ingress status without provider credentials or error payloads."
   def presentation(state) do

@@ -13,7 +13,7 @@ defmodule Zaq.Channels.BridgeSupervisor do
   Listener processes deliver incoming payloads to the bridge sink callback
   configured by the active bridge runtime.
 
-  Runs under `Zaq.Channels.Supervisor`, which retains the public runtime API and
+  Runs under `Zaq.Channels.RuntimeSupervisor`; `Zaq.Channels.Supervisor` retains the public runtime API and
   NodeRouter role-discovery name. Bootstrap runs on every dynamic child restart.
   The parent owns `:zaq_channels_listeners` and the private current-child index
   because it calls this `start_link/1`; both survive this child's restart and
@@ -191,6 +191,8 @@ defmodule Zaq.Channels.BridgeSupervisor do
 
     case maybe_start_state_process(tracked_spec(state_spec, bridge_id, :state)) do
       {:ok, state_pid} ->
+        :ets.insert(@table, {bridge_id, %{listener_pids: [], state_pid: state_pid}})
+
         case start_listener_children(listener_specs, bridge_id) do
           {:ok, listener_pids} ->
             runtime = %{listener_pids: listener_pids, state_pid: state_pid}
@@ -220,6 +222,8 @@ defmodule Zaq.Channels.BridgeSupervisor do
     end
   rescue
     e ->
+      stop_bridge_runtime(%{}, bridge_id)
+
       Logger.warning(
         "[Channels.BridgeSupervisor] Exception starting runtime bridge_id=#{bridge_id}: #{Exception.message(e)}"
       )
@@ -237,12 +241,15 @@ defmodule Zaq.Channels.BridgeSupervisor do
     |> Enum.reduce_while({:ok, []}, fn {spec, index}, {:ok, pids} ->
       case DynamicSupervisor.start_child(__MODULE__, tracked_spec(spec, bridge_id, index)) do
         {:ok, pid} ->
+          record_starting_listener(bridge_id, pid)
           {:cont, {:ok, [pid | pids]}}
 
         {:ok, pid, _info} ->
+          record_starting_listener(bridge_id, pid)
           {:cont, {:ok, [pid | pids]}}
 
         {:error, {:already_started, pid}} ->
+          record_starting_listener(bridge_id, pid)
           {:cont, {:ok, [pid | pids]}}
 
         {:error, reason} ->
@@ -269,6 +276,11 @@ defmodule Zaq.Channels.BridgeSupervisor do
     |> Enum.each(fn {pid, slot} ->
       stop_tracked_child(bridge_id, slot, pid)
     end)
+  end
+
+  defp record_starting_listener(bridge_id, pid) do
+    [{^bridge_id, runtime}] = runtime_entry(bridge_id)
+    :ets.insert(@table, {bridge_id, %{runtime | listener_pids: runtime.listener_pids ++ [pid]}})
   end
 
   defp start_state_process(spec) do

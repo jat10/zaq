@@ -3,7 +3,7 @@ defmodule Zaq.Channels.LinkedDevice.Config do
   Pure runtime configuration for connector-scoped linked devices.
 
   Profiles derive exclusively from persisted connector IDs. The caller supplies
-  a trusted provider module and credential-bound storage adapter; persisted
+  a credential-bound storage adapter; persisted
   connector settings cannot replace either or choose another account's profile.
   """
 
@@ -15,19 +15,23 @@ defmodule Zaq.Channels.LinkedDevice.Config do
   def profile(_config), do: {:error, :invalid_connector}
 
   @doc "Builds listener ingress with an explicit, trusted storage binding."
-  @spec ingress(map(), module(), {module(), keyword()}) :: {:ok, map()} | {:error, term()}
-  def ingress(config, provider, {storage_module, storage_opts} = storage)
+  @spec ingress(map(), {module(), keyword()}) :: {:ok, map()} | {:error, term()}
+  def ingress(config, {storage_module, storage_opts} = storage)
       when is_atom(storage_module) and not is_nil(storage_module) and is_list(storage_opts) do
-    with {:ok, profile} <- profile(config),
-         {:ok, protocol_config} <- provider.connection_config(config) do
+    with {:ok, profile} <- profile(config) do
       {:ok,
        %{
          mode: :linked_device,
          profile: profile,
-         config: protocol_config |> Map.put(:profile, profile) |> Map.put(:storage, storage)
+         config: %{
+           profile: profile,
+           storage: storage,
+           sync_history: false,
+           sync_full_history: false
+         }
        }}
     end
   end
 
-  def ingress(_config, _provider, _storage), do: {:error, :invalid_storage}
+  def ingress(_config, _storage), do: {:error, :invalid_storage}
 end

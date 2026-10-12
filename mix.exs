@@ -134,7 +134,7 @@ defmodule Zaq.MixProject do
       #  path: "/Users/julien/Documents/Repos/Github/OSS/jido/chat/jido_chat_telegram",
       #  override: true},
       {:jido_chat_telegram, github: "agentjido/jido_chat_telegram", branch: "main"},
-      {:jido_chat_whatsapp, github: "agentjido/jido_chat_whatsapp", branch: "main"},
+      whatsapp_dependency(),
       {:qr_code, "~> 3.2.0"},
       {:jido_ai, github: "agentjido/jido_ai", branch: "main", override: true},
       # {:jido_ai, path: "/Users/julien/Documents/Repos/Github/OSS/jido/jido_ai", override: true},
@@ -200,6 +200,16 @@ defmodule Zaq.MixProject do
   #     $ mix setup
   #
   # See the documentation for `Mix` for more info on aliases.
+  defp whatsapp_dependency do
+    case {Mix.env(), System.get_env("JIDO_CHAT_WHATSAPP_PATH")} do
+      {env, path} when env in [:dev, :test] and is_binary(path) and path != "" ->
+        {:jido_chat_whatsapp, path: path}
+
+      _ ->
+        {:jido_chat_whatsapp, github: "agentjido/jido_chat_whatsapp", branch: "main"}
+    end
+  end
+
   defp aliases do
     [
       setup: [

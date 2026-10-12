@@ -3,18 +3,17 @@ defmodule Zaq.Channels.LinkedDevice.ConfigTest do
   use ExUnitProperties
 
   alias Jido.Chat.WhatsApp.Adapter
-  alias Zaq.Channels.LinkedDevice.{Config, WhatsApp}
+  alias Zaq.Channels.LinkedDevice.Config
 
-  test "shared configuration does not impose WhatsApp options on other providers" do
+  test "shared configuration does not require a provider-specific module" do
     assert {:ok, ingress} =
              Config.ingress(
                %{id: 7, provider: "example"},
-               Zaq.TestSupport.LinkedDeviceProviderStub,
                {__MODULE__, []}
              )
 
-    assert ingress.config.pairing_method == :code
-    refute Map.has_key?(ingress.config, :sync_history)
+    assert ingress.profile == "zaq_linked_device_7"
+    assert ingress.config.storage == {__MODULE__, []}
   end
 
   test "runtime binding defeats persisted profile, storage and history overrides" do
@@ -33,7 +32,7 @@ defmodule Zaq.Channels.LinkedDevice.ConfigTest do
     }
 
     storage = {__MODULE__, credential_id: 123}
-    assert {:ok, ingress} = Config.ingress(config, WhatsApp, storage)
+    assert {:ok, ingress} = Config.ingress(config, storage)
     assert ingress.mode == :linked_device
     assert ingress.profile == "zaq_linked_device_42"
     assert ingress.config.storage == storage
@@ -54,10 +53,7 @@ defmodule Zaq.Channels.LinkedDevice.ConfigTest do
   test "rejects missing identities, mismatched providers and implicit file storage" do
     assert {:error, :invalid_connector} = Config.profile(%{id: nil})
     assert {:error, :invalid_connector} = Config.profile(%{id: "42"})
-    assert {:error, :invalid_storage} = Config.ingress(%{id: 42}, WhatsApp, nil)
-
-    assert {:error, :provider_mismatch} =
-             Config.ingress(%{id: 42, provider: "telegram"}, WhatsApp, {__MODULE__, []})
+    assert {:error, :invalid_storage} = Config.ingress(%{id: 42}, nil)
   end
 
   property "distinct persisted connectors always receive distinct stable profiles" do
