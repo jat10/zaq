@@ -54,15 +54,32 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
     stop_supervised(Transport)
     start_supervised!({Transport, observer: self()})
     assert Transport.mailbox() == %{}
+    disabled_config = connector() |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
+
+    {:ok, archived_config} = ChannelConfig.archive(connector())
+
+    assert :ok =
+             Supervisor.terminate_child(
+               Zaq.Channels.Supervisor,
+               Zaq.Channels.BridgeSupervisor
+             )
+
+    assert {:ok, _} =
+             Supervisor.restart_child(
+               Zaq.Channels.Supervisor,
+               Zaq.Channels.BridgeSupervisor
+             )
 
     for config <- [first, second] do
-      assert :ok = JidoChatBridge.start_runtime(config)
       assert_receive {:whatsapp_connected_config, options}
       refute options.sync_history
       refute options.sync_full_history
       assert phase(config, :connected)
       assert {:ok, %{qr: nil}} = JidoChatBridge.channel_ingress_status(config)
     end
+
+    assert {:error, :not_connected} = Transport.resolve_conn(profile: profile(disabled_config))
+    assert {:error, :not_connected} = Transport.resolve_conn(profile: profile(archived_config))
 
     disabled = first |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
     assert :ok = JidoChatBridge.sync_runtime(first, disabled)

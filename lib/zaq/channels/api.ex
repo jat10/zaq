@@ -934,6 +934,19 @@ defmodule Zaq.Channels.Api do
     %{event | response: response}
   end
 
+  def handle_event(%Event{} = event, :pair_linked_device, _context) do
+    response =
+      case Jido.Exec.run(Zaq.Channels.Actions.PairLinkedDevice, %{request: event.request}, %{
+             actor: event.actor,
+             confidential: event.opts[:confidential] == true
+           }) do
+        {:ok, %{result: result}} -> result
+        {:error, _} = error -> error
+      end
+
+    %{event | response: response}
+  end
+
   def handle_event(
         %Event{request: %{provider: provider} = request} = event,
         :channel_ingress_status,

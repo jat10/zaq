@@ -6,6 +6,9 @@ defmodule Zaq.Accounts.People do
   survivor within one outer transaction; explicit edits override merge precedence.
   Permanent single/bulk deletion orchestrates Connect secret cleanup before removing
   People, in the same identity transaction. Connect owns all secret and event queries.
+
+  WhatsApp phone numbers enrich profiles; native connector-scoped identities
+  determine ownership. A shared phone value does not merge or reject those owners.
   """
 
   import Ecto.Query
@@ -283,8 +286,13 @@ defmodule Zaq.Accounts.People do
   end
 
   defp consistent_discovered_owner(person, attrs) do
+    phone_match =
+      if attrs["platform"] == "whatsapp",
+        do: {:error, :not_found},
+        else: match_by_phone(attrs)
+
     conflict? =
-      Enum.any?([match_by_email(attrs), match_by_phone(attrs)], fn
+      Enum.any?([match_by_email(attrs), phone_match], fn
         {:ok, matched} -> matched.id != person.id
         _ -> false
       end)
@@ -1101,18 +1109,16 @@ defmodule Zaq.Accounts.People do
   end
 
   defp backfill_person(person, attrs) do
-    # If full_name looks like an email address it was seeded from a channel identifier.
-    # Treat it as absent so an incoming display_name can replace it.
-    effective_name =
-      if is_binary(person.full_name) and String.contains?(person.full_name, "@"),
-        do: nil,
-        else: person.full_name
-
     updates =
       %{}
       |> maybe_put_if_nil(:email, person.email, attrs)
-      |> maybe_put_if_nil(:phone, person.phone, attrs)
-      |> maybe_put_if_nil(:full_name, effective_name, attrs, "display_name")
+      |> maybe_put_if_nil(:phone, profile_phone(person.phone, attrs), attrs)
+      |> maybe_put_if_nil(
+        :full_name,
+        profile_name(person.full_name, attrs),
+        attrs,
+        "display_name"
+      )
 
     if map_size(updates) > 0 do
       update_person(person, updates)
@@ -1120,6 +1126,21 @@ defmodule Zaq.Accounts.People do
       {:ok, person}
     end
   end
+
+  defp profile_name(name, %{"platform" => "whatsapp", "channel_id" => id}) do
+    if name in [id, "Unknown"], do: nil, else: name
+  end
+
+  defp profile_name(name, _attrs) do
+    if is_binary(name) and String.contains?(name, "@"), do: nil, else: name
+  end
+
+  defp profile_phone(phone, %{"platform" => "whatsapp", "channel_id" => phone})
+       when is_binary(phone) do
+    if String.ends_with?(phone, ["@s.whatsapp.net", "@lid"]), do: nil, else: phone
+  end
+
+  defp profile_phone(phone, _attrs), do: phone
 
   defp maybe_put_if_nil(acc, field, current_val, attrs, attr_key \\ nil) do
     key = if attr_key, do: attr_key, else: to_string(field)

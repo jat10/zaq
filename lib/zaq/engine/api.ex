@@ -62,6 +62,23 @@ defmodule Zaq.Engine.Api do
     %{event | response: response}
   end
 
+  def handle_event(%Event{} = event, :confirm_linked_device, _context) do
+    response =
+      if event.opts[:confidential] == true and event.opts[:linked_device_runtime] == true do
+        case Jido.Exec.run(Zaq.Engine.Actions.ConfirmLinkedDevice, %{request: event.request}, %{
+               actor: event.actor,
+               linked_device_runtime: true
+             }) do
+          {:ok, %{result: result}} -> result
+          {:error, _} = error -> error
+        end
+      else
+        {:error, :unauthorized}
+      end
+
+    %{event | response: response}
+  end
+
   def handle_event(%Event{} = event, :credential_document, _context) do
     hop = event.next_hop || List.last(event.hops)
 
