@@ -222,7 +222,9 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     refute has_element?(view, "input[name='form[token]']")
     refute has_element?(view, "input[name='form[url]']")
     assert render(view) =~ "History sync is disabled"
-    view |> element("button", "Cancel") |> render_click()
+    refute has_element?(view, "input[name='form[name]']")
+    refute has_element?(view, "input[name='form[settings][jido_chat][bot_user_id]']")
+    view |> element("#linked-device-pairing button", "Close") |> render_click()
     view |> element("#pair-config-#{second.id}") |> render_click()
     render_async(view)
     assert has_element?(view, "#linked-device-pairing", "Second account")

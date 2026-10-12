@@ -13,12 +13,13 @@ defmodule Zaq.Channels.BridgeSupervisor do
   Listener processes deliver incoming payloads to the bridge sink callback
   configured by the active bridge runtime.
 
-  Runs under `Zaq.Channels.RuntimeSupervisor`; `Zaq.Channels.Supervisor` retains the public runtime API and
-  NodeRouter role-discovery name. Bootstrap runs on every dynamic child restart.
+  Runs directly under `Zaq.Channels.Supervisor`, which retains the public runtime
+  API and NodeRouter role-discovery name. Temporary linked-device pairing sessions
+  also run here without registering a saved bridge runtime. Bootstrap runs on
+  every dynamic child restart.
   The parent owns `:zaq_channels_listeners` and the private current-child index
   because it calls this `start_link/1`; both survive this child's restart and
-  are cleared before reloading configs. The public runtime table retains its
-  original bridge-ID/map shape; the private index follows automatic restarts.
+  are cleared before reloading configs.
   """
 
   use DynamicSupervisor
@@ -101,7 +102,7 @@ defmodule Zaq.Channels.BridgeSupervisor do
 
   @doc "Stops a bridge runtime by bridge id."
   def stop_bridge_runtime(_config, bridge_id) do
-    case runtime_entry(bridge_id) do
+    case take_runtime_entry(bridge_id) do
       [{^bridge_id, runtime}] ->
         try do
           stop_listener_children(runtime.listener_pids, bridge_id)
@@ -193,12 +194,9 @@ defmodule Zaq.Channels.BridgeSupervisor do
       {:ok, state_pid} ->
         :ets.insert(@table, {bridge_id, %{listener_pids: [], state_pid: state_pid}})
 
-        case start_listener_children(listener_specs, bridge_id) do
-          {:ok, listener_pids} ->
-            runtime = %{listener_pids: listener_pids, state_pid: state_pid}
-            maybe_monitor_listeners(state_spec, state_pid, listener_pids)
-            :ets.insert(@table, {bridge_id, runtime})
-            {:ok, runtime}
+        case start_listener_children(listener_specs, bridge_id, state_spec) do
+          {:ok, _listener_pids} ->
+            lookup_runtime(bridge_id)
 
           {:error, reason} = error ->
             stop_tracked_child(bridge_id, :state, state_pid)
@@ -235,25 +233,32 @@ defmodule Zaq.Channels.BridgeSupervisor do
       {:error, reason}
   end
 
-  defp start_listener_children(specs, bridge_id) do
+  defp start_listener_children(specs, bridge_id, state_spec) do
     specs
     |> Enum.with_index()
     |> Enum.reduce_while({:ok, []}, fn {spec, index}, {:ok, pids} ->
-      case DynamicSupervisor.start_child(__MODULE__, tracked_spec(spec, bridge_id, index)) do
+      {module, _, _} = start = Map.fetch!(spec, :start)
+
+      tracked_spec =
+        spec
+        |> Map.put_new(:modules, [module])
+        |> Map.put(
+          :start,
+          {__MODULE__, :start_tracked_listener, [bridge_id, index, state_spec, start]}
+        )
+
+      case DynamicSupervisor.start_child(__MODULE__, tracked_spec) do
         {:ok, pid} ->
-          record_starting_listener(bridge_id, pid)
           {:cont, {:ok, [pid | pids]}}
 
         {:ok, pid, _info} ->
-          record_starting_listener(bridge_id, pid)
           {:cont, {:ok, [pid | pids]}}
 
         {:error, {:already_started, pid}} ->
-          record_starting_listener(bridge_id, pid)
           {:cont, {:ok, [pid | pids]}}
 
         {:error, reason} ->
-          stop_listener_children(Enum.reverse(pids), bridge_id)
+          stop_bridge_runtime(%{}, bridge_id)
           listener_child_start_error(bridge_id, reason)
           {:halt, {:error, reason}}
       end
@@ -278,9 +283,50 @@ defmodule Zaq.Channels.BridgeSupervisor do
     end)
   end
 
-  defp record_starting_listener(bridge_id, pid) do
-    [{^bridge_id, runtime}] = runtime_entry(bridge_id)
-    :ets.insert(@table, {bridge_id, %{runtime | listener_pids: runtime.listener_pids ++ [pid]}})
+  @doc "Starts an adapter child and refreshes its registered PID on every supervisor restart."
+  def start_tracked_listener(bridge_id, index, state_spec, {module, function, args}) do
+    case apply(module, function, args) do
+      {:ok, pid} = result ->
+        track_listener(result, bridge_id, index, state_spec, pid)
+
+      {:ok, pid, _info} = result ->
+        track_listener(result, bridge_id, index, state_spec, pid)
+
+      {:error, {:already_started, pid}} = result ->
+        track_listener(result, bridge_id, index, state_spec, pid)
+
+      other ->
+        other
+    end
+  end
+
+  defp track_listener(result, bridge_id, index, state_spec, pid) do
+    case runtime_entry(bridge_id) do
+      [{^bridge_id, runtime}] ->
+        pids =
+          if index < length(runtime.listener_pids),
+            do: List.replace_at(runtime.listener_pids, index, pid),
+            else: runtime.listener_pids ++ [pid]
+
+        if :ets.update_element(@table, bridge_id, {2, %{runtime | listener_pids: pids}}) do
+          :ets.insert(@children_table, {{:runtime_child, bridge_id, index}, pid})
+          maybe_monitor_listeners(state_spec, runtime.state_pid, pids)
+          result
+        else
+          reject_stopped_listener(result, pid)
+        end
+
+      [] ->
+        reject_stopped_listener(result, pid)
+    end
+  end
+
+  defp reject_stopped_listener({:error, {:already_started, _}}, _pid),
+    do: {:error, :runtime_stopped}
+
+  defp reject_stopped_listener(_result, pid) do
+    Process.exit(pid, :shutdown)
+    {:error, :runtime_stopped}
   end
 
   defp start_state_process(spec) do
@@ -363,6 +409,12 @@ defmodule Zaq.Channels.BridgeSupervisor do
     :ets.match_delete(@children_table, {{:runtime_child, bridge_id, :_}, :_})
   rescue
     ArgumentError -> :ok
+  end
+
+  defp take_runtime_entry(bridge_id) do
+    :ets.take(@table, bridge_id)
+  rescue
+    ArgumentError -> []
   end
 
   defp tracked_spec(nil, _bridge_id, _slot), do: nil
