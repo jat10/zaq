@@ -6,18 +6,11 @@ defmodule Zaq.TestSupport.WhatsAppFlowTransport do
   """
   use GenServer
 
-  alias Zaq.Channels.LinkedDevice.WhatsApp
-
-  defdelegate connection_config(config), to: WhatsApp
-  defdelegate storage(binding), to: WhatsApp
-  defdelegate forward_event?(event), to: WhatsApp
-  defdelegate pairing_event(event, state), to: WhatsApp
-  def infrastructure_children, do: []
-
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   def init(opts), do: {:ok, %{observer: opts[:observer], messages: %{}}}
 
-  def connect(config, parent) do
+  def connect(config, opts) do
+    parent = Keyword.fetch!(opts, :parent)
     scope = Amarula.Storage.scope(config.storage)
     restored = Amarula.Storage.get(scope, config.profile, :creds, :self)
 
@@ -39,12 +32,8 @@ defmodule Zaq.TestSupport.WhatsAppFlowTransport do
     {:ok, conn}
   end
 
-  def stop(config) do
-    case :global.whereis_name({__MODULE__, config.profile}) do
-      :undefined -> :ok
-      pid -> Agent.stop(pid)
-    end
-  end
+  def stop(conn, _opts) when is_pid(conn), do: Agent.stop(conn)
+  def account_jids(_conn), do: {:ok, ["15550001@s.whatsapp.net"]}
 
   def scan(profile, qr) do
     {:ok, conn} = resolve_conn(profile: profile)
@@ -107,7 +96,12 @@ defmodule Zaq.TestSupport.WhatsAppFlowAdapter do
 
   defdelegate channel_type(), to: Adapter
   defdelegate capabilities(), to: Adapter
-  defdelegate listener_child_specs(id, opts), to: Adapter
+
+  def listener_child_specs(id, opts) do
+    ingress = Keyword.fetch!(opts, :ingress) |> Map.put(:transport, WhatsAppFlowTransport)
+    Adapter.listener_child_specs(id, Keyword.put(opts, :ingress, ingress))
+  end
+
   defdelegate transform_incoming(message), to: Adapter
   defdelegate fetch_metadata(jid, opts), to: Adapter
   defdelegate open_dm(jid, opts), to: Adapter

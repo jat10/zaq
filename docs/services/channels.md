@@ -2,90 +2,67 @@
 
 ## Overview
 
-### Linked-device configuration foundation
+### Linked-device integration
 
-`LinkedDevice.Config` builds provider-neutral ingress options from a persisted
-connector ID, a trusted provider implementation, and an explicit storage binding.
-The stable `zaq_linked_device_<connector_id>` profile must be used for both ingress
-and outgoing operations. Connector settings cannot override profile or storage.
-`LinkedDevice.WhatsApp` supplies the WhatsApp policy: both `sync_history` and
-`sync_full_history` are false. Its settings are not imposed on other providers.
-WhatsApp retrieval configurations do not require an HTTP URL or bearer token.
-The selected connector supplies its profile to shared reply, edit, typing,
-reaction and DM operations. Missing profiles fail closed. WhatsApp mention and
-self-message facts are promoted before Jido handler selection; group agent
-requests require a mention of the receiving account. Unaddressed capture remains
-subject to the existing Engine policy. Unknown/broadcast room kinds do not establish
-conversation membership. The upstream adapter's file/delete capabilities do not
-create new ZAQ operations: the shared bridge currently exposes neither a standalone
-file-send nor message-delete operation.
+WhatsApp uses the same `JidoChatBridge` registration and adapter listener contract
+as other Jido channels. `LinkedDevice.Config` supplies a stable
+`zaq_linked_device_<connector_id>` profile, credential-backed storage, and both
+`sync_history: false` and `sync_full_history: false`. Persisted ingress settings
+cannot override these values. The selected profile also scopes replies, edits,
+typing, reactions and direct-message operations. Multiple accounts remain independent.
 
-History-sync events are discarded by the provider policy before the decoder.
-Ordinary queued messages use normal routing/capture and persistent Engine replay
-protection, scoped by connector, room and external message ID. Amarula currently
-does not distinguish offline catchup from live `messages_upsert` events; timestamp
-age is not used to discard messages. Disabling history import therefore does not
-discard messages sent while ZAQ was offline.
+The adapter owns WhatsApp protocol connections, self/mention normalization, history
+filtering and QR expiry. Group agent requests require a mention of the receiving
+account; unaddressed history capture remains Engine policy. Ordinary queued messages
+still enter the normal pipeline and persistent replay protection. Timestamp age is
+not used to discard messages. Unsupported broadcast rooms are rejected by the adapter.
+ZAQ retains only its canonical history/identity mapping.
 
-Linked-device ingress status is owned by the connection owner, with an attempt ID,
-phase, optional QR value and expiry. QR material stays in memory and is cleared on
-expiry, disconnect and completed pairing. Native control events do not enter chat
-handlers. A replaced owner has a new attempt ID; events addressed to its old PID
-cannot update the new attempt. WhatsApp reports connected only after socket open.
-`:channel_ingress_status` and `:channel_retry_linked_device` require a confidential
-Event with a super-admin actor for linked devices. Both resolve the exact enabled
-connector from storage. Retry returns the actual runtime restart result.
+All Jido listeners run under the shared `ListenerRuntime` supervision handle with
+a bounded abnormal restart budget. Normal stop shuts down the adapter connection
+and retains credentials. Partial startup failures clean up started children and
+bridge state. Channels starts shared infrastructure from `channels_runtime_children`
+(default `[Amarula.Supervisor]`) before `BridgeSupervisor` inside `RuntimeSupervisor`.
+Its rest-for-one strategy rebuilds runtimes if shared infrastructure fails. The
+Channels parent isolates this subtree from the authentication limiter, so either
+subtree can restart without resetting the other. The adapter refuses
+duplicate profile ownership rather than adopting another listener's connection.
+This does not provide distributed fencing across disconnected clusters sharing a DB.
+
+The adapter's lifecycle sink routes normalized profile/attempt/status/QR data through
+confidential `:channel_ingress_lifecycle` events with explicit trusted
+`channel_runtime: true`. Bridge state rejects other profiles, stale attempts and dead
+sources. Generic `Pairing` presentation preserves expiry and clears QR outside pairing;
+no protocol events enter chat handlers. These internal flags are not authentication
+for arbitrary NodeRouter callers. BO status and retry still require a confidential
+event and current super-admin authorization for the exact enabled configuration.
 
 In BO, choose Communication Channels → WhatsApp, create a named configuration,
-then choose **Connect device** on that configuration. A super-admin scans the QR
-from the phone's Linked devices screen. Each card connects a separate account.
-Disabling a card stops its runtime while retaining encrypted state for a later
-reconnect. The pairing modal polls only its selected connector, rejects obsolete
-results after navigation/retry and stops after three minutes. Reopen or retry to
-continue. Keep the database and the application's encryption key across deployments;
-the WhatsApp session does not rely on the container filesystem.
+then choose **Connect device** and scan with the phone's Linked devices screen.
+The existing pairing modal polls only its selected account, rejects stale results,
+and stops polling after three minutes. Disabling a configuration stops its runtime
+and preserves encrypted state. The shared pairing component remains in Storybook
+under `/storybook/modals/linked_device_pairing`.
 
-The shared pairing component and its example states are in Storybook under
-`/storybook/modals/linked_device_pairing`. BO reads provider connection mode through
-the secret-free `:channel_connection_mode` query; status and retry retain their
-separate privileged contracts. This query performs no account operation.
+`LinkedDevice.Storage` translates scoped storage callbacks into the
+[canonical credential document operation](engine.md#connector-credential-documents).
+Only the credential reference is stored in connector settings. Session records live
+in the encrypted canonical org `api_key` grant. Missing records differ from unreadable
+state; the adapter guard latches storage failures and stops protocol progress.
+No callback calls a provider process while waiting for a database transaction.
+Keep the database and encryption key across restarts; no container file store is used.
 
-The bridge starts adapter-created decoders under `LinkedDevice.Runtime`, whose
-rest-for-one tree owns the provider connection separately from the decoder.
-Restarting a decoder reattaches it; restarting an owner adopts its orphaned
-connection when necessary. Normal stop shuts down the provider connection and
-retains credentials. Partial startup failure rolls back the owner. Shared provider
-infrastructure starts before bridge runtimes and its failure rebuilds them.
-The owner has a global profile name across connected ZAQ nodes. This does not
-provide partition-safe distributed fencing: deployments must avoid concurrent
-owners across disconnected clusters sharing the same credential database.
-The bridge passes custom storage without `storage_root`, which would cause the
-upstream adapter to select file storage. Pairing UI and message admission are
-separate implementation steps in `zaq-0l7`.
+The forward `migrate_linked_device_documents` migration preserves existing credential
+IDs and paired state, including disabled accounts, and removes legacy tables only
+after all conversions succeed. Stop application runtimes and back up the database
+before applying it. Corrupt or conflicting source state aborts the transaction.
+Rollback requires restoring that backup; the old storage API and credential kind
+are removed. See [system configuration](system-config.md#connector-session-state).
 
-`LinkedDevice.WhatsAppStorage` translates Amarula's storage callbacks into the
-confidential synchronous Engine `:linked_device_storage` event. Its binding fixes
-the connector, credential and profile; it cannot enumerate another account's
-state. Engine's `Connect.LinkedDeviceStorage` provisions one `linked_device`
-credential association per connector under a row lock, revalidates enabled and
-unarchived connector/provider identity, and persists individually encrypted
-protocol records. Replacing a container can reload those records from the database.
-The encryption key must remain available through normal ZAQ secret configuration.
-This auth kind is not an OAuth token grant and is not resolved as bearer auth.
-
-Storage events require explicit trusted `linked_device_runtime: true` and
-`confidential: true` options and a synchronous Engine hop. This is an internal
-runtime contract, not authentication of arbitrary callers to NodeRouter; BO and
-agent tools must not expose this primitive. Only committed writes return success.
-Read/decryption and mutation failures shut down the protocol caller with a bounded
-shutdown reason. Amarula ignores some write error return values, so returning an
-error alone would let it continue with unsaved credentials. Normal shutdown also
-avoids abnormal GenServer crash reports containing protocol state. Missing records
-remain ordinary cache misses; unavailable storage never means absent credentials.
-Disabling a connector denies storage access but preserves its state for re-enable.
-The callback adapter never calls an Amarula process while a protocol lock is held.
-Remote dispatch and database operations use bounded timeouts; a timeout means
-unknown completion, not a successful write. Record replacement is idempotent.
+For local testing before the adapter changes are published, set
+`JIDO_CHAT_WHATSAPP_PATH=../jido_chat_whatsapp` for Mix commands and the server.
+The override is accepted only in dev/test. Production still requires pinning the
+published adapter revision; that release gate remains tracked in `work-f83.8`.
 
 For normalization, identity resolution and confirmed delivery call chains across
 roles, see the [message lifecycle sequences](message-lifecycle.md).
@@ -382,7 +359,7 @@ provenance before using those matches for capture.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, beside `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, beside the independent `Zaq.Channels.RuntimeSupervisor` subtree. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -399,7 +376,7 @@ for cache refresh/expiry and eventual-consistency limitations.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, beside `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, beside the independent `Zaq.Channels.RuntimeSupervisor` subtree. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -419,7 +396,7 @@ for cache refresh/expiry and eventual-consistency limitations.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, beside `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, beside the independent `Zaq.Channels.RuntimeSupervisor` subtree. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,

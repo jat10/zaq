@@ -8,6 +8,7 @@ defmodule Zaq.Channels.SupervisorTest do
   alias Zaq.Channels.DataSourceBridge
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.JidoChatBridge.State
+  alias Zaq.Channels.RuntimeSupervisor
   alias Zaq.Channels.Supervisor
   alias Zaq.Engine.ChannelConfig
 
@@ -155,7 +156,7 @@ defmodule Zaq.Channels.SupervisorTest do
   end
 
   defp with_stopped_bridge_supervisor(fun) do
-    :ok = Elixir.Supervisor.terminate_child(Supervisor, BridgeSupervisor)
+    :ok = Elixir.Supervisor.terminate_child(RuntimeSupervisor, BridgeSupervisor)
 
     try do
       fun.()
@@ -164,7 +165,7 @@ defmodule Zaq.Channels.SupervisorTest do
         Elixir.Supervisor.stop(pid)
       end
 
-      {:ok, _} = Elixir.Supervisor.restart_child(Supervisor, BridgeSupervisor)
+      {:ok, _} = Elixir.Supervisor.restart_child(RuntimeSupervisor, BridgeSupervisor)
     end
   end
 
