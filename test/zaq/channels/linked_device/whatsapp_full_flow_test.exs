@@ -15,7 +15,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
   alias Zaq.Accounts.People
   alias Zaq.Agent.ServerManager
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Channels.LinkedDevice.{Config, Owner}
+  alias Zaq.Channels.LinkedDevice.Config
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Conversations
   alias Zaq.Engine.Conversations.{ExecutionRecord, Message}
@@ -50,8 +50,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
       whatsapp: %{
         bridge: JidoChatBridge,
         adapter: WhatsAppFlowAdapter,
-        ingress_mode: :linked_device,
-        linked_device_provider: Transport
+        ingress_mode: :linked_device
       }
     })
 
@@ -164,7 +163,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
     assert connection_config.profile == profile
     assert connection_config.sync_history == false
     assert connection_config.sync_full_history == false
-    assert {Zaq.Channels.LinkedDevice.WhatsAppStorage, _} = connection_config.storage
+    assert {Zaq.Channels.LinkedDevice.Storage, _} = connection_config.storage
     refute Map.has_key?(connection_config, :storage_root)
 
     {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
@@ -176,11 +175,14 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
              "#linked-device-pairing svg[aria-label='Device connection QR code']"
            )
 
-    assert {:ok, %{phase: :pairing, qr: qr}} = Owner.status(profile)
+    assert {:ok, %{phase: :pairing, qr: qr}} = JidoChatBridge.channel_ingress_status(config)
     assert :ok = Transport.scan(profile, qr)
 
     assert eventually(fn ->
-             match?({:ok, %{phase: :connected, qr: nil}}, Owner.status(profile))
+             match?(
+               {:ok, %{phase: :connected, qr: nil}},
+               JidoChatBridge.channel_ingress_status(config)
+             )
            end)
 
     view |> element("#linked-device-pairing button", "Close") |> render_click()

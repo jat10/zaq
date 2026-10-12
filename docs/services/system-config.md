@@ -593,3 +593,19 @@ When adding a new key/token/password field:
 - Keep encryption key in secret storage (Kubernetes Secret, Vault, cloud secret manager, etc.)
 - Do not commit raw key values in repository files
 - For local development, prefer env vars loaded via untracked local secret files
+
+## Connector session state
+
+Linked-device sessions use canonical encrypted org `api_key` grants as opaque state,
+not HTTP bearer tokens or OAuth2 device tokens. Retain the database and its encryption
+key across application/container restarts. The credential reference in connector
+settings contains no session secrets. Runtime access follows the
+[Engine document contract](engine.md#connector-credential-documents).
+
+Before upgrading an installation with the legacy linked-device tables, stop channel
+runtimes, back up the database and apply `mix ecto.migrate` with the existing encryption
+key available. The forward migration validates/decrypts all source records, preserves
+credential IDs, migrates disabled/archived configurations too, and removes the old
+tables only after successful conversion. Failure leaves source data intact and must
+be investigated without logging secret material. Rollback requires restoring the
+pre-migration backup; do not run old application code against the migrated database.

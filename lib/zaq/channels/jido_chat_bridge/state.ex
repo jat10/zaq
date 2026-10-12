@@ -28,10 +28,9 @@ defmodule Zaq.Channels.JidoChatBridge.State do
   alias Jido.Chat
   alias Jido.Chat.Adapter
   alias Jido.Chat.EventEnvelope
-  alias Zaq.Channels.Bridge
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Channels.JidoChatBridge.Incoming
   alias Zaq.Channels.JidoChatBridge.ListenerStatus
+  alias Zaq.Channels.LinkedDevice.Pairing
   alias Zaq.ConnectorConfig.Settings
 
   @type state :: %{
@@ -117,6 +116,9 @@ defmodule Zaq.Channels.JidoChatBridge.State do
        config: config,
        chat: build_chat(config, provider, handler_opts),
        ingress_status: nil,
+       lifecycle_source: nil,
+       lifecycle_attempt: nil,
+       lifecycle_profile: nil,
        # Most jido_chat adapters have a single listener today. Keep the monitor
        # map because the adapter contract returns a list of listener child specs;
        # this can be collapsed to one monitor if that contract is narrowed later.
@@ -141,14 +143,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
     # drops `Chat.process_message/5`'s result.
     adapter_name = envelope.adapter_name || JidoChatBridge.provider_to_atom(config.provider)
 
-    # Linked-device control events belong to the connection owner, not chat handlers.
-    unless envelope.event_type == :action and
-             match?(
-               %{ingress_mode: :linked_device},
-               Bridge.provider_config(config.provider)
-             ) do
-      chat_module().route_event(state.chat, adapter_name, envelope, [])
-    end
+    chat_module().route_event(state.chat, adapter_name, envelope, [])
 
     {:reply, :ok, state}
   end
@@ -158,7 +153,6 @@ defmodule Zaq.Channels.JidoChatBridge.State do
 
     with {:ok, adapter} <- bridge_module().adapter_for(config.provider),
          {:ok, incoming} <- Adapter.transform_incoming(adapter, payload),
-         incoming <- Incoming.prepare(incoming, config.provider, config),
          incoming <- with_transport(incoming, transport),
          thread_id <-
            bridge_module().thread_key(
@@ -174,7 +168,8 @@ defmodule Zaq.Channels.JidoChatBridge.State do
         []
       )
 
-      {:reply, :ok, %{state | ingress_status: ok_ingress_status()}}
+      status = if state.lifecycle_source, do: state.ingress_status, else: ok_ingress_status()
+      {:reply, :ok, %{state | ingress_status: status}}
     else
       _ ->
         {:reply, :ok, state}
@@ -269,7 +264,8 @@ defmodule Zaq.Channels.JidoChatBridge.State do
             channel_state: state.chat.channel_state
         }
 
-        {:reply, :ok, %{state | config: config, chat: chat, ingress_status: nil}}
+        status = if state.lifecycle_source, do: state.ingress_status
+        {:reply, :ok, %{state | config: config, chat: chat, ingress_status: status}}
 
       {:error, reason} ->
         {:reply, {:error, reason}, state}
@@ -277,6 +273,28 @@ defmodule Zaq.Channels.JidoChatBridge.State do
   end
 
   @impl GenServer
+  def handle_cast({:lifecycle, source, payload}, state) do
+    current = state.lifecycle_source
+
+    accepted =
+      is_pid(source) and Process.alive?(source) and
+        (is_nil(state.lifecycle_profile) or payload.profile == state.lifecycle_profile) and
+        current_lifecycle?(current, source, state.lifecycle_attempt, payload)
+
+    if accepted do
+      {:noreply,
+       %{
+         state
+         | lifecycle_source: source,
+           lifecycle_profile: payload.profile,
+           lifecycle_attempt: payload.attempt_id,
+           ingress_status: Pairing.from_notification(payload)
+       }}
+    else
+      {:noreply, state}
+    end
+  end
+
   def handle_cast({:record_ingress_status, status}, state) when is_map(status) do
     {:noreply, %{state | ingress_status: put_status_timestamp(status)}}
   end
@@ -305,7 +323,12 @@ defmodule Zaq.Channels.JidoChatBridge.State do
       {_listener_pid, monitors} ->
         next_state = %{state | listener_monitors: monitors}
 
-        case ListenerStatus.from_exit_reason(reason) do
+        status =
+          if state.lifecycle_source,
+            do: Pairing.from_notification(%{status: :disconnected, attempt_id: nil, qr: nil}),
+            else: ListenerStatus.from_exit_reason(reason)
+
+        case status do
           nil -> {:noreply, next_state}
           status -> {:noreply, %{next_state | ingress_status: put_status_timestamp(status)}}
         end
@@ -315,6 +338,16 @@ defmodule Zaq.Channels.JidoChatBridge.State do
   defp ok_ingress_status do
     %{status: :ok, summary: "Ingress listener received a usable Mattermost event"}
   end
+
+  defp current_lifecycle?(nil, _, _, _), do: true
+
+  defp current_lifecycle?(source, source, attempt, payload),
+    do: attempt == payload.attempt_id or payload[:event] == :connecting
+
+  defp current_lifecycle?(previous, _, _, _), do: not Process.alive?(previous)
+
+  @impl GenServer
+  def format_status(status), do: Map.update!(status, :state, &Map.take(&1, [:bridge_id]))
 
   defp put_status_timestamp(status), do: Map.put(status, :updated_at, DateTime.utc_now())
 

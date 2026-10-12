@@ -431,7 +431,7 @@ Rate ownership is split by role, after shared PubSub:
 | Owner    | Runtime / API                                                                                                   | Budget                                     |
 | -------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
 | Engine   | `PeopleAuth` issuance policy using `Zaq.People.AuthRateLimiter` mechanics under `Engine.Supervisor`              | OTP issuance/resend per Person and IP      |
-| Channels | `Zaq.Channels.PeopleAuthRateLimiter` under the static `Channels.Supervisor`, before `Channels.BridgeSupervisor` | Unsuccessful-identification IP budget only |
+| Channels | `Zaq.Channels.PeopleAuthRateLimiter` under the static `Channels.Supervisor`, beside the independent `Channels.RuntimeSupervisor` subtree | Unsuccessful-identification IP budget only |
 | Engine   | `PeopleAuth.verify_challenge/3` and persisted challenge row                                                     | Current configured verification maximum    |
 
 The shared `Zaq.People.AuthRateLimiter` supervisor implementation starts one instance

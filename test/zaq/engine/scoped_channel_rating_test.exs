@@ -61,20 +61,22 @@ defmodule Zaq.Engine.ScopedChannelRatingTest do
         })
         |> Repo.insert!()
 
+      rater = "rater-#{config.id}"
+
       {:ok, person} =
         People.find_or_create_from_channel(provider, %{
-          channel_id: "rater",
+          channel_id: rater,
           channel_config_id: config.id,
           display_name: "Rater"
         })
 
-      scope = if provider == "telegram", do: "room"
+      scope = if provider in ["telegram", "whatsapp"], do: "room"
 
       incoming =
         Incoming.new(%{
           content: "hello",
           channel_id: "room",
-          author_id: "rater",
+          author_id: rater,
           message_id: "root",
           provider: provider,
           routing_context: %{
@@ -166,7 +168,7 @@ defmodule Zaq.Engine.ScopedChannelRatingTest do
           message_id: external_id,
           channel_id: "room",
           emoji: if(provider == "mattermost", do: "+1_medium_skin_tone", else: "👍"),
-          user: %{user_id: "rater", user_name: "Rater"}
+          user: %{user_id: rater, user_name: "Rater"}
         })
 
       assert :ok = JidoChatBridge.handle_reaction_event(config, reaction)
@@ -242,7 +244,7 @@ defmodule Zaq.Engine.ScopedChannelRatingTest do
           actor_person_id: person.id
         })
 
-      scope = if provider == "telegram", do: "room"
+      scope = if provider in ["telegram", "whatsapp"], do: "room"
 
       {:ok, captured} =
         Conversations.capture_canonical_message(

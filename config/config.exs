@@ -7,6 +7,8 @@
 # General application configuration
 import Config
 
+config :zaq, :channels_runtime_children, [Amarula.Supervisor]
+
 # OAuth callback query values are credentials, including opaque one-use state.
 config :phoenix, :filter_parameters, ["password", "token", "secret", "code", "state"]
 
@@ -39,9 +41,7 @@ config :zaq, :channels, %{
   whatsapp: %{
     bridge: Zaq.Channels.JidoChatBridge,
     adapter: Jido.Chat.WhatsApp.Adapter,
-    ingress_mode: :linked_device,
-    linked_device_provider: Zaq.Channels.LinkedDevice.WhatsApp,
-    sink_mfa: {Zaq.Channels.JidoChatBridge, :from_listener, []}
+    ingress_mode: :linked_device
   },
   google_drive: %{
     bridge: Zaq.Channels.JidoConnectBridge,
