@@ -635,6 +635,24 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     assert render(view) =~ "real-bot"
   end
 
+  test "hides channel tools for WhatsApp while retaining them for Mattermost", %{conn: conn} do
+    for provider <- ["whatsapp", "mattermost"] do
+      insert_channel_config(%{provider: provider, enabled: false})
+      {:ok, view, _} = live(conn, "/bo/channels/retrieval/#{provider}")
+
+      for selector <- [
+            "button[phx-click='fetch_teams']",
+            "form[phx-submit='send_message']",
+            "form[phx-submit='load_posts']",
+            "form[phx-submit='prompt_clear']"
+          ] do
+        assert has_element?(view, selector) == (provider == "mattermost")
+      end
+
+      assert has_element?(view, "#provider-default-agent-form")
+    end
+  end
+
   test "handles missing config on delete branch", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/bo/channels/retrieval/mattermost")
 

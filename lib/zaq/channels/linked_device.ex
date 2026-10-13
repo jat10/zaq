@@ -23,6 +23,7 @@ defmodule Zaq.Channels.LinkedDevice do
   defp linked_options(config, opts) do
     with {:ok, binding} <- bind(config.id),
          {:ok, profile} <- Config.profile(config),
+         :ok <- Storage.prepare(Storage.new(binding: binding, profile: profile)),
          {:ok, ingress} <- Config.ingress(config, {Storage, binding: binding, profile: profile}) do
       {:ok,
        opts

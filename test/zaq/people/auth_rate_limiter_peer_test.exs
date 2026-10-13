@@ -1,5 +1,6 @@
 defmodule Zaq.People.AuthRateLimiterPeerTest do
   use ExUnit.Case, async: false
+  alias Zaq.Channels.LinkedDevice.SessionStorage
   alias Zaq.Channels.PeopleAuthRateLimiter, as: Ingress
   alias Zaq.People.AuthRateLimiter
   alias Zaq.TestSupport.PeopleAuthPeer
@@ -21,6 +22,8 @@ defmodule Zaq.People.AuthRateLimiterPeerTest do
                )
 
       root = :peer.call(control, Supervisor, :which_children, [Zaq.Supervisor])
+      applications = :peer.call(control, Application, :started_applications, [])
+      assert List.keymember?(applications, :jido_chat_whatsapp, 0)
       refute List.keymember?(root, Ingress, 0)
       refute List.keymember?(root, Zaq.People.AuthRateLimiter, 0)
 
@@ -31,15 +34,28 @@ defmodule Zaq.People.AuthRateLimiterPeerTest do
         children = :peer.call(control, Supervisor, :which_children, [Zaq.Channels.Supervisor])
 
         assert Enum.sort(Enum.map(children, &elem(&1, 0))) ==
-                 Enum.sort([Ingress, Amarula.Supervisor, Zaq.Channels.BridgeSupervisor])
+                 Enum.sort([
+                   Ingress,
+                   SessionStorage,
+                   Zaq.Channels.BridgeSupervisor
+                 ])
+
+        assert :ram_copies ==
+                 :peer.call(control, :mnesia, :table_info, [
+                   :zaq_linked_device_sessions,
+                   :storage_type
+                 ])
+
+        refute :peer.call(control, :mnesia, :system_info, [:use_dir])
 
         assert peer_node ==
                  :peer.call(control, Zaq.NodeRouter, :find_node, [Zaq.Channels.Supervisor])
       else
         assert nil == :peer.call(control, Process, :whereis, [Zaq.Channels.Supervisor])
         assert nil == :peer.call(control, Process, :whereis, [Zaq.Channels.BridgeSupervisor])
-        assert nil == :peer.call(control, Process, :whereis, [Amarula.Supervisor])
         assert nil == :peer.call(control, Process, :whereis, [Ingress])
+
+        refute :zaq_linked_device_sessions in :peer.call(control, :mnesia, :system_info, [:tables])
       end
 
       if :engine in roles do
