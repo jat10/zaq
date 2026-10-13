@@ -35,8 +35,14 @@ This does not provide distributed fencing across disconnected clusters sharing a
 The adapter's lifecycle sink routes normalized profile/attempt/status/QR data through
 confidential `:channel_ingress_lifecycle` events with explicit trusted
 `channel_runtime: true`. Bridge state rejects other profiles, stale attempts and dead
-sources. Generic `Pairing` presentation preserves expiry and clears QR outside pairing;
-no protocol events enter chat handlers. These internal flags are not authentication
+sources. Generic `Pairing` presentation preserves expiry and clears QR outside pairing.
+Startup delivery retries only an authorized `:runtime_not_ready` response, with
+200 retries spaced 25 ms apart in the adapter's ordered dispatcher. Other errors
+propagate immediately. Bridge state monitors the accepted lifecycle source across
+connection replacements; its death clears the QR and marks the device disconnected.
+Stale listener/source exits cannot overwrite a newer source's status, so this
+recovery does not require changes to the generic bridge supervisor.
+No protocol events enter chat handlers. These internal flags are not authentication
 for arbitrary NodeRouter callers. BO status and retry still require a confidential
 event and current super-admin authorization for the exact enabled configuration.
 

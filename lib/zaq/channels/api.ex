@@ -107,6 +107,7 @@ defmodule Zaq.Channels.Api do
           {:lifecycle, source, Map.take(payload, [:profile, :attempt_id, :status, :qr, :event])}
         )
       else
+        {:error, :not_running} -> {:error, :runtime_not_ready}
         _ -> {:error, :unauthorized}
       end
 
