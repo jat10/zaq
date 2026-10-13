@@ -1,13 +1,13 @@
-defmodule Zaq.Channels.LinkedDevice.ConfigTest do
+defmodule Zaq.Channels.LinkedDeviceTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
   alias Jido.Chat.WhatsApp.Adapter
-  alias Zaq.Channels.LinkedDevice.Config
+  alias Zaq.Channels.LinkedDevice
 
   test "shared configuration does not require a provider-specific module" do
     assert {:ok, ingress} =
-             Config.ingress(
+             LinkedDevice.ingress(
                %{id: 7, provider: "example"},
                {__MODULE__, []}
              )
@@ -32,7 +32,7 @@ defmodule Zaq.Channels.LinkedDevice.ConfigTest do
     }
 
     storage = {__MODULE__, credential_id: 123}
-    assert {:ok, ingress} = Config.ingress(config, storage)
+    assert {:ok, ingress} = LinkedDevice.ingress(config, storage)
     assert ingress.mode == :linked_device
     assert ingress.profile == "zaq_linked_device_42"
     assert ingress.config.storage == storage
@@ -51,18 +51,18 @@ defmodule Zaq.Channels.LinkedDevice.ConfigTest do
   end
 
   test "rejects missing identities, mismatched providers and implicit file storage" do
-    assert {:error, :invalid_connector} = Config.profile(%{id: nil})
-    assert {:error, :invalid_connector} = Config.profile(%{id: "42"})
-    assert {:error, :invalid_storage} = Config.ingress(%{id: 42}, nil)
+    assert {:error, :invalid_connector} = LinkedDevice.profile(%{id: nil})
+    assert {:error, :invalid_connector} = LinkedDevice.profile(%{id: "42"})
+    assert {:error, :invalid_storage} = LinkedDevice.ingress(%{id: 42}, nil)
   end
 
   property "distinct persisted connectors always receive distinct stable profiles" do
     check all(first <- positive_integer(), offset <- positive_integer()) do
       second = first + offset
-      assert {:ok, first_profile} = Config.profile(%{id: first})
-      assert {:ok, second_profile} = Config.profile(%{id: second})
+      assert {:ok, first_profile} = LinkedDevice.profile(%{id: first})
+      assert {:ok, second_profile} = LinkedDevice.profile(%{id: second})
       refute first_profile == second_profile
-      assert {:ok, ^first_profile} = Config.profile(%{id: first, name: "Renamed"})
+      assert {:ok, ^first_profile} = LinkedDevice.profile(%{id: first, name: "Renamed"})
     end
   end
 end

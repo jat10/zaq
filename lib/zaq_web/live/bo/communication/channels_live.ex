@@ -8,6 +8,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   alias Zaq.Channels.{AgentRouting, Bridge}
   alias Zaq.Channels.ProviderCatalog, as: ChannelProvider
   alias Zaq.Channels.RetrievalChannel, as: RetChannel
+  alias Zaq.ConnectorConfig.Settings
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Connect.Credential
   alias Zaq.Engine.IncomingMessageRouting
@@ -173,18 +174,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   @impl true
   def handle_event(_event, _params, %{assigns: %{service_available: false}} = socket) do
     {:noreply, socket}
-  end
-
-  def handle_event("open_linked_device", %{"id" => raw_id}, socket) do
-    with true <-
-           socket.assigns.linked_device and BOActor.super_admin?(socket.assigns.current_user),
-         {:ok, id} <- ParseUtils.parse_int_strict(raw_id),
-         config when not is_nil(config) <-
-           Enum.find(socket.assigns.configs, &(&1.id == id and &1.enabled)) do
-      {:noreply, LinkedDeviceUI.open(socket, config)}
-    else
-      _ -> {:noreply, put_flash(socket, :error, "Device connection is unavailable")}
-    end
   end
 
   def handle_event("close_linked_device", _, socket), do: {:noreply, LinkedDeviceUI.close(socket)}
@@ -444,8 +433,17 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   def handle_event("open_ingress_status", %{"id" => id}, socket) do
     case ParseUtils.parse_int_strict(id) do
       {:ok, parsed_id} ->
-        status = Map.get(socket.assigns.ingress_statuses || %{}, parsed_id)
-        {:noreply, assign(socket, :ingress_status_modal, %{config_id: parsed_id, status: status})}
+        config = Enum.find(socket.assigns.configs, &(&1.id == parsed_id and &1.enabled))
+
+        if socket.assigns.linked_device and BOActor.super_admin?(socket.assigns.current_user) and
+             not is_nil(config) do
+          {:noreply, LinkedDeviceUI.open(socket, config)}
+        else
+          status = Map.get(socket.assigns.ingress_statuses || %{}, parsed_id)
+
+          {:noreply,
+           assign(socket, :ingress_status_modal, %{config_id: parsed_id, status: status})}
+        end
 
       _ ->
         {:noreply, socket}
@@ -1351,6 +1349,17 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     |> assign(:retrieval_channels, load_retrieval_channels(first_config))
     |> schedule_ingress_status_refresh(configs)
   end
+
+  defp connector_provider_label(%{provider: "whatsapp"} = config, label) do
+    identity = Settings.nested(config, "account_identity")
+
+    case identity["phone_number"] || identity[:phone_number] do
+      phone when is_binary(phone) and phone != "" -> "#{label} - #{phone}"
+      _ -> label
+    end
+  end
+
+  defp connector_provider_label(_config, label), do: label
 
   defp test_connection(%ChannelConfig{} = config, channel_id) when is_binary(channel_id) do
     event =

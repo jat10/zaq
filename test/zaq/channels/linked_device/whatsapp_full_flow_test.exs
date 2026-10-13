@@ -15,7 +15,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
   alias Zaq.Accounts.People
   alias Zaq.Agent.ServerManager
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Channels.LinkedDevice.Config
+  alias Zaq.Channels.LinkedDevice
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Conversations
   alias Zaq.Engine.Conversations.{ExecutionRecord, Message}
@@ -133,7 +133,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
     end)
 
     assert :ok = JidoChatBridge.start_runtime(config)
-    {:ok, profile} = Config.profile(config)
+    {:ok, profile} = LinkedDevice.profile(config)
     %{conn: init_test_session(conn, %{user_id: admin.id}), config: config, profile: profile}
   end
 
@@ -168,7 +168,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
     await_pairing(config)
 
     {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
-    view |> element("#pair-config-#{config.id}") |> render_click()
+    view |> element("#ingress-status-dot-#{config.id}") |> render_click()
     render_async(view)
 
     assert has_element?(
@@ -187,7 +187,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
            end)
 
     view |> element("#linked-device-pairing button", "Close") |> render_click()
-    view |> element("#pair-config-#{config.id}") |> render_click()
+    view |> element("#ingress-status-dot-#{config.id}") |> render_click()
     render_async(view)
     assert has_element?(view, "#linked-device-pairing", "Linked device connected")
     refute has_element?(view, "#linked-device-pairing svg")

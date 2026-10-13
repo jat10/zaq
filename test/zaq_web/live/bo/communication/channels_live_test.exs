@@ -218,6 +218,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       |> Repo.insert!()
 
     {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+    assert has_element?(view, "#config-card-#{first.id}", "WhatsApp")
+    refute has_element?(view, "#config-card-#{first.id}", "WhatsApp -")
     view |> element("#new-config-button") |> render_click()
     refute has_element?(view, "input[name='form[token]']")
     refute has_element?(view, "input[name='form[url]']")
@@ -225,7 +227,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     refute has_element?(view, "input[name='form[name]']")
     refute has_element?(view, "input[name='form[settings][jido_chat][bot_user_id]']")
     view |> element("#linked-device-pairing button", "Close") |> render_click()
-    view |> element("#pair-config-#{second.id}") |> render_click()
+    refute has_element?(view, "[id^='pair-config-']")
+    view |> element("#ingress-status-dot-#{second.id}") |> render_click()
     render_async(view)
     assert has_element?(view, "#linked-device-pairing", "Second account")
 
@@ -238,8 +241,13 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     view |> element("#linked-device-pairing button", "Close") |> render_click()
     refute has_element?(view, "#linked-device-pairing")
     view |> element("#toggle-config-#{first.id}") |> render_click()
-    refute has_element?(view, "#pair-config-#{first.id}")
-    assert has_element?(view, "#pair-config-#{second.id}")
+    view |> element("#ingress-status-dot-#{first.id}") |> render_click()
+    refute has_element?(view, "#linked-device-pairing")
+    assert has_element?(view, "#ingress-status-modal")
+    view |> element("#ingress-status-modal button", "Close") |> render_click()
+    view |> element("#ingress-status-dot-#{second.id}") |> render_click()
+    render_async(view)
+    assert has_element?(view, "#linked-device-pairing", "Second account")
   end
 
   test "linked-device retry displays failure and unprivileged callers cannot open pairing", %{
@@ -271,15 +279,16 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
 
     {:ok, denied_view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
     refute has_element?(denied_view, "#pair-config-#{config.id}")
-    render_click(denied_view, "open_linked_device", %{"id" => to_string(config.id)})
+    render_click(denied_view, "open_ingress_status", %{"id" => to_string(config.id)})
     refute has_element?(denied_view, "#linked-device-pairing")
+    assert has_element?(denied_view, "#ingress-status-modal")
     admin = super_admin_fixture()
     {:ok, admin} = Accounts.change_password(admin, %{password: "StrongPass1!"})
 
     {:ok, view, _} =
       live(init_test_session(conn, %{user_id: admin.id}), ~p"/bo/channels/retrieval/whatsapp")
 
-    view |> element("#pair-config-#{config.id}") |> render_click()
+    view |> element("#ingress-status-dot-#{config.id}") |> render_click()
     render_async(view)
     BridgeFake.put(:sync_provider_runtime_result, {:error, :failed})
     view |> element("#linked-device-pairing button", "Retry connection") |> render_click()
@@ -725,6 +734,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
 
     view |> element("#open-test-config-#{config.id}") |> render_click()
     assert has_element?(view, "#test-connection-form")
+    assert has_element?(view, "#test-connection-form label[for='test-recipient']", "Channel ID")
+    assert has_element?(view, "#test-recipient[type='text'][placeholder='e.g. abc123def456']")
 
     view
     |> element("#test-connection-form")

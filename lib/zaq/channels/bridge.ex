@@ -14,8 +14,7 @@ defmodule Zaq.Channels.Bridge do
   bridge modules own transport-specific behavior.
   """
 
-  alias Zaq.Channels.{CommunicationBridge, DataSourceBridge}
-  alias Zaq.Channels.LinkedDevice.Config
+  alias Zaq.Channels.{CommunicationBridge, DataSourceBridge, LinkedDevice}
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Event
@@ -391,7 +390,7 @@ defmodule Zaq.Channels.Bridge do
            Map.get(runtime_config, :provider) || Map.get(runtime_config, "provider")
          ) do
       %{ingress_mode: :linked_device} ->
-        case Config.profile(runtime_config) do
+        case LinkedDevice.profile(runtime_config) do
           {:ok, profile} -> Map.put(details, :profile, profile)
           {:error, _} -> details
         end
