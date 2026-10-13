@@ -11,7 +11,7 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
     assert first.settings["credential_document_id"]
   end
 
-  test "invalid session write rolls back the connector and its credential" do
+  test "oversized pairing credentials roll back the connector and its credential" do
     request = %{request() | records: %{{"creds", :self} => String.duplicate("s", 1024 * 1024)}}
     count = Repo.aggregate(ChannelConfig, :count)
     assert {:error, _} = LinkedDeviceConfirmation.save(request)

@@ -95,7 +95,7 @@ These flags are an internal caller contract, not authentication for arbitrary
 NodeRouter callers; BO, agent tools and workflows must not expose this primitive.
 
 The request carries `binding: %{channel_config_id: id, credential_id: id}` and
-`op: :get | :put | :delete | :clear | :list_keys`, with `namespace`, `key` and binary
+`op: :get | :put | :delete | :delete_namespace | :clear | :list_keys`, with `namespace`, `key` and binary
 `value` where applicable. The connector's `settings["credential_document_id"]`
 must match a grant-bound API-key credential of the same provider, with disabled
 personal policy and metadata `auth_profile_id: "credential_document_v1"`,
@@ -108,6 +108,9 @@ grants fail closed. Writes reuse canonical grant replacement and preserve grant
 expiry. Changes enqueue the existing secret-free mutation notification in the same
 transaction; identical puts and absent deletes do not enqueue jobs. Routed success
 follows commit. In-process callers composing an outer transaction own its commit.
+`delete_namespace` atomically removes all records in one namespace, leaving other
+namespaces intact; removing an absent namespace is a silent no-op. Linked-device
+startup uses it to discard legacy database copies of now-volatile messaging state.
 
 Missing records return `:error`; unusable credentials, malformed documents and
 storage failures return sanitized `{:error, reason}` results. Versioned JSON stores

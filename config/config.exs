@@ -7,7 +7,8 @@
 # General application configuration
 import Config
 
-config :zaq, :channels_runtime_children, [Amarula.Supervisor]
+# Linked-device messaging sessions are intentionally volatile, including the schema.
+config :mnesia, schema_location: :ram
 
 # OAuth callback query values are credentials, including opaque one-use state.
 config :phoenix, :filter_parameters, ["password", "token", "secret", "code", "state"]

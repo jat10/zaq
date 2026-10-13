@@ -4,6 +4,7 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
   alias Jido.Chat.WhatsApp.ConnectionWorker
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.ChannelConfig
+  alias Zaq.Engine.Connect
   alias Zaq.{Event, NodeRouter}
   alias Zaq.TestSupport.WhatsAppFlowAdapter
   alias Zaq.TestSupport.WhatsAppFlowTransport, as: Transport
@@ -41,6 +42,14 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     assert {:error, :identity_not_ready} = call(%{op: :confirm, session: session}, actor)
     assert {:ok, %{qr: qr}} = call(%{op: :status, session: session}, actor)
     assert :ok = Transport.scan(options.profile, qr)
+    temporary_scope = Amarula.Storage.scope(options.storage)
+
+    assert :ok =
+             Amarula.Storage.put(temporary_scope, options.profile, :session, "peer", "ratchet")
+
+    assert :ok =
+             Amarula.Storage.put(temporary_scope, options.profile, :sender_key, "group", "key")
+
     assert await_phase(session, actor, :confirm)
     assert Repo.aggregate(ChannelConfig, :count) == count
     assert {:ok, %{saved: saved}} = call(%{op: :confirm, session: session}, actor)
@@ -51,6 +60,28 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     assert Repo.aggregate(ChannelConfig, :count) == count + 1
     assert_receive {:whatsapp_connected_config, restored}
     assert restored.profile == "zaq_linked_device_#{saved.id}"
+    restored_scope = Amarula.Storage.scope(restored.storage)
+
+    assert {:ok, "ratchet"} =
+             Amarula.Storage.get(restored_scope, restored.profile, :session, "peer")
+
+    assert {:ok, "key"} =
+             Amarula.Storage.get(restored_scope, restored.profile, :sender_key, "group")
+
+    binding = %{
+      channel_config_id: config.id,
+      credential_id: config.settings["credential_document_id"]
+    }
+
+    for namespace <- ["session", "sender_key"] do
+      assert {:ok, []} =
+               Connect.credential_document(%{
+                 op: :list_keys,
+                 binding: binding,
+                 namespace: namespace
+               })
+    end
+
     assert {:ok, conn} = Transport.resolve_conn(profile: restored.profile)
     assert Agent.get(conn, & &1.paired?)
     refute saved.runtime_pending
@@ -79,6 +110,39 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     assert identity_ready?(worker)
     assert {:error, :identity_changed} = call(%{op: :confirm, session: session}, actor)
     assert :ok = call(%{op: :cancel, session: session}, actor)
+  end
+
+  test "a RAM seed failure retains saved pairing and reports connection pending", %{actor: actor} do
+    assert {:ok, %{session: session}} = call(%{op: :begin, owner: self()}, actor)
+    on_exit(fn -> call(%{op: :cancel, session: session}, actor) end)
+    assert_receive {:whatsapp_connected_config, options}
+    assert {:ok, %{qr: qr}} = call(%{op: :status, session: session}, actor)
+    assert :ok = Transport.scan(options.profile, qr)
+    assert await_phase(session, actor, :confirm)
+
+    # Fits provisional storage but exceeds the encoded per-record RAM limit.
+    assert :ok =
+             Amarula.Storage.put(
+               Amarula.Storage.scope(options.storage),
+               options.profile,
+               :session,
+               "peer",
+               String.duplicate("s", 1024 * 1024)
+             )
+
+    assert {:ok, %{saved: %{runtime_pending: true} = saved}} =
+             call(%{op: :confirm, session: session}, actor)
+
+    assert {:ok, %{saved: ^saved}} = call(%{op: :confirm, session: session}, actor)
+    config = Repo.get!(ChannelConfig, saved.id)
+    on_exit(fn -> JidoChatBridge.stop_runtime(config) end)
+    refute_received {:whatsapp_connected_config, _}
+
+    assert :ok = JidoChatBridge.start_runtime(config)
+    assert_receive {:whatsapp_connected_config, restored}
+    scope = Amarula.Storage.scope(restored.storage)
+    assert {:ok, %{paired: true}} = Amarula.Storage.get(scope, restored.profile, :creds, :self)
+    assert :error = Amarula.Storage.get(scope, restored.profile, :session, "peer")
   end
 
   defp identity_ready?(worker, attempts \\ 100)
