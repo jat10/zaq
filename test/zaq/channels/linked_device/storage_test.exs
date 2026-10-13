@@ -3,7 +3,9 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
 
   alias Jido.Chat.WhatsApp.Transport.GuardedStorage
 
-  alias Zaq.Channels.LinkedDevice.{SessionStorage, Storage}
+  alias Jido.Chat.WhatsApp.Storage.{Mnesia, Split}
+  alias Split, as: Storage
+  alias Zaq.Channels.LinkedDevice
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Connect
   alias Zaq.Engine.Connect.Grant
@@ -15,10 +17,10 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
     assert {:ok, binding} = bind(config.id)
     assert {:ok, ^binding} = bind(config.id)
     profile = "zaq_linked_device_#{config.id}"
-    storage = Storage.new(binding: binding, profile: profile)
+    storage = Storage.new(LinkedDevice.storage_options(binding, profile))
     value = %{private: <<255, 0, 10>>, nested: {:paired, [1, 2]}}
     assert :ok = Storage.put(storage, profile, :creds, :self, value)
-    restored = Storage.new(binding: binding, profile: profile)
+    restored = Storage.new(LinkedDevice.storage_options(binding, profile))
     assert {:ok, ^value} = Storage.get(restored, profile, :creds, :self)
     assert {:ok, [:self]} = Storage.list_keys(restored, profile, :creds)
     assert {:ok, [^profile]} = Storage.list_profiles(restored)
@@ -33,7 +35,7 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
     config = connector()
     {:ok, binding} = bind(config.id)
     profile = "zaq_linked_device_#{config.id}"
-    storage = Storage.new(binding: binding, profile: profile)
+    storage = Storage.new(LinkedDevice.storage_options(binding, profile))
     disabled = Repo.update!(Ecto.Changeset.change(config, enabled: false))
     assert {:error, :connector_unavailable} = bind(config.id)
     assert {:error, :connector_unavailable} = Storage.get(storage, profile, :creds, :self)
@@ -50,7 +52,7 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
 
     guard =
       GuardedStorage.new(
-        storage: {Storage, binding: binding, profile: profile},
+        storage: {Storage, LinkedDevice.storage_options(binding, profile)},
         notify: self()
       )
 
@@ -103,7 +105,7 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
     assert :ok = Storage.put(other, other_profile, :session, "peer", "second")
     assert {:error, :invalid_profile} = Storage.get(storage, other_profile, :session, "peer")
 
-    forged = %{storage | binding: %{binding | credential_id: other_binding.credential_id}}
+    forged = %{storage | context: %{binding | credential_id: other_binding.credential_id}}
     assert {:error, :invalid_binding} = Storage.get(forged, profile, :session, "peer")
     config = Repo.get!(ChannelConfig, binding.channel_config_id)
     disabled = Repo.update!(Ecto.Changeset.change(config, enabled: false))
@@ -162,13 +164,10 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
     config = connector()
     {:ok, binding} = bind(config.id)
     profile = "zaq_linked_device_#{config.id}"
-    storage = Storage.new(binding: binding, profile: profile)
+    storage = Storage.new(LinkedDevice.storage_options(binding, profile))
 
     on_exit(fn ->
-      SessionStorage.execute(
-        {binding.channel_config_id, binding.credential_id, profile},
-        %{op: :clear}
-      )
+      Mnesia.clear(storage.volatile, profile)
     end)
 
     {storage, profile, binding}

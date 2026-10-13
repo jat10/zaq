@@ -10,9 +10,10 @@ defmodule Zaq.Channels.LinkedDevice do
   options supply storage and history policy to adapter child specs; persisted
   settings cannot replace them. The supervisor only starts the supplied specs.
   """
-  alias Zaq.Channels.{Bridge, Supervisor}
+  alias Jido.Chat.WhatsApp.PairingSession
+  alias Jido.Chat.WhatsApp.Storage.Split
+  alias Zaq.Channels.{Bridge, CommunicationBridge, Supervisor}
   alias Zaq.Channels.JidoChatBridge.{ListenerStatus, State}
-  alias Zaq.Channels.LinkedDevice.Storage
   alias Zaq.Event
   alias Zaq.NodeRouter
 
@@ -58,8 +59,9 @@ defmodule Zaq.Channels.LinkedDevice do
   defp linked_options(config, opts) do
     with {:ok, binding} <- bind(config.id),
          {:ok, profile} <- profile(config),
-         :ok <- Storage.prepare(Storage.new(binding: binding, profile: profile)),
-         {:ok, ingress} <- ingress(config, {Storage, binding: binding, profile: profile}) do
+         storage_opts = storage_options(binding, profile),
+         :ok <- Split.prepare(Split.new(storage_opts)),
+         {:ok, ingress} <- ingress(config, {Split, storage_opts}) do
       {:ok,
        opts
        |> Keyword.put(:ingress, ingress)
@@ -121,4 +123,84 @@ defmodule Zaq.Channels.LinkedDevice do
     |> NodeRouter.dispatch()
     |> Map.fetch!(:response)
   end
+
+  @doc "Supplies trusted host policy to the package's composite backend."
+  @spec storage_options(map(), String.t()) :: keyword()
+  def storage_options(binding, profile) do
+    [
+      context: binding,
+      profile: profile,
+      scope: {binding.channel_config_id, binding.credential_id},
+      document_mfa: {__MODULE__, :document, []},
+      volatile_namespaces: ["session", "sender_key"]
+    ]
+  end
+
+  @doc "Dispatches package storage callbacks through canonical Engine authorization."
+  @spec document(map(), map()) :: term()
+  def document(binding, request) do
+    request
+    |> Map.put(:binding, binding)
+    |> Event.new(:engine,
+      opts: [action: :credential_document, confidential: true, credential_document_runtime: true]
+    )
+    |> NodeRouter.dispatch(%{
+      rpc_call_with_timeout_fn: fn node, module, function, args, _ ->
+        :rpc.call(node, module, function, args, 6_000)
+      end
+    })
+    |> Map.fetch!(:response)
+  end
+
+  @doc "Runs package-owned pairing after the host Action has authorized the operator."
+  @spec pair(map(), pos_integer(), map()) :: term()
+  def pair(request, user_id, actor) do
+    case Bridge.provider_config("whatsapp") do
+      %{adapter: adapter} ->
+        PairingSession.execute(request, user_id,
+          supervisor: Zaq.Channels.BridgeSupervisor,
+          attempt_id: Ecto.UUID.generate(),
+          adapter: adapter,
+          context: actor,
+          persist_mfa: {__MODULE__, :confirm_pairing, []},
+          start_mfa: {__MODULE__, :start_paired_runtime, []}
+        )
+
+      _ ->
+        {:error, :pairing_unavailable}
+    end
+  end
+
+  @doc "Atomically creates the host connector and encrypted durable state."
+  @spec confirm_pairing(map(), map()) :: {:ok, map()} | {:error, term()}
+  def confirm_pairing(actor, request) do
+    response =
+      request
+      |> Event.new(:engine,
+        actor: actor,
+        opts: [action: :confirm_linked_device, confidential: true, linked_device_runtime: true]
+      )
+      |> NodeRouter.dispatch()
+      |> Map.fetch!(:response)
+
+    with {:ok, config} <- response,
+         {:ok, profile} <- profile(config) do
+      binding = %{
+        channel_config_id: config.id,
+        credential_id: config.settings["credential_document_id"]
+      }
+
+      {:ok,
+       %{
+         receipt: %{id: config.id, name: config.name},
+         storage: storage_options(binding, profile),
+         runtime: config
+       }}
+    end
+  end
+
+  @doc "Starts the saved host bridge after the package has seeded volatile state."
+  @spec start_paired_runtime(map(), map()) :: term()
+  def start_paired_runtime(_actor, config),
+    do: CommunicationBridge.sync_config_runtime(nil, config)
 end
