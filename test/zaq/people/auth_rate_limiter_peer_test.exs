@@ -1,6 +1,7 @@
 defmodule Zaq.People.AuthRateLimiterPeerTest do
   use ExUnit.Case, async: false
   alias Jido.Chat.WhatsApp.Storage.Runtime, as: SessionStorage
+  alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.PeopleAuthRateLimiter, as: Ingress
   alias Zaq.People.AuthRateLimiter
   alias Zaq.TestSupport.PeopleAuthPeer
@@ -36,8 +37,42 @@ defmodule Zaq.People.AuthRateLimiterPeerTest do
         assert Enum.sort(Enum.map(children, &elem(&1, 0))) ==
                  Enum.sort([
                    Ingress,
-                   SessionStorage,
                    Zaq.Channels.BridgeSupervisor
+                 ])
+
+        # This fixture starts with no providers configured. Storage belongs to
+        # provider bootstrap, not to the static Channels role supervisor.
+        assert nil == :peer.call(control, Process, :whereis, [SessionStorage])
+
+        refute :jido_chat_whatsapp_sessions in :peer.call(control, :mnesia, :system_info, [
+                 :tables
+               ])
+
+        whatsapp = %{
+          whatsapp: %{
+            bridge: JidoChatBridge,
+            adapter: Jido.Chat.WhatsApp.Adapter,
+            ingress_mode: :linked_device
+          }
+        }
+
+        assert :ok = :peer.call(control, Application, :put_env, [:zaq, :channels, whatsapp])
+
+        assert :ok =
+                 :peer.call(control, JidoChatBridge, :sync_provider_runtime, [
+                   {:provider, :whatsapp},
+                   []
+                 ])
+
+        children =
+          :peer.call(control, DynamicSupervisor, :which_children, [Zaq.Channels.BridgeSupervisor])
+
+        assert {_, store, :supervisor, [SessionStorage]} =
+                 Enum.find(children, fn {_, _, _, modules} -> modules == [SessionStorage] end)
+
+        assert {:ok, %{state_pid: nil, listener_pids: [^store]}} =
+                 :peer.call(control, Zaq.Channels.Supervisor, :lookup_runtime, [
+                   "provider:whatsapp"
                  ])
 
         assert :ram_copies ==
