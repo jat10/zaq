@@ -168,7 +168,10 @@ defmodule Zaq.Engine.Connect.CredentialDocuments do
   defp validate_request(_), do: {:error, :invalid_request}
 
   defp valid_operation?(%{op: :clear}), do: true
-  defp valid_operation?(%{op: :list_keys, namespace: namespace}), do: address?(namespace)
+
+  defp valid_operation?(%{op: op, namespace: namespace})
+       when op in [:list_keys, :delete_namespace],
+       do: address?(namespace)
 
   defp valid_operation?(%{op: :put, namespace: namespace, key: key, value: value}) do
     address?(namespace) and address?(key) and is_binary(value) and
@@ -244,6 +247,9 @@ defmodule Zaq.Engine.Connect.CredentialDocuments do
   end
 
   defp operate(%{op: :clear}, _records), do: {:ok, %{}}
+
+  defp operate(%{op: :delete_namespace, namespace: namespace}, records),
+    do: {:ok, Map.delete(records, namespace)}
 
   defp ensure(true, _reason), do: :ok
   defp ensure(false, reason), do: Repo.rollback(reason)

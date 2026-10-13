@@ -8,11 +8,6 @@ defmodule Zaq.People.WhatsAppProfileTest do
   alias Zaq.Engine.ChannelConfig
   alias Zaq.People.IdentityResolver
 
-  setup do
-    if is_nil(Process.whereis(Amarula.Supervisor)), do: start_supervised!(Amarula.Supervisor)
-    :ok
-  end
-
   test "phone JIDs populate the directory and preserve edited name and phone" do
     {config, _conn} = connection()
     incoming = incoming(config, "15551234567:4@s.whatsapp.net", "Sender Name")
