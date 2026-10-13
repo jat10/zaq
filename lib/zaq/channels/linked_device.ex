@@ -176,6 +176,7 @@ defmodule Zaq.Channels.LinkedDevice do
   def confirm_pairing(actor, request) do
     response =
       request
+      |> Map.update!(:records, &Split.encode_records/1)
       |> Event.new(:engine,
         actor: actor,
         opts: [action: :confirm_linked_device, confidential: true, linked_device_runtime: true]

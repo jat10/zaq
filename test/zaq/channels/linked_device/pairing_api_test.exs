@@ -14,7 +14,7 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
 
   test "retry propagates the actual runtime failure" do
     config = connector()
-    admin = super_admin_fixture()
+    admin = super_admin_fixture(%{must_change_password: false})
 
     event =
       Event.new(%{provider: :whatsapp, channel_config_id: config.id}, :channels,
@@ -28,7 +28,7 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
 
   test "pairing status and retry deny nil, unprivileged and non-confidential callers" do
     config = connector()
-    admin = super_admin_fixture()
+    admin = super_admin_fixture(%{must_change_password: false})
     user = user_fixture()
 
     for action <- [:channel_ingress_status, :channel_retry_linked_device],
@@ -43,7 +43,7 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
 
   test "authorized status uses exact enabled connector and never trusts a supplied config" do
     config = connector()
-    admin = super_admin_fixture()
+    admin = super_admin_fixture(%{must_change_password: false})
 
     assert {:ok, %{phase: :disconnected, qr: nil}} =
              call(config, :channel_ingress_status, %{user_id: admin.id}, true)
@@ -51,6 +51,19 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
     config |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
     assert {:error, _} = call(config, :channel_ingress_status, %{user_id: admin.id}, true)
     assert {:error, _} = call(config, :channel_retry_linked_device, %{user_id: admin.id}, true)
+  end
+
+  test "status and retry revalidate an operator whose password must now change" do
+    config = connector()
+    admin = super_admin_fixture(%{must_change_password: false})
+    actor = %{user_id: admin.id}
+
+    assert {:ok, _} = call(config, :channel_ingress_status, actor, true)
+    admin |> Ecto.Changeset.change(must_change_password: true) |> Repo.update!()
+
+    for action <- [:channel_ingress_status, :channel_retry_linked_device] do
+      assert {:error, :unauthorized} = call(config, action, actor, true)
+    end
   end
 
   defp call(config, action, actor, confidential) do
