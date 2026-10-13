@@ -3,6 +3,7 @@ defmodule Zaq.Channels.SupervisionTest do
 
   alias Zaq.Channels.BridgeSupervisor
   alias Zaq.Channels.JidoChatBridge
+  alias Zaq.Channels.LinkedDevice.SessionStorage
   alias Zaq.Channels.PeopleAuthRateLimiter, as: Ingress
   alias Zaq.Channels.Supervisor, as: Channels
   alias Zaq.Engine.ChannelConfig
@@ -74,7 +75,12 @@ defmodule Zaq.Channels.SupervisionTest do
 
   test "static parent starts limiter before dynamic bridge owner and retains role discovery" do
     assert {:ok, {%{strategy: :rest_for_one}, specs}} = Channels.init([])
-    assert Enum.map(specs, & &1.id) == [Ingress, Amarula.Supervisor, BridgeSupervisor]
+
+    assert Enum.map(specs, & &1.id) == [
+             Ingress,
+             SessionStorage,
+             BridgeSupervisor
+           ]
 
     children = Supervisor.which_children(Channels)
     assert length(children) == 3
@@ -86,7 +92,13 @@ defmodule Zaq.Channels.SupervisionTest do
 
     assert widget == Process.whereis(WebWidget.Supervisor)
 
-    for module <- [Ingress, Amarula.Supervisor, BridgeSupervisor] do
+    assert {SessionStorage, store, :worker, [SessionStorage]} =
+             List.keyfind(children, SessionStorage, 0)
+
+    assert Process.alive?(store)
+    assert :mnesia.table_info(:zaq_linked_device_sessions, :storage_type) == :ram_copies
+
+    for module <- [Ingress, BridgeSupervisor] do
       assert {^module, pid, :supervisor, [^module]} = List.keyfind(children, module, 0)
       assert pid == Process.whereis(module)
     end
@@ -229,21 +241,24 @@ defmodule Zaq.Channels.SupervisionTest do
     assert :ok = Ingress.check_identification(ip)
   end
 
-  test "shared infrastructure failure rebuilds bridges without resetting limiter counters" do
+  test "session store failure rebuilds bridges without resetting limiter counters" do
     bridge_id = configured_runtime()
     assert {:ok, runtime} = Channels.lookup_runtime(bridge_id)
     ingress = Process.whereis(Ingress)
-    infrastructure = Process.whereis(Amarula.Supervisor)
+
+    {SessionStorage, store, :worker, _} =
+      List.keyfind(Supervisor.which_children(Channels), SessionStorage, 0)
+
     ip = exhaust_identification_budget()
     refs = monitor_all(runtime_pids(runtime))
 
-    :ok = Supervisor.stop(infrastructure, :infrastructure_failure)
+    :ok = GenServer.stop(store, :storage_failure)
     children = Supervisor.which_children(Channels)
 
-    assert {Amarula.Supervisor, replacement, :supervisor, _} =
-             List.keyfind(children, Amarula.Supervisor, 0)
+    assert {SessionStorage, replacement, :worker, _} =
+             List.keyfind(children, SessionStorage, 0)
 
-    refute replacement == infrastructure
+    refute replacement == store
     assert_down(refs)
     assert Process.whereis(Ingress) == ingress
     assert {:error, {:rate_limited, _}} = Ingress.check_identification(ip)
@@ -258,7 +273,6 @@ defmodule Zaq.Channels.SupervisionTest do
 
     descendants =
       [
-        Process.whereis(Amarula.Supervisor),
         Process.whereis(BridgeSupervisor),
         Process.whereis(Ingress),
         Process.whereis(WebWidget.Supervisor),

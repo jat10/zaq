@@ -6,7 +6,7 @@
 
 WhatsApp uses the same `JidoChatBridge` registration and adapter listener contract
 as other Jido channels. `LinkedDevice.Config` supplies a stable
-`zaq_linked_device_<connector_id>` profile, credential-backed storage, and both
+`zaq_linked_device_<connector_id>` profile, split protocol storage, and both
 `sync_history: false` and `sync_full_history: false`. Persisted ingress settings
 cannot override these values. The selected profile also scopes replies, edits,
 typing, reactions and direct-message operations. Multiple accounts remain independent.
@@ -23,11 +23,12 @@ specification and restart policy. BridgeSupervisor refreshes the registered PID 
 restart, so status and explicit stop target the current listener. Restart intensity
 is shared by the dynamic supervisor; there is no separate per-listener budget.
 Explicit runtime stop shuts down the adapter connection and retains credentials. Partial startup failures clean up started children and
-bridge state. Channels starts shared infrastructure from `channels_runtime_children`
-(default `[Amarula.Supervisor]`) directly under `Channels.Supervisor`, between the
-rate limiter and `BridgeSupervisor`. Rest-for-one ordering rebuilds runtimes after
-infrastructure failure without resetting limiter counters. A limiter supervisor
-failure also rebuilds the later infrastructure and bridge children. The adapter refuses
+bridge state. The `jido_chat_whatsapp` OTP application owns shared transport startup
+and recovery. Transport infrastructure failure terminates affected listeners so
+their existing restart policy can restore connections without restarting unrelated
+bridges or resetting limiter counters. Channels starts its RAM session store before
+`BridgeSupervisor`; rest-for-one ordering rebuilds bridges after a store failure.
+A limiter supervisor failure also rebuilds the later store and bridge children. The adapter refuses
 duplicate profile ownership rather than adopting another listener's connection.
 This does not provide distributed fencing across disconnected clusters sharing a DB.
 
@@ -50,12 +51,15 @@ bounded, memory-only storage. It discards chat ingress and expires after three
 minutes or browser disconnect. Cancellation attempts logout and stops the temporary
 runtime. QR codes and session records never enter BO persistence or workflow events.
 
-Confirmation stops protocol writes before taking a snapshot. Engine's trusted
+Confirmation stops protocol writes before taking a snapshot. Channels excludes
+messaging sessions and group sender keys from the durable snapshot. Engine's trusted
 runtime `:confirm_linked_device` Action creates the connector and canonical encrypted
 credential document in one transaction, using an attempt UUID for repeat-request
-idempotence. Failures retain the frozen snapshot for retry within the pairing window.
-Only after persistence does Channels start the normal bridge. A startup failure is
-reported as saved with connection pending, not a failed save. On server restart,
+idempotence. Persistence failures retain the frozen snapshot for retry within the
+pairing window. After persistence, Channels seeds the volatile records once into
+Mnesia, then starts the normal bridge. A late snapshot cannot overwrite advanced
+sessions or resurrect cleared keys. A RAM-seeding or startup failure is reported as
+saved with connection pending, not a failed save. On server restart,
 `BridgeSupervisor` restores enabled connectors through the shared runtime loader;
 disabled and archived connectors stay stopped.
 
@@ -65,13 +69,33 @@ new onboarding modal cancels the provisional session. Existing connector retries
 preserve encrypted state. The shared component is in Storybook under
 `/storybook/modals/linked_device_pairing`.
 
-`LinkedDevice.Storage` translates scoped storage callbacks into the
-[canonical credential document operation](engine.md#connector-credential-documents).
-Only the credential reference is stored in connector settings. Session records live
-in the encrypted canonical org `api_key` grant. Missing records differ from unreadable
-state; the adapter guard latches storage failures and stops protocol progress.
-No callback calls a provider process while waiting for a database transaction.
-Keep the database and encryption key across restarts; no container file store is used.
+`LinkedDevice.Storage` routes pairing credentials (`creds`) and supporting protocol
+records through the [canonical credential document operation](engine.md#connector-credential-documents).
+Only the credential reference is stored in connector settings; these records live
+in the encrypted canonical org `api_key` grant. Credentials can change after pairing
+(for example, one-time prekeys), and those changes still persist.
+
+The frequently updated `session` and `sender_key` namespaces instead live in
+`LinkedDevice.SessionStorage`, a node-local Mnesia `ram_copies` table with a RAM-only
+schema. There are no disk writes, checkpoints, replication or database fallback for
+these namespaces. Individual record updates are transactional and bounded to 1 MiB
+per encoded value and 16 MiB per connector/credential/profile scope. Every callback
+still revalidates the current Engine credential binding; RAM storage eliminates
+credential rewrites and their notifications, not authorization database reads.
+
+Listener restarts retain these records while Mnesia remains running. A Mnesia/node
+restart or moving the connector to another node loses them. Pairing survives with
+the database and encryption key, but message decryption may fail until protocol
+sessions/group keys are re-established; retries cannot guarantee message recovery.
+Keep those durable resources across restarts; no container file store is used.
+
+Before a saved connector starts, its obsolete database `session` and `sender_key`
+namespaces are removed through the authorized document operation. They are never
+loaded as a stale fallback. Disabled/archived connectors retain their old encrypted
+records until next enabled startup. Clear/logout erases both stores for that exact
+scope. Missing records differ from unreadable/unavailable state; the adapter guard
+latches storage failures and stops protocol progress. No callback calls a provider
+process while waiting for a database transaction.
 
 The forward `migrate_linked_device_documents` migration preserves existing credential
 IDs and paired state, including disabled accounts, and removes legacy tables only
@@ -380,7 +404,7 @@ provenance before using those matches for capture.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, before shared infrastructure and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, before the RAM session store and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -397,7 +421,7 @@ for cache refresh/expiry and eventual-consistency limitations.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, before shared infrastructure and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, before the RAM session store and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -417,7 +441,7 @@ for cache refresh/expiry and eventual-consistency limitations.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, before shared infrastructure and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, before the RAM session store and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -1324,12 +1348,14 @@ See [Web transport contracts](#web-transport-contracts) for initialization, hist
 It uses `Supervisor` with `:rest_for_one` and starts these children in order:
 
 1. `Zaq.Channels.PeopleAuthRateLimiter` — failed-identification counters and config cache.
-2. Configured `channels_runtime_children` — shared adapter infrastructure, defaulting to `Amarula.Supervisor`.
+2. `Zaq.Channels.LinkedDevice.SessionStorage` — initializes the RAM-only Mnesia table before listeners start.
 3. `Zaq.Channels.BridgeSupervisor` — `DynamicSupervisor` for bridge state, listeners and temporary pairing sessions.
 
-Infrastructure failure restarts later bridge processes and preserves limiter
+Session-store failure restarts later bridge processes and preserves limiter
 counters and cache. A limiter-supervisor failure resets its local resources and
-restarts the later infrastructure and bridges. Parent shutdown stops all children.
+restarts the later store and bridges. Parent shutdown stops all its children and
+their adapter connections. WhatsApp's shared transport infrastructure remains
+owned by the adapter package's OTP application.
 
 The widget's shared `{WebWidget, opts}` and connector supervisors are dynamic bridge
 children; neither the application nor the static Channels parent knows widget options.

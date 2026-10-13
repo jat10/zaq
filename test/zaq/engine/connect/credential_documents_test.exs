@@ -48,6 +48,33 @@ defmodule Zaq.Engine.Connect.CredentialDocumentsTest do
     refute_received {:node_router_event, %Event{request: %{binding: ^binding}}}
   end
 
+  test "namespace removal is scoped, atomic with its caller and idempotent", %{binding: binding} do
+    assert :ok = put(binding, "session", "one", "state")
+    assert :ok = put(binding, "session", "two", "state")
+    assert :ok = put(binding, "creds", "self", "paired")
+
+    assert {:error, :rollback} =
+             Repo.transaction(fn ->
+               assert :ok =
+                        Connect.credential_document(%{
+                          op: :delete_namespace,
+                          binding: binding,
+                          namespace: "session"
+                        })
+
+               Repo.rollback(:rollback)
+             end)
+
+    assert {:ok, ["one", "two"]} = request(binding, :list_keys, %{namespace: "session"})
+    assert :ok = request(binding, :delete_namespace, %{namespace: "session"})
+    assert {:ok, []} = request(binding, :list_keys, %{namespace: "session"})
+    assert {:ok, "paired"} = get(binding, "creds", "self")
+    count = Repo.aggregate(Oban.Job, :count)
+    assert :ok = request(binding, :delete_namespace, %{namespace: "session"})
+    assert Repo.aggregate(Oban.Job, :count) == count
+    assert {:error, :invalid_request} = request(binding, :delete_namespace, %{namespace: ""})
+  end
+
   test "only explicit confidential synchronous runtime events authorize access", %{
     binding: binding
   } do

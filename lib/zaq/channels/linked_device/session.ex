@@ -3,15 +3,16 @@ defmodule Zaq.Channels.LinkedDevice.Session do
   Owns a temporary WhatsApp connection until operator confirmation.
 
   Messages are discarded. Protocol state stays in a separate volatile process so
-  stopping the worker can finish its writes before the snapshot is transferred to
-  Engine. A bounded lifetime and browser monitor clean up abandoned pairings.
+  stopping the worker can finish its writes before durable records are transferred
+  to Engine and messaging records are seeded into RAM-only Mnesia. A bounded
+  lifetime and browser monitor clean up abandoned pairings.
   Confirmation retains a receipt for repeat clicks; only the normal bridge handles
   messages after persistence. Handles are owner-scoped, including across nodes.
   """
   use GenServer, restart: :temporary
   alias Jido.Chat.WhatsApp.ConnectionWorker
   alias Zaq.Channels.{Bridge, CommunicationBridge}
-  alias Zaq.Channels.LinkedDevice.{Pairing, TemporaryStorage}
+  alias Zaq.Channels.LinkedDevice.{Config, Pairing, Storage, TemporaryStorage}
   alias Zaq.{Event, NodeRouter}
 
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts)
@@ -218,7 +219,11 @@ defmodule Zaq.Channels.LinkedDevice.Session do
   end
 
   defp persist(state) do
-    request = %{attempt_id: state.id, identity: state.identity, records: state.snapshot}
+    request = %{
+      attempt_id: state.id,
+      identity: state.identity,
+      records: Storage.durable_records(state.snapshot)
+    }
 
     response =
       Event.new(request, :engine,
@@ -231,7 +236,7 @@ defmodule Zaq.Channels.LinkedDevice.Session do
     case response do
       {:ok, config} ->
         # Persistence succeeded even when the runtime cannot start yet.
-        result = start_saved_runtime(config)
+        result = start_saved_runtime(config, state.snapshot)
         :ok = TemporaryStorage.discard(state.storage)
         saved = %{id: config.id, name: config.name, runtime_pending: result != :ok}
         {:reply, {:ok, %{phase: :saved, saved: saved}}, %{state | saved: saved, snapshot: nil}}
@@ -241,8 +246,15 @@ defmodule Zaq.Channels.LinkedDevice.Session do
     end
   end
 
-  defp start_saved_runtime(config) do
-    CommunicationBridge.sync_config_runtime(nil, config)
+  defp start_saved_runtime(config, snapshot) do
+    binding = %{
+      channel_config_id: config.id,
+      credential_id: config.settings["credential_document_id"]
+    }
+
+    with {:ok, profile} <- Config.profile(config),
+         :ok <- Storage.seed(Storage.new(binding: binding, profile: profile), snapshot),
+         do: CommunicationBridge.sync_config_runtime(nil, config)
   rescue
     _ -> {:error, :runtime_unavailable}
   catch

@@ -35,7 +35,7 @@ defmodule Zaq.MixProject do
   def application do
     [
       mod: {Zaq.Application, []},
-      extra_applications: [:logger, :runtime_tools, :crypto]
+      extra_applications: [:logger, :runtime_tools, :crypto, :mnesia]
     ]
   end
 
@@ -134,7 +134,9 @@ defmodule Zaq.MixProject do
       #  path: "/Users/julien/Documents/Repos/Github/OSS/jido/chat/jido_chat_telegram",
       #  override: true},
       {:jido_chat_telegram, github: "agentjido/jido_chat_telegram", branch: "main"},
-      {:jido_chat_whatsapp, path: "../jido_chat_whatsapp"},
+      {:jido_chat_whatsapp,
+       github: "jat10/jido_chat_whatsapp",
+       branch: "feat/whatsapp-adapter-lifecycle-and-message-contracts"},
       {:qr_code, "~> 3.2.0"},
       {:jido_ai, github: "agentjido/jido_ai", branch: "main", override: true},
       # {:jido_ai, path: "/Users/julien/Documents/Repos/Github/OSS/jido/jido_ai", override: true},
