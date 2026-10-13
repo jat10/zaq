@@ -80,6 +80,58 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
     assert {:error, _} = BridgeSupervisor.start_runtime("failure", nil, [listener])
   end
 
+  test "a restarted adapter source is monitored and its shutdown clears the QR" do
+    id = System.unique_integer([:positive])
+    bridge_id = "whatsapp_#{id}"
+    profile = "zaq_linked_device_#{id}"
+    config = %{id: id, provider: "whatsapp", settings: %{}, url: "", token: ""}
+    state_module = Zaq.Channels.JidoChatBridge.State
+
+    state_spec = %{
+      id: :state,
+      start:
+        {state_module, :start_link, [[bridge_id: bridge_id, config: config, provider: :whatsapp]]}
+    }
+
+    {:ok, listeners} =
+      Adapter.listener_child_specs(bridge_id,
+        ingress: %{
+          mode: :linked_device,
+          profile: profile,
+          transport: Transport,
+          config: %{profile: profile, observer: self()}
+        },
+        sink_mfa: {Transport, :deliver, [self()]},
+        lifecycle_sink_mfa: {Zaq.Channels.LinkedDevice, :from_lifecycle, ["whatsapp", id]}
+      )
+
+    assert {:ok, %{state_pid: state, listener_pids: [worker]}} =
+             BridgeSupervisor.start_runtime(bridge_id, state_spec, listeners)
+
+    on_exit(fn -> BridgeSupervisor.stop_bridge_runtime(%{}, bridge_id) end)
+    assert_receive {:connection, ^profile, _, _relay}
+    GenServer.stop(worker, :test_failure)
+    assert_receive {:connection, ^profile, _, relay}, 1_000
+    DynamicSupervisor.which_children(BridgeSupervisor)
+    assert {:ok, %{listener_pids: [replacement]}} = BridgeSupervisor.lookup_runtime(bridge_id)
+    refute replacement == worker
+
+    :erlang.trace(state, true, [:receive])
+    send(relay, {:amarula, :connection_update, %{qr: "replacement-qr"}})
+
+    assert_receive {:trace, ^state, :receive,
+                    {:"$gen_cast", {:lifecycle, source, %{status: :pairing}}}},
+                   1_000
+
+    assert %{phase: :pairing, qr: "replacement-qr"} = state_module.ingress_status(state)
+    monitor = :sys.get_state(state).lifecycle_monitor
+    assert is_reference(monitor)
+    assert :ok = DynamicSupervisor.terminate_child(BridgeSupervisor, replacement)
+    assert_receive {:trace, ^state, :receive, {:DOWN, ^monitor, :process, ^source, _}}, 1_000
+    assert %{phase: :disconnected, qr: nil} = state_module.ingress_status(state)
+    :erlang.trace(state, false, [:receive])
+  end
+
   defp runtime(opts \\ []) do
     profile = "runtime_#{System.unique_integer([:positive])}"
 

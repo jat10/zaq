@@ -165,6 +165,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
     assert connection_config.sync_full_history == false
     assert {Zaq.Channels.LinkedDevice.Storage, _} = connection_config.storage
     refute Map.has_key?(connection_config, :storage_root)
+    await_pairing(config)
 
     {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
     view |> element("#pair-config-#{config.id}") |> render_click()
@@ -190,6 +191,25 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
     render_async(view)
     assert has_element?(view, "#linked-device-pairing", "Linked device connected")
     refute has_element?(view, "#linked-device-pairing svg")
+  end
+
+  defp await_pairing(config) do
+    {:ok, state} = Zaq.Channels.Supervisor.lookup_state_pid("whatsapp_#{config.id}")
+    :erlang.trace(state, true, [:receive])
+
+    try do
+      # Transport startup precedes the ordered lifecycle callback. Wait for the
+      # QR event, including a retry while the generic supervisor registers state.
+      unless match?({:ok, %{phase: :pairing}}, JidoChatBridge.channel_ingress_status(config)) do
+        assert_receive {:trace, ^state, :receive,
+                        {:"$gen_cast", {:lifecycle, _, %{status: :pairing}}}},
+                       1_000
+      end
+
+      assert {:ok, %{phase: :pairing}} = JidoChatBridge.channel_ingress_status(config)
+    after
+      :erlang.trace(state, false, [:receive])
+    end
   end
 
   defp run_message(%{profile: profile, config: config}, room, mentions) do
