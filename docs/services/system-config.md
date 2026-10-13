@@ -596,11 +596,17 @@ When adding a new key/token/password field:
 
 ## Connector session state
 
-Linked-device sessions use canonical encrypted org `api_key` grants as opaque state,
-not HTTP bearer tokens or OAuth2 device tokens. Retain the database and its encryption
-key across application/container restarts. The credential reference in connector
-settings contains no session secrets. Runtime access follows the
-[Engine document contract](engine.md#connector-credential-documents).
+Linked-device pairing credentials and supporting protocol records use canonical
+encrypted org `api_key` grants as opaque state, not HTTP bearer tokens or OAuth2
+device tokens. Retain the database and its encryption key across application/container
+restarts. The credential reference in connector settings contains no session secrets.
+Runtime access follows the [Engine document contract](engine.md#connector-credential-documents).
+
+Messaging sessions and group sender keys use RAM-only Mnesia on the Channels node.
+They reset on Mnesia/node restart, which can interrupt message decryption while
+pairing remains saved. No Mnesia disk volume is required or used. Namespace routing,
+legacy-record cleanup and recovery behavior are owned by the
+[linked-device storage contract](channels.md#linked-device-integration).
 
 Before upgrading an installation with the legacy linked-device tables, stop channel
 runtimes, back up the database and apply `mix ecto.migrate` with the existing encryption

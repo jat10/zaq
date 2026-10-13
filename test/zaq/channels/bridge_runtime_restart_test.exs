@@ -1,5 +1,5 @@
 defmodule Zaq.Channels.BridgeRuntimeRestartTest do
-  use ExUnit.Case, async: false
+  use Zaq.DataCase, async: false
 
   alias Zaq.Channels.BridgeSupervisor
   alias Zaq.Channels.Supervisor, as: ChannelsSupervisor

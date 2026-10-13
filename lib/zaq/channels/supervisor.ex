@@ -2,10 +2,11 @@ defmodule Zaq.Channels.Supervisor do
   @moduledoc """
   Static supervisor and public runtime facade for the Channels role.
 
-  Starts the rate limiter, configured shared infrastructure and BridgeSupervisor
-  directly. Rest-for-one ordering rebuilds connections after infrastructure failure
-  while preserving limiter counters. A limiter supervisor failure also rebuilds
-  later children. This parent owns the bridge registry across child restarts.
+  Starts the rate limiter, RAM session store and BridgeSupervisor directly.
+  Rest-for-one ordering rebuilds bridges after session-store failure while
+  preserving limiter counters. A limiter supervisor failure also rebuilds later
+  children. Adapter packages own their shared transport infrastructure. This
+  parent owns the bridge registry across child restarts.
 
   `Zaq.NodeRouter` discovers Channels through this registered name. Registration
   identifies the role, not child readiness. Runtime operations delegate directly
@@ -23,9 +24,11 @@ defmodule Zaq.Channels.Supervisor do
 
   @impl true
   def init(opts) do
-    children =
-      [PeopleAuthRateLimiter] ++
-        Zaq.Config.get(:zaq, :channels_runtime_children, [], opts) ++ [{BridgeSupervisor, opts}]
+    children = [
+      PeopleAuthRateLimiter,
+      Zaq.Channels.LinkedDevice.SessionStorage,
+      {BridgeSupervisor, opts}
+    ]
 
     Supervisor.init(children, strategy: :rest_for_one)
   end
