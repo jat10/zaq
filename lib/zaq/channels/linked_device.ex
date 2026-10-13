@@ -5,15 +5,47 @@ defmodule Zaq.Channels.LinkedDevice do
   Adapters own protocol connections and lifecycle normalization. This module
   binds an exact connector to credential storage and routes normalized lifecycle
   notifications separately from message ingress. QR values stay in runtime state.
+
+  Profiles derive exclusively from persisted connector IDs. Trusted runtime
+  options supply storage and history policy to adapter child specs; persisted
+  settings cannot replace them. The supervisor only starts the supplied specs.
   """
   alias Zaq.Channels.{Bridge, Supervisor}
-  alias Zaq.Channels.JidoChatBridge.State
-  alias Zaq.Channels.LinkedDevice.{Config, Pairing, Storage}
+  alias Zaq.Channels.JidoChatBridge.{ListenerStatus, State}
+  alias Zaq.Channels.LinkedDevice.Storage
   alias Zaq.Event
   alias Zaq.NodeRouter
 
   @lifecycle_retry_interval 25
   @lifecycle_retries 200
+
+  @doc "Returns the stable profile for a persisted connector."
+  @spec profile(map()) :: {:ok, String.t()} | {:error, :invalid_connector}
+  def profile(%{id: id}) when is_integer(id) and id > 0,
+    do: {:ok, "zaq_linked_device_#{id}"}
+
+  def profile(_config), do: {:error, :invalid_connector}
+
+  @doc "Builds adapter ingress options with an explicit, trusted storage binding."
+  @spec ingress(map(), {module(), keyword()}) :: {:ok, map()} | {:error, term()}
+  def ingress(config, {storage_module, storage_opts} = storage)
+      when is_atom(storage_module) and not is_nil(storage_module) and is_list(storage_opts) do
+    with {:ok, profile} <- profile(config) do
+      {:ok,
+       %{
+         mode: :linked_device,
+         profile: profile,
+         config: %{
+           profile: profile,
+           storage: storage,
+           sync_history: false,
+           sync_full_history: false
+         }
+       }}
+    end
+  end
+
+  def ingress(_config, _storage), do: {:error, :invalid_storage}
 
   @doc "Enriches linked-device options; all other adapters retain their normal options."
   def listener_opts(config, opts) do
@@ -25,9 +57,9 @@ defmodule Zaq.Channels.LinkedDevice do
 
   defp linked_options(config, opts) do
     with {:ok, binding} <- bind(config.id),
-         {:ok, profile} <- Config.profile(config),
+         {:ok, profile} <- profile(config),
          :ok <- Storage.prepare(Storage.new(binding: binding, profile: profile)),
-         {:ok, ingress} <- Config.ingress(config, {Storage, binding: binding, profile: profile}) do
+         {:ok, ingress} <- ingress(config, {Storage, binding: binding, profile: profile}) do
       {:ok,
        opts
        |> Keyword.put(:ingress, ingress)
@@ -74,11 +106,12 @@ defmodule Zaq.Channels.LinkedDevice do
          %{mode: "linked_device"} = status <- State.ingress_status(pid) do
       {:ok, status}
     else
-      _ -> {:ok, Pairing.from_notification(%{status: :disconnected, attempt_id: nil, qr: nil})}
+      _ ->
+        {:ok, ListenerStatus.from_lifecycle(%{status: :disconnected, attempt_id: nil, qr: nil})}
     end
   catch
     :exit, _ ->
-      {:ok, Pairing.from_notification(%{status: :disconnected, attempt_id: nil, qr: nil})}
+      {:ok, ListenerStatus.from_lifecycle(%{status: :disconnected, attempt_id: nil, qr: nil})}
   end
 
   defp bind(id) do

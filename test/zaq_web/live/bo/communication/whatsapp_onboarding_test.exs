@@ -54,6 +54,13 @@ defmodule ZaqWeb.Live.BO.Communication.WhatsAppOnboardingTest do
     config = Repo.get_by!(ChannelConfig, name: "Support account", provider: "whatsapp")
     on_exit(fn -> JidoChatBridge.stop_runtime(config) end)
     assert Repo.aggregate(ChannelConfig, :count) == count + 1
+    assert has_element?(view, "#config-card-#{config.id}", "Support account")
+    assert has_element?(view, "#config-card-#{config.id}", "Active")
+    assert has_element?(view, "#config-card-#{config.id}", "WhatsApp - +15550001")
+    view |> element("#open-test-config-#{config.id}") |> render_click()
+    assert has_element?(view, "#test-connection-form label[for='test-recipient']", "Phone number")
+    assert has_element?(view, "#test-recipient[type='tel'][placeholder='e.g. 96170123456']")
+    view |> element("#test-connection-form button", "Close") |> render_click()
     assert has_element?(view, "#edit-config-#{config.id}")
     view |> element("#edit-config-#{config.id}") |> render_click()
     refute has_element?(view, "input[name='form[settings][jido_chat][bot_user_id]']")
