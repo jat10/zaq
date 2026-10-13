@@ -84,7 +84,7 @@
         :for={config <- @configs}
         id={"config-card-#{config.id}"}
         name={config.name}
-        provider={@provider_label}
+        provider={connector_provider_label(config, @provider_label)}
         url={config.url}
         enabled={config.enabled}
         connector_id={config.id}
@@ -119,13 +119,6 @@
           </div>
         </:detail>
         <:actions>
-          <ZaqWeb.Components.DesignSystem.Button.button
-            :if={@linked_device and config.enabled and BOActor.super_admin?(@current_user)}
-            id={"pair-config-#{config.id}"}
-            variant={:secondary}
-            phx-click="open_linked_device"
-            phx-value-id={config.id}
-          >Connect device</ZaqWeb.Components.DesignSystem.Button.button>
           <button
             id={"open-test-config-#{config.id}"}
             phx-click="open_test"
@@ -1212,7 +1205,7 @@
       </div>
 
       <p :if={@linked_device} class="zaq-text-body-sm">
-        Use Connect device to check this account’s connection or reconnect.
+        Use the status indicator to check this account’s connection or reconnect.
         <span :if={@provider == "whatsapp"}>History sync is disabled.</span>
       </p>
       <div :if={@kind != :data_source and not @linked_device} class="mb-4">
@@ -1654,14 +1647,20 @@
       </p>
       <form id="test-connection-form" phx-submit="run_test">
         <div class="mb-4">
-          <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
-            Channel ID
+          <label
+            for="test-recipient"
+            class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block"
+          >
+            {if @provider == "whatsapp", do: "Phone number", else: "Channel ID"}
           </label>
           <input
-            type="text"
+            id="test-recipient"
+            type={if @provider == "whatsapp", do: "tel", else: "text"}
             name="channel_id"
             value={@test_channel_id}
-            placeholder="e.g. abc123def456"
+            placeholder={
+              if @provider == "whatsapp", do: "e.g. 96170123456", else: "e.g. abc123def456"
+            }
             required
             class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black placeholder:text-black/30 text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
           />

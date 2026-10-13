@@ -5,9 +5,10 @@
 ### Linked-device integration
 
 WhatsApp uses the same `JidoChatBridge` registration and adapter listener contract
-as other Jido channels. `LinkedDevice.Config` supplies a stable
-`zaq_linked_device_<connector_id>` profile, split protocol storage, and both
-`sync_history: false` and `sync_full_history: false`. Persisted ingress settings
+as other Jido channels. `LinkedDevice` assembles trusted adapter startup options:
+a stable `zaq_linked_device_<connector_id>` profile, split protocol storage, and both
+`sync_history: false` and `sync_full_history: false`. The adapter passes these values
+in its child specs; the generic supervisor only starts those specs. Persisted ingress settings
 cannot override these values. The selected profile also scopes replies, edits,
 typing, reactions and direct-message operations. Multiple accounts remain independent.
 

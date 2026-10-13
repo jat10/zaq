@@ -30,7 +30,6 @@ defmodule Zaq.Channels.JidoChatBridge.State do
   alias Jido.Chat.EventEnvelope
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.JidoChatBridge.ListenerStatus
-  alias Zaq.Channels.LinkedDevice.Pairing
   alias Zaq.ConnectorConfig.Settings
 
   @type state :: %{
@@ -292,7 +291,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
            lifecycle_monitor: monitor,
            lifecycle_profile: payload.profile,
            lifecycle_attempt: payload.attempt_id,
-           ingress_status: Pairing.from_notification(payload)
+           ingress_status: ListenerStatus.from_lifecycle(payload)
        }}
     else
       {:noreply, state}
@@ -323,7 +322,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
         {:DOWN, ref, :process, source, _reason},
         %{lifecycle_monitor: ref, lifecycle_source: source} = state
       ) do
-    status = Pairing.from_notification(%{status: :disconnected, attempt_id: nil, qr: nil})
+    status = ListenerStatus.from_lifecycle(%{status: :disconnected, attempt_id: nil, qr: nil})
 
     {:noreply, %{state | lifecycle_monitor: nil, ingress_status: put_status_timestamp(status)}}
   end
