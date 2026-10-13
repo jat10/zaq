@@ -11,8 +11,9 @@ defmodule Zaq.Channels.LinkedDevice.Session do
   """
   use GenServer, restart: :temporary
   alias Jido.Chat.WhatsApp.ConnectionWorker
-  alias Zaq.Channels.{Bridge, CommunicationBridge}
-  alias Zaq.Channels.LinkedDevice.{Config, Pairing, Storage, TemporaryStorage}
+  alias Zaq.Channels.{Bridge, CommunicationBridge, LinkedDevice}
+  alias Zaq.Channels.JidoChatBridge.ListenerStatus
+  alias Zaq.Channels.LinkedDevice.{Storage, TemporaryStorage}
   alias Zaq.{Event, NodeRouter}
 
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts)
@@ -155,7 +156,7 @@ defmodule Zaq.Channels.LinkedDevice.Session do
 
   defp presentation(state) do
     status = ConnectionWorker.status(state.worker)
-    projected = Pairing.from_notification(status)
+    projected = ListenerStatus.from_lifecycle(status)
 
     case status do
       %{status: :connected, identity: %{phone_number: phone} = identity} when is_binary(phone) ->
@@ -252,7 +253,7 @@ defmodule Zaq.Channels.LinkedDevice.Session do
       credential_id: config.settings["credential_document_id"]
     }
 
-    with {:ok, profile} <- Config.profile(config),
+    with {:ok, profile} <- LinkedDevice.profile(config),
          :ok <- Storage.seed(Storage.new(binding: binding, profile: profile), snapshot),
          do: CommunicationBridge.sync_config_runtime(nil, config)
   rescue
