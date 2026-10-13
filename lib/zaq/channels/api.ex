@@ -35,7 +35,7 @@ defmodule Zaq.Channels.Api do
   alias Zaq.Accounts.BOActor
   alias Zaq.Channels.DeliveryConfirmation
   alias Zaq.Channels.HttpClient
-  alias Zaq.Channels.LinkedDevice
+  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Channels.MessageFormatter
   alias Zaq.Channels.Web.{Command, Context, Message}
@@ -104,7 +104,7 @@ defmodule Zaq.Channels.Api do
              lifecycle: %{profile: profile, attempt_id: _, status: _, qr: _} = payload
            } <- event.request,
            true <- is_integer(id) and id > 0 and is_pid(source) and is_binary(profile),
-           {:ok, ^profile} <- LinkedDevice.profile(%{id: id}),
+           {:ok, ^profile} <- SessionStorage.profile(%{id: id}),
            %{ingress_mode: :linked_device} <- Bridge.provider_config(provider),
            {:ok, pid} <- Zaq.Channels.Supervisor.lookup_state_pid("#{provider}_#{id}") do
         GenServer.cast(
