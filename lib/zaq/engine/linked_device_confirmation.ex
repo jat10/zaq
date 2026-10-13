@@ -2,10 +2,11 @@ defmodule Zaq.Engine.LinkedDeviceConfirmation do
   @moduledoc """
   Atomically creates a confirmed WhatsApp connector and its encrypted pairing state.
 
-  Accepts only the Channels-owned frozen snapshot via the trusted runtime Action.
+  Accepts the package-owned frozen snapshot via the trusted Channels runtime Action.
   The attempt UUID serializes repeated confirmations, including a lost response;
   persistence never starts a connection while the transaction is open. Channels
-  excludes volatile messaging sessions and seeds them locally after this commits.
+  supplies authorized callbacks; the package excludes volatile messaging sessions
+  and seeds its local RAM backend after this commits.
   """
   import Ecto.Query
   alias Ecto.Adapters.SQL

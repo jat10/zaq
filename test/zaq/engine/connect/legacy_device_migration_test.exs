@@ -1,6 +1,7 @@
 defmodule Zaq.Engine.Connect.LegacyDeviceMigrationTest do
   use Zaq.DataCase, async: true
-  alias Zaq.Channels.LinkedDevice.Storage
+  alias Jido.Chat.WhatsApp.Storage.Split, as: Storage
+  alias Zaq.Channels.LinkedDevice
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Connect
   alias Zaq.Engine.Connect.{Credential, Grant, LegacyDeviceMigration}
@@ -34,7 +35,7 @@ defmodule Zaq.Engine.Connect.LegacyDeviceMigrationTest do
 
       assert {:ok, ^expected} =
                Storage.get(
-                 Storage.new(binding: binding, profile: profile),
+                 Storage.new(LinkedDevice.storage_options(binding, profile)),
                  profile,
                  :creds,
                  :self
