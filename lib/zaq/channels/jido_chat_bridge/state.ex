@@ -117,6 +117,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
        chat: build_chat(config, provider, handler_opts),
        ingress_status: nil,
        lifecycle_source: nil,
+       lifecycle_monitor: nil,
        lifecycle_attempt: nil,
        lifecycle_profile: nil,
        # Most jido_chat adapters have a single listener today. Keep the monitor
@@ -282,10 +283,13 @@ defmodule Zaq.Channels.JidoChatBridge.State do
         current_lifecycle?(current, source, state.lifecycle_attempt, payload)
 
     if accepted do
+      monitor = monitor_lifecycle_source(state, source)
+
       {:noreply,
        %{
          state
          | lifecycle_source: source,
+           lifecycle_monitor: monitor,
            lifecycle_profile: payload.profile,
            lifecycle_attempt: payload.attempt_id,
            ingress_status: Pairing.from_notification(payload)
@@ -315,6 +319,15 @@ defmodule Zaq.Channels.JidoChatBridge.State do
   end
 
   @impl GenServer
+  def handle_info(
+        {:DOWN, ref, :process, source, _reason},
+        %{lifecycle_monitor: ref, lifecycle_source: source} = state
+      ) do
+    status = Pairing.from_notification(%{status: :disconnected, attempt_id: nil, qr: nil})
+
+    {:noreply, %{state | lifecycle_monitor: nil, ingress_status: put_status_timestamp(status)}}
+  end
+
   def handle_info({:DOWN, ref, :process, _pid, reason}, state) do
     case Map.pop(state.listener_monitors, ref) do
       {nil, _monitors} ->
@@ -325,7 +338,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
 
         status =
           if state.lifecycle_source,
-            do: Pairing.from_notification(%{status: :disconnected, attempt_id: nil, qr: nil}),
+            do: nil,
             else: ListenerStatus.from_exit_reason(reason)
 
         case status do
@@ -333,6 +346,18 @@ defmodule Zaq.Channels.JidoChatBridge.State do
           status -> {:noreply, %{next_state | ingress_status: put_status_timestamp(status)}}
         end
     end
+  end
+
+  # Linked-device adapters own their connection generations. Their dispatcher
+  # dies with the worker and changes on restart, unlike the original listener
+  # PID list supplied by the generic supervisor. Older listener exits must not
+  # overwrite a newer generation's lifecycle status.
+  defp monitor_lifecycle_source(%{lifecycle_source: source, lifecycle_monitor: ref}, source),
+    do: ref
+
+  defp monitor_lifecycle_source(state, source) do
+    if state.lifecycle_monitor, do: Process.demonitor(state.lifecycle_monitor, [:flush])
+    Process.monitor(source)
   end
 
   defp ok_ingress_status do

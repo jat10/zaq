@@ -12,6 +12,9 @@ defmodule Zaq.Channels.LinkedDevice do
   alias Zaq.Event
   alias Zaq.NodeRouter
 
+  @lifecycle_retry_interval 25
+  @lifecycle_retries 200
+
   @doc "Enriches linked-device options; all other adapters retain their normal options."
   def listener_opts(config, opts) do
     case Bridge.provider_config(config.provider) do
@@ -35,16 +38,34 @@ defmodule Zaq.Channels.LinkedDevice do
     end
   end
 
-  @doc "Relays normalized lifecycle through the confidential Channels boundary."
+  @doc """
+  Relays normalized lifecycle through the confidential Channels boundary.
+
+  The adapter's ordered dispatcher may run before the runtime is registered.
+  Retry only that transient response with a bounded startup retry budget,
+  retaining the original source PID and event order. Authorization and other
+  errors propagate.
+  """
+  @spec from_lifecycle(atom() | String.t(), pos_integer(), map(), keyword()) ::
+          :ok | {:error, term()}
   def from_lifecycle(provider, config_id, payload, _opts) do
     Event.new(
       %{provider: provider, channel_config_id: config_id, source: self(), lifecycle: payload},
       :channels,
       opts: [action: :channel_ingress_lifecycle, confidential: true, channel_runtime: true]
     )
-    |> NodeRouter.dispatch()
+    |> dispatch_lifecycle(@lifecycle_retries)
+  end
 
-    :ok
+  defp dispatch_lifecycle(event, retries) do
+    case NodeRouter.dispatch(event).response do
+      {:error, :runtime_not_ready} when retries > 0 ->
+        Process.sleep(@lifecycle_retry_interval)
+        dispatch_lifecycle(event, retries - 1)
+
+      response ->
+        response
+    end
   end
 
   @doc "Returns the exact bridge's in-memory pairing presentation."
