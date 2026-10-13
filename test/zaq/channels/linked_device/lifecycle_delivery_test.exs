@@ -1,7 +1,7 @@
 defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
   use Zaq.DataCase, async: false
 
-  alias Zaq.Channels.{Api, BridgeSupervisor, LinkedDevice}
+  alias Zaq.Channels.{Api, BridgeSupervisor, JidoChatBridge}
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.Event
 
@@ -32,7 +32,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
     end
 
     assert {:error, :unauthorized} =
-             LinkedDevice.from_lifecycle("mattermost", 999_999_999, event.request.lifecycle, [])
+             JidoChatBridge.from_lifecycle("mattermost", 999_999_999, event.request.lifecycle, [])
   end
 
   test "startup lifecycle waits for registration and preserves source and event order" do
@@ -63,7 +63,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
       start_supervised!(
         {Task,
          fn ->
-           result = LinkedDevice.from_lifecycle("whatsapp", id, payload, [])
+           result = JidoChatBridge.from_lifecycle("whatsapp", id, payload, [])
            send(owner, {:delivered, self(), result})
 
            receive do
@@ -71,7 +71,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
            end
 
            result =
-             LinkedDevice.from_lifecycle(
+             JidoChatBridge.from_lifecycle(
                "whatsapp",
                id,
                %{payload | status: :connected, qr: nil},
@@ -108,7 +108,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
     id = 999_999_998
 
     assert {:error, :runtime_not_ready} =
-             LinkedDevice.from_lifecycle("whatsapp", id, event(id).request.lifecycle, [])
+             JidoChatBridge.from_lifecycle("whatsapp", id, event(id).request.lifecycle, [])
   end
 
   defp event(id) do
