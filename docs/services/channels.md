@@ -27,8 +27,10 @@ Explicit runtime stop shuts down the adapter connection and retains credentials.
 bridge state. The `jido_chat_whatsapp` OTP application owns shared transport startup
 and recovery. Transport infrastructure failure terminates affected listeners so
 their existing restart policy can restore connections without restarting unrelated
-bridges or resetting limiter counters. Channels starts its RAM session store before
-`BridgeSupervisor`; rest-for-one ordering rebuilds bridges after a store failure.
+bridges or resetting limiter counters. Channels explicitly starts
+`Jido.Chat.WhatsApp.Storage.Runtime` with `require_ram_schema: true` before
+`BridgeSupervisor`. Its isolated backend replacement invalidates only dependent
+WhatsApp listeners; loss of the whole storage runtime rebuilds later bridges.
 A limiter supervisor failure also rebuilds the later store and bridge children. The adapter refuses
 duplicate profile ownership rather than adopting another listener's connection.
 This does not provide distributed fencing across disconnected clusters sharing a DB.
@@ -53,17 +55,17 @@ name falls back to the phone number; an unavailable phone number cannot be confi
 Manual bot ID/mention fields are omitted for WhatsApp, including when editing.
 
 The confidential Channels `:pair_linked_device` Action authorizes current super
-admins. `LinkedDevice.Session` owns an operator-scoped provisional connection with
+admins. The package's `PairingSession` owns an operator-scoped provisional connection with
 bounded, memory-only storage. It discards chat ingress and expires after three
 minutes or browser disconnect. Cancellation attempts logout and stops the temporary
 runtime. QR codes and session records never enter BO persistence or workflow events.
 
-Confirmation stops protocol writes before taking a snapshot. Channels excludes
+Confirmation stops protocol writes before taking a snapshot. The package excludes
 messaging sessions and group sender keys from the durable snapshot. Engine's trusted
 runtime `:confirm_linked_device` Action creates the connector and canonical encrypted
 credential document in one transaction, using an attempt UUID for repeat-request
 idempotence. Persistence failures retain the frozen snapshot for retry within the
-pairing window. After persistence, Channels seeds the volatile records once into
+pairing window. After persistence, the package seeds the volatile records once into
 Mnesia, then starts the normal bridge. A late snapshot cannot overwrite advanced
 sessions or resurrect cleared keys. A RAM-seeding or startup failure is reported as
 saved with connection pending, not a failed save. On server restart,
@@ -76,14 +78,15 @@ new onboarding modal cancels the provisional session. Existing connector retries
 preserve encrypted state. The shared component is in Storybook under
 `/storybook/modals/linked_device_pairing`.
 
-`LinkedDevice.Storage` routes pairing credentials (`creds`) and supporting protocol
-records through the [canonical credential document operation](engine.md#connector-credential-documents).
+`Jido.Chat.WhatsApp.Storage.Split` routes pairing credentials (`creds`) and supporting
+protocol records through the host's `LinkedDevice.document/2` callback and the
+[canonical credential document operation](engine.md#connector-credential-documents).
 Only the credential reference is stored in connector settings; these records live
 in the encrypted canonical org `api_key` grant. Credentials can change after pairing
 (for example, one-time prekeys), and those changes still persist.
 
 The frequently updated `session` and `sender_key` namespaces instead live in
-`LinkedDevice.SessionStorage`, a node-local Mnesia `ram_copies` table with a RAM-only
+the package's `Storage.Mnesia`, a node-local Mnesia `ram_copies` table with a RAM-only
 schema. There are no disk writes, checkpoints, replication or database fallback for
 these namespaces. Individual record updates are transactional and bounded to 1 MiB
 per encoded value and 16 MiB per connector/credential/profile scope. Every callback
@@ -111,10 +114,16 @@ before applying it. Corrupt or conflicting source state aborts the transaction.
 Rollback requires restoring that backup; the old storage API and credential kind
 are removed. See [system configuration](system-config.md#connector-session-state).
 
-For local testing before the adapter changes are published, set
-`JIDO_CHAT_WHATSAPP_PATH=../jido_chat_whatsapp` for Mix commands and the server.
-The override is accepted only in dev/test. Production still requires pinning the
-published adapter revision; that release gate remains tracked in `work-f83.8`.
+The WhatsApp adapter uses the GitHub dependency declared in `mix.exs`, pinned to
+the tested revision in `mix.lock`; a sibling checkout is no longer required.
+Stop saved and provisional listeners during rollout/rollback; pairing remains in
+Connect, but volatile sessions start empty and decryption may need re-establishment.
+
+The former `lib/zaq/channels/linked_device/` modules are removed. The existing
+`LinkedDevice` facade supplies host configuration, credential-document callbacks,
+connector confirmation and bridge startup; package `PairingSession`, `Storage.Split`,
+`Storage.Temporary` and `Storage.Mnesia` own generic mechanics. No raw snapshots are
+returned to BO. Persistence callbacks use the existing confidential Engine Actions.
 
 For normalization, identity resolution and confirmed delivery call chains across
 roles, see the [message lifecycle sequences](message-lifecycle.md).
@@ -1340,10 +1349,11 @@ See [Web transport contracts](#web-transport-contracts) for initialization, hist
 It uses `Supervisor` with `:rest_for_one` and starts these children in order:
 
 1. `Zaq.Channels.PeopleAuthRateLimiter` — failed-identification counters and config cache.
-2. `Zaq.Channels.LinkedDevice.SessionStorage` — initializes the RAM-only Mnesia table before listeners start.
+2. `Jido.Chat.WhatsApp.Storage.Runtime` — explicitly configured package infrastructure for RAM storage.
 3. `Zaq.Channels.BridgeSupervisor` — `DynamicSupervisor` for bridge state, listeners and temporary pairing sessions.
 
-Session-store failure restarts later bridge processes and preserves limiter
+Backend failure invalidates dependent WhatsApp listeners within the isolated
+package restart domain. Failure of the entire storage runtime restarts later bridge processes and preserves limiter
 counters and cache. A limiter-supervisor failure resets its local resources and
 restarts the later store and bridges. Parent shutdown stops all its children and
 their adapter connections. WhatsApp's shared transport infrastructure remains

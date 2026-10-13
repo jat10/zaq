@@ -7,12 +7,12 @@ defmodule Zaq.Channels.Actions.PairLinkedDevice do
     output_schema: Zoi.object(%{result: Zoi.any()})
 
   alias Zaq.Accounts.BOActor
-  alias Zaq.Channels.LinkedDevice.Session
+  alias Zaq.Channels.LinkedDevice
 
   def run(%{request: request}, %{actor: actor, confidential: true}) do
     case BOActor.current_user(actor) do
       {:ok, %{id: id, role: %{name: "super_admin"}}} ->
-        {:ok, %{result: Session.execute(request, id, actor)}}
+        {:ok, %{result: LinkedDevice.pair(request, id, actor)}}
 
       _ ->
         {:error, :unauthorized}
