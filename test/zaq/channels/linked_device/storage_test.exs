@@ -1,26 +1,57 @@
-defmodule Zaq.Channels.LinkedDevice.StorageTest do
+defmodule Zaq.Channels.JidoChatBridge.StorageTest do
   use Zaq.DataCase, async: true
 
   alias Jido.Chat.WhatsApp.Transport.GuardedStorage
 
   alias Jido.Chat.WhatsApp.Storage.{Mnesia, Split}
   alias Split, as: Storage
-  alias Zaq.Channels.LinkedDevice
+  alias Zaq.Channels.JidoChatBridge
+  alias Zaq.Channels.JidoChatBridge.{Pairing, SessionStorage}
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Connect
   alias Zaq.Engine.Connect.Grant
   alias Zaq.Event
   alias Zaq.NodeRouter
 
+  test "shared bridge child specs enforce trusted storage and lifecycle callbacks" do
+    config = connector()
+
+    config = %{
+      config
+      | settings: %{
+          "jido_chat" => %{
+            "ingress" => %{
+              "profile" => "foreign",
+              "storage_root" => "/tmp/untrusted",
+              "config" => %{"sync_history" => true, "sync_full_history" => true}
+            }
+          }
+        }
+    }
+
+    runtime_config = ChannelConfig.to_runtime_config(config)
+
+    assert {:ok, {_state, [spec]}} = JidoChatBridge.build_runtime_specs(runtime_config)
+    assert {Jido.Chat.WhatsApp.ConnectionWorker, :start_link, [opts]} = spec.start
+    assert opts[:config].profile == "zaq_linked_device_#{config.id}"
+    refute opts[:config].sync_history
+    refute opts[:config].sync_full_history
+    refute Map.has_key?(opts[:config], :storage_root)
+    assert {Split, storage_opts} = opts[:config].storage
+    assert storage_opts[:context].channel_config_id == config.id
+    assert storage_opts[:document_mfa] == {SessionStorage, :document, []}
+    assert opts[:lifecycle_sink_mfa] == {JidoChatBridge, :from_lifecycle, ["whatsapp", config.id]}
+  end
+
   test "provisioning is idempotent and persisted terms survive a new callback instance" do
     config = connector()
     assert {:ok, binding} = bind(config.id)
     assert {:ok, ^binding} = bind(config.id)
     profile = "zaq_linked_device_#{config.id}"
-    storage = Storage.new(LinkedDevice.storage_options(binding, profile))
+    storage = Storage.new(SessionStorage.storage_options(binding, profile))
     value = %{private: <<255, 0, 10>>, nested: {:paired, [1, 2]}}
     assert :ok = Storage.put(storage, profile, :creds, :self, value)
-    restored = Storage.new(LinkedDevice.storage_options(binding, profile))
+    restored = Storage.new(SessionStorage.storage_options(binding, profile))
     assert {:ok, ^value} = Storage.get(restored, profile, :creds, :self)
     assert {:ok, [:self]} = Storage.list_keys(restored, profile, :creds)
     assert {:ok, [^profile]} = Storage.list_profiles(restored)
@@ -35,7 +66,7 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
     config = connector()
     {:ok, binding} = bind(config.id)
     profile = "zaq_linked_device_#{config.id}"
-    storage = Storage.new(LinkedDevice.storage_options(binding, profile))
+    storage = Storage.new(SessionStorage.storage_options(binding, profile))
     disabled = Repo.update!(Ecto.Changeset.change(config, enabled: false))
     assert {:error, :connector_unavailable} = bind(config.id)
     assert {:error, :connector_unavailable} = Storage.get(storage, profile, :creds, :self)
@@ -53,13 +84,13 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
     value = %{private: <<255, 0, 10>>, nested: {:paired, [1, 2]}}
 
     assert {:ok, %{runtime: config, storage: opts}} =
-             LinkedDevice.confirm_pairing(actor, %{
+             Pairing.confirm_pairing(actor, %{
                attempt_id: Ecto.UUID.generate(),
                identity: %{phone_number: "+15550001"},
                records: %{{:creds, :self} => value, {:prekey, 42} => <<0, 255>>}
              })
 
-    {:ok, profile} = LinkedDevice.profile(config)
+    {:ok, profile} = SessionStorage.profile(config)
     storage = Storage.new(opts)
     assert {:ok, ^value} = Storage.get(storage, profile, :creds, :self)
     assert {:ok, <<0, 255>>} = Storage.get(storage, profile, :prekey, 42)
@@ -75,7 +106,7 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
 
     guard =
       GuardedStorage.new(
-        storage: {Storage, LinkedDevice.storage_options(binding, profile)},
+        storage: {Storage, SessionStorage.storage_options(binding, profile)},
         notify: self()
       )
 
@@ -187,7 +218,7 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
     config = connector()
     {:ok, binding} = bind(config.id)
     profile = "zaq_linked_device_#{config.id}"
-    storage = Storage.new(LinkedDevice.storage_options(binding, profile))
+    storage = Storage.new(SessionStorage.storage_options(binding, profile))
 
     on_exit(fn ->
       Mnesia.clear(storage.volatile, profile)

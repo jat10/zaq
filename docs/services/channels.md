@@ -5,7 +5,8 @@
 ### Linked-device integration
 
 WhatsApp uses the same `JidoChatBridge` registration and adapter listener contract
-as other Jido channels. `LinkedDevice` assembles trusted adapter startup options:
+as other Jido channels. `JidoChatBridge` assembles trusted adapter startup options
+using `JidoChatBridge.SessionStorage` for credential bindings:
 a stable `zaq_linked_device_<connector_id>` profile, split protocol storage, and both
 `sync_history: false` and `sync_full_history: false`. The adapter passes these values
 in its child specs; the generic supervisor only starts those specs. Persisted ingress settings
@@ -27,11 +28,13 @@ Explicit runtime stop shuts down the adapter connection and retains credentials.
 bridge state. The `jido_chat_whatsapp` OTP application owns shared transport startup
 and recovery. Transport infrastructure failure terminates affected listeners so
 their existing restart policy can restore connections without restarting unrelated
-bridges or resetting limiter counters. Channels explicitly starts
-`Jido.Chat.WhatsApp.Storage.Runtime` with `require_ram_schema: true` before
-`BridgeSupervisor`. Its isolated backend replacement invalidates only dependent
-WhatsApp listeners; loss of the whole storage runtime rebuilds later bridges.
-A limiter supervisor failure also rebuilds the later store and bridge children. The adapter refuses
+bridges or resetting limiter counters. `JidoChatBridge` supplies
+`Jido.Chat.WhatsApp.Storage.Runtime` with `require_ram_schema: true` through the
+provider-infrastructure path. `BridgeSupervisor` starts it once as
+`provider:whatsapp` before loading saved connectors. Backend and whole-storage-runtime outages pause only dependent WhatsApp
+connections. Workers retry storage readiness without consuming the shared bridge
+supervisor restart budget; unrelated providers retain their processes. Channels
+uses one-for-one recovery, including for limiter supervisor failures. The adapter refuses
 duplicate profile ownership rather than adopting another listener's connection.
 This does not provide distributed fencing across disconnected clusters sharing a DB.
 
@@ -79,7 +82,7 @@ preserve encrypted state. The shared component is in Storybook under
 `/storybook/modals/linked_device_pairing`.
 
 `Jido.Chat.WhatsApp.Storage.Split` routes pairing credentials (`creds`) and supporting
-protocol records through the host's `LinkedDevice.document/2` callback and the
+protocol records through the host's `JidoChatBridge.SessionStorage.document/2` callback and the
 [canonical credential document operation](engine.md#connector-credential-documents).
 Only the credential reference is stored in connector settings; these records live
 in the encrypted canonical org `api_key` grant. Credentials can change after pairing
@@ -116,10 +119,12 @@ the tested revision in `mix.lock`; a sibling checkout is no longer required.
 Stop saved and provisional listeners during rollout/rollback; pairing remains in
 Connect, but volatile sessions start empty and decryption may need re-establishment.
 
-The former `lib/zaq/channels/linked_device/` modules are removed. The existing
-`LinkedDevice` facade supplies host configuration, credential-document callbacks,
-connector confirmation and bridge startup; package `PairingSession`, `Storage.Split`,
-`Storage.Temporary` and `Storage.Mnesia` own generic mechanics. No raw snapshots are
+`JidoChatBridge` owns saved-listener options, lifecycle forwarding and status
+through its shared runtime path. `JidoChatBridge.SessionStorage` owns credential
+bindings and Engine storage callbacks; `JidoChatBridge.Pairing` connects the existing
+pairing Action to Engine confirmation and normal bridge startup. Package
+`PairingSession`, `Storage.Split`, `Storage.Temporary` and `Storage.Mnesia` own
+generic mechanics. No raw snapshots are
 returned to BO. Persistence callbacks use the existing confidential Engine Actions.
 
 For normalization, identity resolution and confirmed delivery call chains across
@@ -1303,18 +1308,27 @@ See [Web transport contracts](#web-transport-contracts) for initialization, hist
 ## Supervisor
 
 `Zaq.Channels.Supervisor` is the single Channels supervisor child of the application.
-It uses `Supervisor` with `:rest_for_one` and starts these children in order:
+It uses `Supervisor` with `:one_for_one` and starts these children in order:
 
 1. `Zaq.Channels.PeopleAuthRateLimiter` — failed-identification counters and config cache.
-2. `Jido.Chat.WhatsApp.Storage.Runtime` — explicitly configured package infrastructure for RAM storage.
-3. `Zaq.Channels.BridgeSupervisor` — `DynamicSupervisor` for bridge state, listeners and temporary pairing sessions.
+2. `Zaq.Channels.BridgeSupervisor` — `DynamicSupervisor` for provider infrastructure, bridge state, listeners and temporary pairing sessions.
 
-Backend failure invalidates dependent WhatsApp listeners within the isolated
-package restart domain. Failure of the entire storage runtime restarts later bridge processes and preserves limiter
-counters and cache. A limiter-supervisor failure resets its local resources and
-restarts the later store and bridges. Parent shutdown stops all its children and
+For a configured linked-device provider, `JidoChatBridge` supplies the shared
+package storage runtime during provider bootstrap, before connector startup.
+The WhatsApp runtime uses the distinct `provider:whatsapp` registry entry, even
+when no connector has been saved yet, so provisional pairing can use it. The
+Channels parent contains no WhatsApp-specific child.
+
+Backend and whole-storage-runtime failures pause dependent WhatsApp connections
+and retry readiness inside their workers. They preserve the bridge supervisor,
+unrelated listeners, and limiter counters/cache. A limiter-supervisor failure
+resets only its own local resources. Parent shutdown stops all its children and
 their adapter connections. WhatsApp's shared transport infrastructure remains
-owned by the adapter package's OTP application.
+owned by the adapter package's OTP application. Bridge-supervisor restart also
+recreates its storage child; the package retains Mnesia tables, while old handles
+are fenced and new connections acquire fresh generations. Repeated failure of
+the entire storage-runtime supervisor can exhaust the shared bridge restart
+budget; ordinary backend replacement remains inside the package runtime.
 
 The widget's shared `{WebWidget, opts}` and connector supervisors are dynamic bridge
 children; neither the application nor the static Channels parent knows widget options.
