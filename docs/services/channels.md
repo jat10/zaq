@@ -107,12 +107,9 @@ scope. Missing records differ from unreadable/unavailable state; the adapter gua
 latches storage failures and stops protocol progress. No callback calls a provider
 process while waiting for a database transaction.
 
-The forward `migrate_linked_device_documents` migration preserves existing credential
-IDs and paired state, including disabled accounts, and removes legacy tables only
-after all conversions succeed. Stop application runtimes and back up the database
-before applying it. Corrupt or conflicting source state aborts the transaction.
-Rollback requires restoring that backup; the old storage API and credential kind
-are removed. See [system configuration](system-config.md#connector-session-state).
+Linked-device persistence uses the existing Connect credential and grant tables;
+no dedicated linked-device tables or schema migration are required. See
+[system configuration](system-config.md#connector-session-state).
 
 The WhatsApp adapter uses the GitHub dependency declared in `mix.exs`, pinned to
 the tested revision in `mix.lock`; a sibling checkout is no longer required.

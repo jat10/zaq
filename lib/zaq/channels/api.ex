@@ -30,6 +30,7 @@ defmodule Zaq.Channels.Api do
     WebBridge
   }
 
+  alias Zaq.Accounts.BOActor
   alias Zaq.Channels.DeliveryConfirmation
   alias Zaq.Channels.HttpClient
   alias Zaq.Channels.LinkedDevice
@@ -1229,10 +1230,9 @@ defmodule Zaq.Channels.Api do
     end
   end
 
-  defp authorize_pairing_operator(%Event{actor: %{user_id: id}, opts: opts})
-       when is_integer(id) do
+  defp authorize_pairing_operator(%Event{actor: actor, opts: opts}) do
     with true <- Keyword.get(opts, :confidential) == true,
-         %{role: %{name: "super_admin"}} <- Zaq.Accounts.get_user(id) do
+         {:ok, %{role: %{name: "super_admin"}}} <- BOActor.current_user(actor) do
       :ok
     else
       _ -> {:error, :unauthorized}

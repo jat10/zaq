@@ -23,6 +23,69 @@ defmodule Zaq.Engine.Connect.CredentialDocumentsTest do
     end
   end
 
+  property "batched binary records round-trip without replacing unrelated records", %{
+    binding: binding
+  } do
+    assert :ok = put(binding, "untouched", "key", "kept")
+
+    check all(
+            values <-
+              map_of(string(:alphanumeric, min_length: 1), binary(max_length: 1024),
+                min_length: 1,
+                max_length: 12
+              ),
+            max_runs: 20
+          ) do
+      records = Map.new(values, fn {key, value} -> {{"batch", key}, value} end)
+      assert :ok = request(binding, :put_many, %{records: records})
+
+      for {key, value} <- values, do: assert({:ok, ^value} = get(binding, "batch", key))
+      assert {:ok, "kept"} = get(binding, "untouched", "key")
+    end
+  end
+
+  test "a batch emits one mutation and identical batches are silent", %{binding: binding} do
+    records = %{{"a", "one"} => "first", {"b", "two"} => "second"}
+    count = Repo.aggregate(Oban.Job, :count)
+    assert :ok = request(binding, :put_many, %{records: records})
+    assert Repo.aggregate(Oban.Job, :count) == count + 1
+    assert :ok = request(binding, :put_many, %{records: records})
+    assert Repo.aggregate(Oban.Job, :count) == count + 1
+    assert :ok = request(binding, :put_many, %{records: %{}})
+    assert Repo.aggregate(Oban.Job, :count) == count + 1
+  end
+
+  test "invalid batches and outer rollback preserve existing records", %{binding: binding} do
+    assert :ok = put(binding, "a", "key", "original")
+
+    for invalid <- [
+          %{{"", "key"} => "bad"},
+          %{{"a", "key"} => :not_binary},
+          %{"malformed" => "bad"},
+          %{{"a", "large"} => :binary.copy("x", 1_048_577)}
+        ] do
+      records = Map.put(invalid, {"a", "new"}, "must-not-persist")
+      assert {:error, :invalid_request} = request(binding, :put_many, %{records: records})
+      assert :error = get(binding, "a", "new")
+      assert {:ok, "original"} = get(binding, "a", "key")
+    end
+
+    assert {:error, :rollback} =
+             Repo.transaction(fn ->
+               assert :ok =
+                        Connect.credential_document(%{
+                          op: :put_many,
+                          binding: binding,
+                          records: %{{"a", "key"} => "replacement", {"a", "new"} => "new"}
+                        })
+
+               Repo.rollback(:rollback)
+             end)
+
+    assert {:ok, "original"} = get(binding, "a", "key")
+    assert :error = get(binding, "a", "new")
+  end
+
   test "namespaces and connector bindings are independent", %{binding: binding} do
     other = credential_document_fixture()
     assert :ok = put(binding, "a", "key", "one")
@@ -105,6 +168,10 @@ defmodule Zaq.Engine.Connect.CredentialDocumentsTest do
     disabled = Repo.update!(Ecto.Changeset.change(config, enabled: false))
     assert {:error, :connector_unavailable} = get(binding, "session", "peer")
     assert {:error, :connector_unavailable} = put(binding, "session", "peer", "lost")
+
+    assert {:error, :connector_unavailable} =
+             request(binding, :put_many, %{records: %{{"session", "peer"} => "lost"}})
+
     Repo.update!(Ecto.Changeset.change(disabled, enabled: true))
     assert {:ok, "kept"} = get(binding, "session", "peer")
     assert {:ok, _} = ChannelConfig.archive(config)
@@ -113,6 +180,10 @@ defmodule Zaq.Engine.Connect.CredentialDocumentsTest do
 
   test "revoked and missing grants are never recreated by writes", %{binding: binding} do
     assert {:ok, _} = Connect.revoke_credential_grant(binding.credential_id, :org)
+
+    assert {:error, :credential_revoked} =
+             request(binding, :put_many, %{records: %{{"a", "key"} => "lost"}})
+
     assert {:error, :credential_revoked} = put(binding, "a", "b", "new")
     assert Repo.get_by!(Grant, credential_id: binding.credential_id).status == "revoked"
     assert {:ok, _} = Connect.remove_credential_grant(binding.credential_id, :org)
@@ -213,6 +284,13 @@ defmodule Zaq.Engine.Connect.CredentialDocumentsTest do
              Connect.replace_credential_grant(binding.credential_id, :org, %{api_key: document})
 
     assert {:error, :document_too_large} = put(binding, "session", "12", value)
+
+    assert {:error, :document_too_large} =
+             request(binding, :put_many, %{
+               records: %{{"session", "12"} => value, {"other", "new"} => "new"}
+             })
+
+    assert :error = get(binding, "other", "new")
     assert :error = get(binding, "session", "12")
     assert {:ok, ^value} = get(binding, "session", "1")
   end
