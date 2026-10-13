@@ -20,6 +20,10 @@ defmodule Zaq.Engine.Connect.CredentialDocuments do
   Operations compose with an outer Engine transaction, whose caller owns commit.
   The routed operation returns only after its transaction commits.
 
+  `:put_many` merges a map of `{namespace, key} => binary` records in one grant
+  replacement and notification. It shares the single-write validation and limits;
+  invalid batches leave the document unchanged and identical batches are silent.
+
   Version 1 is JSON with `version` and `records` (namespace/key/Base64 value).
   Documents are bounded to 16 MiB, binary values to 1 MiB and UTF-8 addresses to
   512 bytes. This data is private runtime state, never HTTP authentication.
@@ -174,14 +178,23 @@ defmodule Zaq.Engine.Connect.CredentialDocuments do
        do: address?(namespace)
 
   defp valid_operation?(%{op: :put, namespace: namespace, key: key, value: value}) do
-    address?(namespace) and address?(key) and is_binary(value) and
-      byte_size(value) <= @max_value_bytes
+    valid_write?({{namespace, key}, value})
   end
+
+  defp valid_operation?(%{op: :put_many, records: records}) when is_map(records),
+    do: Enum.all?(records, &valid_write?/1)
 
   defp valid_operation?(%{op: op, namespace: namespace, key: key}) when op in [:get, :delete],
     do: address?(namespace) and address?(key)
 
   defp valid_operation?(_), do: false
+
+  defp valid_write?({{namespace, key}, value}) do
+    address?(namespace) and address?(key) and is_binary(value) and
+      byte_size(value) <= @max_value_bytes
+  end
+
+  defp valid_write?(_), do: false
 
   defp address?(value) when is_binary(value),
     do: byte_size(value) in 1..512 and String.valid?(value)
@@ -233,6 +246,16 @@ defmodule Zaq.Engine.Connect.CredentialDocuments do
   defp operate(%{op: :put, namespace: namespace, key: key, value: value}, records) do
     namespace_records = records |> Map.get(namespace, %{}) |> Map.put(key, Base.encode64(value))
     {:ok, Map.put(records, namespace, namespace_records)}
+  end
+
+  defp operate(%{op: :put_many, records: writes}, records) do
+    updated =
+      Enum.reduce(writes, records, fn {{namespace, key}, value}, acc ->
+        {:ok, updated} = operate(%{op: :put, namespace: namespace, key: key, value: value}, acc)
+        updated
+      end)
+
+    {:ok, updated}
   end
 
   defp operate(%{op: :delete, namespace: namespace, key: key}, records) do
