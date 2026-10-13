@@ -163,7 +163,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
     assert connection_config.profile == profile
     assert connection_config.sync_history == false
     assert connection_config.sync_full_history == false
-    assert {Zaq.Channels.LinkedDevice.Storage, _} = connection_config.storage
+    assert {Jido.Chat.WhatsApp.Storage.Split, _} = connection_config.storage
     refute Map.has_key?(connection_config, :storage_root)
     await_pairing(config)
 

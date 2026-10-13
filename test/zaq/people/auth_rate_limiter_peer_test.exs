@@ -1,6 +1,6 @@
 defmodule Zaq.People.AuthRateLimiterPeerTest do
   use ExUnit.Case, async: false
-  alias Zaq.Channels.LinkedDevice.SessionStorage
+  alias Jido.Chat.WhatsApp.Storage.Runtime, as: SessionStorage
   alias Zaq.Channels.PeopleAuthRateLimiter, as: Ingress
   alias Zaq.People.AuthRateLimiter
   alias Zaq.TestSupport.PeopleAuthPeer
@@ -42,7 +42,7 @@ defmodule Zaq.People.AuthRateLimiterPeerTest do
 
         assert :ram_copies ==
                  :peer.call(control, :mnesia, :table_info, [
-                   :zaq_linked_device_sessions,
+                   :jido_chat_whatsapp_sessions,
                    :storage_type
                  ])
 
@@ -55,7 +55,9 @@ defmodule Zaq.People.AuthRateLimiterPeerTest do
         assert nil == :peer.call(control, Process, :whereis, [Zaq.Channels.BridgeSupervisor])
         assert nil == :peer.call(control, Process, :whereis, [Ingress])
 
-        refute :zaq_linked_device_sessions in :peer.call(control, :mnesia, :system_info, [:tables])
+        refute :jido_chat_whatsapp_sessions in :peer.call(control, :mnesia, :system_info, [
+                 :tables
+               ])
       end
 
       if :engine in roles do

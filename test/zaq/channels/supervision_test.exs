@@ -1,9 +1,9 @@
 defmodule Zaq.Channels.SupervisionTest do
   use Zaq.DataCase, async: false
 
+  alias Jido.Chat.WhatsApp.Storage.Runtime, as: SessionStorage
   alias Zaq.Channels.BridgeSupervisor
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Channels.LinkedDevice.SessionStorage
   alias Zaq.Channels.PeopleAuthRateLimiter, as: Ingress
   alias Zaq.Channels.Supervisor, as: Channels
   alias Zaq.Engine.ChannelConfig
@@ -92,11 +92,11 @@ defmodule Zaq.Channels.SupervisionTest do
 
     assert widget == Process.whereis(WebWidget.Supervisor)
 
-    assert {SessionStorage, store, :worker, [SessionStorage]} =
+    assert {SessionStorage, store, :supervisor, [SessionStorage]} =
              List.keyfind(children, SessionStorage, 0)
 
     assert Process.alive?(store)
-    assert :mnesia.table_info(:zaq_linked_device_sessions, :storage_type) == :ram_copies
+    assert :mnesia.table_info(:jido_chat_whatsapp_sessions, :storage_type) == :ram_copies
 
     for module <- [Ingress, BridgeSupervisor] do
       assert {^module, pid, :supervisor, [^module]} = List.keyfind(children, module, 0)
@@ -246,7 +246,7 @@ defmodule Zaq.Channels.SupervisionTest do
     assert {:ok, runtime} = Channels.lookup_runtime(bridge_id)
     ingress = Process.whereis(Ingress)
 
-    {SessionStorage, store, :worker, _} =
+    {SessionStorage, store, :supervisor, _} =
       List.keyfind(Supervisor.which_children(Channels), SessionStorage, 0)
 
     ip = exhaust_identification_budget()
@@ -255,7 +255,7 @@ defmodule Zaq.Channels.SupervisionTest do
     :ok = GenServer.stop(store, :storage_failure)
     children = Supervisor.which_children(Channels)
 
-    assert {SessionStorage, replacement, :worker, _} =
+    assert {SessionStorage, replacement, :supervisor, _} =
              List.keyfind(children, SessionStorage, 0)
 
     refute replacement == store

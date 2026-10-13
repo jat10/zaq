@@ -2,8 +2,10 @@ defmodule Zaq.Channels.Supervisor do
   @moduledoc """
   Static supervisor and public runtime facade for the Channels role.
 
-  Starts the rate limiter, RAM session store and BridgeSupervisor directly.
-  Rest-for-one ordering rebuilds bridges after session-store failure while
+  Starts the rate limiter, package storage runtime and BridgeSupervisor directly.
+  Backend replacement is isolated inside the package runtime and invalidates
+  only dependent WhatsApp listeners. Rest-for-one ordering rebuilds bridges after
+  the whole storage runtime fails while
   preserving limiter counters. A limiter supervisor failure also rebuilds later
   children. Adapter packages own their shared transport infrastructure. This
   parent owns the bridge registry across child restarts.
@@ -26,7 +28,7 @@ defmodule Zaq.Channels.Supervisor do
   def init(opts) do
     children = [
       PeopleAuthRateLimiter,
-      Zaq.Channels.LinkedDevice.SessionStorage,
+      {Jido.Chat.WhatsApp.Storage.Runtime, require_ram_schema: true},
       {BridgeSupervisor, opts}
     ]
 
