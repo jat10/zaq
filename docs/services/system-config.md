@@ -611,10 +611,5 @@ pairing remains saved. No Mnesia disk volume is required or used. Namespace rout
 legacy-record cleanup and recovery behavior are owned by the
 [linked-device storage contract](channels.md#linked-device-integration).
 
-Before upgrading an installation with the legacy linked-device tables, stop channel
-runtimes, back up the database and apply `mix ecto.migrate` with the existing encryption
-key available. The forward migration validates/decrypts all source records, preserves
-credential IDs, migrates disabled/archived configurations too, and removes the old
-tables only after successful conversion. Failure leaves source data intact and must
-be investigated without logging secret material. Rollback requires restoring the
-pre-migration backup; do not run old application code against the migrated database.
+Pairing provisions its credential document through the existing Connect tables.
+There are no dedicated linked-device tables or data-conversion migrations.

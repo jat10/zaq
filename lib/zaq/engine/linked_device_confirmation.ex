@@ -2,7 +2,7 @@ defmodule Zaq.Engine.LinkedDeviceConfirmation do
   @moduledoc """
   Atomically creates a confirmed WhatsApp connector and its encrypted pairing state.
 
-  Accepts the package-owned frozen snapshot via the trusted Channels runtime Action.
+  Accepts opaque, package-encoded records via the trusted Channels runtime Action.
   The attempt UUID serializes repeated confirmations, including a lost response;
   persistence never starts a connection while the transaction is open. Channels
   supplies authorized callbacks; the package excludes volatile messaging sessions
@@ -64,23 +64,11 @@ defmodule Zaq.Engine.LinkedDeviceConfirmation do
         {:error, reason} -> Repo.rollback(reason)
       end
 
-    Enum.each(records, fn {{namespace, key}, value} ->
-      request = %{
-        op: :put,
-        binding: binding,
-        namespace: namespace,
-        key: encode(key),
-        value: encode(value)
-      }
-
-      case Connect.credential_document(request) do
-        :ok -> :ok
-        {:error, reason} -> Repo.rollback(reason)
-      end
-    end)
+    case Connect.credential_document(%{op: :put_many, binding: binding, records: records}) do
+      :ok -> :ok
+      {:error, reason} -> Repo.rollback(reason)
+    end
 
     Repo.get!(ChannelConfig, config.id)
   end
-
-  defp encode(value), do: value |> :erlang.term_to_binary() |> Base.encode64()
 end

@@ -45,6 +45,29 @@ defmodule Zaq.Channels.LinkedDevice.StorageTest do
     assert {:error, :credential_revoked} = Storage.put(storage, profile, :creds, :self, %{})
   end
 
+  test "confirmation batch and subsequent adapter writes share the package encoding" do
+    actor = %{
+      user_id: Zaq.AccountsFixtures.super_admin_fixture(%{must_change_password: false}).id
+    }
+
+    value = %{private: <<255, 0, 10>>, nested: {:paired, [1, 2]}}
+
+    assert {:ok, %{runtime: config, storage: opts}} =
+             LinkedDevice.confirm_pairing(actor, %{
+               attempt_id: Ecto.UUID.generate(),
+               identity: %{phone_number: "+15550001"},
+               records: %{{:creds, :self} => value, {:prekey, 42} => <<0, 255>>}
+             })
+
+    {:ok, profile} = LinkedDevice.profile(config)
+    storage = Storage.new(opts)
+    assert {:ok, ^value} = Storage.get(storage, profile, :creds, :self)
+    assert {:ok, <<0, 255>>} = Storage.get(storage, profile, :prekey, 42)
+    count = Repo.aggregate(Oban.Job, :count)
+    assert :ok = Storage.put(storage, profile, :creds, :self, value)
+    assert Repo.aggregate(Oban.Job, :count) == count
+  end
+
   test "the real adapter guard latches failed durable writes and notifies its connection" do
     config = connector()
     {:ok, binding} = bind(config.id)
