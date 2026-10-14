@@ -50,7 +50,7 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
       )
 
     worker = start_supervised!(spec)
-    assert_receive {:transport_ready, relay}
+    assert_receive {:transport_ready, relay}, 1_000
     State.monitor_listeners(state, [worker])
     _ = State.ingress_status(state)
 
@@ -68,7 +68,8 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
                         action_id: "connection_update",
                         metadata: metadata
                       }
-                    }, :ok}
+                    }, :ok},
+                   1_000
 
     assert metadata.category == :connection_lifecycle
     assert metadata.source == context.worker
@@ -80,7 +81,7 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
 
   test "ZAQ exposes the pairing QR before acknowledging the lifecycle event", context do
     send(context.relay, {:amarula, :connection_update, %{qr: "synthetic-review-qr"}})
-    assert_receive {:delivered, %EventEnvelope{event_type: :action}, :ok}
+    assert_receive {:delivered, %EventEnvelope{event_type: :action}, :ok}, 1_000
 
     assert %{phase: :pairing, qr: "synthetic-review-qr"} = State.ingress_status(context.state)
   end
@@ -159,12 +160,12 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
   test "QR is cleared synchronously on connection and is absent from process diagnostics",
        context do
     send(context.relay, {:amarula, :connection_update, %{qr: "synthetic-review-qr"}})
-    assert_receive {:delivered, _, :ok}
+    assert_receive {:delivered, _, :ok}, 1_000
     assert %{phase: :pairing} = State.ingress_status(context.state)
     refute inspect(:sys.get_status(context.state)) =~ "synthetic-review-qr"
 
     send(context.relay, {:amarula, :connection_update, %{connection: :open}})
-    assert_receive {:delivered, _, :ok}
+    assert_receive {:delivered, _, :ok}, 1_000
     assert %{phase: :connected, qr: nil} = State.ingress_status(context.state)
   end
 end

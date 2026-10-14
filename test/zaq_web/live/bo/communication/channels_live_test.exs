@@ -53,6 +53,9 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       fetch_state(:capability_snapshot, {:ok, %{resolved: %{}}})
     end
 
+    def authentication_capability(_provider),
+      do: fetch_state(:authentication_capability, :unsupported)
+
     def channel_ingress_status(config) do
       default =
         {:ok,
@@ -193,6 +196,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     )
 
     BridgeFake.put(:capability_snapshot, {:ok, %{resolved: %{mode: "linked_device"}}})
+    BridgeFake.put(:authentication_capability, :native)
 
     BridgeFake.put(
       :channel_ingress_status,
@@ -229,7 +233,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     view |> element("#linked-device-pairing button", "Close") |> render_click()
     refute has_element?(view, "[id^='pair-config-']")
     view |> element("#ingress-status-dot-#{second.id}") |> render_click()
-    render_async(view)
+    render_async(view, 1_000)
     assert has_element?(view, "#linked-device-pairing", "Second account")
 
     assert has_element?(
@@ -246,7 +250,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     assert has_element?(view, "#ingress-status-modal")
     view |> element("#ingress-status-modal button", "Close") |> render_click()
     view |> element("#ingress-status-dot-#{second.id}") |> render_click()
-    render_async(view)
+    render_async(view, 1_000)
     assert has_element?(view, "#linked-device-pairing", "Second account")
   end
 
@@ -262,6 +266,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     )
 
     BridgeFake.put(:capability_snapshot, {:ok, %{resolved: %{mode: "linked_device"}}})
+    BridgeFake.put(:authentication_capability, :native)
 
     BridgeFake.put(
       :channel_ingress_status,
@@ -289,18 +294,23 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       live(init_test_session(conn, %{user_id: admin.id}), ~p"/bo/channels/retrieval/whatsapp")
 
     view |> element("#ingress-status-dot-#{config.id}") |> render_click()
-    render_async(view)
+    render_async(view, 1_000)
     BridgeFake.put(:sync_provider_runtime_result, {:error, :failed})
     view |> element("#linked-device-pairing button", "Retry connection") |> render_click()
-    render_async(view)
+    render_async(view, 1_000)
     assert has_element?(view, "#linked-device-pairing", "could not be checked or restarted")
     assert [%{id: id}] = BridgeFake.calls(:sync_provider_runtime)
     assert id == config.id
   end
 
-  test "mount builds data source and fallback navigation labels" do
+  test "mount builds data source and fallback navigation labels", %{user: user} do
     socket = %Phoenix.LiveView.Socket{
-      assigns: %{__changed__: %{}, service_available: false, live_action: :data_source}
+      assigns: %{
+        __changed__: %{},
+        service_available: false,
+        live_action: :data_source,
+        current_user: user
+      }
     }
 
     assert {:ok, socket} =
@@ -310,7 +320,12 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     assert socket.assigns.back_label == "Data Sources"
 
     socket = %Phoenix.LiveView.Socket{
-      assigns: %{__changed__: %{}, service_available: false, live_action: :unknown}
+      assigns: %{
+        __changed__: %{},
+        service_available: false,
+        live_action: :unknown,
+        current_user: user
+      }
     }
 
     assert {:ok, socket} =
@@ -1611,7 +1626,9 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     assert Enum.any?(updated.assigns.credential_errors, &String.contains?(&1, "Global base URL"))
   end
 
-  test "data source mount exercises connect_credentials and grants_by_config for google_drive" do
+  test "data source mount exercises connect_credentials and grants_by_config for google_drive", %{
+    user: user
+  } do
     _config =
       insert_channel_config(%{
         provider: "google_drive",
@@ -1623,7 +1640,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       assigns: %{
         __changed__: %{},
         service_available: true,
-        live_action: :data_source
+        live_action: :data_source,
+        current_user: user
       }
     }
 
@@ -2257,7 +2275,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
   # Test 9 — grants_by_config picks latest active grant
   # ---------------------------------------------------------------------------
 
-  test "data source mount groups active grants and picks latest by id" do
+  test "data source mount groups active grants and picks latest by id", %{user: user} do
     config =
       insert_channel_config(%{
         provider: "google_drive",
@@ -2314,7 +2332,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       assigns: %{
         __changed__: %{},
         service_available: true,
-        live_action: :data_source
+        live_action: :data_source,
+        current_user: user
       }
     }
 

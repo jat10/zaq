@@ -22,6 +22,7 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     })
 
     on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+    assert :ok = JidoChatBridge.start_runtime({:provider, :whatsapp}, [])
     start_supervised!({Transport, observer: self()})
     %{actor: %{user_id: super_admin_fixture(%{must_change_password: false}).id}}
   end
