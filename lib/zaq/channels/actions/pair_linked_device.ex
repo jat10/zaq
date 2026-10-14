@@ -1,5 +1,5 @@
 defmodule Zaq.Channels.Actions.PairLinkedDevice do
-  @moduledoc "Confidential operator Action for provisional WhatsApp pairing; never an agent tool."
+  @moduledoc "Confidential operator Action for adapter authentication; never an agent tool."
   use Jido.Action,
     name: "pair_linked_device",
     description: "Pair and confirm a linked device before creating its connector",
@@ -7,12 +7,25 @@ defmodule Zaq.Channels.Actions.PairLinkedDevice do
     output_schema: Zoi.object(%{result: Zoi.any()})
 
   alias Zaq.Accounts.BOActor
-  alias Zaq.Channels.JidoChatBridge.Pairing
+  alias Zaq.Channels.CommunicationBridge
 
-  def run(%{request: request}, %{actor: actor, confidential: true}) do
+  def run(
+        %{request: %{provider: provider, op: _} = request},
+        %{actor: actor, confidential: true} = context
+      ) do
     case BOActor.current_user(actor) do
       {:ok, %{id: id, role: %{name: "super_admin"}}} ->
-        {:ok, %{result: Pairing.pair(request, id, actor)}}
+        {:ok,
+         %{
+           result:
+             CommunicationBridge.authenticate(
+               provider,
+               request,
+               id,
+               actor,
+               Map.get(context, :bridge_opts, [])
+             )
+         }}
 
       _ ->
         {:error, :unauthorized}

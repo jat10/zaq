@@ -26,12 +26,12 @@ defmodule ZaqWeb.Components.DesignSystem.LinkedDevicePairing do
         <p class="zaq-text-body">{@name}</p>
         <p class="zaq-text-body-sm" role="status">{@status[:summary] || "Waiting for connection"}</p>
         <p :if={@matrix} class="zaq-text-body-sm">
-          Open {@provider} on your phone, choose Linked devices, and scan this code.
+          Open {@provider} on your device and scan this code.
         </p>
         <.qr :if={@matrix} matrix={@matrix} />
         <div :if={@status[:phase] == :confirm} class="zaq-layout-stack">
-          <p class="zaq-text-body">{@status.identity[:display_name] || "WhatsApp account"}</p>
-          <p class="zaq-text-body" id="linked-device-phone">{@status.identity.phone_number}</p>
+          <p class="zaq-text-body">{@status.account[:display_name] || "Connected account"}</p>
+          <p class="zaq-text-body" id="linked-device-account-id">{@status.account.external_id}</p>
           <p class="zaq-text-body-sm">Confirm to create this channel and start receiving messages.</p>
         </div>
         <p :if={@history_disabled} class="zaq-text-body-sm">

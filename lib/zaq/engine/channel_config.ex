@@ -47,13 +47,13 @@ defmodule Zaq.Engine.ChannelConfig do
     timestamps(type: :utc_datetime)
   end
 
-  def changeset(config, attrs) do
+  def changeset(config, attrs, opts \\ []) do
     config
     |> cast(attrs, [:name, :provider, :kind, :url, :token, :enabled, :settings])
     |> validate_required([:name, :provider, :kind])
     |> validate_inclusion(:provider, @valid_providers)
     |> validate_inclusion(:kind, @valid_kinds)
-    |> maybe_require_connection_fields()
+    |> maybe_require_connection_fields(opts)
     |> maybe_validate_imap_settings()
     |> maybe_validate_disk_settings()
     |> maybe_validate_widget_settings()
@@ -124,32 +124,38 @@ defmodule Zaq.Engine.ChannelConfig do
     |> maybe_put_runtime_token("token")
   end
 
-  defp maybe_require_connection_fields(changeset) do
+  defp maybe_require_connection_fields(changeset, opts) do
     kind = get_field(changeset, :kind)
 
-    case {kind, get_field(changeset, :provider)} do
-      {"retrieval", "whatsapp"} ->
+    case {kind, get_field(changeset, :provider),
+          Keyword.get(opts, :adapter_authentication, false)} do
+      {"retrieval", _provider, true} ->
         changeset
         |> maybe_put_placeholder(:url)
         |> maybe_put_placeholder(:token)
 
-      {"data_source", _provider} ->
+      {"retrieval", "whatsapp", _} ->
         changeset
         |> maybe_put_placeholder(:url)
         |> maybe_put_placeholder(:token)
 
-      {"retrieval", "web_widget"} ->
+      {"data_source", _provider, _} ->
         changeset
         |> maybe_put_placeholder(:url)
         |> maybe_put_placeholder(:token)
 
-      {_kind, @smtp_provider} ->
+      {"retrieval", "web_widget", _} ->
+        changeset
+        |> maybe_put_placeholder(:url)
+        |> maybe_put_placeholder(:token)
+
+      {_kind, @smtp_provider, _} ->
         validate_required(changeset, [:settings])
 
-      {_kind, @imap_provider} ->
+      {_kind, @imap_provider, _} ->
         validate_required(changeset, [:settings, :token])
 
-      {_kind, _provider} ->
+      {_kind, _provider, _} ->
         validate_required(changeset, [:url, :token])
     end
   end
