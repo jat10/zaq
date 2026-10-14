@@ -48,14 +48,32 @@ defmodule Zaq.TestSupport.WhatsAppFlowTransport do
 
   def account_jids(_conn), do: {:ok, ["15550001@s.whatsapp.net"]}
 
-  def scan(profile, qr) do
+  def scan(profile, qr, opts \\ []) do
     {:ok, conn} = resolve_conn(profile: profile)
     state = Agent.get(conn, & &1)
     true = qr == "fixture-qr:#{profile}"
     :ok = Amarula.Storage.put(state.storage, profile, :creds, :self, %{paired: true})
     Agent.update(conn, &Map.put(&1, :paired?, true))
     send(state.parent, {:amarula, :pairing_success, %{jid: "15550001@s.whatsapp.net"}})
-    send(state.parent, {:amarula, :connection_update, %{connection: :open}})
+
+    if opts[:reconnecting] do
+      Agent.update(conn, &Map.put(&1, :recovering?, true))
+      send(state.parent, {:amarula, :error, :xml_stream_end})
+      send(state.parent, {:amarula, :connection_update, %{connection: :disconnected}})
+    else
+      send(state.parent, {:amarula, :connection_update, %{connection: :open}})
+    end
+
+    :ok
+  end
+
+  def recovery_status(conn),
+    do: Agent.get(conn, fn state -> if state[:recovering?], do: :reconnecting, else: :failed end)
+
+  def finish_reconnect(profile) do
+    {:ok, conn} = resolve_conn(profile: profile)
+    Agent.update(conn, &Map.put(&1, :recovering?, false))
+    send(Agent.get(conn, & &1.parent), {:amarula, :connection_update, %{connection: :open}})
     :ok
   end
 

@@ -38,19 +38,24 @@ uses one-for-one recovery, including for limiter supervisor failures. The adapte
 duplicate profile ownership rather than adopting another listener's connection.
 This does not provide distributed fencing across disconnected clusters sharing a DB.
 
-The adapter's lifecycle sink routes normalized profile/attempt/status/QR data through
-confidential `:channel_ingress_lifecycle` events with explicit trusted
-`channel_runtime: true`. Bridge state rejects other profiles, stale attempts and dead
-sources. Generic `Pairing` presentation preserves expiry and clears QR outside pairing.
-Startup delivery retries only an authorized `:runtime_not_ready` response, with
-200 retries spaced 25 ms apart in the adapter's ordered dispatcher. Other errors
-propagate immediately. Bridge state monitors the accepted lifecycle source across
-connection replacements; its death clears the QR and marks the device disconnected.
-Stale listener/source exits cannot overwrite a newer source's status, so this
-recovery does not require changes to the generic bridge supervisor.
-No protocol events enter chat handlers. These internal flags are not authentication
-for arbitrary NodeRouter callers. BO status and retry still require a confidential
-event and current super-admin authorization for the exact enabled configuration.
+The adapter delivers lifecycle `ActionEvent` envelopes through the existing
+`sink_mfa`. Jido routes `connection_update` actions to the bridge handler, which
+checks the configured adapter, lifecycle category and exact connector profile.
+Bridge State consumes the adapter-supplied presentation and applies source/attempt
+guards before acknowledging the synchronous sink call. The adapter owns connection
+phase/status messages and QR projection for both provisional and saved connections;
+ZAQ only supplies a host-level status when the listener/runtime stops. The originating worker PID is
+preserved; the dispatcher's PID is not used as lifecycle identity. QR material is
+kept only in the status presentation and redacted from process diagnostics.
+
+An explicit listener bridge ID waits for runtime registration for up to 200 retries
+at 25 ms intervals without recursively starting listeners. Exhaustion returns
+`:runtime_unavailable`, a terminal response that does not trigger the adapter's
+`:runtime_not_ready` retry loop. Listener startup and stop remain supervisor-owned.
+Source death clears the QR and marks the device disconnected; stale source exits
+and attempts cannot overwrite a newer source's status. Lifecycle actions do not
+run message handlers. BO status and retry still require confidential events and
+current super-admin authorization for the exact enabled configuration.
 
 In BO, choose Communication Channels → WhatsApp → New configuration to scan a QR
 code, then confirm the detected phone number and display name. A missing display
@@ -77,8 +82,15 @@ disabled and archived connectors stay stopped.
 
 The pairing modal polls only its selected account and rejects stale results. Closing
 an existing connector's status modal leaves its saved connection running; closing a
-new onboarding modal cancels the provisional session. Existing connector retries
-preserve encrypted state. The shared component is in Storybook under
+new onboarding modal cancels the provisional session. Retry keeps a live provisional
+session and its credentials: the adapter waits for recovery, refreshes account
+identity, or reconnects that same profile as needed. Only an expired provisional
+session starts a fresh pairing on Retry. Recoverable transport errors remain pending
+and polling continues within the original session lifetime. An individual QR's
+expiry also keeps polling for a replacement; it clears the displayed QR without
+ending the session. A replacement appears automatically in the same modal.
+Session expiry and the bounded UI polling window still stop observation. Existing connector
+retries preserve encrypted state. The shared component is in Storybook under
 `/storybook/modals/linked_device_pairing`.
 
 `Jido.Chat.WhatsApp.Storage.Split` routes pairing credentials (`creds`) and supporting
@@ -114,12 +126,12 @@ Linked-device persistence uses the existing Connect credential and grant tables;
 no dedicated linked-device tables or schema migration are required. See
 [system configuration](system-config.md#connector-session-state).
 
-The WhatsApp adapter uses the GitHub dependency declared in `mix.exs`, pinned to
-the tested revision in `mix.lock`; a sibling checkout is no longer required.
+During the single-sink migration, the WhatsApp adapter uses the sibling checkout
+at `../jido_chat_whatsapp`, as declared in `mix.exs`.
 Stop saved and provisional listeners during rollout/rollback; pairing remains in
 Connect, but volatile sessions start empty and decryption may need re-establishment.
 
-`JidoChatBridge` owns saved-listener options, lifecycle forwarding and status
+`JidoChatBridge` owns saved-listener options, lifecycle action handling and status
 through its shared runtime path. `JidoChatBridge.SessionStorage` owns credential
 bindings and Engine storage callbacks; `JidoChatBridge.Pairing` connects the existing
 pairing Action to Engine confirmation and normal bridge startup. Package

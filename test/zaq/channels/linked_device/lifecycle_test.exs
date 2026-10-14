@@ -1,6 +1,7 @@
 defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
   use ExUnit.Case, async: true
   alias Zaq.Channels.JidoChatBridge.State
+  alias Zaq.TestSupport.LinkedDeviceLifecycle
 
   test "each replacement lifecycle source is monitored and stale exits cannot disconnect it" do
     config = %{id: 42, provider: "whatsapp", settings: %{}, url: "", token: ""}
@@ -18,7 +19,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
       qr: "private"
     }
 
-    GenServer.cast(pid, {:lifecycle, first, payload})
+    deliver(pid, first, payload)
     assert %{phase: :pairing} = State.ingress_status(pid)
     first_ref = :sys.get_state(pid).lifecycle_monitor
     assert is_reference(first_ref)
@@ -31,7 +32,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     assert %{phase: :disconnected, qr: nil} = State.ingress_status(pid)
 
     replacement = %{payload | attempt_id: make_ref(), status: :connected, qr: nil}
-    GenServer.cast(pid, {:lifecycle, second, replacement})
+    deliver(pid, second, replacement)
     assert %{phase: :connected} = State.ingress_status(pid)
     second_ref = :sys.get_state(pid).lifecycle_monitor
     refute second_ref == first_ref
@@ -61,7 +62,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
       qr: nil
     }
 
-    GenServer.cast(pid, {:lifecycle, self(), payload})
+    deliver(pid, self(), payload)
     assert %{phase: :connected} = State.ingress_status(pid)
     [{ref, ^listener}] = Map.to_list(:sys.get_state(pid).listener_monitors)
     :erlang.trace(pid, true, [:receive])
@@ -87,22 +88,26 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
       qr: nil
     }
 
-    GenServer.cast(pid, {:lifecycle, first, payload})
+    deliver(pid, first, payload)
     assert %{phase: :connected} = State.ingress_status(pid)
     old_ref = :sys.get_state(pid).lifecycle_monitor
 
     replacement = %{payload | attempt_id: make_ref()}
-    GenServer.cast(pid, {:lifecycle, second, replacement})
+    deliver(pid, second, replacement)
     assert :sys.get_state(pid).lifecycle_source == first
 
     :sys.suspend(pid)
 
+    envelope = LinkedDeviceLifecycle.envelope(second, replacement)
+    request = :gen_server.send_request(pid, {:process_listener_payload, config, envelope, []})
+
     try do
-      GenServer.cast(pid, {:lifecycle, second, replacement})
       stop_supervised(:first)
     after
       :sys.resume(pid)
     end
+
+    assert {:reply, :ok} = :gen_server.receive_response(request, 1_000)
 
     assert :sys.get_state(pid).lifecycle_source == second
     send(pid, {:DOWN, old_ref, :process, first, :shutdown})
@@ -128,22 +133,25 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
       qr: "private"
     }
 
-    GenServer.cast(pid, {:lifecycle, self(), event})
+    deliver(pid, self(), event)
     assert %{phase: :pairing, qr: "private"} = State.ingress_status(pid)
     assert :ok = State.refresh_config(pid, config)
     assert %{phase: :pairing, qr: "private"} = State.ingress_status(pid)
-    GenServer.cast(pid, {:lifecycle, self(), %{event | attempt_id: make_ref(), qr: "stale"}})
+    deliver(pid, self(), %{event | attempt_id: make_ref(), qr: "stale"})
 
-    GenServer.cast(
-      pid,
-      {:lifecycle, self(), %{event | profile: "zaq_linked_device_99", qr: "foreign"}}
-    )
+    deliver(pid, self(), %{event | profile: "zaq_linked_device_99", qr: "foreign"})
 
     assert %{qr: "private"} = State.ingress_status(pid)
-    GenServer.cast(pid, {:lifecycle, self(), %{event | status: :expired, qr: nil}})
+    deliver(pid, self(), %{event | status: :expired, qr: nil})
     assert %{phase: :expired, qr: nil} = State.ingress_status(pid)
-    GenServer.cast(pid, {:lifecycle, self(), %{event | status: :connected, qr: nil}})
+    deliver(pid, self(), %{event | status: :connected, qr: nil})
     assert %{phase: :connected, qr: nil} = State.ingress_status(pid)
     refute inspect(:sys.get_status(pid)) =~ "private"
+  end
+
+  defp deliver(pid, source, payload) do
+    config = %{id: 42, provider: "whatsapp", settings: %{}}
+    envelope = LinkedDeviceLifecycle.envelope(source, payload)
+    State.process_listener_payload(pid, config, envelope, [])
   end
 end

@@ -40,7 +40,8 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
     assert {Split, storage_opts} = opts[:config].storage
     assert storage_opts[:context].channel_config_id == config.id
     assert storage_opts[:document_mfa] == {SessionStorage, :document, []}
-    assert opts[:lifecycle_sink_mfa] == {JidoChatBridge, :from_lifecycle, ["whatsapp", config.id]}
+    refute Keyword.has_key?(opts, :lifecycle_sink_mfa)
+    assert opts[:sink_mfa] == {JidoChatBridge, :from_listener, [config]}
   end
 
   test "provisioning is idempotent and persisted terms survive a new callback instance" do

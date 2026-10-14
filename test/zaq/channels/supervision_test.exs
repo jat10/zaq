@@ -326,8 +326,7 @@ defmodule Zaq.Channels.SupervisionTest do
                 transport: transport,
                 config: %{profile: profile, observer: self(), storage: {store, scope: profile}}
               },
-              sink_mfa: {transport, :deliver, [self()]},
-              lifecycle_sink_mfa: {transport, :lifecycle, [self()]}
+              sink_mfa: {transport, :deliver, [self()]}
             )
 
           assert {:ok, %{listener_pids: [worker]}} = Channels.start_runtime(profile, nil, specs)
