@@ -39,12 +39,29 @@ defmodule ZaqWeb.Live.BO.Communication.WhatsAppOnboardingTest do
            end)
 
     assert Repo.aggregate(ChannelConfig, :count) == count
-    :ok = Transport.scan(options.profile, "fixture-qr:#{options.profile}")
+    :erlang.trace(view.pid, true, [:receive])
+    :ok = Transport.scan(options.profile, "fixture-qr:#{options.profile}", reconnecting: true)
+    view_pid = view.pid
+    assert_receive {:trace, ^view_pid, :receive, {:linked_device_poll, _}}, 3_000
+    render_async(view, 5_000)
+    assert render(view) =~ "Reconnecting with the linked account"
+    refute has_element?(view, "#linked-device-pairing svg")
+    :erlang.trace(view.pid, false, [:receive])
+    :ok = Transport.finish_reconnect(options.profile)
 
     assert eventually(fn ->
              render_async(view, 5_000)
              has_element?(view, "#linked-device-phone", "+15550001")
            end)
+
+    # A late Retry click must inspect the already-linked session, not cancel it
+    # and begin another QR handshake.
+    render_click(view, "retry_linked_device", %{})
+    render_async(view, 5_000)
+    assert has_element?(view, "#linked-device-phone", "+15550001")
+    refute has_element?(view, "#linked-device-pairing svg")
+    refute_received {:whatsapp_connected_config, _}
+    assert {:ok, _} = Transport.resolve_conn(profile: options.profile)
 
     assert render(view) =~ "Support account"
     assert Repo.aggregate(ChannelConfig, :count) == count

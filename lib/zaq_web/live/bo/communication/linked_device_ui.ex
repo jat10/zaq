@@ -72,8 +72,25 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
     socket |> assign(:linked_device_timer, nil) |> assign(:linked_device_modal, nil)
   end
 
-  @doc "Starts a fresh UI generation for an explicit retry."
-  def retry(%{assigns: %{linked_device_modal: %{config_id: nil}}} = socket), do: new(socket)
+  @doc "Retries the current session without discarding a successfully linked account."
+  def retry(%{assigns: %{linked_device_modal: %{config_id: nil} = modal}} = socket) do
+    if is_pid(modal.session) and not Map.get(modal.status, :session_expired, false) do
+      if timer = socket.assigns[:linked_device_timer], do: Process.cancel_timer(timer)
+      generation = make_ref()
+
+      socket
+      |> assign(:linked_device_timer, nil)
+      |> assign(:linked_device_modal, %{
+        modal
+        | generation: generation,
+          attempts: 0,
+          status: %{phase: :pending, summary: "Checking the linked account"}
+      })
+      |> refresh(generation, :retry)
+    else
+      new(socket)
+    end
+  end
 
   def retry(%{assigns: %{linked_device_modal: %{config_id: id}}} = socket) do
     config = Enum.find(socket.assigns.configs, &(&1.id == id and &1.enabled))
@@ -132,15 +149,19 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
 
         attempts = modal.attempts + 1
 
+        watching = watching_status?(status)
+
+        if timer = socket.assigns[:linked_device_timer], do: Process.cancel_timer(timer)
+
         status =
-          if attempts >= 90 and status[:phase] in [:pending, :pairing],
+          if attempts >= 90 and watching,
             do: %{phase: :expired, summary: "Connection window ended; retry to continue"},
             else: status
 
         socket =
           assign(socket, :linked_device_modal, %{modal | status: status, attempts: attempts})
 
-        if status[:phase] in [:pending, :pairing] do
+        if watching and attempts < 90 do
           assign(
             socket,
             :linked_device_timer,
@@ -156,7 +177,17 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
     end
   end
 
+  defp watching_status?(status),
+    do: status[:phase] in [:pending, :pairing, :expired] and status[:session_expired] != true
+
   defp result_status({:ok, {:ok, status}}, _) when is_map(status), do: status
+
+  defp result_status({:ok, {:error, :pairing_expired}}, _),
+    do: %{
+      phase: :expired,
+      session_expired: true,
+      summary: "Pairing session expired; retry to start a new session"
+    }
 
   defp result_status({:ok, {:error, :save_failed}}, modal),
     do: Map.put(modal.status, :summary, "Could not save this account. Confirm to retry.")
