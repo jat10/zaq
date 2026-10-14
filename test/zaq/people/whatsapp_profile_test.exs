@@ -15,6 +15,8 @@ defmodule Zaq.People.WhatsAppProfileTest do
     assert {:ok, person} = IdentityResolver.resolve(incoming, [])
     assert person.full_name == "Sender Name"
     assert person.phone == "+15551234567"
+    assert [channel] = person.channels
+    assert channel.phone == person.phone
 
     assert {:ok, _} =
              People.update_person(person, %{
@@ -27,6 +29,21 @@ defmodule Zaq.People.WhatsAppProfileTest do
     assert same.id == person.id
     assert same.full_name == "Directory @ Name"
     assert same.phone == "+15550000000"
+  end
+
+  test "mapped LID phones populate both the person and channel" do
+    {config, conn} = connection()
+    lid = "1234567890@lid"
+
+    assert {1, _} =
+             LidMappingFileStore.store_mappings(Amarula.Connection.get_conn(conn), [
+               {lid, "15551234567@s.whatsapp.net"}
+             ])
+
+    assert {:ok, person} = IdentityResolver.resolve(incoming(config, lid, "Sender Name"), [])
+    assert person.phone == "+15551234567"
+    assert [channel] = person.channels
+    assert channel.phone == person.phone
   end
 
   test "absent and placeholder push names do not prevent Person creation" do
@@ -42,7 +59,7 @@ defmodule Zaq.People.WhatsAppProfileTest do
 
   test "LID phone enrichment is connection scoped and can arrive after the first message" do
     {first, conn} = connection()
-    {second, _} = connection()
+    {second, second_conn} = connection()
     lid = "1234567890@lid"
     assert {:ok, person} = IdentityResolver.resolve(incoming(first, lid, nil), [])
     assert is_nil(person.phone)
@@ -57,12 +74,16 @@ defmodule Zaq.People.WhatsAppProfileTest do
     assert updated.full_name == "Sender Name"
     assert updated.phone == "+15551234567"
 
-    assert {:ok, isolated} = IdentityResolver.resolve(incoming(second, lid, "Other Account"), [])
-    refute isolated.id == person.id
-    assert is_nil(isolated.phone)
+    assert {:ok, shared} = IdentityResolver.resolve(incoming(second, lid, "Other Account"), [])
+    assert shared.id == person.id
+    assert shared.phone == updated.phone
+    assert length(shared.channels) == 2
+
+    assert {:ok, profile} = Adapter.get_user(lid, conn: second_conn)
+    assert is_nil(profile.metadata.phone)
   end
 
-  test "phone enrichment does not conflict across connectors or merge by display name" do
+  test "the same phone JID shares one person across connectors" do
     people =
       for _ <- 1..2 do
         {config, _} = connection()
@@ -75,7 +96,36 @@ defmodule Zaq.People.WhatsAppProfileTest do
       end
 
     assert [first, second] = people
-    refute first.id == second.id
+    assert first.id == second.id
+    assert length(second.channels) == 2
+  end
+
+  test "the same LID shares one person across connectors without a phone" do
+    {first, _} = connection()
+    {second, _} = connection()
+    lid = "179976359915606@lid"
+
+    assert {:ok, person} = IdentityResolver.resolve(incoming(first, lid, "Jad"), [])
+    assert {:ok, shared} = IdentityResolver.resolve(incoming(second, lid, "Jad"), [])
+    assert shared.id == person.id
+    assert is_nil(shared.phone)
+    assert length(shared.channels) == 2
+    assert Enum.uniq(Enum.map(shared.channels, & &1.person_identity_id)) |> length() == 1
+
+    assert MapSet.new(Enum.map(shared.channels, & &1.channel_config_id)) ==
+             MapSet.new([first.id, second.id])
+
+    assert {:ok, repeated} = IdentityResolver.resolve(incoming(second, lid, "Jad"), [])
+    assert repeated.id == person.id
+    assert length(repeated.channels) == 2
+  end
+
+  test "different LIDs with the same name remain different people" do
+    {first, _} = connection()
+    {second, _} = connection()
+    assert {:ok, person} = IdentityResolver.resolve(incoming(first, "111111111@lid", "Jad"), [])
+    assert {:ok, other} = IdentityResolver.resolve(incoming(second, "222222222@lid", "Jad"), [])
+    refute other.id == person.id
   end
 
   defp connection do
