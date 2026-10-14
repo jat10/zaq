@@ -112,29 +112,36 @@ defmodule Zaq.Accounts.ConnectorPersonDiscoveryTest do
   test "profile phones enrich distinct native owners without claiming phone identity", %{
     configs: [first_config, second_config]
   } do
-    attrs = %{channel_id: "native", profile_phone: "+15551234567"}
+    attrs = %{channel_id: "native", phone: "+15551234567"}
 
     assert {:ok, first} =
              People.find_or_create_from_channel(
                "mattermost",
-               Map.put(attrs, :channel_config_id, first_config.id)
+               Map.put(attrs, :channel_config_id, first_config.id),
+               match_phone: false
              )
 
     assert {:ok, second} =
              People.find_or_create_from_channel(
                "mattermost",
-               Map.put(attrs, :channel_config_id, second_config.id)
+               Map.put(attrs, :channel_config_id, second_config.id),
+               match_phone: false
              )
 
     refute first.id == second.id
     assert first.phone == second.phone
+    assert [first_channel] = first.channels
+    assert [second_channel] = second.channels
+    assert first_channel.phone == attrs.phone
+    assert second_channel.phone == attrs.phone
 
     assert {:ok, edited} = People.update_person(first, %{phone: "+15550000000"})
 
     assert {:ok, rediscovered} =
              People.find_or_create_from_channel(
                "mattermost",
-               Map.put(attrs, :channel_config_id, first_config.id)
+               Map.put(attrs, :channel_config_id, first_config.id),
+               match_phone: false
              )
 
     assert rediscovered.id == edited.id
