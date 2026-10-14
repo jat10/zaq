@@ -6,11 +6,13 @@
 
 WhatsApp uses the same `JidoChatBridge` registration and adapter listener contract
 as other Jido channels. `JidoChatBridge` assembles trusted adapter startup options
-using `JidoChatBridge.SessionStorage` for credential bindings:
-a stable `zaq_linked_device_<connector_id>` profile, split protocol storage, and both
+using `JidoChatBridge.SessionStorage` for credential bindings. The adapter
+derives a stable profile and split storage scope from the saved binding, with both
 `sync_history: false` and `sync_full_history: false`. The adapter passes these values
 in its child specs; the generic supervisor only starts those specs. Persisted ingress settings
-cannot override these values. The selected profile also scopes replies, edits,
+cannot override these values. The bridge applies this policy to both freshly
+confirmed accounts and restored connections. Messages marked as history cannot
+start AI replies or notify waiting reply hooks. The selected profile also scopes replies, edits,
 typing, reactions and direct-message operations. Multiple accounts remain independent.
 
 The adapter owns WhatsApp protocol connections, self/mention normalization, history
@@ -63,16 +65,23 @@ name falls back to the phone number; an unavailable phone number cannot be confi
 Manual bot ID/mention fields are omitted for WhatsApp, including when editing.
 
 The confidential Channels `:pair_linked_device` Action authorizes current super
-admins. The package's `PairingSession` owns an operator-scoped provisional connection with
+admins on every command. It passes the selected provider through
+`CommunicationBridge` and `JidoChatBridge` to the optional
+`Jido.Chat.Adapter.authenticate/4` contract. Adapters without this capability
+retain their existing configuration path. The package's `PairingSession` owns an
+operator- and provider-scoped provisional connection with
 bounded, memory-only storage. It discards chat ingress and expires after three
 minutes or browser disconnect. Cancellation attempts logout and stops the temporary
 runtime. QR codes and session records never enter BO persistence or workflow events.
 
-Confirmation stops protocol writes before taking a snapshot. The package excludes
+The UI confirms the displayed account ID explicitly. Confirmation stops protocol
+writes before taking a snapshot. The package excludes
 messaging sessions and group sender keys from the durable snapshot. Engine's trusted
 runtime `:confirm_linked_device` Action creates the connector and canonical encrypted
-credential document in one transaction, using an attempt UUID for repeat-request
-idempotence. Persistence failures retain the frozen snapshot for retry within the
+credential document in one transaction, using an attempt UUID and the exact
+provider, operator and account for repeat-request idempotence. The package encodes
+protocol records before the host callback receives them. Persistence failures
+retain the frozen snapshot for retry within the
 pairing window. After persistence, the package seeds the volatile records once into
 Mnesia, then starts the normal bridge. A late snapshot cannot overwrite advanced
 sessions or resurrect cleared keys. A RAM-seeding or startup failure is reported as
@@ -94,10 +103,11 @@ retries preserve encrypted state. The shared component is in Storybook under
 `/storybook/modals/linked_device_pairing`.
 
 `Jido.Chat.WhatsApp.Storage.Split` routes pairing credentials (`creds`) and supporting
-protocol records through the host's `JidoChatBridge.SessionStorage.document/2` callback and the
+protocol records through the host's `JidoChatBridge.SessionStorage.document/3` callback and the
 [canonical credential document operation](engine.md#connector-credential-documents).
-Only the credential reference is stored in connector settings; these records live
-in the encrypted canonical org `api_key` grant. Credentials can change after pairing
+Connector settings retain the credential reference, account label, owner and attempt
+ID; protocol records live in the encrypted canonical org `api_key` grant.
+Credentials can change after pairing
 (for example, one-time prekeys), and those changes still persist.
 
 The frequently updated `session` and `sender_key` namespaces instead live in
@@ -126,15 +136,17 @@ Linked-device persistence uses the existing Connect credential and grant tables;
 no dedicated linked-device tables or schema migration are required. See
 [system configuration](system-config.md#connector-session-state).
 
-During the single-sink migration, the WhatsApp adapter uses the sibling checkout
-at `../jido_chat_whatsapp`, as declared in `mix.exs`.
+During local integration, ZAQ uses the sibling `../jido_chat` and
+`../jido_chat_whatsapp` checkouts declared in `mix.exs`. The core authentication
+contract must land before releasing the WhatsApp adapter against it.
 Stop saved and provisional listeners during rollout/rollback; pairing remains in
 Connect, but volatile sessions start empty and decryption may need re-establishment.
 
-`JidoChatBridge` owns saved-listener options, lifecycle action handling and status
-through its shared runtime path. `JidoChatBridge.SessionStorage` owns credential
-bindings and Engine storage callbacks; `JidoChatBridge.Pairing` connects the existing
-pairing Action to Engine confirmation and normal bridge startup. Package
+`JidoChatBridge` owns adapter delegation, persistence and normal runtime
+activation callbacks, lifecycle action handling and status through its shared
+runtime path. `JidoChatBridge.SessionStorage` owns credential bindings and Engine
+storage callbacks. On restart it asks the configured adapter to reconstruct
+connection options from the stable binding. Package
 `PairingSession`, `Storage.Split`, `Storage.Temporary` and `Storage.Mnesia` own
 generic mechanics. No raw snapshots are
 returned to BO. Persistence callbacks use the existing confidential Engine Actions.

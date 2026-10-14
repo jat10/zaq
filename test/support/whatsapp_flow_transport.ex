@@ -127,6 +127,15 @@ defmodule Zaq.TestSupport.WhatsAppFlowAdapter do
 
   defdelegate channel_type(), to: Adapter
   defdelegate capabilities(), to: Adapter
+  defdelegate connection_options(binding, opts), to: Adapter
+
+  def authenticate(request, owner_id, opts),
+    do:
+      Adapter.authenticate(
+        request,
+        owner_id,
+        Keyword.put(opts, :transport, WhatsAppFlowTransport)
+      )
 
   def listener_child_specs(id, opts) do
     ingress = Keyword.fetch!(opts, :ingress) |> Map.put(:transport, WhatsAppFlowTransport)

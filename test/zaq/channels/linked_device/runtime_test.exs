@@ -3,6 +3,7 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
   alias Jido.Chat.WhatsApp.{Adapter, ConnectionWorker}
   alias Zaq.Channels.BridgeSupervisor
   alias Zaq.Channels.JidoChatBridge
+  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.TestSupport.LinkedDeviceConnectionStub, as: Transport
   alias Zaq.TestSupport.LinkedDeviceFailingListener
@@ -86,8 +87,16 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
   test "a restarted adapter source is monitored and its shutdown clears the QR" do
     id = System.unique_integer([:positive])
     bridge_id = "whatsapp_#{id}"
-    profile = "zaq_linked_device_#{id}"
-    config = %{id: id, provider: "whatsapp", settings: %{}, url: "", token: ""}
+    profile = bound_profile(id)
+
+    config = %{
+      id: id,
+      provider: "whatsapp",
+      settings: %{"credential_document_id" => 1},
+      url: "",
+      token: ""
+    }
+
     state_module = Zaq.Channels.JidoChatBridge.State
 
     state_spec = %{
@@ -141,7 +150,15 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
   test "shared runtime status preserves pairing presentation and disconnected fallback" do
     id = System.unique_integer([:positive])
     bridge_id = "whatsapp_#{id}"
-    config = %{id: id, provider: "whatsapp", settings: %{}, url: "", token: ""}
+
+    config = %{
+      id: id,
+      provider: "whatsapp",
+      settings: %{"credential_document_id" => 1},
+      url: "",
+      token: ""
+    }
+
     assert {:ok, %{phase: :disconnected, qr: nil}} = JidoChatBridge.channel_ingress_status(config)
 
     spec = %{
@@ -155,7 +172,7 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
 
     envelope =
       LinkedDeviceLifecycle.envelope(self(), %{
-        profile: "zaq_linked_device_#{id}",
+        profile: bound_profile(id),
         attempt_id: make_ref(),
         status: :pairing,
         qr: "private-qr"
@@ -170,6 +187,13 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
 
     assert :ok = DynamicSupervisor.terminate_child(BridgeSupervisor, state)
     assert {:ok, %{phase: :disconnected, qr: nil}} = JidoChatBridge.channel_ingress_status(config)
+  end
+
+  defp bound_profile(id) do
+    Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
+      context: :runtime,
+      document_mfa: {SessionStorage, :document, []}
+    ).profile
   end
 
   defp runtime(opts \\ []) do

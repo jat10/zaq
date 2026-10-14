@@ -158,6 +158,30 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
     refute_received {:whatsapp_model_input, _}
   end
 
+  test "replayed history cannot start agent replies while live messages still work", context do
+    pair_from_ui(context)
+
+    for {room, mentions} <- [{@peer_jid, []}, {"15550003@g.us", [@self_jid]}] do
+      message = incoming_message(room, mentions)
+
+      payload =
+        message
+        |> Jido.Chat.WhatsApp.Message.to_payload(%{
+          history: true,
+          event: :history_sync,
+          profile: context.profile
+        })
+        |> Map.put(:account_jids, [@self_jid])
+
+      assert :ok = JidoChatBridge.from_listener(context.config, payload, [])
+      refute Repo.get_by(Message, external_message_id: message.id)
+    end
+
+    refute_received {:whatsapp_model_input, _}
+    assert Transport.mailbox() == %{}
+    run_message(context, @peer_jid, [])
+  end
+
   defp pair_from_ui(%{conn: conn, config: config, profile: profile}) do
     assert_receive {:whatsapp_connected_config, connection_config}
     assert connection_config.profile == profile

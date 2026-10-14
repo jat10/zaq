@@ -3,8 +3,9 @@ defmodule Zaq.Channels.JidoChatBridge do
   Bridge for the jido_chat family of adapters (Mattermost, Telegram, WhatsApp, etc.).
 
   Adapter child specs share listener startup, supervision and status handling.
-  Lifecycle actions arrive through the same listener sink and Jido event routing. `Pairing` owns provisional onboarding callbacks; `SessionStorage`
-  supplies trusted credential bindings for saved connections.
+  Lifecycle actions arrive through the same listener sink and Jido event routing.
+  Adapter authentication uses the common Jido contract; `SessionStorage` supplies
+  trusted credential bindings for saved connections.
 
   `from_listener/3` is the `sink_mfa` target for adapter listeners. It forwards
   raw payloads to the per-bridge state process, where normalization and
@@ -33,6 +34,7 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   alias Zaq.Channels.{
     Bridge,
+    CommunicationBridge,
     RetrievalChannel,
     Supervisor,
     WebhookUrl
@@ -51,12 +53,92 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.{ConversationIdentity, Incoming, Outgoing}
+  alias Zaq.Event
   import Zaq.Engine.Messages, only: [is_present_message_id: 1]
   alias Zaq.NodeRouter
   alias Zaq.Types.EncryptedString
 
   @listener_retry_interval 25
   @listener_retries 200
+
+  @doc "Returns the configured adapter's optional authentication capability."
+  @spec authentication_capability(atom() | String.t(), keyword()) ::
+          :native | :unsupported | {:error, term()}
+  def authentication_capability(provider, opts \\ []) do
+    with {:ok, adapter} <- adapter_for(provider, opts) do
+      Adapter.capabilities(adapter).authenticate
+    end
+  end
+
+  @doc "Delegates an authorized account authentication command to the configured adapter."
+  @spec authenticate(atom() | String.t(), map(), term(), map(), keyword()) ::
+          {:ok, map()} | {:error, term()}
+  def authenticate(provider, request, owner_id, actor, opts \\ []) do
+    with {:ok, adapter} <- adapter_for(provider, opts) do
+      opts =
+        if request.op == :begin do
+          [
+            owner: request[:owner],
+            supervisor: Zaq.Channels.BridgeSupervisor,
+            attempt_id: Ecto.UUID.generate(),
+            context: actor,
+            persist_mfa: {__MODULE__, :persist_authentication, [provider]},
+            start_mfa: {__MODULE__, :start_authentication, [provider]},
+            document_mfa: {SessionStorage, :document, []}
+          ]
+        else
+          []
+        end
+
+      Adapter.authenticate(adapter, request, {to_string(provider), owner_id}, opts)
+    end
+  end
+
+  @doc "Atomically saves package-encoded credentials through the Engine Action."
+  @spec persist_authentication(atom() | String.t(), map(), map()) ::
+          {:ok, map()} | {:error, term()}
+  def persist_authentication(provider, actor, request) do
+    response =
+      request
+      |> Map.put(:provider, to_string(provider))
+      |> Event.new(:engine,
+        actor: actor,
+        opts: [action: :confirm_linked_device, confidential: true, linked_device_runtime: true]
+      )
+      |> NodeRouter.dispatch()
+      |> Map.fetch!(:response)
+
+    with {:ok, config} <- response,
+         true <- config.provider == to_string(provider),
+         credential_id when is_integer(credential_id) <- config.settings["credential_document_id"] do
+      {:ok,
+       %{
+         receipt: %{id: config.id, name: config.name},
+         binding: %{channel_config_id: config.id, credential_id: credential_id},
+         runtime: config
+       }}
+    else
+      {:error, _} = error -> error
+      _ -> {:error, :invalid_binding}
+    end
+  end
+
+  @doc "Starts the saved connector through the ordinary communication runtime."
+  @spec start_authentication(atom() | String.t(), map(), map()) :: :ok | {:error, term()}
+  def start_authentication(provider, _actor, %{runtime: config, connection_options: options})
+      when is_map(config) and is_map(options) do
+    if config.provider == to_string(provider) do
+      config = if is_struct(config), do: Map.from_struct(config), else: config
+
+      config
+      |> Map.put(:authentication_connection_options, options)
+      |> then(&CommunicationBridge.sync_config_runtime(nil, &1))
+    else
+      {:error, :invalid_connector}
+    end
+  end
+
+  def start_authentication(_, _, _), do: {:error, :invalid_connector}
 
   @test_message "✅ **Zaq Connection Test**\nThis is an automated test message. If you see this, the channel is configured correctly."
 
@@ -97,27 +179,6 @@ defmodule Zaq.Channels.JidoChatBridge do
         result
     end
   end
-
-  @doc "Builds adapter ingress options with an explicit, trusted storage binding."
-  @spec linked_device_ingress(map(), {module(), keyword()}) :: {:ok, map()} | {:error, term()}
-  def linked_device_ingress(config, {storage_module, storage_opts} = storage)
-      when is_atom(storage_module) and not is_nil(storage_module) and is_list(storage_opts) do
-    with {:ok, profile} <- SessionStorage.profile(config) do
-      {:ok,
-       %{
-         mode: :linked_device,
-         profile: profile,
-         config: %{
-           profile: profile,
-           storage: storage,
-           sync_history: false,
-           sync_full_history: false
-         }
-       }}
-    end
-  end
-
-  def linked_device_ingress(_config, _storage), do: {:error, :invalid_storage}
 
   @doc """
   Subscribes to replies for a specific thread. Starts a dedicated runtime bridge
@@ -978,6 +1039,14 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   defp handle_subscribed_message(config, thread, incoming, normalized \\ nil)
 
+  defp handle_subscribed_message(
+         _config,
+         _thread,
+         %Chat.Incoming{metadata: %{history: true}},
+         _normalized
+       ),
+       do: :ok
+
   defp handle_subscribed_message(config, thread, %Chat.Incoming{} = incoming, normalized) do
     post = %{
       root_id: incoming.external_thread_id,
@@ -1093,6 +1162,16 @@ defmodule Zaq.Channels.JidoChatBridge do
       route_message_event(config, thread, incoming, normalized)
     end
   end
+
+  # History may be delivered even when synchronization was disabled. It must
+  # never enter the live request pipeline and produce unsolicited replies.
+  defp route_message_event(
+         _config,
+         _thread,
+         %Chat.Incoming{metadata: %{history: true}},
+         _normalized
+       ),
+       do: :ok
 
   defp route_message_event(config, thread, incoming, normalized) do
     msg =
@@ -1290,21 +1369,34 @@ defmodule Zaq.Channels.JidoChatBridge do
   defp build_listener_specs(adapter, config, bridge_id, runtime_opts) do
     opts = listener_opts(config, bridge_id, runtime_opts)
 
-    with {:ok, opts} <- prepare_listener_opts(config, opts) do
+    with {:ok, opts} <- prepare_listener_opts(config, opts, adapter) do
       adapter.listener_child_specs(bridge_id, opts)
     end
   end
 
-  defp prepare_listener_opts(config, opts) do
-    case ingress_mode_for(config.provider) do
-      :linked_device ->
-        with {:ok, storage} <- SessionStorage.prepare(config),
-             {:ok, ingress} <- linked_device_ingress(config, storage) do
-          {:ok, Keyword.put(opts, :ingress, ingress)}
-        end
+  defp prepare_listener_opts(config, opts, adapter) do
+    if ingress_mode_for(config.provider) == :linked_device do
+      with {:ok, opts} <- linked_device_listener_opts(config, opts, adapter) do
+        {:ok,
+         Keyword.update!(opts, :ingress, fn ingress ->
+           Map.merge(ingress, %{sync_history: false, sync_full_history: false})
+         end)}
+      end
+    else
+      {:ok, opts}
+    end
+  end
 
-      _ ->
-        {:ok, opts}
+  defp linked_device_listener_opts(
+         %{authentication_connection_options: %{} = options},
+         opts,
+         _adapter
+       ),
+       do: {:ok, Keyword.put(opts, :ingress, Map.put(options, :mode, :linked_device))}
+
+  defp linked_device_listener_opts(config, opts, adapter) do
+    with {:ok, ingress} <- SessionStorage.prepare(config, adapter) do
+      {:ok, Keyword.put(opts, :ingress, ingress)}
     end
   end
 

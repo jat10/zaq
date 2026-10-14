@@ -5,7 +5,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
   alias Zaq.{Event, NodeRouter}
   alias ZaqWeb.Live.BO.AI.BOActor
 
-  @doc "Begins QR-first onboarding without persisting a connector."
+  @doc "Begins adapter authentication without persisting a connector."
   def new(socket) do
     socket = close(socket)
     generation = make_ref()
@@ -14,10 +14,10 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
     |> assign(:linked_device_modal, %{
       config_id: nil,
       session: nil,
-      name: "Link your WhatsApp account",
+      name: "Link your #{socket.assigns.provider_label} account",
       generation: generation,
       attempts: 0,
-      status: %{phase: :pending, summary: "Preparing QR code"}
+      status: %{phase: :pending, summary: "Preparing connection"}
     })
     |> refresh(generation, :begin)
   end
@@ -29,12 +29,12 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
             linked_device_modal: %{
               config_id: nil,
               generation: generation,
-              status: %{phase: :confirm}
+              status: %{phase: :confirm, account: %{external_id: account_id}}
             }
           }
         } = socket
       ),
-      do: refresh(socket, generation, :confirm)
+      do: refresh(socket, generation, {:confirm, account_id})
 
   def confirm(socket), do: socket
 
@@ -59,9 +59,10 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
     case socket.assigns[:linked_device_modal] do
       %{config_id: nil, session: session} when is_pid(session) ->
         actor = BOActor.build(socket.assigns.current_user)
+        provider = socket.assigns.provider
 
         Task.Supervisor.start_child(Zaq.TaskSupervisor, fn ->
-          provisional(%{op: :cancel, session: session}, actor)
+          provisional(%{provider: provider, op: :cancel, session: session}, actor)
         end)
 
       _ ->
@@ -120,10 +121,12 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
     case socket.assigns[:linked_device_modal] do
       %{generation: ^generation, config_id: nil} = modal ->
         actor = BOActor.build(socket.assigns.current_user)
+        provider = socket.assigns.provider
         owner = self()
+        request = authentication_request(provider, modal.session, owner, operation)
 
         start_async(socket, {:linked_device, generation}, fn ->
-          provisional(%{op: operation, session: modal.session, owner: owner}, actor)
+          provisional(request, actor)
         end)
 
       %{generation: ^generation, config_id: id} ->
@@ -138,6 +141,12 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
         socket
     end
   end
+
+  defp authentication_request(provider, session, _owner, {:confirm, account_id}),
+    do: %{provider: provider, op: :confirm, session: session, account_id: account_id}
+
+  defp authentication_request(provider, session, owner, op),
+    do: %{provider: provider, op: op, session: session, owner: owner}
 
   @doc "Applies current results and bounds polling to three minutes per open/retry."
   def result(socket, generation, result) do
@@ -178,9 +187,11 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
   end
 
   defp watching_status?(status),
-    do: status[:phase] in [:pending, :pairing, :expired] and status[:session_expired] != true
+    do:
+      status[:phase] in [:pending, :pairing, :expired, :failed] and
+        status[:session_expired] != true
 
-  defp result_status({:ok, {:ok, status}}, _) when is_map(status), do: status
+  defp result_status({:ok, {:ok, status}}, _) when is_map(status), do: presentation(status)
 
   defp result_status({:ok, {:error, :pairing_expired}}, _),
     do: %{
@@ -201,16 +212,34 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
   defp result_status(_, _),
     do: %{phase: :failed, summary: "Device connection could not be checked or restarted"}
 
+  defp presentation(%{phase: :challenge, challenge: %{type: :qr, value: qr}} = status),
+    do: status |> Map.put(:phase, :pairing) |> Map.put(:qr, qr)
+
+  defp presentation(%{phase: :authenticated} = status),
+    do: Map.put(status, :phase, :confirm)
+
+  defp presentation(%{phase: :saved, receipt: receipt} = status),
+    do: Map.put(status, :saved, Map.put(receipt, :runtime_pending, status.runtime_pending))
+
+  defp presentation(status), do: status
+
   defp remember_session(%{session: session} = modal, status),
     do: %{modal | session: status[:session] || session}
 
   defp remember_session(modal, _), do: modal
 
+  defp discard_stale_session(
+         %{assigns: %{linked_device_modal: %{session: session}}},
+         {:ok, {:ok, %{session: session}}}
+       ),
+       do: :ok
+
   defp discard_stale_session(socket, {:ok, {:ok, %{session: session}}}) do
     actor = BOActor.build(socket.assigns.current_user)
+    provider = socket.assigns.provider
 
     Task.Supervisor.start_child(Zaq.TaskSupervisor, fn ->
-      provisional(%{op: :cancel, session: session}, actor)
+      provisional(%{provider: provider, op: :cancel, session: session}, actor)
     end)
   end
 

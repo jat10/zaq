@@ -903,10 +903,24 @@ defmodule Zaq.Channels.Api do
     response =
       case Jido.Exec.run(Zaq.Channels.Actions.PairLinkedDevice, %{request: event.request}, %{
              actor: event.actor,
-             confidential: event.opts[:confidential] == true
+             confidential: event.opts[:confidential] == true,
+             bridge_opts: event.opts
            }) do
         {:ok, %{result: result}} -> result
         {:error, _} = error -> error
+      end
+
+    %{event | response: response}
+  end
+
+  def handle_event(
+        %Event{request: %{provider: provider}} = event,
+        :channel_authentication_capability,
+        _context
+      ) do
+    response =
+      with :ok <- authorize_pairing_operator(event) do
+        communication_bridge_module(event).authentication_capability(provider, event.opts)
       end
 
     %{event | response: response}
