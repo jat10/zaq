@@ -61,6 +61,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
       end)
     end)
 
+    assert :ok = JidoChatBridge.start_runtime({:provider, :whatsapp}, [])
     start_supervised!({Transport, observer: observer})
 
     {server, endpoint} =
