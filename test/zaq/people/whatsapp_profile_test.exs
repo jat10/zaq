@@ -4,6 +4,7 @@ defmodule Zaq.People.WhatsAppProfileTest do
   alias Amarula.Protocol.Signal.LidMappingFileStore
   alias Jido.Chat.WhatsApp.Adapter
   alias Zaq.Accounts.People
+  alias Zaq.Channels.Bridge
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.ChannelConfig
   alias Zaq.People.IdentityResolver
@@ -77,25 +78,6 @@ defmodule Zaq.People.WhatsAppProfileTest do
     refute first.id == second.id
   end
 
-  test "legacy JID phone values are repaired when the phone becomes available" do
-    {config, _} = connection()
-    jid = "15551234567@s.whatsapp.net"
-
-    assert {:ok, person} =
-             People.find_or_create_from_channel("whatsapp", %{
-               "channel_id" => jid,
-               "channel_config_id" => config.id,
-               "phone" => jid
-             })
-
-    assert {:ok, person} = People.update_person(person, %{email: "legacy@example.com"})
-    refute person.incomplete
-    assert {:ok, updated} = IdentityResolver.resolve(incoming(config, jid, "Sender Name"), [])
-    assert updated.id == person.id
-    assert updated.phone == "+15551234567"
-    assert updated.full_name == "Sender Name"
-  end
-
   defp connection do
     config =
       %ChannelConfig{}
@@ -106,7 +88,8 @@ defmodule Zaq.People.WhatsAppProfileTest do
       })
       |> Repo.insert!()
 
-    assert {:ok, conn} = Amarula.Testing.start_offline(profile: "zaq_linked_device_#{config.id}")
+    profile = Bridge.fetch_connection_details_for_config(config).profile
+    assert {:ok, conn} = Amarula.Testing.start_offline(profile: profile)
     on_exit(fn -> Amarula.stop(conn) end)
     {config, conn}
   end

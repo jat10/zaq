@@ -185,7 +185,7 @@ defmodule Zaq.People.IdentityResolver do
     channel_id = canonical["channel_id"] || ""
 
     case match_author(platform, channel_id, config_id) do
-      {:ok, %{incomplete: false} = person} when platform != "whatsapp" ->
+      {:ok, %{incomplete: false} = person} ->
         channel = find_channel(person, platform, channel_id, config_id)
         touch_channel(channel, canonical["dm_channel_id"])
         maybe_backfill_dm_channel(channel, platform, incoming, opts)
@@ -264,7 +264,11 @@ defmodule Zaq.People.IdentityResolver do
     case result do
       {:ok, profile} ->
         profile = Map.reject(stringify_profile(profile), fn {_, value} -> value in [nil, ""] end)
-        Map.merge(canonical, profile)
+        {phone, profile} = Map.pop(profile, "phone")
+
+        canonical
+        |> Map.merge(profile)
+        |> Map.put("profile_phone", phone)
 
       _ ->
         canonical
