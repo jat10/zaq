@@ -6,6 +6,7 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.TestSupport.LinkedDeviceConnectionStub, as: Transport
   alias Zaq.TestSupport.LinkedDeviceFailingListener
+  alias Zaq.TestSupport.LinkedDeviceLifecycle
 
   test "adapter owns correlated lifecycle and expiry without sending control events to chat" do
     {worker, profile} = runtime(qr_timeout: 5)
@@ -103,8 +104,7 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
           transport: Transport,
           config: %{profile: profile, observer: self()}
         },
-        sink_mfa: {Transport, :deliver, [self()]},
-        lifecycle_sink_mfa: {Zaq.Channels.JidoChatBridge, :from_lifecycle, ["whatsapp", id]}
+        sink_mfa: {JidoChatBridge, :from_listener, [config]}
       )
 
     assert {:ok, %{state_pid: state, listener_pids: [worker]}} =
@@ -122,7 +122,11 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
     send(relay, {:amarula, :connection_update, %{qr: "replacement-qr"}})
 
     assert_receive {:trace, ^state, :receive,
-                    {:"$gen_cast", {:lifecycle, source, %{status: :pairing}}}},
+                    {:"$gen_call", _,
+                     {:process_listener_payload, _,
+                      %Jido.Chat.EventEnvelope{
+                        payload: %{metadata: %{source: source, status: :pairing}}
+                      }, _}}},
                    1_000
 
     assert %{phase: :pairing, qr: "replacement-qr"} = state_module.ingress_status(state)
@@ -149,16 +153,15 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
     on_exit(fn -> BridgeSupervisor.stop_bridge_runtime(%{}, bridge_id) end)
     assert {:ok, %{phase: :disconnected, qr: nil}} = JidoChatBridge.channel_ingress_status(config)
 
-    GenServer.cast(
-      state,
-      {:lifecycle, self(),
-       %{
-         profile: "zaq_linked_device_#{id}",
-         attempt_id: make_ref(),
-         status: :pairing,
-         qr: "private-qr"
-       }}
-    )
+    envelope =
+      LinkedDeviceLifecycle.envelope(self(), %{
+        profile: "zaq_linked_device_#{id}",
+        attempt_id: make_ref(),
+        status: :pairing,
+        qr: "private-qr"
+      })
+
+    assert :ok = State.process_listener_payload(state, config, envelope, [])
 
     assert %{phase: :pairing} = State.ingress_status(state)
 
@@ -189,8 +192,7 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
     {:ok, [spec]} =
       Adapter.listener_child_specs(profile,
         ingress: %{mode: :linked_device, profile: profile, transport: Transport, config: config},
-        sink_mfa: {Transport, :deliver, [self()]},
-        lifecycle_sink_mfa: {Transport, :lifecycle, [self()]}
+        sink_mfa: {Transport, :deliver, [self()]}
       )
 
     spec

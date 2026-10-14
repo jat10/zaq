@@ -202,7 +202,9 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
       # QR event, including a retry while the generic supervisor registers state.
       unless match?({:ok, %{phase: :pairing}}, JidoChatBridge.channel_ingress_status(config)) do
         assert_receive {:trace, ^state, :receive,
-                        {:"$gen_cast", {:lifecycle, _, %{status: :pairing}}}},
+                        {:"$gen_call", _,
+                         {:process_listener_payload, _,
+                          %Jido.Chat.EventEnvelope{payload: %{metadata: %{status: :pairing}}}, _}}},
                        1_000
       end
 

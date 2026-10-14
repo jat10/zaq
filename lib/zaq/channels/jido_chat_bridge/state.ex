@@ -132,20 +132,17 @@ defmodule Zaq.Channels.JidoChatBridge.State do
         _from,
         state
       ) do
-    # Adapters emit a normalized `%EventEnvelope{}` for every inbound event that
-    # `transform_incoming/1` has no representation for (reactions today, more
-    # event types later). `Jido.Chat` owns envelope routing: it classifies the
-    # `event_type` and fires the handlers registered in
-    # `JidoChatBridge.register_handlers/3` — the same path webhook-mode ingress
-    # already takes. ZAQ must not classify or normalize these itself.
-    #
-    # The routed chat is discarded to match the message branch below, which also
-    # drops `Chat.process_message/5`'s result.
     adapter_name = envelope.adapter_name || JidoChatBridge.provider_to_atom(config.provider)
 
-    chat_module().route_event(state.chat, adapter_name, envelope, [])
-
-    {:reply, :ok, state}
+    with :ok <- validate_envelope_adapter(state, adapter_name, envelope.payload),
+         {:ok, %{chat: chat}} <- chat_module().route_event(state.chat, adapter_name, envelope, []) do
+      {lifecycle, metadata} = Map.pop(chat.metadata, :connection_lifecycle)
+      state = %{state | chat: %{chat | metadata: metadata}}
+      {:reply, :ok, apply_lifecycle(state, lifecycle)}
+    else
+      {:error, _} = error ->
+        {:reply, error, state}
+    end
   end
 
   def handle_call({:process_listener_payload, config, payload, sink_opts}, _from, state) do
@@ -273,31 +270,6 @@ defmodule Zaq.Channels.JidoChatBridge.State do
   end
 
   @impl GenServer
-  def handle_cast({:lifecycle, source, payload}, state) do
-    current = state.lifecycle_source
-
-    accepted =
-      is_pid(source) and Process.alive?(source) and
-        (is_nil(state.lifecycle_profile) or payload.profile == state.lifecycle_profile) and
-        current_lifecycle?(current, source, state.lifecycle_attempt, payload)
-
-    if accepted do
-      monitor = monitor_lifecycle_source(state, source)
-
-      {:noreply,
-       %{
-         state
-         | lifecycle_source: source,
-           lifecycle_monitor: monitor,
-           lifecycle_profile: payload.profile,
-           lifecycle_attempt: payload.attempt_id,
-           ingress_status: ListenerStatus.from_lifecycle(payload)
-       }}
-    else
-      {:noreply, state}
-    end
-  end
-
   def handle_cast({:record_ingress_status, status}, state) when is_map(status) do
     {:noreply, %{state | ingress_status: put_status_timestamp(status)}}
   end
@@ -322,7 +294,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
         {:DOWN, ref, :process, source, _reason},
         %{lifecycle_monitor: ref, lifecycle_source: source} = state
       ) do
-    status = ListenerStatus.from_lifecycle(%{status: :disconnected, attempt_id: nil, qr: nil})
+    status = JidoChatBridge.stopped_listener_status(state.ingress_status.mode)
 
     {:noreply, %{state | lifecycle_monitor: nil, ingress_status: put_status_timestamp(status)}}
   end
@@ -347,8 +319,47 @@ defmodule Zaq.Channels.JidoChatBridge.State do
     end
   end
 
-  # Linked-device adapters own their connection generations. Their dispatcher
-  # dies with the worker and changes on restart, unlike the original listener
+  # Jido normalizes payload identity to the routing target. Reject mismatched
+  # provenance before that normalization can erase it.
+  defp validate_envelope_adapter(state, adapter_name, payload) do
+    expected = JidoChatBridge.provider_to_atom(state.config.provider)
+
+    payload_matches =
+      not is_map(payload) or Map.get(payload, :adapter_name) in [nil, expected]
+
+    if adapter_name == expected and payload_matches,
+      do: :ok,
+      else: {:error, :invalid_adapter}
+  end
+
+  defp apply_lifecycle(state, nil), do: state
+
+  defp apply_lifecycle(state, %{source: source} = payload) do
+    current = state.lifecycle_source
+
+    accepted =
+      is_pid(source) and Process.alive?(source) and
+        (is_nil(state.lifecycle_profile) or payload.profile == state.lifecycle_profile) and
+        current_lifecycle?(current, source, state.lifecycle_attempt, payload)
+
+    if accepted do
+      monitor = monitor_lifecycle_source(state, source)
+
+      %{
+        state
+        | lifecycle_source: source,
+          lifecycle_monitor: monitor,
+          lifecycle_profile: payload.profile,
+          lifecycle_attempt: payload.attempt_id,
+          ingress_status: payload.presentation
+      }
+    else
+      state
+    end
+  end
+
+  # Linked-device adapters own their connection generations. Their source PID
+  # is the worker and changes on restart, unlike the original listener
   # PID list supplied by the generic supervisor. Older listener exits must not
   # overwrite a newer generation's lifecycle status.
   defp monitor_lifecycle_source(%{lifecycle_source: source, lifecycle_monitor: ref}, source),

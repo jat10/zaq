@@ -18,6 +18,15 @@ defmodule Zaq.TestSupport.LinkedDeviceConnectionStub do
     :ok
   end
 
+  def deliver(
+        pid,
+        %Jido.Chat.EventEnvelope{
+          event_type: :action,
+          payload: %Jido.Chat.ActionEvent{metadata: %{category: :connection_lifecycle} = metadata}
+        },
+        _opts
+      ),
+      do: send(pid, {:lifecycle, metadata})
+
   def deliver(pid, payload, opts), do: send(pid, {:payload, payload, opts})
-  def lifecycle(pid, payload, _opts), do: send(pid, {:lifecycle, payload})
 end
