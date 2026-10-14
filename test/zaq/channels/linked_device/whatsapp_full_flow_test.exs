@@ -120,6 +120,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
       People.add_channel(%{
         person_id: person.id,
         platform: "whatsapp",
+        channel_config_id: config.id,
         channel_identifier: @peer_jid,
         dm_channel_id: @peer_jid,
         weight: 0
