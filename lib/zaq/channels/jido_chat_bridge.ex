@@ -3,8 +3,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   Bridge for the jido_chat family of adapters (Mattermost, Telegram, WhatsApp, etc.).
 
   Adapter child specs share listener startup, supervision and status handling.
-  `from_lifecycle/4` routes adapter lifecycle notifications separately from chat
-  ingress. `Pairing` owns provisional onboarding callbacks; `SessionStorage`
+  Lifecycle actions arrive through the same listener sink and Jido event routing. `Pairing` owns provisional onboarding callbacks; `SessionStorage`
   supplies trusted credential bindings for saved connections.
 
   `from_listener/3` is the `sink_mfa` target for adapter listeners. It forwards
@@ -53,12 +52,11 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.{ConversationIdentity, Incoming, Outgoing}
   import Zaq.Engine.Messages, only: [is_present_message_id: 1]
-  alias Zaq.Event
   alias Zaq.NodeRouter
   alias Zaq.Types.EncryptedString
 
-  @lifecycle_retry_interval 25
-  @lifecycle_retries 200
+  @listener_retry_interval 25
+  @listener_retries 200
 
   @test_message "✅ **Zaq Connection Test**\nThis is an automated test message. If you see this, the channel is configured correctly."
 
@@ -69,39 +67,34 @@ defmodule Zaq.Channels.JidoChatBridge do
     bridge_id = sink_opts[:bridge_id] || runtime_bridge_id(config)
 
     with {:ok, normalized_config} <- ensure_provider_atom(config),
-         :ok <- ensure_runtime_started(normalized_config, bridge_id, []),
-         {:ok, state_pid} <- supervisor_module().lookup_state_pid(bridge_id) do
+         {:ok, state_pid} <- listener_state(normalized_config, bridge_id, sink_opts) do
       state_module().process_listener_payload(state_pid, normalized_config, payload, sink_opts)
     end
   end
 
-  @doc """
-  Relays normalized lifecycle through the confidential Channels boundary.
-
-  The adapter's ordered dispatcher may run before the runtime is registered.
-  Retry only that transient response with a bounded startup retry budget,
-  retaining the original source PID and event order. Authorization and other
-  errors propagate.
-  """
-  @spec from_lifecycle(atom() | String.t(), pos_integer(), map(), keyword()) ::
-          :ok | {:error, term()}
-  def from_lifecycle(provider, config_id, payload, _opts) do
-    Event.new(
-      %{provider: provider, channel_config_id: config_id, source: self(), lifecycle: payload},
-      :channels,
-      opts: [action: :channel_ingress_lifecycle, confidential: true, channel_runtime: true]
-    )
-    |> dispatch_lifecycle(@lifecycle_retries)
+  # Explicit listener bridge IDs belong to a runtime already being started by
+  # the supervisor. Never recursively start it from an early sink callback.
+  defp listener_state(config, bridge_id, opts) do
+    if Keyword.has_key?(opts, :bridge_id) do
+      await_listener_state(bridge_id, @listener_retries)
+    else
+      with :ok <- ensure_runtime_started(config, bridge_id, []) do
+        supervisor_module().lookup_state_pid(bridge_id)
+      end
+    end
   end
 
-  defp dispatch_lifecycle(event, retries) do
-    case NodeRouter.dispatch(event).response do
-      {:error, :runtime_not_ready} when retries > 0 ->
-        Process.sleep(@lifecycle_retry_interval)
-        dispatch_lifecycle(event, retries - 1)
+  defp await_listener_state(bridge_id, retries) do
+    case supervisor_module().lookup_state_pid(bridge_id) do
+      {:error, :not_running} when retries > 0 ->
+        Process.sleep(@listener_retry_interval)
+        await_listener_state(bridge_id, retries - 1)
 
-      response ->
-        response
+      {:error, :not_running} ->
+        {:error, :runtime_unavailable}
+
+      result ->
+        result
     end
   end
 
@@ -395,6 +388,9 @@ defmodule Zaq.Channels.JidoChatBridge do
       |> Chat.on_new_message(~r/[\s\S]*/, fn thread, incoming ->
         handle_unaddressed_message(config, thread, incoming)
       end)
+      |> Chat.on_action("connection_update", fn chat, action ->
+        handle_connection_action(chat, action, config)
+      end)
       |> Chat.on_reaction(fn _thread, reaction ->
         handle_reaction_event(config, reaction)
       end)
@@ -404,6 +400,39 @@ defmodule Zaq.Channels.JidoChatBridge do
         handle_channel_message_event(config, thread, incoming)
       end)
     end)
+  end
+
+  # Jido owns action classification. Store only a transient handoff for State,
+  # which owns source fencing and applies the update before acknowledging ingress.
+  defp handle_connection_action(chat, %Chat.ActionEvent{} = action, config) do
+    with %{
+           category: :connection_lifecycle,
+           source: source,
+           profile: profile,
+           attempt_id: attempt,
+           status: status,
+           qr: qr,
+           presentation:
+             %{phase: phase, status: level, summary: summary, mode: mode} = presentation
+         } = lifecycle <- action.metadata,
+         true <- is_pid(source) and is_reference(attempt) and is_atom(status),
+         true <- is_nil(qr) or is_binary(qr),
+         true <-
+           is_atom(phase) and level in [:ok, :pending, :error] and is_binary(summary) and
+             is_binary(mode),
+         {:ok, ^profile} <- SessionStorage.profile(config),
+         :linked_device <- ingress_mode_for(config.provider),
+         {:ok, adapter} <- adapter_for(config.provider),
+         true <-
+           action.adapter == adapter and action.adapter_name == provider_to_atom(config.provider) do
+      presentation =
+        Map.take(presentation, [:phase, :status, :summary, :mode, :qr, :attempt_id, :expires_at])
+
+      lifecycle = Map.put(lifecycle, :presentation, presentation)
+      %{chat | metadata: Map.put(chat.metadata, :connection_lifecycle, lifecycle)}
+    else
+      _ -> chat
+    end
   end
 
   defp handle_channel_message_event(config, thread, incoming) do
@@ -1271,13 +1300,7 @@ defmodule Zaq.Channels.JidoChatBridge do
       :linked_device ->
         with {:ok, storage} <- SessionStorage.prepare(config),
              {:ok, ingress} <- linked_device_ingress(config, storage) do
-          {:ok,
-           opts
-           |> Keyword.put(:ingress, ingress)
-           |> Keyword.put(
-             :lifecycle_sink_mfa,
-             {__MODULE__, :from_lifecycle, [config.provider, config.id]}
-           )}
+          {:ok, Keyword.put(opts, :ingress, ingress)}
         end
 
       _ ->
@@ -1366,11 +1389,18 @@ defmodule Zaq.Channels.JidoChatBridge do
     end
   end
 
+  @doc "Reports host-observed runtime loss when no adapter status is available."
+  @spec stopped_listener_status(String.t()) :: map()
+  def stopped_listener_status(mode) do
+    ListenerStatus.from_exit_reason(:not_running)
+    |> Map.merge(%{mode: mode, phase: :disconnected, qr: nil, attempt_id: nil, expires_at: nil})
+  end
+
   defp listener_status_payload(%{mode: "linked_device"} = recorded, _, :linked_device, _),
     do: recorded
 
   defp listener_status_payload(_, _, :linked_device, _),
-    do: ListenerStatus.from_lifecycle(%{status: :disconnected, attempt_id: nil, qr: nil})
+    do: stopped_listener_status("linked_device")
 
   defp listener_status_payload(%{status: status} = recorded_status, _auth_status, mode, details)
        when status in [:error, "error"] do

@@ -1,9 +1,9 @@
 defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
   use Zaq.DataCase, async: false
 
-  alias Zaq.Channels.{Api, BridgeSupervisor, JidoChatBridge}
+  alias Zaq.Channels.{BridgeSupervisor, JidoChatBridge}
   alias Zaq.Channels.JidoChatBridge.State
-  alias Zaq.Event
+  alias Zaq.TestSupport.LinkedDeviceLifecycle
 
   defmodule DelayedListener do
     def start_link(owner) do
@@ -13,26 +13,6 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
         :finish_startup -> Agent.start_link(fn -> :listener end)
       end
     end
-  end
-
-  test "authorized lifecycle distinguishes readiness from authorization failures" do
-    event = event(999_999_999)
-
-    assert Api.handle_event(event, :channel_ingress_lifecycle, nil).response ==
-             {:error, :runtime_not_ready}
-
-    for invalid <- [
-          %{event | opts: Keyword.delete(event.opts, :confidential)},
-          %{event | opts: Keyword.delete(event.opts, :channel_runtime)},
-          %{event | request: put_in(event.request, [:lifecycle, :profile], "foreign")},
-          %{event | request: %{event.request | provider: "mattermost"}}
-        ] do
-      assert Api.handle_event(invalid, :channel_ingress_lifecycle, nil).response ==
-               {:error, :unauthorized}
-    end
-
-    assert {:error, :unauthorized} =
-             JidoChatBridge.from_lifecycle("mattermost", 999_999_999, event.request.lifecycle, [])
   end
 
   test "startup lifecycle waits for registration and preserves source and event order" do
@@ -57,13 +37,23 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
     end)
 
     owner = self()
-    payload = event(id).request.lifecycle
+
+    payload = %{
+      profile: "zaq_linked_device_#{id}",
+      attempt_id: make_ref(),
+      status: :pairing,
+      qr: "private-qr"
+    }
 
     dispatcher =
       start_supervised!(
         {Task,
          fn ->
-           result = JidoChatBridge.from_lifecycle("whatsapp", id, payload, [])
+           result =
+             JidoChatBridge.from_listener(config, LinkedDeviceLifecycle.envelope(self(), payload),
+               bridge_id: bridge_id
+             )
+
            send(owner, {:delivered, self(), result})
 
            receive do
@@ -71,11 +61,10 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
            end
 
            result =
-             JidoChatBridge.from_lifecycle(
-               "whatsapp",
-               id,
-               %{payload | status: :connected, qr: nil},
-               []
+             JidoChatBridge.from_listener(
+               config,
+               LinkedDeviceLifecycle.envelope(self(), %{payload | status: :connected, qr: nil}),
+               bridge_id: bridge_id
              )
 
            send(owner, {:connected, result})
@@ -104,28 +93,10 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
   end
 
   @tag timeout: 10_000
-  test "a runtime that never registers returns the exhausted readiness error" do
-    id = 999_999_998
+  test "a runtime that never registers returns a terminal readiness error" do
+    config = %{id: 999_999_998, provider: "whatsapp", settings: %{}}
 
-    assert {:error, :runtime_not_ready} =
-             JidoChatBridge.from_lifecycle("whatsapp", id, event(id).request.lifecycle, [])
-  end
-
-  defp event(id) do
-    Event.new(
-      %{
-        provider: "whatsapp",
-        channel_config_id: id,
-        source: self(),
-        lifecycle: %{
-          profile: "zaq_linked_device_#{id}",
-          attempt_id: make_ref(),
-          status: :pairing,
-          qr: "private-qr"
-        }
-      },
-      :channels,
-      opts: [action: :channel_ingress_lifecycle, confidential: true, channel_runtime: true]
-    )
+    assert {:error, :runtime_unavailable} =
+             JidoChatBridge.from_listener(config, %{}, bridge_id: "whatsapp_999999998")
   end
 end
