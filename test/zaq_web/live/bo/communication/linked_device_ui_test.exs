@@ -87,6 +87,55 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
     assert expired.assigns.linked_device_timer == nil
   end
 
+  test "shared challenge rotation and account confirmation retain one session" do
+    socket = socket()
+    modal = Map.merge(socket.assigns.linked_device_modal, %{config_id: nil, session: self()})
+    socket = Phoenix.Component.assign(socket, :linked_device_modal, modal)
+
+    first =
+      LinkedDeviceUI.result(socket, modal.generation, {
+        :ok,
+        {:ok, %{phase: :challenge, session: self(), challenge: %{type: :qr, value: "first"}}}
+      })
+
+    assert first.assigns.linked_device_modal.status == %{
+             phase: :pairing,
+             session: self(),
+             challenge: %{type: :qr, value: "first"},
+             qr: "first"
+           }
+
+    expired =
+      LinkedDeviceUI.result(first, modal.generation, {
+        :ok,
+        {:ok, %{phase: :failed, session: self(), summary: "QR expired"}}
+      })
+
+    assert is_reference(expired.assigns.linked_device_timer)
+    refute Map.has_key?(expired.assigns.linked_device_modal.status, :qr)
+
+    replacement =
+      LinkedDeviceUI.result(expired, modal.generation, {
+        :ok,
+        {:ok, %{phase: :challenge, session: self(), challenge: %{type: :qr, value: "second"}}}
+      })
+
+    assert replacement.assigns.linked_device_modal.status.qr == "second"
+    assert replacement.assigns.linked_device_modal.session == self()
+
+    account = %{external_id: "+15550001", display_name: nil}
+
+    confirmed =
+      LinkedDeviceUI.result(replacement, modal.generation, {
+        :ok,
+        {:ok, %{phase: :authenticated, session: self(), account: account}}
+      })
+
+    assert confirmed.assigns.linked_device_modal.status.phase == :confirm
+    assert confirmed.assigns.linked_device_modal.status.account == account
+    assert confirmed.assigns.linked_device_timer == nil
+  end
+
   for config_id <- [nil, 2] do
     test "expired QR keeps watching for its replacement for config #{inspect(config_id)}" do
       socket = socket()
@@ -168,6 +217,8 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
     %Phoenix.LiveView.Socket{
       assigns: %{
         __changed__: %{},
+        provider: "whatsapp",
+        provider_label: "WhatsApp",
         linked_device_timer: nil,
         linked_device_modal: %{
           config_id: 2,

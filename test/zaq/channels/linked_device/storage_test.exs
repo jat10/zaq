@@ -1,12 +1,12 @@
 defmodule Zaq.Channels.JidoChatBridge.StorageTest do
   use Zaq.DataCase, async: true
 
-  alias Jido.Chat.WhatsApp.Transport.GuardedStorage
-
+  alias Jido.Chat.WhatsApp.Adapter
   alias Jido.Chat.WhatsApp.Storage.{Mnesia, Split}
+  alias Jido.Chat.WhatsApp.Transport.GuardedStorage
   alias Split, as: Storage
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Channels.JidoChatBridge.{Pairing, SessionStorage}
+  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Connect
   alias Zaq.Engine.Connect.Grant
@@ -33,13 +33,14 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
 
     assert {:ok, {_state, [spec]}} = JidoChatBridge.build_runtime_specs(runtime_config)
     assert {Jido.Chat.WhatsApp.ConnectionWorker, :start_link, [opts]} = spec.start
-    assert opts[:config].profile == "zaq_linked_device_#{config.id}"
+    {:ok, binding} = bind(config.id)
+    assert opts[:config].profile == connection_options(binding).profile
     refute opts[:config].sync_history
     refute opts[:config].sync_full_history
     refute Map.has_key?(opts[:config], :storage_root)
     assert {Split, storage_opts} = opts[:config].storage
     assert storage_opts[:context].channel_config_id == config.id
-    assert storage_opts[:document_mfa] == {SessionStorage, :document, []}
+    assert storage_opts[:document_mfa] == {SessionStorage, :document, [:runtime]}
     refute Keyword.has_key?(opts, :lifecycle_sink_mfa)
     assert opts[:sink_mfa] == {JidoChatBridge, :from_listener, [config]}
   end
@@ -48,11 +49,11 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
     config = connector()
     assert {:ok, binding} = bind(config.id)
     assert {:ok, ^binding} = bind(config.id)
-    profile = "zaq_linked_device_#{config.id}"
-    storage = Storage.new(SessionStorage.storage_options(binding, profile))
+    %{profile: profile, storage: {Storage, opts}} = connection_options(binding)
+    storage = Storage.new(opts)
     value = %{private: <<255, 0, 10>>, nested: {:paired, [1, 2]}}
     assert :ok = Storage.put(storage, profile, :creds, :self, value)
-    restored = Storage.new(SessionStorage.storage_options(binding, profile))
+    restored = Storage.new(opts)
     assert {:ok, ^value} = Storage.get(restored, profile, :creds, :self)
     assert {:ok, [:self]} = Storage.list_keys(restored, profile, :creds)
     assert {:ok, [^profile]} = Storage.list_profiles(restored)
@@ -66,8 +67,8 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
   test "disabled and revoked access fails without recreating a grant" do
     config = connector()
     {:ok, binding} = bind(config.id)
-    profile = "zaq_linked_device_#{config.id}"
-    storage = Storage.new(SessionStorage.storage_options(binding, profile))
+    %{profile: profile, storage: {Storage, opts}} = connection_options(binding)
+    storage = Storage.new(opts)
     disabled = Repo.update!(Ecto.Changeset.change(config, enabled: false))
     assert {:error, :connector_unavailable} = bind(config.id)
     assert {:error, :connector_unavailable} = Storage.get(storage, profile, :creds, :self)
@@ -84,14 +85,15 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
 
     value = %{private: <<255, 0, 10>>, nested: {:paired, [1, 2]}}
 
-    assert {:ok, %{runtime: config, storage: opts}} =
-             Pairing.confirm_pairing(actor, %{
+    assert {:ok, %{runtime: _config, binding: binding}} =
+             JidoChatBridge.persist_authentication("whatsapp", actor, %{
                attempt_id: Ecto.UUID.generate(),
-               identity: %{phone_number: "+15550001"},
-               records: %{{:creds, :self} => value, {:prekey, 42} => <<0, 255>>}
+               account: %{external_id: "+15550001", display_name: nil},
+               credentials:
+                 Split.encode_records(%{{:creds, :self} => value, {:prekey, 42} => <<0, 255>>})
              })
 
-    {:ok, profile} = SessionStorage.profile(config)
+    %{profile: profile, storage: {Storage, opts}} = connection_options(binding)
     storage = Storage.new(opts)
     assert {:ok, ^value} = Storage.get(storage, profile, :creds, :self)
     assert {:ok, <<0, 255>>} = Storage.get(storage, profile, :prekey, 42)
@@ -103,11 +105,11 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
   test "the real adapter guard latches failed durable writes and notifies its connection" do
     config = connector()
     {:ok, binding} = bind(config.id)
-    profile = "zaq_linked_device_#{config.id}"
+    %{profile: profile, storage: storage} = connection_options(binding)
 
     guard =
       GuardedStorage.new(
-        storage: {Storage, SessionStorage.storage_options(binding, profile)},
+        storage: storage,
         notify: self()
       )
 
@@ -218,8 +220,8 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
   defp storage do
     config = connector()
     {:ok, binding} = bind(config.id)
-    profile = "zaq_linked_device_#{config.id}"
-    storage = Storage.new(SessionStorage.storage_options(binding, profile))
+    %{profile: profile, storage: {Storage, opts}} = connection_options(binding)
+    storage = Storage.new(opts)
 
     on_exit(fn ->
       Mnesia.clear(storage.volatile, profile)
@@ -237,6 +239,13 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
     })
     |> Repo.insert!()
   end
+
+  defp connection_options(binding),
+    do:
+      Adapter.connection_options(binding,
+        context: :runtime,
+        document_mfa: {SessionStorage, :document, []}
+      )
 
   defp bind(id) do
     Event.new(%{op: :bind, channel_config_id: id}, :engine,

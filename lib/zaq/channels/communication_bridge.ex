@@ -27,6 +27,30 @@ defmodule Zaq.Channels.CommunicationBridge do
   alias Zaq.Event
   alias Zaq.NodeRouter
 
+  @doc "Delegates an authorized authentication command to the configured provider bridge."
+  @spec authenticate(atom() | String.t(), map(), term(), map(), keyword()) ::
+          {:ok, map()} | {:error, term()}
+  def authenticate(provider, request, owner_id, actor, opts \\ []) do
+    with {:ok, bridge} <- Bridge.resolve_bridge(provider, opts),
+         true <- function_exported?(bridge, :authenticate, 4) || {:error, :unsupported} do
+      if function_exported?(bridge, :authenticate, 5),
+        do: bridge.authenticate(provider, request, owner_id, actor, opts),
+        else: bridge.authenticate(provider, request, owner_id, actor)
+    end
+  end
+
+  @doc "Discovers adapter authentication through the provider bridge."
+  @spec authentication_capability(atom() | String.t(), keyword()) :: term()
+  def authentication_capability(provider, opts \\ []) do
+    with {:ok, bridge} <- Bridge.resolve_bridge(provider, opts),
+         true <-
+           function_exported?(bridge, :authentication_capability, 1) || {:error, :unsupported} do
+      if function_exported?(bridge, :authentication_capability, 2),
+        do: bridge.authentication_capability(provider, opts),
+        else: bridge.authentication_capability(provider)
+    end
+  end
+
   import Zaq.Engine.Messages, only: [is_present_message_id: 1]
 
   # `{:ok, receipt}` carries channel-assigned threading pointers (the delivered

@@ -1,5 +1,5 @@
 defmodule Zaq.Engine.Actions.ConfirmLinkedDevice do
-  @moduledoc "Persists a server-owned pairing snapshot through the confidential Engine boundary."
+  @moduledoc "Persists an authorized adapter account and encoded credentials through Engine."
   use Jido.Action,
     name: "confirm_linked_device",
     description: "Atomically save a confirmed linked-device connector and session",
@@ -11,8 +11,8 @@ defmodule Zaq.Engine.Actions.ConfirmLinkedDevice do
 
   def run(%{request: request}, %{actor: actor, linked_device_runtime: true}) do
     case BOActor.current_user(actor) do
-      {:ok, %{role: %{name: "super_admin"}}} ->
-        {:ok, %{result: LinkedDeviceConfirmation.save(request)}}
+      {:ok, %{id: id, role: %{name: "super_admin"}}} ->
+        {:ok, %{result: LinkedDeviceConfirmation.save(Map.put(request, :owner_id, id))}}
 
       _ ->
         {:error, :unauthorized}
