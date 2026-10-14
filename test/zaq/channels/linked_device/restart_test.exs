@@ -26,6 +26,15 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
     end)
 
     start_supervised!({Transport, observer: self()})
+    # Exercise cold provider bootstrap instead of relying on application startup
+    # or another supervision test to leave shared storage running.
+    assert Zaq.Channels.Supervisor.stop_bridge_runtime(%{}, "provider:whatsapp") in [
+             :ok,
+             {:error, :not_running}
+           ]
+
+    assert :ok = JidoChatBridge.start_runtime({:provider, :whatsapp}, [])
+
     first = connector()
     second = connector()
 

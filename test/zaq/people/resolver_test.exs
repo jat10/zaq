@@ -87,34 +87,19 @@ defmodule Zaq.People.ResolverTest do
     end
   end
 
-  # ── whatsapp ─────────────────────────────────────────────────────────────
+  test "canonical adapter identity is preserved without deriving a phone from its identifier" do
+    attrs = %{
+      channel_id: "opaque-provider-id",
+      display_name: "Provider Name",
+      dm_channel_id: "room-id"
+    }
 
-  describe "normalize/2 - whatsapp" do
-    test "native JIDs are channel identifiers, not phone numbers" do
-      for jid <- ["15551234567@s.whatsapp.net", "1234567890@lid", "1234567890:4@lid"] do
-        assert %{"channel_id" => ^jid, "phone" => nil} =
-                 Resolver.normalize("whatsapp", %{channel_id: jid})
-
-        assert %{"channel_id" => ^jid, "phone" => "+15551234567"} =
-                 Resolver.normalize("whatsapp", %{channel_id: jid, phone: "+15551234567"})
-      end
-    end
-
-    test "uses phone as channel_id" do
-      attrs = %{phone: "+15551234567"}
-      result = Resolver.normalize("whatsapp", attrs)
-
-      assert result["channel_id"] == "+15551234567"
-      assert result["phone"] == "+15551234567"
-    end
-
-    test "falls back to channel_id when phone absent" do
-      attrs = %{channel_id: "+15559999999"}
-      result = Resolver.normalize("whatsapp", attrs)
-
-      assert result["channel_id"] == "+15559999999"
-      assert result["phone"] == "+15559999999"
-    end
+    assert %{
+             "channel_id" => "opaque-provider-id",
+             "display_name" => "Provider Name",
+             "dm_channel_id" => "room-id",
+             "phone" => nil
+           } = Resolver.normalize("whatsapp", attrs)
   end
 
   # ── telegram ─────────────────────────────────────────────────────────────
