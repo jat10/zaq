@@ -5,6 +5,38 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Event
 
+  defmodule ExampleAdapter do
+    @moduledoc false
+    use Jido.Chat.Adapter
+
+    @impl true
+    def channel_type, do: :example
+
+    @impl true
+    def transform_incoming(_), do: {:error, :unsupported}
+
+    @impl true
+    def send_message(_, _, _), do: {:error, :unsupported}
+
+    @impl true
+    def authenticate(request, owner_id, opts) do
+      {:ok,
+       %{
+         phase: :pending,
+         session: request[:session] || self(),
+         owner_id: owner_id,
+         request: request,
+         callbacks: Keyword.take(opts, [:persist_mfa, :start_mfa, :document_mfa])
+       }}
+    end
+  end
+
+  defmodule ExampleConfig do
+    @moduledoc false
+    def get(:zaq, :channels, _default, opts),
+      do: %{example: %{bridge: Zaq.Channels.JidoChatBridge, adapter: opts[:test_adapter]}}
+  end
+
   defmodule FailingRuntime do
     @moduledoc false
     def bridge_for(_), do: __MODULE__
@@ -24,6 +56,60 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
 
     assert Api.handle_event(event, :channel_retry_linked_device, nil).response ==
              {:error, :connection_start_failed}
+  end
+
+  test "a second adapter traverses the authorized Action and both bridges" do
+    admin = super_admin_fixture(%{must_change_password: false})
+    actor = %{user_id: admin.id}
+    adapter = ExampleAdapter
+
+    begin_request = %{provider: :example, op: :begin, owner: self()}
+    assert {:ok, first} = authenticate(begin_request, actor, adapter)
+    assert first.owner_id == {"example", admin.id}
+    assert first.request == begin_request
+
+    assert {Zaq.Channels.JidoChatBridge, :persist_authentication, [:example]} =
+             first.callbacks[:persist_mfa]
+
+    assert {Zaq.Channels.JidoChatBridge.SessionStorage, :document, []} =
+             first.callbacks[:document_mfa]
+
+    assert {:ok, followup} =
+             authenticate(
+               %{
+                 provider: :example,
+                 op: :confirm,
+                 session: first.session,
+                 account_id: "account-7"
+               },
+               actor,
+               adapter
+             )
+
+    assert followup.owner_id == first.owner_id
+    assert followup.request.account_id == "account-7"
+    assert followup.callbacks == []
+
+    admin |> Ecto.Changeset.change(must_change_password: true) |> Repo.update!()
+
+    assert {:error, %{details: %{reason: :unauthorized}}} =
+             authenticate(
+               %{provider: :example, op: :status, session: first.session},
+               actor,
+               adapter
+             )
+  end
+
+  test "a legacy adapter reports unsupported through the same Action" do
+    admin = super_admin_fixture(%{must_change_password: false})
+    adapter = Jido.Chat.Telegram.Adapter
+
+    assert {:error, :unsupported} =
+             authenticate(
+               %{provider: :example, op: :begin, owner: self()},
+               %{user_id: admin.id},
+               adapter
+             )
   end
 
   test "pairing status and retry deny nil, unprivileged and non-confidential callers" do
@@ -78,6 +164,20 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
       opts: [action: action, confidential: confidential]
     )
     |> Api.handle_event(action, nil)
+    |> Map.fetch!(:response)
+  end
+
+  defp authenticate(request, actor, adapter) do
+    Event.new(request, :channels,
+      actor: actor,
+      opts: [
+        action: :pair_linked_device,
+        confidential: true,
+        config: ExampleConfig,
+        test_adapter: adapter
+      ]
+    )
+    |> Api.handle_event(:pair_linked_device, nil)
     |> Map.fetch!(:response)
   end
 

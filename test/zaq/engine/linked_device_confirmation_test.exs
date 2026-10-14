@@ -57,6 +57,35 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
     end
   end
 
+  test "normalized adapter accounts are saved once and scoped to provider and owner" do
+    initial_count = Repo.aggregate(ChannelConfig, :count)
+
+    request = %{
+      attempt_id: Ecto.UUID.generate(),
+      provider: "telegram",
+      owner_id: 42,
+      account: %{external_id: "account-7", display_name: "Support"},
+      credentials: %{{"credential", "session"} => "opaque"}
+    }
+
+    assert {:ok, config} = LinkedDeviceConfirmation.save(request)
+    assert config.provider == "telegram"
+    assert config.name == "Support"
+    assert config.settings["owner_id"] == 42
+    assert {:ok, replay} = LinkedDeviceConfirmation.save(request)
+    assert replay.id == config.id
+
+    for changed <- [
+          %{request | provider: "whatsapp"},
+          %{request | owner_id: 43},
+          %{request | account: %{external_id: "account-8", display_name: "Support"}}
+        ] do
+      assert {:error, :conflicting_attempt} = LinkedDeviceConfirmation.save(changed)
+    end
+
+    assert Repo.aggregate(ChannelConfig, :count) == initial_count + 1
+  end
+
   defp request do
     %{
       attempt_id: Ecto.UUID.generate(),

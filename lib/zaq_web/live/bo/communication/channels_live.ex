@@ -69,7 +69,10 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
      |> assign(:kind, kind)
      |> assign(:provider, provider)
      |> assign(:provider_label, label)
-     |> assign(:linked_device, connection_mode(provider) == :linked_device)
+     |> assign(
+       :linked_device,
+       authentication_capability(provider, socket.assigns.current_user) == :native
+     )
      |> assign(:linked_device_modal, nil)
      |> assign(:linked_device_timer, nil)
      |> assign(:configs, configs)
@@ -158,7 +161,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
        :info,
        if(saved.runtime_pending,
          do: "Account saved. Connection is pending; retry from the channel.",
-         else: "WhatsApp account connected."
+         else: "Account connected."
        )
      )}
   end
@@ -1350,16 +1353,16 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     |> schedule_ingress_status_refresh(configs)
   end
 
-  defp connector_provider_label(%{provider: "whatsapp"} = config, label) do
-    identity = Settings.nested(config, "account_identity")
+  defp connector_provider_label(config, label) do
+    account = Settings.nested(config, "account")
+    legacy_identity = Settings.nested(config, "account_identity")
 
-    case identity["phone_number"] || identity[:phone_number] do
-      phone when is_binary(phone) and phone != "" -> "#{label} - #{phone}"
+    case account["external_id"] || account[:external_id] ||
+           legacy_identity["phone_number"] || legacy_identity[:phone_number] do
+      id when is_binary(id) and id != "" -> "#{label} - #{id}"
       _ -> label
     end
   end
-
-  defp connector_provider_label(_config, label), do: label
 
   defp test_connection(%ChannelConfig{} = config, channel_id) when is_binary(channel_id) do
     event =
@@ -1573,13 +1576,13 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     end
   end
 
-  defp connection_mode(provider) do
-    event = Event.new(%{provider: provider}, :channels, opts: [action: :channel_connection_mode])
-
-    case NodeRouter.dispatch(event).response do
-      {:ok, mode} -> mode
-      _ -> nil
-    end
+  defp authentication_capability(provider, user) do
+    Event.new(%{provider: provider}, :channels,
+      actor: BOActor.build(user),
+      opts: [action: :channel_authentication_capability, confidential: true]
+    )
+    |> NodeRouter.dispatch()
+    |> Map.fetch!(:response)
   end
 
   defp ingress_statuses(configs, actor) when is_list(configs) do

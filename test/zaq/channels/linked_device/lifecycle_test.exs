@@ -1,10 +1,12 @@
 defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
   use ExUnit.Case, async: true
+  alias Jido.Chat.WhatsApp.Adapter
+  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.TestSupport.LinkedDeviceLifecycle
 
   test "each replacement lifecycle source is monitored and stale exits cannot disconnect it" do
-    config = %{id: 42, provider: "whatsapp", settings: %{}, url: "", token: ""}
+    config = config()
 
     pid =
       start_supervised!({State, bridge_id: "whatsapp_42", config: config, provider: :whatsapp})
@@ -13,7 +15,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     second = start_supervised!({Agent, fn -> :second end}, id: :second)
 
     payload = %{
-      profile: "zaq_linked_device_42",
+      profile: profile(42),
       attempt_id: make_ref(),
       status: :pairing,
       qr: "private"
@@ -47,7 +49,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
   end
 
   test "listener exits cannot overwrite the current lifecycle source status" do
-    config = %{id: 42, provider: "whatsapp", settings: %{}, url: "", token: ""}
+    config = config()
 
     pid =
       start_supervised!({State, bridge_id: "whatsapp_42", config: config, provider: :whatsapp})
@@ -56,7 +58,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     State.monitor_listeners(pid, [listener])
 
     payload = %{
-      profile: "zaq_linked_device_42",
+      profile: profile(42),
       attempt_id: make_ref(),
       status: :connected,
       qr: nil
@@ -73,7 +75,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
   end
 
   test "a replacement event ahead of a queued old DOWN retains its status" do
-    config = %{id: 42, provider: "whatsapp", settings: %{}, url: "", token: ""}
+    config = config()
 
     pid =
       start_supervised!({State, bridge_id: "whatsapp_42", config: config, provider: :whatsapp})
@@ -82,7 +84,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     second = start_supervised!({Agent, fn -> :second end}, id: :second)
 
     payload = %{
-      profile: "zaq_linked_device_42",
+      profile: profile(42),
       attempt_id: make_ref(),
       status: :connected,
       qr: nil
@@ -118,7 +120,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
   end
 
   test "lifecycle is profile and attempt scoped, survives config refresh and clears expired QR" do
-    config = %{id: 42, provider: "whatsapp", settings: %{}, url: "", token: ""}
+    config = config()
 
     pid =
       start_supervised!({State, bridge_id: "whatsapp_42", config: config, provider: :whatsapp})
@@ -126,7 +128,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     attempt = make_ref()
 
     event = %{
-      profile: "zaq_linked_device_42",
+      profile: profile(42),
       attempt_id: attempt,
       event: :qr,
       status: :pairing,
@@ -139,7 +141,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     assert %{phase: :pairing, qr: "private"} = State.ingress_status(pid)
     deliver(pid, self(), %{event | attempt_id: make_ref(), qr: "stale"})
 
-    deliver(pid, self(), %{event | profile: "zaq_linked_device_99", qr: "foreign"})
+    deliver(pid, self(), %{event | profile: profile(99), qr: "foreign"})
 
     assert %{qr: "private"} = State.ingress_status(pid)
     deliver(pid, self(), %{event | status: :expired, qr: nil})
@@ -150,8 +152,24 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
   end
 
   defp deliver(pid, source, payload) do
-    config = %{id: 42, provider: "whatsapp", settings: %{}}
+    config = config()
     envelope = LinkedDeviceLifecycle.envelope(source, payload)
     State.process_listener_payload(pid, config, envelope, [])
+  end
+
+  defp config,
+    do: %{
+      id: 42,
+      provider: "whatsapp",
+      settings: %{"credential_document_id" => 1},
+      url: "",
+      token: ""
+    }
+
+  defp profile(id) do
+    Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
+      context: :runtime,
+      document_mfa: {SessionStorage, :document, []}
+    ).profile
   end
 end
