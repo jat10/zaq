@@ -229,7 +229,7 @@ defmodule Zaq.People.IdentityResolver do
 
   defp discover_person(platform, profile, config_id) do
     attrs = if config_id, do: Map.put(profile, "channel_config_id", config_id), else: profile
-    People.find_or_create_from_channel(platform, attrs)
+    People.find_or_create_from_channel(platform, attrs, match_phone: false)
   end
 
   defp maybe_enrich(platform, author_id, canonical, config_id, opts) do
@@ -264,11 +264,7 @@ defmodule Zaq.People.IdentityResolver do
     case result do
       {:ok, profile} ->
         profile = Map.reject(stringify_profile(profile), fn {_, value} -> value in [nil, ""] end)
-        {phone, profile} = Map.pop(profile, "phone")
-
-        canonical
-        |> Map.merge(profile)
-        |> Map.put("profile_phone", phone)
+        Map.merge(canonical, profile)
 
       _ ->
         canonical

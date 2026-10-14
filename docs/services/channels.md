@@ -171,15 +171,16 @@ a profile. Conversation binding/restoration belong to Conversations behind the
 closed Engine boundary; Channels retains only transport correlation and projection.
 `PersonIdentity` owns the native key `(platform, authority, identifier)`;
 `PersonChannel` retains connector-specific routing and preferences. Channels'
-`IdentityScope` defines authority: Telegram/Discord native IDs and normalized email
+`IdentityScope` defines authority: Telegram/Discord/WhatsApp native IDs and normalized email
 are global within their platform; Mattermost IDs are scoped to the canonical server
 endpoint (including deployment path). Providers without attested tenant scope remain
 connector-local. Bots on the same authority therefore reuse one Person without
 requiring profile email. Normalized profile email can also join established People
 across authorities. A caller-supplied `phone` remains identity evidence and
 conflicting native/email/phone owners fail atomically. A phone returned by an
-adapter's optional profile lookup is passed to People as `profile_phone`: it can
-fill a missing Person phone, but cannot select or reject a native identity owner.
+adapter's optional profile lookup is passed to People as `phone` with
+`match_phone: false`: it can fill a missing Person phone and populate a new
+PersonChannel phone, but cannot select or reject a native identity owner.
 Unsupported or failed profile lookup leaves incoming identity resolution intact.
 Incomplete profiles can receive later enrichment; explicit name and phone edits
 remain authoritative. Editing a

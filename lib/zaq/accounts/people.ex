@@ -196,15 +196,17 @@ defmodule Zaq.Accounts.People do
   Finds or creates a person from an incoming channel message.
   On match: back-fills canonical fields if they were missing.
   On miss: creates a partial entry with incomplete: true.
-  `phone` participates in identity conflict checks; `profile_phone` is optional
-  enrichment and never establishes ownership. Connector authority remains keyed
+  `phone` participates in identity conflict checks by default. Pass
+  `match_phone: false` for profile enrichment that never establishes ownership.
+  The phone is stored on the person and new channel link in either case.
+  Connector authority remains keyed
   by the native channel identifier. A generated name equal to that identifier may
   be replaced while the person is incomplete; other stored names are preserved.
   Returns `{:ok, person}` or a controlled error; failed links roll back all writes.
   """
-  @spec find_or_create_from_channel(atom() | String.t(), map()) ::
+  @spec find_or_create_from_channel(atom() | String.t(), map(), keyword()) ::
           {:ok, Person.t()} | {:error, term()}
-  def find_or_create_from_channel(platform, attrs) do
+  def find_or_create_from_channel(platform, attrs, opts \\ []) do
     retry? = not Repo.in_transaction?()
     platform_str = to_string(platform)
 
@@ -222,19 +224,20 @@ defmodule Zaq.Accounts.People do
       discover_with_retry(
         platform_str,
         Map.put(attrs_with_platform, "channel_config_id", config_id),
-        retry?
+        retry?,
+        opts
       )
     end
   end
 
-  defp discover_with_retry(platform_str, attrs_with_platform, retry?) do
-    case discover_person(platform_str, attrs_with_platform) do
+  defp discover_with_retry(platform_str, attrs_with_platform, retry?, opts) do
+    case discover_person(platform_str, attrs_with_platform, opts) do
       {:error, %Ecto.Changeset{} = changeset} = error ->
         # Retry only after the failed transaction has rolled back. A concurrent
         # discoverer may now own the unique identity; contradictory owners still
         # fail the ordinary linking path, without reassignment or automatic merge.
         if retry? and unique_error?(changeset),
-          do: discover_person(platform_str, attrs_with_platform),
+          do: discover_person(platform_str, attrs_with_platform, opts),
           else: error
 
       result ->
@@ -253,13 +256,16 @@ defmodule Zaq.Accounts.People do
     end)
   end
 
-  defp discover_person(platform, attrs) do
+  defp discover_person(platform, attrs, opts) do
+    identity_attrs =
+      if Keyword.get(opts, :match_phone, true), do: attrs, else: Map.delete(attrs, "phone")
+
     Repo.transaction(fn ->
       unless ChannelConfig.person_channel_connector?(platform, attrs["channel_config_id"]),
         do: Repo.rollback(:connector_mismatch)
 
       person =
-        case match_discovered_person(platform, attrs) do
+        case match_discovered_person(platform, identity_attrs) do
           {:ok, person} ->
             person
 
@@ -1072,12 +1078,10 @@ defmodule Zaq.Accounts.People do
   end
 
   defp backfill_person(person, attrs) do
-    phone_attrs = Map.put(attrs, "phone", discovery_phone(attrs))
-
     updates =
       %{}
       |> maybe_put_if_nil(:email, person.email, attrs)
-      |> maybe_put_if_nil(:phone, person.phone, phone_attrs)
+      |> maybe_put_if_nil(:phone, person.phone, attrs)
       |> maybe_put_if_nil(
         :full_name,
         profile_name(person, attrs),
@@ -1100,13 +1104,6 @@ defmodule Zaq.Accounts.People do
 
   defp profile_name(%Person{full_name: name}, _attrs), do: name
 
-  defp discovery_phone(attrs) do
-    case attrs["profile_phone"] do
-      phone when is_binary(phone) and phone != "" -> phone
-      _ -> attrs["phone"]
-    end
-  end
-
   defp maybe_put_if_nil(acc, field, current_val, attrs, attr_key \\ nil) do
     key = if attr_key, do: attr_key, else: to_string(field)
     incoming = Map.get(attrs, key)
@@ -1127,7 +1124,7 @@ defmodule Zaq.Accounts.People do
       %{
         full_name: full_name,
         email: channel_attrs["email"],
-        phone: discovery_phone(channel_attrs),
+        phone: channel_attrs["phone"],
         incomplete: true
       },
       opts
