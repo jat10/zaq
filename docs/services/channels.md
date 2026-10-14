@@ -176,7 +176,13 @@ are global within their platform; Mattermost IDs are scoped to the canonical ser
 endpoint (including deployment path). Providers without attested tenant scope remain
 connector-local. Bots on the same authority therefore reuse one Person without
 requiring profile email. Normalized profile email can also join established People
-across authorities. Conflicting native/email/phone owners fail atomically. Editing a
+across authorities. A caller-supplied `phone` remains identity evidence and
+conflicting native/email/phone owners fail atomically. A phone returned by an
+adapter's optional profile lookup is passed to People as `profile_phone`: it can
+fill a missing Person phone, but cannot select or reject a native identity owner.
+Unsupported or failed profile lookup leaves incoming identity resolution intact.
+Incomplete profiles can receive later enrichment; explicit name and phone edits
+remain authoritative. Editing a
 connector endpoint cannot reinterpret a previously bound native identity.
 Every PersonChannel requires a connector and native identity binding. The
 connector-scope and native-identity migrations backfill legacy links from their sole matching

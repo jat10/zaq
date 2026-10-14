@@ -7,8 +7,8 @@ defmodule Zaq.Accounts.People do
   Permanent single/bulk deletion orchestrates Connect secret cleanup before removing
   People, in the same identity transaction. Connect owns all secret and event queries.
 
-  WhatsApp phone numbers enrich profiles; native connector-scoped identities
-  determine ownership. A shared phone value does not merge or reject those owners.
+  Provider profile phones enrich people; native identities determine ownership.
+  A shared enrichment phone does not merge or reject those owners.
   """
 
   import Ecto.Query
@@ -196,6 +196,10 @@ defmodule Zaq.Accounts.People do
   Finds or creates a person from an incoming channel message.
   On match: back-fills canonical fields if they were missing.
   On miss: creates a partial entry with incomplete: true.
+  `phone` participates in identity conflict checks; `profile_phone` is optional
+  enrichment and never establishes ownership. Connector authority remains keyed
+  by the native channel identifier. A generated name equal to that identifier may
+  be replaced while the person is incomplete; other stored names are preserved.
   Returns `{:ok, person}` or a controlled error; failed links roll back all writes.
   """
   @spec find_or_create_from_channel(atom() | String.t(), map()) ::
@@ -286,13 +290,8 @@ defmodule Zaq.Accounts.People do
   end
 
   defp consistent_discovered_owner(person, attrs) do
-    phone_match =
-      if attrs["platform"] == "whatsapp",
-        do: {:error, :not_found},
-        else: match_by_phone(attrs)
-
     conflict? =
-      Enum.any?([match_by_email(attrs), phone_match], fn
+      Enum.any?([match_by_email(attrs), match_by_phone(attrs)], fn
         {:ok, matched} -> matched.id != person.id
         _ -> false
       end)
@@ -1109,13 +1108,15 @@ defmodule Zaq.Accounts.People do
   end
 
   defp backfill_person(person, attrs) do
+    phone_attrs = Map.put(attrs, "phone", discovery_phone(attrs))
+
     updates =
       %{}
       |> maybe_put_if_nil(:email, person.email, attrs)
-      |> maybe_put_if_nil(:phone, profile_phone(person.phone, attrs), attrs)
+      |> maybe_put_if_nil(:phone, person.phone, phone_attrs)
       |> maybe_put_if_nil(
         :full_name,
-        profile_name(person.full_name, attrs),
+        profile_name(person, attrs),
         attrs,
         "display_name"
       )
@@ -1127,20 +1128,20 @@ defmodule Zaq.Accounts.People do
     end
   end
 
-  defp profile_name(name, %{"platform" => "whatsapp", "channel_id" => id}) do
-    if name in [id, "Unknown"], do: nil, else: name
-  end
+  defp profile_name(%Person{incomplete: true, full_name: id}, %{"channel_id" => id}),
+    do: nil
 
-  defp profile_name(name, _attrs) do
-    if is_binary(name) and String.contains?(name, "@"), do: nil, else: name
-  end
+  defp profile_name(%Person{full_name: name, email: name}, _attrs) when is_binary(name),
+    do: nil
 
-  defp profile_phone(phone, %{"platform" => "whatsapp", "channel_id" => phone})
-       when is_binary(phone) do
-    if String.ends_with?(phone, ["@s.whatsapp.net", "@lid"]), do: nil, else: phone
-  end
+  defp profile_name(%Person{full_name: name}, _attrs), do: name
 
-  defp profile_phone(phone, _attrs), do: phone
+  defp discovery_phone(attrs) do
+    case attrs["profile_phone"] do
+      phone when is_binary(phone) and phone != "" -> phone
+      _ -> attrs["phone"]
+    end
+  end
 
   defp maybe_put_if_nil(acc, field, current_val, attrs, attr_key \\ nil) do
     key = if attr_key, do: attr_key, else: to_string(field)
@@ -1162,7 +1163,7 @@ defmodule Zaq.Accounts.People do
       %{
         full_name: full_name,
         email: channel_attrs["email"],
-        phone: channel_attrs["phone"],
+        phone: discovery_phone(channel_attrs),
         incomplete: true
       },
       opts
