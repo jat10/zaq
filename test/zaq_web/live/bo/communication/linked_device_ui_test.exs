@@ -42,6 +42,103 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
     assert expired.assigns.linked_device_timer == nil
   end
 
+  test "provisional retry preserves the session even when the UI previously saw failure" do
+    socket = socket()
+
+    modal =
+      Map.merge(socket.assigns.linked_device_modal, %{
+        config_id: nil,
+        session: self(),
+        status: %{phase: :failed},
+        attempts: 12
+      })
+
+    socket =
+      socket
+      |> Phoenix.Component.assign(:linked_device_modal, modal)
+      |> Phoenix.Component.assign(:current_user, nil)
+
+    retried = LinkedDeviceUI.retry(socket)
+    assert retried.assigns.linked_device_modal.session == self()
+    refute retried.assigns.linked_device_modal.generation == modal.generation
+    assert retried.assigns.linked_device_modal.status.phase == :pending
+    assert retried.assigns.linked_device_modal.attempts == 0
+  end
+
+  test "recovering pairing keeps polling and an expired session is explicitly distinguished" do
+    socket = socket()
+    generation = socket.assigns.linked_device_modal.generation
+
+    pending =
+      LinkedDeviceUI.result(
+        socket,
+        generation,
+        {:ok, {:ok, %{phase: :pending, summary: "Reconnecting with the linked account", qr: nil}}}
+      )
+
+    assert is_reference(pending.assigns.linked_device_timer)
+    Process.cancel_timer(pending.assigns.linked_device_timer)
+    confirmed = LinkedDeviceUI.result(pending, generation, {:ok, {:ok, %{phase: :confirm}}})
+    assert confirmed.assigns.linked_device_modal.status.phase == :confirm
+    assert confirmed.assigns.linked_device_timer == nil
+    expired = LinkedDeviceUI.result(socket, generation, {:ok, {:error, :pairing_expired}})
+    assert expired.assigns.linked_device_modal.status.session_expired
+    assert expired.assigns.linked_device_modal.status.phase == :expired
+    assert expired.assigns.linked_device_timer == nil
+  end
+
+  for config_id <- [nil, 2] do
+    test "expired QR keeps watching for its replacement for config #{inspect(config_id)}" do
+      socket = socket()
+
+      modal =
+        Map.merge(socket.assigns.linked_device_modal, %{
+          config_id: unquote(config_id),
+          session: self()
+        })
+
+      socket = Phoenix.Component.assign(socket, :linked_device_modal, modal)
+
+      expired =
+        LinkedDeviceUI.result(socket, modal.generation, {:ok, {:ok, %{phase: :expired, qr: nil}}})
+
+      timer = expired.assigns.linked_device_timer
+      assert is_reference(timer)
+      assert expired.assigns.linked_device_modal.status.qr == nil
+
+      replaced =
+        LinkedDeviceUI.result(
+          expired,
+          modal.generation,
+          {:ok, {:ok, %{phase: :pairing, qr: "replacement"}}}
+        )
+
+      assert Process.read_timer(timer) == false
+      assert replaced.assigns.linked_device_modal.status.qr == "replacement"
+      assert replaced.assigns.linked_device_modal.session == self()
+      assert replaced.assigns.linked_device_modal.generation == modal.generation
+      Process.cancel_timer(replaced.assigns.linked_device_timer)
+
+      bounded =
+        Phoenix.Component.assign(expired, :linked_device_modal, %{
+          expired.assigns.linked_device_modal
+          | attempts: 89
+        })
+
+      stopped =
+        LinkedDeviceUI.result(
+          bounded,
+          modal.generation,
+          {:ok, {:ok, %{phase: :expired, qr: nil}}}
+        )
+
+      assert stopped.assigns.linked_device_timer == nil
+
+      assert stopped.assigns.linked_device_modal.status.summary ==
+               "Connection window ended; retry to continue"
+    end
+  end
+
   test "QR rendering draws modules without reflecting raw content or exposing expired QR" do
     html =
       render_component(&LinkedDevicePairing.modal/1,
