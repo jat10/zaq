@@ -51,14 +51,14 @@ defmodule ZaqWeb.Live.BO.Communication.WhatsAppOnboardingTest do
 
     assert eventually(fn ->
              render_async(view, 5_000)
-             has_element?(view, "#linked-device-phone", "+15550001")
+             has_element?(view, "#linked-device-account-id", "+15550001")
            end)
 
     # A late Retry click must inspect the already-linked session, not cancel it
     # and begin another QR handshake.
     render_click(view, "retry_linked_device", %{})
     render_async(view, 5_000)
-    assert has_element?(view, "#linked-device-phone", "+15550001")
+    assert has_element?(view, "#linked-device-account-id", "+15550001")
     refute has_element?(view, "#linked-device-pairing svg")
     refute_received {:whatsapp_connected_config, _}
     assert {:ok, _} = Transport.resolve_conn(profile: options.profile)

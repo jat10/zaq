@@ -1,7 +1,9 @@
 defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
   use Zaq.DataCase, async: false
 
+  alias Jido.Chat.WhatsApp.Adapter
   alias Zaq.Channels.{BridgeSupervisor, JidoChatBridge}
+  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.TestSupport.LinkedDeviceLifecycle
 
@@ -18,7 +20,14 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
   test "startup lifecycle waits for registration and preserves source and event order" do
     id = System.unique_integer([:positive])
     bridge_id = "whatsapp_#{id}"
-    config = %{id: id, provider: "whatsapp", settings: %{}, url: "", token: ""}
+
+    config = %{
+      id: id,
+      provider: "whatsapp",
+      settings: %{"credential_document_id" => 1},
+      url: "",
+      token: ""
+    }
 
     state_spec = %{
       id: :state,
@@ -39,7 +48,11 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
     owner = self()
 
     payload = %{
-      profile: "zaq_linked_device_#{id}",
+      profile:
+        Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
+          context: :runtime,
+          document_mfa: {SessionStorage, :document, []}
+        ).profile,
       attempt_id: make_ref(),
       status: :pairing,
       qr: "private-qr"

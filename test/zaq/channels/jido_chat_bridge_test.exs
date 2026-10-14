@@ -1097,6 +1097,21 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
   describe "handle_from_listener/3" do
     @config %{url: "https://mm.example.com", token: "tok", bot_name: "zaq", bot_user_id: "bot-1"}
 
+    test "historical replies do not notify waiting reply hooks" do
+      incoming = %ChatIncoming{
+        text: "Old reply",
+        external_room_id: "chan-1",
+        external_thread_id: "root-post-id",
+        external_message_id: "historical-reply",
+        author: %Author{user_id: "sme-1", user_name: "alice"},
+        metadata: %{history: true}
+      }
+
+      assert :ok = JidoChatBridge.handle_from_listener(@config, incoming, [])
+      refute_received {:reply_received, _}
+      refute_received {:pipeline_run, _, _}
+    end
+
     test "thread reply dispatches :reply_received hook and returns :ok" do
       incoming = %ChatIncoming{
         text: "The answer is 42",

@@ -2,6 +2,7 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
   use Zaq.DataCase, async: false
 
   alias Zaq.Channels.JidoChatBridge
+  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Engine.ChannelConfig
   alias Zaq.TestSupport.WhatsAppFlowAdapter
   alias Zaq.TestSupport.WhatsAppFlowTransport, as: Transport
@@ -54,15 +55,26 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
     stop_supervised(Transport)
     start_supervised!({Transport, observer: self()})
     assert Transport.mailbox() == %{}
-    disabled_config = connector() |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
+    to_disable = connector()
+    disabled_profile = profile(to_disable)
+    _disabled_config = to_disable |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
 
-    {:ok, archived_config} = ChannelConfig.archive(connector())
+    to_archive = connector()
+    archived_profile = profile(to_archive)
+    {:ok, _archived_config} = ChannelConfig.archive(to_archive)
 
     assert :ok =
              Supervisor.terminate_child(
                Zaq.Channels.Supervisor,
                Zaq.Channels.BridgeSupervisor
              )
+
+    # A new VM has not loaded the adapter yet. Only unload this test wrapper;
+    # never purge production modules or a running connection's code.
+    on_exit(fn -> Code.ensure_loaded!(WhatsAppFlowAdapter) end)
+    :code.purge(WhatsAppFlowAdapter)
+    assert :code.delete(WhatsAppFlowAdapter)
+    assert :code.is_loaded(WhatsAppFlowAdapter) == false
 
     assert {:ok, _} =
              Supervisor.restart_child(
@@ -78,12 +90,13 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
       assert {:ok, %{qr: nil}} = JidoChatBridge.channel_ingress_status(config)
     end
 
-    assert {:error, :not_connected} = Transport.resolve_conn(profile: profile(disabled_config))
-    assert {:error, :not_connected} = Transport.resolve_conn(profile: profile(archived_config))
+    assert {:error, :not_connected} = Transport.resolve_conn(profile: disabled_profile)
+    assert {:error, :not_connected} = Transport.resolve_conn(profile: archived_profile)
 
+    first_profile = profile(first)
     disabled = first |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
     assert :ok = JidoChatBridge.sync_runtime(first, disabled)
-    assert {:error, :not_connected} = Transport.resolve_conn(profile: profile(first))
+    assert {:error, :not_connected} = Transport.resolve_conn(profile: first_profile)
     assert {:ok, remaining} = Transport.resolve_conn(profile: profile(second))
     assert Process.alive?(remaining)
     enabled = disabled |> Ecto.Changeset.change(enabled: true) |> Repo.update!()
@@ -101,7 +114,10 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
     |> Repo.insert!()
   end
 
-  defp profile(config), do: "zaq_linked_device_#{config.id}"
+  defp profile(config) do
+    {:ok, profile} = SessionStorage.profile(config)
+    profile
+  end
 
   defp phase(config, expected, attempts \\ 100)
   defp phase(_, _, 0), do: false

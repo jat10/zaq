@@ -3,6 +3,7 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
   import Zaq.AccountsFixtures
   alias Jido.Chat.WhatsApp.ConnectionWorker
   alias Zaq.Channels.JidoChatBridge
+  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Connect
   alias Zaq.{Event, NodeRouter}
@@ -39,8 +40,11 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     on_exit(fn -> call(%{op: :cancel, session: session}, actor) end)
     assert_receive {:whatsapp_connected_config, options}
     assert Repo.aggregate(ChannelConfig, :count) == count
-    assert {:error, :identity_not_ready} = call(%{op: :confirm, session: session}, actor)
-    assert {:ok, %{qr: qr}} = call(%{op: :status, session: session}, actor)
+
+    assert {:error, :identity_not_ready} =
+             call(%{op: :confirm, session: session, account_id: "+15550001"}, actor)
+
+    qr = qr(session, actor)
     assert :ok = Transport.scan(options.profile, qr)
     temporary_scope = Amarula.Storage.scope(options.storage)
 
@@ -50,16 +54,25 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     assert :ok =
              Amarula.Storage.put(temporary_scope, options.profile, :sender_key, "group", "key")
 
-    assert await_phase(session, actor, :confirm)
+    assert await_phase(session, actor, :authenticated)
+    account_id = account_id(session, actor)
     assert Repo.aggregate(ChannelConfig, :count) == count
-    assert {:ok, %{saved: saved}} = call(%{op: :confirm, session: session}, actor)
+
+    assert {:ok, %{receipt: saved, runtime_pending: false}} =
+             call(%{op: :confirm, session: session, account_id: account_id}, actor)
+
     assert saved.name == "Support account"
     config = Repo.get!(ChannelConfig, saved.id)
     on_exit(fn -> JidoChatBridge.stop_runtime(config) end)
-    assert {:ok, %{saved: ^saved}} = call(%{op: :confirm, session: session}, actor)
+
+    assert {:ok, %{receipt: ^saved, runtime_pending: false}} =
+             call(%{op: :confirm, session: session, account_id: account_id}, actor)
+
     assert Repo.aggregate(ChannelConfig, :count) == count + 1
     assert_receive {:whatsapp_connected_config, restored}
-    assert restored.profile == "zaq_linked_device_#{saved.id}"
+    refute restored.sync_history
+    refute restored.sync_full_history
+    assert {:ok, restored.profile} == SessionStorage.profile(config)
     restored_scope = Amarula.Storage.scope(restored.storage)
 
     assert {:ok, "ratchet"} =
@@ -84,16 +97,16 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
 
     assert {:ok, conn} = Transport.resolve_conn(profile: restored.profile)
     assert Agent.get(conn, & &1.paired?)
-    refute saved.runtime_pending
-    assert config.settings["account_identity"]["phone_number"] == "+15550001"
+    assert config.settings["account"]["external_id"] == "+15550001"
   end
 
   test "confirmation rejects an account changed since it was displayed", %{actor: actor} do
     assert {:ok, %{session: session}} = call(%{op: :begin, owner: self()}, actor)
     assert_receive {:whatsapp_connected_config, options}
-    assert {:ok, %{qr: qr}} = call(%{op: :status, session: session}, actor)
+    qr = qr(session, actor)
     :ok = Transport.scan(options.profile, qr)
-    assert await_phase(session, actor, :confirm)
+    assert await_phase(session, actor, :authenticated)
+    displayed_account_id = account_id(session, actor)
     {:ok, conn} = Transport.resolve_conn(profile: options.profile)
 
     Agent.update(
@@ -108,17 +121,21 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     worker = :sys.get_state(session).worker
     :ok = ConnectionWorker.refresh_identity(worker)
     assert identity_ready?(worker)
-    assert {:error, :identity_changed} = call(%{op: :confirm, session: session}, actor)
-    assert :ok = call(%{op: :cancel, session: session}, actor)
+
+    assert {:error, :identity_changed} =
+             call(%{op: :confirm, session: session, account_id: displayed_account_id}, actor)
+
+    assert {:ok, %{phase: :cancelled}} = call(%{op: :cancel, session: session}, actor)
   end
 
   test "a RAM seed failure retains saved pairing and reports connection pending", %{actor: actor} do
     assert {:ok, %{session: session}} = call(%{op: :begin, owner: self()}, actor)
     on_exit(fn -> call(%{op: :cancel, session: session}, actor) end)
     assert_receive {:whatsapp_connected_config, options}
-    assert {:ok, %{qr: qr}} = call(%{op: :status, session: session}, actor)
+    qr = qr(session, actor)
     assert :ok = Transport.scan(options.profile, qr)
-    assert await_phase(session, actor, :confirm)
+    assert await_phase(session, actor, :authenticated)
+    account_id = account_id(session, actor)
 
     # Fits provisional storage but exceeds the encoded per-record RAM limit.
     assert :ok =
@@ -130,10 +147,12 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
                String.duplicate("s", 1024 * 1024)
              )
 
-    assert {:ok, %{saved: %{runtime_pending: true} = saved}} =
-             call(%{op: :confirm, session: session}, actor)
+    assert {:ok, %{receipt: saved, runtime_pending: true}} =
+             call(%{op: :confirm, session: session, account_id: account_id}, actor)
 
-    assert {:ok, %{saved: ^saved}} = call(%{op: :confirm, session: session}, actor)
+    assert {:ok, %{receipt: ^saved, runtime_pending: true}} =
+             call(%{op: :confirm, session: session, account_id: account_id}, actor)
+
     config = Repo.get!(ChannelConfig, saved.id)
     on_exit(fn -> JidoChatBridge.stop_runtime(config) end)
     refute_received {:whatsapp_connected_config, _}
@@ -164,7 +183,7 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     assert_receive {:whatsapp_connected_config, options}
     other = %{user_id: super_admin_fixture(%{must_change_password: false}).id}
     assert {:error, :unauthorized} = call(%{op: :status, session: session}, other)
-    assert :ok = call(%{op: :cancel, session: session}, actor)
+    assert {:ok, %{phase: :cancelled}} = call(%{op: :cancel, session: session}, actor)
     refute Process.alive?(session)
     assert {:error, :not_connected} = Transport.resolve_conn(profile: options.profile)
   end
@@ -200,12 +219,26 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
   end
 
   defp call(request, actor, confidential \\ true) do
-    Event.new(request, :channels,
+    Event.new(Map.put_new(request, :provider, :whatsapp), :channels,
       actor: actor,
       opts: [action: :pair_linked_device, confidential: confidential]
     )
     |> NodeRouter.dispatch()
     |> Map.fetch!(:response)
+  end
+
+  defp qr(session, actor) do
+    assert {:ok, %{phase: :challenge, challenge: %{type: :qr, value: qr}}} =
+             call(%{op: :status, session: session}, actor)
+
+    qr
+  end
+
+  defp account_id(session, actor) do
+    assert {:ok, %{phase: :authenticated, account: %{external_id: id}}} =
+             call(%{op: :status, session: session}, actor)
+
+    id
   end
 
   defp await_phase(session, actor, phase, attempts \\ 100)

@@ -3,6 +3,7 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
 
   alias Jido.Chat.{ActionEvent, EventEnvelope}
   alias Jido.Chat.WhatsApp.{Adapter, ConnectionWorker}
+  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.TestSupport.LinkedDeviceLifecycle
 
@@ -25,8 +26,14 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
 
   setup do
     id = System.unique_integer([:positive])
-    profile = "zaq_linked_device_#{id}"
-    config = %{id: id, provider: "whatsapp", settings: %{}}
+
+    profile =
+      Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
+        context: :runtime,
+        document_mfa: {SessionStorage, :document, []}
+      ).profile
+
+    config = %{id: id, provider: "whatsapp", settings: %{"credential_document_id" => 1}}
 
     state =
       start_supervised!({State, bridge_id: profile, config: config, provider: :whatsapp})
