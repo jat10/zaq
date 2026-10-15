@@ -6,7 +6,7 @@
 
 WhatsApp uses the same `JidoChatBridge` registration and adapter listener contract
 as other Jido channels. `JidoChatBridge` assembles trusted adapter startup options
-using a private synchronous storage-request sink for credential bindings. The adapter
+using one trusted `sink_mfa` for private pairing and storage requests. The adapter
 derives a stable profile and split storage scope from the saved binding, with both
 `sync_history: false` and `sync_full_history: false`. The adapter passes these values
 in its child specs; the generic supervisor only starts those specs. Persisted ingress settings
@@ -80,7 +80,12 @@ messaging sessions and group sender keys from the durable snapshot. Engine's tru
 runtime `:confirm_linked_device` Action creates the connector and canonical encrypted
 credential document in one transaction, using an attempt UUID and the exact
 provider, operator and account for repeat-request idempotence. The package encodes
-protocol records before the host callback receives them. Persistence failures
+protocol records before the host sink receives them. `Pairing.Request` with
+`op: :persist` reuses that Engine Action; a separate `op: :start` request revalidates
+the operator and activates the saved connector through the existing runtime path.
+`Storage.Request` handles credential operations through the same sink. Both private
+request types bypass serialized bridge State and are rejected by public listener
+ingress. Persistence failures
 retain the frozen snapshot for retry within the
 pairing window. After persistence, the package seeds the volatile records once into
 Mnesia, then starts the normal bridge. A late snapshot cannot overwrite advanced
@@ -136,12 +141,9 @@ Linked-device persistence uses the existing Connect credential and grant tables;
 no dedicated linked-device tables or schema migration are required. See
 [system configuration](system-config.md#connector-session-state).
 
-During local integration, package changes are maintained in the sibling
-`../jido_chat_whatsapp` checkout and mirrored into the local dependency for
-validation. The configured dependency revision must include the storage-request
-contract before deploying these host changes. Shared authentication still requires
-a compatible `jido_chat` version. Publish the compatible package before updating
-the production pin; local dependency edits do not survive a fresh fetch.
+The GitHub dependency revision must include the storage-request contract before
+deploying these host changes. Shared authentication still requires a compatible
+`jido_chat` version.
 Stop saved and provisional listeners during rollout/rollback; pairing remains in
 Connect, but volatile sessions start empty and decryption may need re-establishment.
 
