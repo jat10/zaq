@@ -2,8 +2,11 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
   use Zaq.DataCase, async: true
   use ExUnitProperties
 
+  import Zaq.AccountsFixtures
+
   alias Ecto.Adapters.SQL.Sandbox
   alias Jido.Chat.WhatsApp.Adapter
+  alias Jido.Chat.WhatsApp.Pairing.Request, as: PairingRequest
   alias Jido.Chat.WhatsApp.Storage.Request
   alias Jido.Chat.WhatsApp.Storage.Split
   alias Zaq.Channels.JidoChatBridge
@@ -139,6 +142,71 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
     end)
 
     assert {:ok, %{paired: true}} = Split.get(storage, options.profile, :creds, :self)
+  end
+
+  test "one trusted sink persists idempotently and makes credentials available to storage requests" do
+    admin = super_admin_fixture(%{must_change_password: false})
+    actor = %{user_id: admin.id}
+    sink = JidoChatBridge.storage_sink(%{provider: :whatsapp})
+    credentials = Split.encode_records(%{{:creds, :self} => %{paired: true}})
+
+    request = %{
+      op: :persist,
+      attempt_id: Ecto.UUID.generate(),
+      account: %{external_id: "+15550001", display_name: "Account"},
+      credentials: credentials
+    }
+
+    assert {:ok, saved} = PairingRequest.call(sink, actor, request)
+    assert {:ok, repeated} = PairingRequest.call(sink, actor, request)
+    assert saved.receipt == repeated.receipt
+    assert saved.binding == repeated.binding
+    assert saved.runtime.provider == "whatsapp"
+
+    %{profile: profile, storage: {Split, opts}} =
+      Adapter.connection_options(saved.binding, sink_mfa: sink)
+
+    assert {:ok, %{paired: true}} = Split.get(Split.new(opts), profile, :creds, :self)
+
+    # Activation is a separate request. A provider mismatch leaves the save intact.
+    mismatched = %{runtime: %{saved.runtime | provider: "telegram"}, connection_options: %{}}
+
+    assert {:error, :invalid_connector} =
+             PairingRequest.call(sink, actor, %{op: :start, runtime: mismatched})
+
+    assert {:ok, %{paired: true}} = Split.get(Split.new(opts), profile, :creds, :self)
+  end
+
+  test "persistence and activation reject missing and no-longer-authorized actors" do
+    admin = super_admin_fixture(%{must_change_password: false})
+    actor = %{user_id: admin.id}
+    sink = JidoChatBridge.storage_sink(%{provider: :whatsapp})
+    admin |> Ecto.Changeset.change(must_change_password: true) |> Repo.update!()
+
+    for context <- [nil, actor],
+        request <- [%{op: :persist}, %{op: :start, runtime: %{}}] do
+      assert {:error, :unauthorized} = PairingRequest.call(sink, context, request)
+    end
+  end
+
+  test "public ingress and malformed private envelopes cannot enter pairing or message routing" do
+    config = %{provider: :whatsapp}
+    event = %PairingRequest{context: %{user_id: 42}, request: %{op: :persist}}
+    assert {:error, :invalid_pairing_request} = JidoChatBridge.from_listener(config, event, [])
+
+    assert {:error, :invalid_pairing_request} =
+             JidoChatBridge.from_listener(config, nil, event, [])
+
+    assert {:error, :invalid_pairing_request} =
+             JidoChatBridge.from_listener(config, make_ref(), %{event | version: 2}, [])
+
+    assert {:error, :invalid_pairing_request} =
+             JidoChatBridge.from_listener(
+               config,
+               make_ref(),
+               %{event | request: %{op: :unknown}},
+               []
+             )
   end
 
   defp connector do
