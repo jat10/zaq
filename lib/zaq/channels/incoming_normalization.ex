@@ -17,6 +17,19 @@ defmodule Zaq.Channels.IncomingNormalization do
               {:ok, result()} | {:error, :unverified_communication_facts}
   @callback source_scope(term()) :: String.t() | nil
 
+  @doc """
+  Classifies explicit normalized channel metadata after an adapter sanitizes media.
+
+  Opt in only when the adapter preserves native room/type evidence in normalized
+  fields. The shared caller requires empty raw data, nonempty media, matching
+  room/type/provider fields, and matching sender/author identifiers. Timestamps
+  use Unix seconds, UTC DateTime values, or ISO 8601 strings at this boundary.
+  """
+  @callback conversation_type(map()) ::
+              {:ok, :one_to_one | :room} | {:error, atom()}
+
+  @optional_callbacks conversation_type: 1
+
   @doc "Returns whether two provider identifiers refer to the same nonempty room."
   def same_room?(value, room) do
     identifier?(value) and identifier?(room) and to_string(value) == to_string(room)

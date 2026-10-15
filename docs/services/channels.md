@@ -242,6 +242,18 @@ fetched channel metadata with channel type 1; message `type` and absent guild
 fields are not evidence. Unknown kinds, Mattermost group DM, Discord DM
 without independent room evidence, and missing Discord thread parents remain
 unknown. Slack and Teams have no configured adapter in `config/config.exs`.
+Adapters that sanitize media can intentionally omit the raw event. The shared
+`JidoChatBridge.Incoming` boundary supports these messages through the optional
+`IncomingNormalization.conversation_type/1` integration callback. This path
+requires empty raw data, nonempty media, matching configured provider and room,
+matching explicit top-level and channel-metadata kinds, and matching normalized
+sender and author IDs. The integration still validates its native room/type
+semantics; missing/default facts alone do not qualify. Nonempty contradictory
+raw evidence cannot use this path. WhatsApp and Telegram opt in; Discord retains
+its independent channel-evidence requirements. Source namespaces use the existing
+integration callback, and sanitized timestamps accept Unix seconds, UTC DateTime
+values, or ISO 8601 strings. These are trusted internal adapter outputs, not
+authentication of arbitrary external messages.
 This is only transport context, not authentication of arbitrary external
 envelopes, a grant, passive capture, or a resolved Person. Engine resolves the
 actor after routing; strategy consumers must use authorized transcript reads.
@@ -255,6 +267,8 @@ refresh capabilities remain unsupported rather than inferred from a message.
 
 Trusted Mattermost/Telegram ingress additionally normalizes `sender_membership`
 only when the raw provider sender matches the adapter author in a verified room.
+For opted-in sanitized media, the shared normalized sender/author consistency
+check supplies this message-local evidence without retaining private media fields.
 After scoped Person resolution and canonical capture, Engine may bootstrap that
 sender's provider grant once on the parent resource. This is message-local
 presence, not a complete snapshot: replay or later posts cannot override removal
