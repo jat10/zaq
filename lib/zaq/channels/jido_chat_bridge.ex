@@ -827,19 +827,34 @@ defmodule Zaq.Channels.JidoChatBridge do
          {:ok, adapter} <- resolve_adapter_for_provider(provider),
          true <- function_exported?(adapter, :get_user, 2) || {:error, :unsupported},
          {:ok, user} <- adapter.get_user(author_id, opts) do
-      {:ok,
-       %{
-         "email" => Map.get(user, :email) || Map.get(user, "email"),
-         "display_name" =>
-           Map.get(user, :display_name) || Map.get(user, "display_name") ||
-             Map.get(user, :full_name) || Map.get(user, "full_name"),
-         "username" => Map.get(user, :username) || Map.get(user, "username"),
-         "phone" => profile_phone(user)
-       }}
+      {:ok, canonical_profile(user)}
     end
   end
 
   def fetch_profile(_author_id, _connection_details), do: {:error, :missing_connection_details}
+
+  # UserInfo's nullish fields mean the adapter has no value. Do not turn those
+  # schema defaults into attributes that overwrite facts from the message.
+  defp canonical_profile(%Jido.Chat.UserInfo{} = user) do
+    %{
+      "email" => user.email,
+      "display_name" => user.display_name,
+      "username" => user.username,
+      "phone" => profile_phone(user)
+    }
+    |> Map.reject(fn {_key, value} -> is_nil(value) end)
+  end
+
+  defp canonical_profile(user) do
+    %{
+      "email" => Map.get(user, :email) || Map.get(user, "email"),
+      "display_name" =>
+        Map.get(user, :display_name) || Map.get(user, "display_name") ||
+          Map.get(user, :full_name) || Map.get(user, "full_name"),
+      "username" => Map.get(user, :username) || Map.get(user, "username"),
+      "phone" => profile_phone(user)
+    }
+  end
 
   defp profile_phone(user) do
     metadata = Map.get(user, :metadata) || Map.get(user, "metadata") || %{}
@@ -1456,7 +1471,13 @@ defmodule Zaq.Channels.JidoChatBridge do
          true <- ingress_starts_listener?(ingress_mode_for(config.provider)),
          {:ok, specs} <-
            build_listener_specs(adapter, config, bridge_id, runtime_opts) do
-      {:ok, specs}
+      # Existing listeners stay stopped after terminal failures such as invalid
+      # credentials. Linked-device adapters own their transport recovery policy.
+      if ingress_mode_for(config.provider) == :linked_device do
+        {:ok, specs}
+      else
+        {:ok, Enum.map(specs, &Elixir.Supervisor.child_spec(&1, restart: :temporary))}
+      end
     else
       false -> {:ok, []}
       {:error, reason} -> {:error, reason}

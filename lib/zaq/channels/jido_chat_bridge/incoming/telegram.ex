@@ -30,13 +30,6 @@ defmodule Zaq.Channels.JidoChatBridge.Incoming.Telegram do
   @impl true
   def source_scope(room), do: ConversationIdentity.normalize(room)
 
-  @impl true
-  def conversation_type(%{chat_type: type, is_dm: dm})
-      when type in [:private, :group, :supergroup, :channel],
-      do: conversation_type(to_string(type), type, dm)
-
-  def conversation_type(_), do: {:error, :unverified_communication_facts}
-
   defp conversation_type("private", :private, true), do: {:ok, :one_to_one}
   defp conversation_type("group", :group, false), do: {:ok, :room}
   defp conversation_type("supergroup", :supergroup, false), do: {:ok, :room}

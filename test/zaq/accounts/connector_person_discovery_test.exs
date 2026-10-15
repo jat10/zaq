@@ -109,7 +109,7 @@ defmodule Zaq.Accounts.ConnectorPersonDiscoveryTest do
     assert Enum.uniq_by(people, & &1.id) |> length() == 1
   end
 
-  test "profile phones enrich distinct native owners without claiming phone identity", %{
+  test "matching phones link native identities across connectors to the same person", %{
     configs: [first_config, second_config]
   } do
     attrs = %{channel_id: "native", phone: "+15551234567"}
@@ -117,21 +117,20 @@ defmodule Zaq.Accounts.ConnectorPersonDiscoveryTest do
     assert {:ok, first} =
              People.find_or_create_from_channel(
                "mattermost",
-               Map.put(attrs, :channel_config_id, first_config.id),
-               match_phone: false
+               Map.put(attrs, :channel_config_id, first_config.id)
              )
 
     assert {:ok, second} =
              People.find_or_create_from_channel(
                "mattermost",
-               Map.put(attrs, :channel_config_id, second_config.id),
-               match_phone: false
+               Map.put(attrs, :channel_config_id, second_config.id)
              )
 
-    refute first.id == second.id
+    assert first.id == second.id
     assert first.phone == second.phone
     assert [first_channel] = first.channels
-    assert [second_channel] = second.channels
+    assert length(second.channels) == 2
+    second_channel = Enum.find(second.channels, &(&1.channel_config_id == second_config.id))
     assert first_channel.phone == attrs.phone
     assert second_channel.phone == attrs.phone
 
@@ -140,8 +139,7 @@ defmodule Zaq.Accounts.ConnectorPersonDiscoveryTest do
     assert {:ok, rediscovered} =
              People.find_or_create_from_channel(
                "mattermost",
-               Map.put(attrs, :channel_config_id, first_config.id),
-               match_phone: false
+               Map.put(attrs, :channel_config_id, first_config.id)
              )
 
     assert rediscovered.id == edited.id
