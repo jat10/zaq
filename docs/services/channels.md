@@ -22,8 +22,11 @@ still enter the normal pipeline and persistent replay protection. Timestamp age 
 not used to discard messages. Unsupported broadcast rooms are rejected by the adapter.
 ZAQ retains only its canonical history/identity mapping.
 
-All Jido listeners run directly under `BridgeSupervisor` using the adapter's child
-specification and restart policy. BridgeSupervisor refreshes the registered PID on
+All Jido listeners run directly under `BridgeSupervisor`. WebSocket, gateway and
+polling listeners use `restart: :temporary`, preserving terminal-failure behavior:
+a failed listener stays stopped until explicitly restarted or reconfigured, rather
+than exhausting the shared restart budget. Linked-device listeners retain the
+adapter's restart policy. BridgeSupervisor refreshes the registered PID on
 restart, so status and explicit stop target the current listener. Restart intensity
 is shared by the dynamic supervisor; there is no separate per-listener budget.
 Explicit runtime stop shuts down the adapter connection and retains credentials. Partial startup failures clean up started children and
@@ -187,9 +190,15 @@ connector-local. Bots on the same authority therefore reuse one Person without
 requiring profile email. Normalized profile email can also join established People
 across authorities. A caller-supplied `phone` remains identity evidence and
 conflicting native/email/phone owners fail atomically. A phone returned by an
-adapter's optional profile lookup is passed to People as `phone` with
-`match_phone: false`: it can fill a missing Person phone and populate a new
-PersonChannel phone, but cannot select or reject a native identity owner.
+adapter's optional profile lookup is passed to People as `phone` and participates
+in the same matching and conflict checks. A matching phone can link a new native
+identity to an existing Person; contradictory established owners still fail
+atomically. The phone can also fill a missing Person phone and populate a new
+PersonChannel phone.
+At the adapter boundary, `JidoChatBridge` omits unknown (`nil`) fields from typed
+`Jido.Chat.UserInfo` profiles so a partial lookup does not erase message-provided
+attributes. Explicit non-nil values and the existing map-profile mapping remain
+unchanged; People does not filter empty profile fields during merging.
 Unsupported or failed profile lookup leaves incoming identity resolution intact.
 Incomplete profiles can receive later enrichment; explicit name and phone edits
 remain authoritative. Editing a
@@ -242,17 +251,13 @@ fetched channel metadata with channel type 1; message `type` and absent guild
 fields are not evidence. Unknown kinds, Mattermost group DM, Discord DM
 without independent room evidence, and missing Discord thread parents remain
 unknown. Slack and Teams have no configured adapter in `config/config.exs`.
-Adapters that sanitize media can intentionally omit the raw event. The shared
-`JidoChatBridge.Incoming` boundary supports these messages through the optional
-`IncomingNormalization.conversation_type/1` integration callback. This path
-requires empty raw data, nonempty media, matching configured provider and room,
-matching explicit top-level and channel-metadata kinds, and matching normalized
-sender and author IDs. The integration still validates its native room/type
-semantics; missing/default facts alone do not qualify. Nonempty contradictory
-raw evidence cannot use this path. WhatsApp and Telegram opt in; Discord retains
-its independent channel-evidence requirements. Source namespaces use the existing
-integration callback, and sanitized timestamps accept Unix seconds, UTC DateTime
-values, or ISO 8601 strings. These are trusted internal adapter outputs, not
+Adapters that sanitize media retain the transport facts needed by their provider
+integration. WhatsApp seals private media descriptors upstream and keeps only
+`channel_jid`, `from_jid` and a Unix-second `timestamp` in the media message's
+`raw` map. Telegram retains its native message facts, including chat, sender and
+date. Both use the ordinary `IncomingNormalization.normalize/3` path; the shared
+bridge has no fallback for missing raw evidence. Discord retains its independent
+channel-evidence requirements. These are trusted internal adapter outputs, not
 authentication of arbitrary external messages.
 This is only transport context, not authentication of arbitrary external
 envelopes, a grant, passive capture, or a resolved Person. Engine resolves the
@@ -267,8 +272,8 @@ refresh capabilities remain unsupported rather than inferred from a message.
 
 Trusted Mattermost/Telegram ingress additionally normalizes `sender_membership`
 only when the raw provider sender matches the adapter author in a verified room.
-For opted-in sanitized media, the shared normalized sender/author consistency
-check supplies this message-local evidence without retaining private media fields.
+WhatsApp media uses the retained sender fact and the same author consistency
+check without retaining private media fields.
 After scoped Person resolution and canonical capture, Engine may bootstrap that
 sender's provider grant once on the parent resource. This is message-local
 presence, not a complete snapshot: replay or later posts cannot override removal

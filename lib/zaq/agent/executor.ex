@@ -212,7 +212,11 @@ defmodule Zaq.Agent.Executor do
              |> timestamp_question(),
            _ <-
              Event.new(
-               %{provider: incoming.provider, channel_id: incoming.channel_id},
+               %{
+                 provider: incoming.provider,
+                 channel_id: incoming.channel_id,
+                 channel_config_id: incoming.routing_context.channel_config_id
+               },
                :channels,
                opts: [action: :send_typing],
                type: :async
