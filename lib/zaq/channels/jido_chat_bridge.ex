@@ -32,6 +32,8 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Jido.Chat.Media
   alias Jido.Chat.Thread
 
+  alias Zaq.Accounts.BOActor
+
   alias Zaq.Channels.{
     Bridge,
     CommunicationBridge,
@@ -81,8 +83,6 @@ defmodule Zaq.Channels.JidoChatBridge do
             supervisor: Zaq.Channels.BridgeSupervisor,
             attempt_id: Ecto.UUID.generate(),
             context: actor,
-            persist_mfa: {__MODULE__, :persist_authentication, [provider]},
-            start_mfa: {__MODULE__, :start_authentication, [provider]},
             sink_mfa: storage_sink(%{provider: provider})
           ]
         else
@@ -142,8 +142,11 @@ defmodule Zaq.Channels.JidoChatBridge do
   @test_message "✅ **Zaq Connection Test**\nThis is an automated test message. If you see this, the channel is configured correctly."
 
   @doc """
-  Public listener payloads route through bridge State; private storage requests are rejected here.
+  Public listener payloads route through bridge State; private requests are rejected here.
   """
+  def from_listener(_config, %Jido.Chat.WhatsApp.Pairing.Request{}, _opts),
+    do: {:error, :invalid_pairing_request}
+
   def from_listener(_config, %Jido.Chat.WhatsApp.Storage.Request{}, _opts),
     do: {:error, :invalid_storage_request}
 
@@ -161,6 +164,19 @@ defmodule Zaq.Channels.JidoChatBridge do
   def from_listener(
         config,
         runtime_reference,
+        %Jido.Chat.WhatsApp.Pairing.Request{version: 1} = event,
+        _opts
+      )
+      when is_reference(runtime_reference) do
+    pairing_request(config, event)
+  end
+
+  def from_listener(_config, _runtime_reference, %Jido.Chat.WhatsApp.Pairing.Request{}, _opts),
+    do: {:error, :invalid_pairing_request}
+
+  def from_listener(
+        config,
+        runtime_reference,
         %Jido.Chat.WhatsApp.Storage.Request{version: 1} = event,
         _opts
       )
@@ -174,6 +190,31 @@ defmodule Zaq.Channels.JidoChatBridge do
   def from_listener(config, runtime_reference, payload, opts)
       when is_reference(runtime_reference),
       do: from_listener(config, payload, opts)
+
+  defp pairing_request(%{provider: provider}, %{
+         context: actor,
+         request: %{op: :persist} = request
+       }) do
+    case BOActor.current_user(actor) do
+      {:ok, %{role: %{name: "super_admin"}}} ->
+        persist_authentication(provider, actor, Map.delete(request, :op))
+
+      _ ->
+        {:error, :unauthorized}
+    end
+  end
+
+  defp pairing_request(%{provider: provider}, %{
+         context: actor,
+         request: %{op: :start, runtime: runtime}
+       }) do
+    case BOActor.current_user(actor) do
+      {:ok, %{role: %{name: "super_admin"}}} -> start_authentication(provider, actor, runtime)
+      _ -> {:error, :unauthorized}
+    end
+  end
+
+  defp pairing_request(_, _), do: {:error, :invalid_pairing_request}
 
   defp storage_request(%{id: id} = config, %{binding: nil, request: %{op: :bind}})
        when is_integer(id) and id > 0 do
@@ -1481,7 +1522,7 @@ defmodule Zaq.Channels.JidoChatBridge do
     ]
   end
 
-  @doc "Constructs the trusted callback used for private adapter storage requests."
+  @doc "Constructs the trusted sink for private adapter pairing and storage requests."
   @spec storage_sink(map()) :: tuple()
   def storage_sink(config),
     do: {__MODULE__, :from_listener, [Map.take(config, [:id, :provider]), make_ref()]}
