@@ -4,8 +4,8 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   Adapter child specs share listener startup, supervision and status handling.
   Lifecycle actions arrive through the same listener sink and Jido event routing.
-  Adapter authentication uses the common Jido contract; `SessionStorage` supplies
-  trusted credential bindings for saved connections.
+  Adapter authentication uses the common Jido contract. Private synchronous
+  storage requests use a trusted sink before ordinary listener State routing.
 
   `from_listener/3` is the `sink_mfa` target for adapter listeners. It forwards
   raw payloads to the per-bridge state process, where normalization and
@@ -48,7 +48,6 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Zaq.Channels.JidoChatBridge.DeliveryResult
   alias Zaq.Channels.JidoChatBridge.ListenerStatus
   alias Zaq.Channels.JidoChatBridge.ReactionMapper
-  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Contracts.Record
@@ -84,7 +83,7 @@ defmodule Zaq.Channels.JidoChatBridge do
             context: actor,
             persist_mfa: {__MODULE__, :persist_authentication, [provider]},
             start_mfa: {__MODULE__, :start_authentication, [provider]},
-            document_mfa: {SessionStorage, :document, []}
+            sink_mfa: storage_sink(%{provider: provider})
           ]
         else
           []
@@ -143,8 +142,11 @@ defmodule Zaq.Channels.JidoChatBridge do
   @test_message "✅ **Zaq Connection Test**\nThis is an automated test message. If you see this, the channel is configured correctly."
 
   @doc """
-  Sink target for `sink_mfa`. Always routes through the bridge state process.
+  Public listener payloads route through bridge State; private storage requests are rejected here.
   """
+  def from_listener(_config, %Jido.Chat.WhatsApp.Storage.Request{}, _opts),
+    do: {:error, :invalid_storage_request}
+
   def from_listener(config, payload, sink_opts) when is_map(payload) do
     bridge_id = sink_opts[:bridge_id] || runtime_bridge_id(config)
 
@@ -152,6 +154,55 @@ defmodule Zaq.Channels.JidoChatBridge do
          {:ok, state_pid} <- listener_state(normalized_config, bridge_id, sink_opts) do
       state_module().process_listener_payload(state_pid, normalized_config, payload, sink_opts)
     end
+  end
+
+  @doc "Handles trusted adapter requests without entering the serialized bridge State."
+  @spec from_listener(map(), reference(), map(), keyword()) :: term()
+  def from_listener(
+        config,
+        runtime_reference,
+        %Jido.Chat.WhatsApp.Storage.Request{version: 1} = event,
+        _opts
+      )
+      when is_reference(runtime_reference) do
+    storage_request(config, event)
+  end
+
+  def from_listener(_config, _runtime_reference, %Jido.Chat.WhatsApp.Storage.Request{}, _opts),
+    do: {:error, :invalid_storage_request}
+
+  def from_listener(config, runtime_reference, payload, opts)
+      when is_reference(runtime_reference),
+      do: from_listener(config, payload, opts)
+
+  defp storage_request(%{id: id} = config, %{binding: nil, request: %{op: :bind}})
+       when is_integer(id) and id > 0 do
+    dispatch_storage(config, %{op: :bind, channel_config_id: id})
+  end
+
+  defp storage_request(%{provider: _} = config, %{
+         binding: %{channel_config_id: id} = binding,
+         request: request
+       }) do
+    if Map.get(config, :id, id) == id and request[:op] != :bind,
+      do: dispatch_storage(config, Map.put(request, :binding, binding)),
+      else: {:error, :invalid_binding}
+  end
+
+  defp storage_request(_, _), do: {:error, :invalid_storage_request}
+
+  defp dispatch_storage(config, request) do
+    request
+    |> Map.put(:expected_provider, to_string(config.provider))
+    |> Event.new(:engine,
+      opts: [action: :credential_document, confidential: true, credential_document_runtime: true]
+    )
+    |> NodeRouter.dispatch(%{
+      rpc_call_with_timeout_fn: fn node, module, function, args, _ ->
+        :rpc.call(node, module, function, args, 6_000)
+      end
+    })
+    |> Map.fetch!(:response)
   end
 
   # Explicit listener bridge IDs belong to a runtime already being started by
@@ -227,8 +278,11 @@ defmodule Zaq.Channels.JidoChatBridge do
   def build_runtime_specs({:provider, provider}, opts) do
     specs =
       case Bridge.provider_config(provider, opts) do
-        %{ingress_mode: :linked_device} -> [SessionStorage.runtime_spec()]
-        _ -> []
+        %{ingress_mode: :linked_device, adapter: adapter} ->
+          [adapter.storage_runtime_spec(require_ram_schema: true)]
+
+        _ ->
+          []
       end
 
     {:ok, {nil, specs}}
@@ -481,7 +535,7 @@ defmodule Zaq.Channels.JidoChatBridge do
          true <-
            is_atom(phase) and level in [:ok, :pending, :error] and is_binary(summary) and
              is_binary(mode),
-         {:ok, ^profile} <- SessionStorage.profile(config),
+         {:ok, ^profile} <- connection_profile(config),
          :linked_device <- ingress_mode_for(config.provider),
          {:ok, adapter} <- adapter_for(config.provider),
          true <-
@@ -1395,7 +1449,7 @@ defmodule Zaq.Channels.JidoChatBridge do
        do: {:ok, Keyword.put(opts, :ingress, Map.put(options, :mode, :linked_device))}
 
   defp linked_device_listener_opts(config, opts, adapter) do
-    with {:ok, ingress} <- SessionStorage.prepare(config, adapter) do
+    with {:ok, ingress} <- saved_connection_options(config, adapter) do
       {:ok, Keyword.put(opts, :ingress, ingress)}
     end
   end
@@ -1427,7 +1481,49 @@ defmodule Zaq.Channels.JidoChatBridge do
     ]
   end
 
-  defp sink_mfa_for(config), do: {__MODULE__, :from_listener, [config]}
+  @doc "Constructs the trusted callback used for private adapter storage requests."
+  @spec storage_sink(map()) :: tuple()
+  def storage_sink(config),
+    do: {__MODULE__, :from_listener, [Map.take(config, [:id, :provider]), make_ref()]}
+
+  defp sink_mfa_for(config) do
+    if ingress_mode_for(config.provider) == :linked_device,
+      do: {__MODULE__, :from_listener, [config, make_ref()]},
+      else: {__MODULE__, :from_listener, [config]}
+  end
+
+  @doc "Delegates saved connection preparation to the adapter through the trusted sink."
+  @spec saved_connection_options(map(), module()) :: {:ok, map()} | {:error, term()}
+  def saved_connection_options(%{id: id} = config, adapter) when is_integer(id) and id > 0 do
+    if Code.ensure_loaded?(adapter) and function_exported?(adapter, :prepare_connection, 1),
+      do: adapter.prepare_connection(sink_mfa: storage_sink(config)),
+      else: {:error, :unsupported}
+  end
+
+  def saved_connection_options(_, _), do: {:error, :invalid_connector}
+
+  @doc "Asks the adapter for its stable profile without putting provider state in ZAQ."
+  @spec connection_profile(map()) :: {:ok, String.t()} | {:error, term()}
+  def connection_profile(%{id: id, provider: provider} = config) when is_integer(id) and id > 0 do
+    with {:ok, adapter} <- adapter_for(provider),
+         true <-
+           (Code.ensure_loaded?(adapter) and function_exported?(adapter, :connection_profile, 1)) ||
+             {:error, :unsupported},
+         {:ok, binding} <- profile_binding(config) do
+      {:ok, adapter.connection_profile(binding)}
+    end
+  end
+
+  def connection_profile(_), do: {:error, :invalid_connector}
+
+  defp profile_binding(config) do
+    settings = Map.get(config, :settings) || %{}
+    credential_id = settings["credential_document_id"] || settings[:credential_document_id]
+
+    if is_integer(credential_id),
+      do: {:ok, %{channel_config_id: config.id, credential_id: credential_id}},
+      else: dispatch_storage(config, %{op: :bind, channel_config_id: config.id})
+  end
 
   defp ingress_mode_for(provider) do
     provider_key = provider_to_atom(provider)
