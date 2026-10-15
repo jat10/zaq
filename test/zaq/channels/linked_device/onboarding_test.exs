@@ -3,7 +3,6 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
   import Zaq.AccountsFixtures
   alias Jido.Chat.WhatsApp.ConnectionWorker
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Connect
   alias Zaq.{Event, NodeRouter}
@@ -73,7 +72,7 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     assert_receive {:whatsapp_connected_config, restored}
     refute restored.sync_history
     refute restored.sync_full_history
-    assert {:ok, restored.profile} == SessionStorage.profile(config)
+    assert {:ok, restored.profile} == JidoChatBridge.connection_profile(config)
     restored_scope = Amarula.Storage.scope(restored.storage)
 
     assert {:ok, "ratchet"} =

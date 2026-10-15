@@ -6,7 +6,7 @@
 
 WhatsApp uses the same `JidoChatBridge` registration and adapter listener contract
 as other Jido channels. `JidoChatBridge` assembles trusted adapter startup options
-using `JidoChatBridge.SessionStorage` for credential bindings. The adapter
+using a private synchronous storage-request sink for credential bindings. The adapter
 derives a stable profile and split storage scope from the saved binding, with both
 `sync_history: false` and `sync_full_history: false`. The adapter passes these values
 in its child specs; the generic supervisor only starts those specs. Persisted ingress settings
@@ -103,7 +103,7 @@ retries preserve encrypted state. The shared component is in Storybook under
 `/storybook/modals/linked_device_pairing`.
 
 `Jido.Chat.WhatsApp.Storage.Split` routes pairing credentials (`creds`) and supporting
-protocol records through the host's `JidoChatBridge.SessionStorage.document/3` callback and the
+protocol records through private `Storage.Request` calls to the host's trusted listener sink and the
 [canonical credential document operation](engine.md#connector-credential-documents).
 Connector settings retain the credential reference, account label, owner and attempt
 ID; protocol records live in the encrypted canonical org `api_key` grant.
@@ -136,17 +136,24 @@ Linked-device persistence uses the existing Connect credential and grant tables;
 no dedicated linked-device tables or schema migration are required. See
 [system configuration](system-config.md#connector-session-state).
 
-During local integration, ZAQ uses the sibling `../jido_chat` and
-`../jido_chat_whatsapp` checkouts declared in `mix.exs`. The core authentication
-contract must land before releasing the WhatsApp adapter against it.
+During local integration, package changes are maintained in the sibling
+`../jido_chat_whatsapp` checkout and mirrored into the local dependency for
+validation. The configured dependency revision must include the storage-request
+contract before deploying these host changes. Shared authentication still requires
+a compatible `jido_chat` version. Publish the compatible package before updating
+the production pin; local dependency edits do not survive a fresh fetch.
 Stop saved and provisional listeners during rollout/rollback; pairing remains in
 Connect, but volatile sessions start empty and decryption may need re-establishment.
 
 `JidoChatBridge` owns adapter delegation, persistence and normal runtime
 activation callbacks, lifecycle action handling and status through its shared
-runtime path. `JidoChatBridge.SessionStorage` owns credential bindings and Engine
-storage callbacks. On restart it asks the configured adapter to reconstruct
-connection options from the stable binding. Package
+runtime path. The package prepares saved connection storage and derives its stable
+profile from an opaque host binding. `JidoChatBridge` dispatches private storage
+requests directly to the confidential Engine document Action before looking up
+listener State, including during bootstrap. Storage callbacks never enter chat
+routing, history, or the lifecycle dispatcher, avoiding send/storage reentrancy.
+The trusted sink captures host context; public message ingress rejects request
+structs. Engine validates the expected provider and exact binding on every call. Package
 `PairingSession`, `Storage.Split`, `Storage.Temporary` and `Storage.Mnesia` own
 generic mechanics. No raw snapshots are
 returned to BO. Persistence callbacks use the existing confidential Engine Actions.

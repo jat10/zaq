@@ -68,6 +68,7 @@ defmodule Zaq.Engine.Connect.CredentialDocuments do
       :connector_unavailable
     )
 
+    ensure_provider(config, request)
     ensure(config.settings["credential_document_id"] == binding.credential_id, :invalid_binding)
 
     credential =
@@ -96,7 +97,7 @@ defmodule Zaq.Engine.Connect.CredentialDocuments do
     result
   end
 
-  defp execute_locked(%{op: :bind, channel_config_id: id}) do
+  defp execute_locked(%{op: :bind, channel_config_id: id} = request) do
     config = Repo.one(from c in ChannelConfig, where: c.id == ^id, lock: "FOR UPDATE")
 
     ensure(
@@ -104,6 +105,7 @@ defmodule Zaq.Engine.Connect.CredentialDocuments do
       :connector_unavailable
     )
 
+    ensure_provider(config, request)
     credential_id = config.settings["credential_document_id"] || provision(config)
     binding = %{channel_config_id: id, credential_id: credential_id}
     execute_locked(%{binding: binding, op: :list_keys, namespace: "__binding_check__"})
@@ -273,6 +275,13 @@ defmodule Zaq.Engine.Connect.CredentialDocuments do
 
   defp operate(%{op: :delete_namespace, namespace: namespace}, records),
     do: {:ok, Map.delete(records, namespace)}
+
+  defp ensure_provider(config, request) do
+    ensure(
+      Map.get(request, :expected_provider, config.provider) == config.provider,
+      :invalid_provider
+    )
+  end
 
   defp ensure(true, _reason), do: :ok
   defp ensure(false, reason), do: Repo.rollback(reason)

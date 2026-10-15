@@ -2,7 +2,6 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
   use Zaq.DataCase, async: false
 
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Engine.ChannelConfig
   alias Zaq.TestSupport.WhatsAppFlowAdapter
   alias Zaq.TestSupport.WhatsAppFlowTransport, as: Transport
@@ -124,7 +123,7 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
   end
 
   defp profile(config) do
-    {:ok, profile} = SessionStorage.profile(config)
+    {:ok, profile} = JidoChatBridge.connection_profile(config)
     profile
   end
 

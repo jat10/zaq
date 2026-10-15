@@ -14,7 +14,7 @@ defmodule Zaq.People.IdentityResolverTest do
   alias Zaq.People.IdentityResolverTest.ErrorRouter
   alias Zaq.People.IdentityResolverTest.RaiseRouter
 
-  test "WhatsApp group authors remain resolvable across connector-local identities" do
+  test "WhatsApp group authors share one identity across connector links" do
     for sender <- ["15550001234@s.whatsapp.net", "1234567890@lid"] do
       resolved =
         for _ <- 1..2 do
@@ -50,7 +50,17 @@ defmodule Zaq.People.IdentityResolverTest do
         end
 
       [{_, first}, {second_incoming, second}] = resolved
-      refute first.id == second.id
+      assert first.id == second.id
+      assert length(second.channels) == 2
+
+      assert MapSet.new(Enum.map(second.channels, & &1.channel_config_id)) ==
+               MapSet.new(
+                 Enum.map(resolved, fn {incoming, _} ->
+                   incoming.routing_context.channel_config_id
+                 end)
+               )
+
+      assert second.channels |> Enum.map(& &1.person_identity_id) |> Enum.uniq() |> length() == 1
 
       for {_, person} <- resolved do
         assert {:ok, _} = People.update_person(person, %{phone: sender})
