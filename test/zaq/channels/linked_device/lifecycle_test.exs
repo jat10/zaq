@@ -1,7 +1,7 @@
 defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
   use ExUnit.Case, async: true
   alias Jido.Chat.WhatsApp.Adapter
-  alias Zaq.Channels.JidoChatBridge.SessionStorage
+  alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.TestSupport.LinkedDeviceLifecycle
 
@@ -169,7 +169,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
   defp profile(id) do
     Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
       context: :runtime,
-      document_mfa: {SessionStorage, :document, []}
+      sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})
     ).profile
   end
 end

@@ -99,7 +99,8 @@ The request carries `binding: %{channel_config_id: id, credential_id: id}` and
 `value` where applicable. The connector's `settings["credential_document_id"]`
 must match a grant-bound API-key credential of the same provider, with disabled
 personal policy and metadata `auth_profile_id: "credential_document_v1"`,
-`subject: "channel_config:<id>"`. The operation checks both sides on every call.
+`subject: "channel_config:<id>"`. The operation checks both sides on every call. Runtime sinks may also supply an
+`expected_provider`; Engine rejects a mismatch before provisioning or accessing records.
 Only the reference is stored in connector settings; document values remain encrypted.
 
 One transaction locks the connector, credential and canonical grant before reading

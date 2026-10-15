@@ -3,7 +3,6 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
   alias Jido.Chat.WhatsApp.{Adapter, ConnectionWorker}
   alias Zaq.Channels.BridgeSupervisor
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.TestSupport.LinkedDeviceConnectionStub, as: Transport
   alias Zaq.TestSupport.LinkedDeviceFailingListener
@@ -192,7 +191,7 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
   defp bound_profile(id) do
     Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
       context: :runtime,
-      document_mfa: {SessionStorage, :document, []}
+      sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})
     ).profile
   end
 
