@@ -214,6 +214,13 @@ defmodule Zaq.Agent.ExecutorTest do
     end
   end
 
+  defmodule TypingNodeRouter do
+    def dispatch(%Zaq.Event{} = event) do
+      if event.opts[:action] == :send_typing, do: send(self(), {:typing_event, event})
+      %{event | response: :ok}
+    end
+  end
+
   defmodule NativeFailureFactory do
     def ask_with_config(_server, _content, _agent, _opts) do
       {:ok,
@@ -347,6 +354,34 @@ defmodule Zaq.Agent.ExecutorTest do
     assert Executor.run(@incoming, @base_opts).metadata.tool_calls == []
     opts = Keyword.put(@base_opts, :server_manager_module, MissingRuntimeServerManager)
     assert Executor.run(@incoming, opts).metadata.tool_calls == []
+  end
+
+  test "typing events carry the originating connector for the same provider and room" do
+    for config_id <- [41, 42] do
+      incoming =
+        %{@incoming | provider: :whatsapp, channel_id: "room@g.us"}
+        |> put_in([Access.key(:routing_context), Access.key(:channel_config_id)], config_id)
+
+      outgoing =
+        Executor.run(
+          incoming,
+          Keyword.merge(@base_opts,
+            node_router: TypingNodeRouter,
+            status_module: NativeStartStatus
+          )
+        )
+
+      refute outgoing.metadata[:error]
+
+      assert_receive {:typing_event,
+                      %Zaq.Event{
+                        request: %{
+                          provider: :whatsapp,
+                          channel_id: "room@g.us",
+                          channel_config_id: ^config_id
+                        }
+                      }}
+    end
   end
 
   test "native failure retains the started assistant identity from the partial stream" do

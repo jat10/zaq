@@ -9,6 +9,27 @@ defmodule Zaq.People.WhatsAppProfileTest do
   alias Zaq.Engine.ChannelConfig
   alias Zaq.People.IdentityResolver
 
+  test "a profile phone links a new WhatsApp identity to the existing person" do
+    {config, _conn} = connection()
+
+    assert {:ok, existing} =
+             People.create_person(%{full_name: "Directory Person", phone: "+15551234567"})
+
+    assert {:ok, resolved} =
+             IdentityResolver.resolve(
+               incoming(config, "15551234567@s.whatsapp.net", "Sender Name"),
+               []
+             )
+
+    assert resolved.id == existing.id
+    assert resolved.full_name == "Directory Person"
+    assert resolved.phone == existing.phone
+    assert [channel] = resolved.channels
+    assert channel.channel_config_id == config.id
+    assert channel.channel_identifier == "15551234567@s.whatsapp.net"
+    assert channel.phone == existing.phone
+  end
+
   test "phone JIDs populate the directory and preserve edited name and phone" do
     {config, _conn} = connection()
     incoming = incoming(config, "15551234567:4@s.whatsapp.net", "Sender Name")
