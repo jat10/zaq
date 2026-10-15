@@ -665,6 +665,15 @@ mailbox. They must not resolve the destination agent or workflow; final routing 
 is resolved by Engine through `Zaq.Engine.IncomingMessageRouter` and
 `Zaq.Engine.IncomingMessageRoutingRule`.
 
+Quoted replies carry optional `external_reply_to_id` and normalized `reply_context`
+separately from `thread_id`. `JidoChatBridge.to_internal/2` preserves available inline
+text and author, binding the quote to the enclosing provider, connector, room and
+source namespace. Conflicting explicit scope or message IDs discard the quote.
+Missing original text stays unavailable; quotes never trigger history or media
+fetches or grant access. WhatsApp quotes do not create native threads. Engine
+captures inline quote data with the replying message, and Agent renders it as
+attributed, untrusted message data for retrieval, execution and incoming steering.
+
 BO routing writes for global defaults, provider defaults, retrieval-channel assignments,
 and IMAP mailbox rules dispatch to Engine action `:upsert_incoming_message_routing_rules`.
 The registered tool `message.upsert_incoming_routing_rules` uses the same Engine dispatch
@@ -1126,7 +1135,10 @@ or wrapped in a matched pair of colons, with an optional `_light_skin_tone`,
 `_dark_skin_tone` suffix inside the colons (for example, `:+1_medium_skin_tone:`).
 Only complete shortcodes match: custom prefixes, invalid suffixes, trailing junk,
 and unpaired colons remain ignored. This rating lookup does not change adapter
-event normalization, other providers' mappings, or supported Unicode forms.
+event normalization or other providers' shortcode mappings. Across providers,
+including WhatsApp, Unicode thumbs up/down map to 5/1 when bare or followed by
+exactly one standard skin-tone modifier (U+1F3FB–U+1F3FF). Repeated modifiers,
+variation selectors, surrounding text and malformed sequences remain ignored.
 Reaction removals and unrelated emoji still dispatch no rating.
 
 ### Outbound flow

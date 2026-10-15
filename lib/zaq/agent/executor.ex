@@ -208,7 +208,7 @@ defmodule Zaq.Agent.Executor do
            question <-
              (Keyword.get(execution_opts, :input_presentation) ||
                 MessageAuthor.from_input(incoming))
-             |> Map.merge(%{content: question, attachments: incoming.attachments})
+             |> Map.merge(%{content: question, attachments: incoming.attachments, reply_context: incoming.reply_context})
              |> InputPrompt.render_message(opaque_alias_scope: server_id),
            _ <-
              Event.new(
