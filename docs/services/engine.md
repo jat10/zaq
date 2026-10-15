@@ -1636,6 +1636,15 @@ the [Person email normalization runbook](../operations/person-email-normalizatio
   ZAQ component.
 - When crossing nodes, this payload is carried in `%Zaq.Event.request`.
 
+Optional `external_reply_to_id` and `reply_context` preserve shallow quoted replies
+independently of native threads. `Incoming.new/1` normalizes quote text and author
+within the enclosing ingress scope. Quote text is limited to 8,000 characters,
+author fields to 255 characters, and reference IDs to 1,024 bytes (oversized IDs
+are rejected rather than truncated). Inline quotes persist in the replying
+message's `history_context` and are included in authorized canonical projections;
+they do not authorize original-message lookup. Agent input formatting leaves the
+admitted message content unchanged and explicitly marks quoted content as untrusted.
+
 ### Incoming Message Routing
 
 - `Zaq.Engine.IncomingMessageRoutingRule` is the single persistence model for incoming-message routing policy.

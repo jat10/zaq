@@ -962,6 +962,8 @@ defmodule Zaq.Channels.JidoChatBridge do
       channel_id: incoming.external_room_id,
       thread_id: incoming.external_thread_id,
       message_id: incoming.external_message_id,
+      external_reply_to_id: incoming.external_reply_to_id,
+      reply_context: incoming.reply_context,
       author_id: incoming.author && incoming.author.user_id,
       author_name:
         incoming.author && (Map.get(incoming.author, :full_name) || incoming.author.user_name),

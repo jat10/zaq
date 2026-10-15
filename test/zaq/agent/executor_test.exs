@@ -6,6 +6,7 @@ defmodule Zaq.Agent.ExecutorTest do
 
   alias Jido.AI.Context, as: AIContext
   alias Zaq.Agent.{Executor, Factory, OpaqueAliases}
+  alias Zaq.Channels.JidoChatBridge
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Materialization.Handle
@@ -1152,6 +1153,43 @@ defmodule Zaq.Agent.ExecutorTest do
         assert question ==
                  "Author: \"Directory name\" [person:15]\n" <> expected_time <> "Message:\nBody"
       end
+    end
+
+    test "inline WhatsApp quote reaches the model without a captured original" do
+      incoming =
+        JidoChatBridge.to_internal(
+          %Jido.Chat.Incoming{
+            text: "@bot Explain this",
+            external_room_id: "group@g.us",
+            external_reply_to_id: "original",
+            reply_context: %Jido.Chat.ReplyContext{
+              external_message_id: "original",
+              text: "The launch is Friday",
+              author: %Jido.Chat.Author{user_id: "alice", user_name: "Alice"}
+            }
+          },
+          %{provider: :whatsapp, id: 42}
+        )
+
+      incoming = %{incoming | person: %{id: 15}}
+
+      Executor.run(incoming,
+        agent_id: "stub",
+        agent_module: CoverageStubAgent,
+        server_manager_module: CoverageStubServerManager,
+        factory_module: CoverageStubFactory,
+        status_module: CoverageStubStatus,
+        node_router: StubNodeRouter,
+        scope: "coverage"
+      )
+
+      assert_received {:coverage_ask, question, _configured_agent, context}
+      assert question =~ "@bot Explain this"
+      assert question =~ "The launch is Friday"
+      assert question =~ ~s("author_id":"alice")
+      assert question =~ ~s("external_message_id":"original")
+      assert context.incoming.content == "@bot Explain this"
+      assert context.incoming.thread_id == nil
     end
 
     test "current attachment descriptors are visible to the model without runtime fields" do
