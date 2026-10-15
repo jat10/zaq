@@ -7,8 +7,7 @@ defmodule Zaq.Accounts.People do
   Permanent single/bulk deletion orchestrates Connect secret cleanup before removing
   People, in the same identity transaction. Connect owns all secret and event queries.
 
-  Provider profile phones enrich people; native identities determine ownership.
-  A shared enrichment phone does not merge or reject those owners.
+  Phone and email participate in discovery and native identity conflict checks.
   """
 
   import Ecto.Query
@@ -196,17 +195,16 @@ defmodule Zaq.Accounts.People do
   Finds or creates a person from an incoming channel message.
   On match: back-fills canonical fields if they were missing.
   On miss: creates a partial entry with incomplete: true.
-  `phone` participates in identity conflict checks by default. Pass
-  `match_phone: false` for profile enrichment that never establishes ownership.
-  The phone is stored on the person and new channel link in either case.
+  `phone` participates in identity matching and conflict checks, including phones
+  returned by provider profile lookups.
   Connector authority remains keyed
   by the native channel identifier. A generated name equal to that identifier may
   be replaced while the person is incomplete; other stored names are preserved.
   Returns `{:ok, person}` or a controlled error; failed links roll back all writes.
   """
-  @spec find_or_create_from_channel(atom() | String.t(), map(), keyword()) ::
+  @spec find_or_create_from_channel(atom() | String.t(), map()) ::
           {:ok, Person.t()} | {:error, term()}
-  def find_or_create_from_channel(platform, attrs, opts \\ []) do
+  def find_or_create_from_channel(platform, attrs) do
     retry? = not Repo.in_transaction?()
     platform_str = to_string(platform)
 
@@ -224,20 +222,19 @@ defmodule Zaq.Accounts.People do
       discover_with_retry(
         platform_str,
         Map.put(attrs_with_platform, "channel_config_id", config_id),
-        retry?,
-        opts
+        retry?
       )
     end
   end
 
-  defp discover_with_retry(platform_str, attrs_with_platform, retry?, opts) do
-    case discover_person(platform_str, attrs_with_platform, opts) do
+  defp discover_with_retry(platform_str, attrs_with_platform, retry?) do
+    case discover_person(platform_str, attrs_with_platform) do
       {:error, %Ecto.Changeset{} = changeset} = error ->
         # Retry only after the failed transaction has rolled back. A concurrent
         # discoverer may now own the unique identity; contradictory owners still
         # fail the ordinary linking path, without reassignment or automatic merge.
         if retry? and unique_error?(changeset),
-          do: discover_person(platform_str, attrs_with_platform, opts),
+          do: discover_person(platform_str, attrs_with_platform),
           else: error
 
       result ->
@@ -256,16 +253,13 @@ defmodule Zaq.Accounts.People do
     end)
   end
 
-  defp discover_person(platform, attrs, opts) do
-    identity_attrs =
-      if Keyword.get(opts, :match_phone, true), do: attrs, else: Map.delete(attrs, "phone")
-
+  defp discover_person(platform, attrs) do
     Repo.transaction(fn ->
       unless ChannelConfig.person_channel_connector?(platform, attrs["channel_config_id"]),
         do: Repo.rollback(:connector_mismatch)
 
       person =
-        case match_discovered_person(platform, identity_attrs) do
+        case match_discovered_person(platform, attrs) do
           {:ok, person} ->
             person
 

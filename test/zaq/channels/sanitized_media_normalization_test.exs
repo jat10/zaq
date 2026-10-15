@@ -41,10 +41,21 @@ defmodule Zaq.Channels.SanitizedMediaNormalizationTest do
                  transport: MediaTransport
                )
 
-      assert source.raw == %{}
+      assert source.raw == %{
+               channel_jid: room,
+               from_jid: "15550002@s.whatsapp.net",
+               timestamp: 1_700_000_000
+             }
+
+      refute inspect(source) =~ "private-media-path"
+      refute inspect(source) =~ "media_key"
       assert source.chat_type == type
       assert source.channel_meta.is_dm == dm
       assert source.was_mentioned == mentioned?
+
+      for raw <- [%{}, %{source.raw | channel_jid: "other@g.us"}] do
+        assert Normalization.normalize(%{source | raw: raw}, :whatsapp, Adapter) == %{}
+      end
 
       internal = JidoChatBridge.to_internal(source, %{provider: :whatsapp, id: 42})
       assert internal.routing_context.conversation_type == kind
@@ -62,16 +73,36 @@ defmodule Zaq.Channels.SanitizedMediaNormalizationTest do
     end
   end
 
-  test "the same sanitized contract supports another integration without provider branching" do
-    for {type, dm, kind} <- [{:group, false, :room}, {:private, true, :one_to_one}] do
-      source = sanitized(%{chat_type: type, channel_meta: %{chat_type: type, is_dm: dm}})
+  test "Telegram media retains native facts for ordinary provider normalization" do
+    for {type, kind} <- [
+          {"group", :room},
+          {"supergroup", :room},
+          {"channel", :room},
+          {"private", :one_to_one}
+        ] do
+      assert {:ok, source} =
+               Jido.Chat.Telegram.Adapter.transform_incoming(%{
+                 "message" => %{
+                   "message_id" => 42,
+                   "chat" => %{"id" => -100_123, "type" => type},
+                   "from" => %{"id" => 12_345},
+                   "date" => 1_700_000_000,
+                   "photo" => [%{"file_id" => "telegram-photo", "width" => 10, "height" => 10}]
+                 }
+               })
+
+      assert [_] = source.media
+      assert source.raw["chat"] == %{"id" => -100_123, "type" => type}
 
       assert Normalization.normalize(source, :telegram, Jido.Chat.Telegram.Adapter) == %{
                conversation_type: kind,
                source_scope: "-100123",
-               sender_id: "sender",
+               sender_id: "12345",
                provider_sent_at: ~U[2023-11-14 22:13:20Z]
              }
+
+      assert Normalization.normalize(%{source | raw: %{}}, :telegram, Jido.Chat.Telegram.Adapter) ==
+               %{}
     end
   end
 
@@ -79,6 +110,7 @@ defmodule Zaq.Channels.SanitizedMediaNormalizationTest do
     source = sanitized()
 
     for invalid <- [
+          source,
           %{source | media: []},
           %{source | author: nil},
           %{source | external_user_id: nil},
