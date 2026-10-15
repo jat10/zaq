@@ -38,7 +38,7 @@ defmodule Zaq.Agent.HistoryLoader do
         history_content(
           %{
             content: "#{label}: #{message.content}",
-            metadata: %{attachments: message.attachments}
+            metadata: %{attachments: message.attachments, reply_context: message[:reply_context]}
           },
           opts
         )
@@ -223,8 +223,13 @@ defmodule Zaq.Agent.HistoryLoader do
     content = Map.get(message, :content) || ""
     metadata = Map.get(message, :metadata)
 
-    InputPrompt.append_attachments(
-      content,
+    reply_context =
+      if is_map(metadata),
+        do: Map.get(metadata, "reply_context", Map.get(metadata, :reply_context))
+
+    content
+    |> InputPrompt.append_reply_context(reply_context)
+    |> InputPrompt.append_attachments(
       safe_attachments(metadata),
       Keyword.get(opts, :opaque_alias_scope)
     )

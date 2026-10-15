@@ -62,8 +62,9 @@ defmodule Zaq.Agent.RequestControl do
       case input_opts(event, state, content, request_id, binding, followup?) do
         {:ok, input_opts} ->
           payload =
-            InputPrompt.append_attachments(
-              content,
+            content
+            |> InputPrompt.append_reply_context(Keyword.get(opts, :reply_context))
+            |> InputPrompt.append_attachments(
               Keyword.get(opts, :attachments, []),
               state.server_id
             )
@@ -156,6 +157,7 @@ defmodule Zaq.Agent.RequestControl do
       {:ok, {request_id, _state}} ->
         case control(event, request_id, incoming.content, :steer_request, binding,
                followup?: true,
+               reply_context: incoming.reply_context,
                attachments: incoming.attachments
              ) do
           {:ok, _} ->

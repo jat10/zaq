@@ -685,6 +685,7 @@ defmodule Zaq.Engine.Conversations.TranscriptHistory do
           content: message.content,
           author_id: message.author_id,
           author_name: message.author_name,
+          reply_context: fragment("?->'reply_context'", message.history_context),
           provider_sent_at: message.provider_sent_at,
           attachments: message.attachments
         }

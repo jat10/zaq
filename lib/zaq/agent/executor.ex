@@ -207,6 +207,7 @@ defmodule Zaq.Agent.Executor do
              HistorySync.admit(execution_opts, server_id, runtime_pid, actor),
            question <-
              question
+             |> InputPrompt.append_reply_context(incoming.reply_context)
              |> InputPrompt.append_attachments(incoming.attachments, server_id)
              |> timestamp_question(),
            _ <-
