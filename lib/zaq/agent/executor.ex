@@ -212,7 +212,11 @@ defmodule Zaq.Agent.Executor do
              |> InputPrompt.render_message(opaque_alias_scope: server_id),
            _ <-
              Event.new(
-               %{provider: incoming.provider, channel_id: incoming.channel_id},
+               %{
+                 provider: incoming.provider,
+                 channel_id: incoming.channel_id,
+                 channel_config_id: incoming.routing_context.channel_config_id
+               },
                :channels,
                opts: [action: :send_typing],
                type: :async

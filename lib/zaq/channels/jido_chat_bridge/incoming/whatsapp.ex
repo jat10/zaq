@@ -29,13 +29,6 @@ defmodule Zaq.Channels.JidoChatBridge.Incoming.WhatsApp do
   @impl true
   def source_scope(room), do: ConversationIdentity.normalize(room)
 
-  @impl true
-  def conversation_type(%{chat_type: type, is_dm: dm, external_room_id: room})
-      when is_binary(room),
-      do: kind(room, type, dm)
-
-  def conversation_type(_), do: {:error, :unverified_communication_facts}
-
   defp kind(room, :group, false) do
     if String.ends_with?(room, "@g.us"), do: {:ok, :room}, else: {:error, :unknown_room}
   end
