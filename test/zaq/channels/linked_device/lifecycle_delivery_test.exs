@@ -3,7 +3,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
 
   alias Jido.Chat.WhatsApp.Adapter
   alias Zaq.Channels.{BridgeSupervisor, JidoChatBridge}
-  alias Zaq.Channels.JidoChatBridge.SessionStorage
+  alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.TestSupport.LinkedDeviceLifecycle
 
@@ -51,7 +51,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleDeliveryTest do
       profile:
         Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
           context: :runtime,
-          document_mfa: {SessionStorage, :document, []}
+          sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})
         ).profile,
       attempt_id: make_ref(),
       status: :pairing,

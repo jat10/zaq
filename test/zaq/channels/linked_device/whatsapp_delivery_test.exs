@@ -2,7 +2,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppDeliveryTest do
   use Zaq.DataCase, async: false
 
   alias Zaq.Channels.{Api, Bridge, JidoChatBridge}
-  alias Zaq.Channels.JidoChatBridge.SessionStorage
+  alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
@@ -10,6 +10,9 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppDeliveryTest do
   defmodule Adapter do
     @moduledoc false
     defdelegate connection_options(binding, opts), to: Jido.Chat.WhatsApp.Adapter
+    defdelegate prepare_connection(opts), to: Jido.Chat.WhatsApp.Adapter
+    defdelegate connection_profile(binding), to: Jido.Chat.WhatsApp.Adapter
+    defdelegate storage_runtime_spec(opts), to: Jido.Chat.WhatsApp.Adapter
 
     def send_message(room, body, opts) do
       send(self(), {:sent, room, body, opts})
@@ -57,7 +60,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppDeliveryTest do
 
     assert {:ok, %{message_id: "sent-1"}} = dispatch(outgoing, :deliver_outgoing)
     assert_received {:sent, "peer@s.whatsapp.net", "answer", opts}
-    assert {:ok, opts[:profile]} == SessionStorage.profile(config)
+    assert {:ok, opts[:profile]} == JidoChatBridge.connection_profile(config)
 
     assert {:ok, _} = dispatch(%{outgoing | metadata: %{message_id: "sent-1"}}, :deliver_outgoing)
     assert_received {:edited, _, "sent-1", "answer", edit_opts}

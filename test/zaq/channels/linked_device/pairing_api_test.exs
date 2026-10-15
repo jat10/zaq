@@ -26,7 +26,7 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
          session: request[:session] || self(),
          owner_id: owner_id,
          request: request,
-         callbacks: Keyword.take(opts, [:persist_mfa, :start_mfa, :document_mfa])
+         callbacks: Keyword.take(opts, [:persist_mfa, :start_mfa, :sink_mfa])
        }}
     end
   end
@@ -71,8 +71,10 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
     assert {Zaq.Channels.JidoChatBridge, :persist_authentication, [:example]} =
              first.callbacks[:persist_mfa]
 
-    assert {Zaq.Channels.JidoChatBridge.SessionStorage, :document, []} =
-             first.callbacks[:document_mfa]
+    assert {Zaq.Channels.JidoChatBridge, :from_listener, [%{provider: :example}, capability]} =
+             first.callbacks[:sink_mfa]
+
+    assert is_reference(capability)
 
     assert {:ok, followup} =
              authenticate(

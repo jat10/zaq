@@ -6,7 +6,6 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
   alias Jido.Chat.WhatsApp.Transport.GuardedStorage
   alias Split, as: Storage
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Connect
   alias Zaq.Engine.Connect.Grant
@@ -40,9 +39,15 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
     refute Map.has_key?(opts[:config], :storage_root)
     assert {Split, storage_opts} = opts[:config].storage
     assert storage_opts[:context].channel_config_id == config.id
-    assert storage_opts[:document_mfa] == {SessionStorage, :document, [:runtime]}
+
+    assert {Jido.Chat.WhatsApp.Storage.Request, :document,
+            [{JidoChatBridge, :from_listener, [_, capability]}, :runtime]} =
+             storage_opts[:document_mfa]
+
+    assert is_reference(capability)
     refute Keyword.has_key?(opts, :lifecycle_sink_mfa)
-    assert opts[:sink_mfa] == {JidoChatBridge, :from_listener, [config]}
+    assert {JidoChatBridge, :from_listener, [^config, capability]} = opts[:sink_mfa]
+    assert is_reference(capability)
   end
 
   test "provisioning is idempotent and persisted terms survive a new callback instance" do
@@ -244,7 +249,7 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
     do:
       Adapter.connection_options(binding,
         context: :runtime,
-        document_mfa: {SessionStorage, :document, []}
+        sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})
       )
 
   defp bind(id) do

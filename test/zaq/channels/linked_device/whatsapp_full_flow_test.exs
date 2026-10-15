@@ -15,7 +15,6 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
   alias Zaq.Accounts.People
   alias Zaq.Agent.ServerManager
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Channels.JidoChatBridge.SessionStorage
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Conversations
   alias Zaq.Engine.Conversations.{ExecutionRecord, Message}
@@ -135,7 +134,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
     end)
 
     assert :ok = JidoChatBridge.start_runtime(config)
-    {:ok, profile} = SessionStorage.profile(config)
+    {:ok, profile} = JidoChatBridge.connection_profile(config)
     %{conn: init_test_session(conn, %{user_id: admin.id}), config: config, profile: profile}
   end
 
