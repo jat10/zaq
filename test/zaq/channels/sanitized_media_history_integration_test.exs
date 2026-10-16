@@ -90,7 +90,13 @@ defmodule Zaq.Channels.SanitizedMediaHistoryIntegrationTest do
        %{config: config, person: person} do
     for {id, caption} <- [{"media-only", nil}, {"captioned-media", "A report"}] do
       source = media(id, %{content: %{caption: caption}})
-      assert source.raw == %{}
+
+      assert source.raw == %{
+               channel_jid: "123@g.us",
+               from_jid: "15550002@s.whatsapp.net",
+               timestamp: 1_700_000_000
+             }
+
       refute source.was_mentioned
 
       assert :ok = JidoChatBridge.handle_from_listener(config, source, [])
