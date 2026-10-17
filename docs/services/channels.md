@@ -67,6 +67,30 @@ code, then confirm the detected phone number and display name. A missing display
 name falls back to the phone number; an unavailable phone number cannot be confirmed.
 Manual bot ID/mention fields are omitted for WhatsApp, including when editing.
 
+Disabling a WhatsApp profile in BO requires Confirm or Cancel after a warning
+that the profile will be logged out and must be linked again. The shared connector
+button delegates to its parent LiveView; `ChannelDisablePolicy` selects the warning.
+Enabling WhatsApp starts the saved connector through the existing runtime flow.
+After successful startup, `ChannelEnablePolicy` opens that profile's connection
+modal for authorized linked-device operators. The package supplies a fresh QR when
+relinking is required, or connected status when a saved session remains valid.
+This reuses the same configuration and profile rather than provisional onboarding.
+Startup failures retain the existing runtime error feedback without opening the
+connection modal. Other adapters retain their existing toggle presentation.
+The confidential Engine disable Action validates the selected connector revision,
+then requests `:connector_logout` through Channels. `CommunicationBridge` delegates
+to `JidoChatBridge`, which invokes the configured adapter's optional `logout/1`
+on that connector's single registered listener. The WhatsApp adapter delegates to
+the package's `ConnectionWorker.logout/1`; the package owns server unlink and clearing durable
+credentials and RAM sessions. Missing listeners or failed logout leave enablement
+unchanged. Engine persists disablement after successful logout, then reconciles
+runtime shutdown. Runtime shutdown alone continues to preserve credentials.
+
+For local integration testing, `mix.exs` resolves `jido_chat_whatsapp` from
+`../jido_chat_whatsapp`. That sibling checkout must provide `Adapter.logout/1`.
+Adapters without this optional callback skip logout preparation during Delete;
+an explicit logout request for an unsupported adapter fails closed.
+
 The confidential Channels `:pair_linked_device` Action authorizes current super
 admins on every command. It passes the selected provider through
 `CommunicationBridge` and `JidoChatBridge` to the optional
@@ -427,8 +451,10 @@ malformed connector ID is rejected instead of becoming an unscoped lookup.
 BO connector removal archives rather than deletes the config: it disables
 runtime selection, retains historical lookup by ID and preserves the FK of
 PersonChannel identities. Archived configs are excluded from ordinary BO
-lists and provider-only upserts. Ingress teardown is attempted before archive;
-the BO reports failure instead of silently archiving when teardown fails.
+lists and provider-only upserts. Delete first tears down ingress, prepares adapter
+disablement, persists the disabled state, and successfully stops the runtime before
+archiving. Preparation failures leave the configuration enabled; runtime stop
+failures leave it disabled and unarchived so the BO can retry Delete.
 For data-source connectors, archiving first unwatches each active/error watch;
 successful stops are persisted and failed IDs remain retryable with the connector
 still live. The post-archive reconciliation and late watch upserts schedule
@@ -440,12 +466,19 @@ and archive persistence. Channels `ConnectorRuntime` owns only provider ingress
 teardown and runtime reconciliation. Engine sends resolved maps through confidential
 `:connector_teardown_ingress` (`%{config: runtime_config}`) and
 `:connector_sync_runtime` (`%{before_config: before, after_config: after}`). These
-leaf events perform no Repo lookup or database-backed BO authorization. Retries
+leaf events perform no Repo lookup or database-backed BO authorization. The separate
+confidential `:connector_prepare_disable` event calls the optional bridge
+`before_disable/3` callback with the current actor. Bridges without a callback
+continue normally; JidoChatBridge invokes configured logout and validates the current
+superadmin for WhatsApp. Already-disabled connectors skip ingress teardown and
+this preparation on retry, while still requiring successful runtime shutdown. Retries
 skip destructive teardown for archived rows but still stop the exact runtime.
 Archive runtime reconciliation resolves the configured bridge and calls its
 `stop_runtime/1` callback directly. It never invokes the ordinary enabled/disabled
 update flow, which may also tear down ingress. Already-stopped runtimes succeed;
-stop failures are pending after persistence, and retry never repeats teardown.
+stop failures prevent archival. A retry stops the disabled connector again before
+archiving; it does not repeat logout. Late watch cleanup can still be pending after
+archive persistence.
 The public result contains IDs and bounded outcomes, never credentials.
 
 ### Replicated email history contract (#768)

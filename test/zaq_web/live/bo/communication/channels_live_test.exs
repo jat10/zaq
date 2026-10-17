@@ -37,7 +37,19 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     end
 
     def start_runtime(_config), do: fetch_state(:start_runtime, :ok)
-    def stop_runtime(_config), do: fetch_state(:stop_runtime, :ok)
+
+    def stop_runtime(config) do
+      record_call(:stop_runtime_states, Repo.get!(ChannelConfig, config.id))
+      fetch_state(:stop_runtime, :ok)
+    end
+
+    def before_disable(%{provider: "whatsapp"} = config, _actor, opts), do: logout(config, opts)
+    def before_disable(_config, _actor, _opts), do: :ok
+
+    def logout(config, _opts) do
+      record_call(:logout, config.id)
+      fetch_state(:logout_result, :ok)
+    end
 
     def sync_runtime(before_config, after_config) do
       record_call(:sync_runtime, {before_config, after_config})
@@ -245,6 +257,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     view |> element("#linked-device-pairing button", "Close") |> render_click()
     refute has_element?(view, "#linked-device-pairing")
     view |> element("#toggle-config-#{first.id}") |> render_click()
+    view |> element("#confirm-disable-config-button") |> render_click()
     view |> element("#ingress-status-dot-#{first.id}") |> render_click()
     refute has_element?(view, "#linked-device-pairing")
     assert has_element?(view, "#ingress-status-modal")
@@ -252,6 +265,240 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     view |> element("#ingress-status-dot-#{second.id}") |> render_click()
     render_async(view, 1_000)
     assert has_element?(view, "#linked-device-pairing", "Second account")
+  end
+
+  test "WhatsApp disable confirms the original profile and cancellation has no side effects", %{
+    conn: conn
+  } do
+    admin = super_admin_fixture(%{must_change_password: false})
+    conn = init_test_session(conn, %{user_id: admin.id})
+    channels = Application.get_env(:zaq, :channels)
+    Application.put_env(:zaq, :channels, Map.put(channels, :whatsapp, %{bridge: BridgeFake}))
+    first = insert_channel_config(%{provider: "whatsapp", name: "First profile"})
+    second = insert_channel_config(%{provider: "whatsapp", name: "Second profile"})
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+
+    view |> element("#toggle-config-#{first.id}") |> render_click()
+
+    assert has_element?(
+             view,
+             "#disable-config-confirmation",
+             "Disabling WhatsApp will log out this profile"
+           )
+
+    assert has_element?(view, "#disable-config-confirmation", "First profile")
+    assert Repo.get!(ChannelConfig, first.id).enabled
+    assert BridgeFake.calls(:logout) == []
+    view |> element("#disable-config-confirmation button", "Cancel") |> render_click()
+    refute has_element?(view, "#disable-config-confirmation")
+    assert Repo.get!(ChannelConfig, first.id).enabled
+
+    view |> element("#toggle-config-#{first.id}") |> render_click()
+    render_hook(view, "confirm_disable", %{"id" => to_string(second.id)})
+    refute Repo.get!(ChannelConfig, first.id).enabled
+    assert Repo.get!(ChannelConfig, second.id).enabled
+    assert BridgeFake.calls(:logout) == [first.id]
+    refute has_element?(view, "#disable-config-confirmation")
+
+    render_hook(view, "confirm_disable", %{})
+    assert BridgeFake.calls(:logout) == [first.id]
+    view |> element("#toggle-config-#{first.id}") |> render_click()
+    assert Repo.get!(ChannelConfig, first.id).enabled
+    refute has_element?(view, "#disable-config-confirmation")
+  end
+
+  test "WhatsApp logout failure and stale confirmation preserve enabled state", %{conn: conn} do
+    admin = super_admin_fixture(%{must_change_password: false})
+    conn = init_test_session(conn, %{user_id: admin.id})
+    channels = Application.get_env(:zaq, :channels)
+    Application.put_env(:zaq, :channels, Map.put(channels, :whatsapp, %{bridge: BridgeFake}))
+    config = insert_channel_config(%{provider: "whatsapp"})
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+
+    view |> element("#toggle-config-#{config.id}") |> render_click()
+    BridgeFake.put(:logout_result, {:error, :logout_failed})
+    view |> element("#confirm-disable-config-button") |> render_click()
+    assert Repo.get!(ChannelConfig, config.id).enabled
+    assert render(view) =~ "Could not disable"
+
+    view |> element("#toggle-config-#{config.id}") |> render_click()
+    config |> Ecto.Changeset.change(name: "Edited after confirmation opened") |> Repo.update!()
+    BridgeFake.put(:logout_result, :ok)
+    view |> element("#confirm-disable-config-button") |> render_click()
+    assert Repo.get!(ChannelConfig, config.id).enabled
+    assert BridgeFake.calls(:logout) == [config.id]
+    assert render(view) =~ "changed"
+  end
+
+  describe "adapter-specific enable presentation" do
+    setup %{conn: conn} do
+      admin = super_admin_fixture(%{must_change_password: false})
+      channels = Application.get_env(:zaq, :channels)
+
+      Application.put_env(
+        :zaq,
+        :channels,
+        Map.put(channels, :whatsapp, %{bridge: BridgeFake, ingress_mode: :linked_device})
+      )
+
+      BridgeFake.put(:authentication_capability, :native)
+
+      BridgeFake.put(
+        :channel_ingress_status,
+        {:ok, %{phase: :pairing, status: :pending, summary: "Scan code", qr: "relink-code"}}
+      )
+
+      %{conn: init_test_session(conn, %{user_id: admin.id})}
+    end
+
+    test "WhatsApp enable after logout opens only the original saved profile", %{conn: conn} do
+      first = insert_channel_config(%{provider: "whatsapp", name: "First profile"})
+      second = insert_channel_config(%{provider: "whatsapp", name: "Second profile"})
+      config_count = Repo.aggregate(ChannelConfig, :count)
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+
+      view |> element("#toggle-config-#{first.id}") |> render_click()
+      view |> element("#confirm-disable-config-button") |> render_click()
+      refute Repo.get!(ChannelConfig, first.id).enabled
+      view |> element("#toggle-config-#{first.id}") |> render_click()
+      render_async(view, 1_000)
+
+      assert has_element?(view, "#linked-device-pairing", "First profile")
+      refute has_element?(view, "#linked-device-pairing", "Second profile")
+
+      assert has_element?(
+               view,
+               "#linked-device-pairing svg[aria-label='Device connection QR code']"
+             )
+
+      refute has_element?(view, "#linked-device-pairing button", "Confirm account")
+      assert Repo.get!(ChannelConfig, first.id).enabled
+      assert Repo.get!(ChannelConfig, first.id).settings == first.settings
+      assert Repo.get!(ChannelConfig, second.id).enabled
+      assert Repo.aggregate(ChannelConfig, :count) == config_count
+      assert BridgeFake.calls(:logout) == [first.id]
+
+      assert [{before_enable, enabled}] = BridgeFake.calls(:sync_runtime)
+      refute before_enable.enabled
+      assert enabled.id == first.id
+      assert enabled.enabled
+
+      view |> element("#linked-device-pairing button", "Close") |> render_click()
+      refute has_element?(view, "#linked-device-pairing")
+      assert Repo.get!(ChannelConfig, first.id).enabled
+      assert length(BridgeFake.calls(:sync_runtime)) == 1
+      assert BridgeFake.calls(:logout) == [first.id]
+
+      # A second toggle asks to disable; it cannot start a duplicate runtime.
+      view |> element("#toggle-config-#{first.id}") |> render_click()
+      assert has_element?(view, "#disable-config-confirmation")
+      view |> element("#disable-config-confirmation button", "Cancel") |> render_click()
+      assert length(BridgeFake.calls(:sync_runtime)) == 1
+      assert Repo.get!(ChannelConfig, first.id).enabled
+    end
+
+    test "a valid saved WhatsApp session displays connected status without a QR", %{conn: conn} do
+      BridgeFake.put(
+        :channel_ingress_status,
+        {:ok, %{phase: :connected, status: :ok, summary: "Profile connected"}}
+      )
+
+      config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+      view |> element("#toggle-config-#{config.id}") |> render_click()
+      render_async(view, 1_000)
+
+      assert has_element?(view, "#linked-device-pairing", "Profile connected")
+      refute has_element?(view, "#linked-device-pairing svg")
+      refute has_element?(view, "#linked-device-pairing button", "Confirm account")
+      assert BridgeFake.calls(:sync_provider_runtime) == []
+      assert BridgeFake.calls(:logout) == []
+    end
+
+    test "an expired QR retries the same enabled WhatsApp profile", %{conn: conn} do
+      BridgeFake.put(
+        :channel_ingress_status,
+        {:ok, %{phase: :expired, status: :error, summary: "QR expired"}}
+      )
+
+      config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+      other = insert_channel_config(%{provider: "whatsapp", enabled: false})
+      config_count = Repo.aggregate(ChannelConfig, :count)
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+      view |> element("#toggle-config-#{config.id}") |> render_click()
+      render_async(view, 1_000)
+      assert has_element?(view, "#linked-device-pairing", "QR expired")
+      refute has_element?(view, "#linked-device-pairing svg")
+
+      BridgeFake.put(
+        :channel_ingress_status,
+        {:ok, %{phase: :pairing, status: :pending, summary: "Scan replacement", qr: "fresh-code"}}
+      )
+
+      view |> element("#linked-device-pairing button", "Retry connection") |> render_click()
+      render_async(view, 1_000)
+
+      assert has_element?(view, "#linked-device-pairing", "Scan replacement")
+      assert has_element?(view, "#linked-device-pairing svg")
+      assert [%{id: id}] = BridgeFake.calls(:sync_provider_runtime)
+      assert id == config.id
+      refute Repo.get!(ChannelConfig, other.id).enabled
+      assert Repo.aggregate(ChannelConfig, :count) == config_count
+    end
+
+    for {sync_result, feedback} <- [
+          {{:error, :startup_failed}, "Runtime sync failed"},
+          {:unexpected, "Runtime sync returned unexpected result"}
+        ] do
+      @sync_result sync_result
+      @feedback feedback
+
+      test "WhatsApp startup result #{inspect(sync_result)} reports failure without opening QR",
+           %{
+             conn: conn
+           } do
+        BridgeFake.put(:sync_runtime_result, @sync_result)
+        config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+        {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+        view |> element("#toggle-config-#{config.id}") |> render_click()
+        render_async(view, 1_000)
+
+        assert render(view) =~ @feedback
+        refute has_element?(view, "#linked-device-pairing")
+        assert Repo.get!(ChannelConfig, config.id).enabled
+        assert [{before_config, after_config}] = BridgeFake.calls(:sync_runtime)
+        refute before_config.enabled
+        assert after_config.id == config.id
+        assert after_config.enabled
+      end
+    end
+
+    test "other adapters retain their enable presentation even with native authentication", %{
+      conn: conn
+    } do
+      config = insert_channel_config(%{enabled: false})
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/mattermost")
+      view |> element("#toggle-config-#{config.id}") |> render_click()
+      render_async(view, 1_000)
+
+      assert Repo.get!(ChannelConfig, config.id).enabled
+      refute has_element?(view, "#linked-device-pairing")
+      assert [{_, %{id: id, enabled: true}}] = BridgeFake.calls(:sync_runtime)
+      assert id == config.id
+    end
+
+    test "WhatsApp enable cannot expose QR to an unprivileged operator", %{conn: conn, user: user} do
+      config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+
+      {:ok, view, _} =
+        live(init_test_session(conn, %{user_id: user.id}), ~p"/bo/channels/retrieval/whatsapp")
+
+      view |> element("#toggle-config-#{config.id}") |> render_click()
+      render_async(view, 1_000)
+
+      refute has_element?(view, "#linked-device-pairing")
+      assert Repo.get!(ChannelConfig, config.id).enabled
+    end
   end
 
   test "linked-device retry displays failure and unprivileged callers cannot open pairing", %{
@@ -376,6 +623,47 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
 
     assert has_element?(view, "#provider-default-agent-select")
     refute html =~ disabled_agent.name
+  end
+
+  test "delete stops a disabled connector before archive and permits retry", %{conn: conn} do
+    config = insert_channel_config(%{})
+    BridgeFake.put(:stop_runtime, {:error, :shutdown_failed})
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/mattermost")
+    view |> element("#confirm-delete-config-#{config.id}") |> render_click()
+    view |> element("#delete-config-button") |> render_click()
+
+    assert %ChannelConfig{enabled: false, archived_at: nil} = Repo.get!(ChannelConfig, config.id)
+    assert has_element?(view, "#toggle-config-#{config.id}", "Enable")
+    assert render(view) =~ "Retry Delete to finish."
+    assert [%{enabled: false, archived_at: nil}] = BridgeFake.calls(:stop_runtime_states)
+    assert BridgeFake.calls(:logout) == []
+
+    BridgeFake.put(:stop_runtime, :ok)
+    view |> element("#confirm-delete-config-#{config.id}") |> render_click()
+    view |> element("#delete-config-button") |> render_click()
+    assert Repo.get!(ChannelConfig, config.id).archived_at
+    refute has_element?(view, "#config-card-#{config.id}")
+  end
+
+  test "WhatsApp delete requires successful logout of only the selected profile", %{conn: conn} do
+    channels = Application.get_env(:zaq, :channels)
+    Application.put_env(:zaq, :channels, Map.put(channels, :whatsapp, %{bridge: BridgeFake}))
+    first = insert_channel_config(%{provider: "whatsapp", name: "First profile"})
+    second = insert_channel_config(%{provider: "whatsapp", name: "Second profile"})
+    BridgeFake.put(:logout_result, {:error, :logout_failed})
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+    view |> element("#confirm-delete-config-#{first.id}") |> render_click()
+    view |> element("#delete-config-button") |> render_click()
+    assert %ChannelConfig{enabled: true, archived_at: nil} = Repo.get!(ChannelConfig, first.id)
+    assert render(view) =~ "It was not deleted."
+    assert BridgeFake.calls(:stop_runtime_states) == []
+
+    BridgeFake.put(:logout_result, :ok)
+    view |> element("#confirm-delete-config-#{first.id}") |> render_click()
+    view |> element("#delete-config-button") |> render_click()
+    assert Repo.get!(ChannelConfig, first.id).archived_at
+    assert %ChannelConfig{enabled: true, archived_at: nil} = Repo.get!(ChannelConfig, second.id)
+    assert BridgeFake.calls(:logout) == [first.id, first.id]
   end
 
   test "toggles and deletes a config", %{conn: conn} do

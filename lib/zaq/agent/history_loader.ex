@@ -161,7 +161,10 @@ defmodule Zaq.Agent.HistoryLoader do
       end
 
     metadata = Map.get(message, :metadata) || %{}
-    reply_context = Map.get(message, :reply_context) || Map.get(metadata, "reply_context", Map.get(metadata, :reply_context))
+
+    reply_context =
+      Map.get(message, :reply_context) ||
+        Map.get(metadata, "reply_context", Map.get(metadata, :reply_context))
 
     message
     |> Map.put(:reply_context, reply_context)
