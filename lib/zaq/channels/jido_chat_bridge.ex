@@ -62,6 +62,51 @@ defmodule Zaq.Channels.JidoChatBridge do
   @listener_retry_interval 25
   @listener_retries 200
 
+  @doc "Runs optional adapter logout before disablement, preserving linked-device operator permissions."
+  @impl Zaq.Channels.Bridge
+  def before_disable(%{provider: provider} = config, actor, opts) do
+    case logout_adapter(provider, opts) do
+      {:ok, adapter} ->
+        case BOActor.current_user(actor) do
+          {:ok, %{role: %{name: "super_admin"}}} -> logout_listener(config, adapter, opts)
+          _ -> {:error, :unauthorized}
+        end
+
+      _ ->
+        :ok
+    end
+  end
+
+  @doc "Logs out the selected listener through its configured adapter's optional logout callback."
+  @spec logout(map(), keyword()) :: :ok | {:error, term()}
+  def logout(%{id: id, provider: provider} = config, opts \\ []) when is_integer(id) and id > 0 do
+    with {:ok, adapter} <- logout_adapter(provider, opts) do
+      logout_listener(config, adapter, opts)
+    end
+  end
+
+  defp logout_adapter(provider, opts) do
+    with {:ok, adapter} <- adapter_for(provider, opts),
+         {:module, _} <- Code.ensure_loaded(adapter),
+         true <- function_exported?(adapter, :logout, 1) do
+      {:ok, adapter}
+    else
+      _ -> {:error, :unsupported}
+    end
+  end
+
+  defp logout_listener(config, adapter, opts) do
+    supervisor = Zaq.Config.get(:zaq, :chat_bridge_supervisor_module, Supervisor, opts)
+
+    case supervisor.lookup_runtime(runtime_bridge_id(config)) do
+      {:ok, %{listener_pids: [listener]}} -> adapter.logout(listener)
+      {:error, _} = error -> error
+      _ -> {:error, :unsupported}
+    end
+  catch
+    :exit, _ -> {:error, :logout_unavailable}
+  end
+
   @doc "Returns the configured adapter's optional authentication capability."
   @spec authentication_capability(atom() | String.t(), keyword()) ::
           :native | :unsupported | {:error, term()}

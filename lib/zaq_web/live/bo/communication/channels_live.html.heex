@@ -1553,7 +1553,7 @@
   <ZaqWeb.Components.BOModal.confirm_dialog
     :if={@confirm_delete}
     title="Confirm Delete"
-    message="Are you sure you want to delete this channel config? This action cannot be undone."
+    message="This will disable this channel config and stop its connection before deleting it. This action cannot be undone."
     cancel_event="cancel_delete"
     confirm_event="delete"
     confirm_button_id="delete-config-button"
@@ -1779,6 +1779,16 @@
       </div>
     </div>
   </ZaqWeb.Components.BOModal.form_dialog>
+  <ZaqWeb.Components.BOModal.confirm_dialog
+    :if={@confirm_disable}
+    id="disable-config-confirmation"
+    title={"Disable #{@confirm_disable.name}?"}
+    message={@confirm_disable.message}
+    cancel_event="cancel_disable"
+    confirm_event="confirm_disable"
+    confirm_label="Confirm"
+    confirm_button_id="confirm-disable-config-button"
+  />
   <ZaqWeb.Components.DesignSystem.LinkedDevicePairing.modal
     :if={@linked_device_modal}
     name={@linked_device_modal.name}

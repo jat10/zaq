@@ -31,6 +31,7 @@ defmodule Zaq.Channels.Bridge do
   @callback start_runtime(runtime_target()) :: :ok | {:error, term()}
   @callback start_runtime(runtime_target(), keyword()) :: :ok | {:error, term()}
   @callback stop_runtime(map()) :: :ok | {:error, term()}
+  @callback before_disable(map(), map(), keyword()) :: :ok | {:error, term()}
   @callback sync_runtime(map() | nil, map()) :: :ok | {:error, term()}
   @callback sync_provider_runtime(runtime_target()) :: :ok | {:error, term()}
   @callback sync_provider_runtime(runtime_target(), keyword()) :: :ok | {:error, term()}
@@ -48,6 +49,7 @@ defmodule Zaq.Channels.Bridge do
   @optional_callbacks start_runtime: 1,
                       start_runtime: 2,
                       stop_runtime: 1,
+                      before_disable: 3,
                       sync_runtime: 2,
                       sync_provider_runtime: 1,
                       sync_provider_runtime: 2,

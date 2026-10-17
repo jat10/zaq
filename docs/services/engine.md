@@ -84,6 +84,17 @@ Stored `jido_chat` fields include bot name/user ID, message patterns and ingress
 overrides. SMTP and IMAP lookup helpers live in `Zaq.ConnectorConfig`; bridge/listener
 normalization remains provider-local in Channels.
 
+Confirmed logout and disable use the confidential `:disable_channel_connector`
+event and `Actions.DisableChannelConnector`. Both confirmation context and execution
+revalidate the current super-admin actor. `ConnectorLifecycle` validates exact
+provider/kind and a secret-free revision before requesting Channels logout. It holds
+no database row lock during logout, since adapter storage callbacks return to Engine.
+It locks and rechecks the revision before persisting `enabled: false`, then reconciles
+runtime shutdown. Logout failure leaves enablement unchanged; post-save runtime
+failure returns a pending stage. A persistence failure after successful provider
+logout cannot restore the remote session. Repeated already-disabled requests skip
+logout and retry runtime cleanup.
+
 ### Connector credential documents
 
 [`Connect.CredentialDocuments`](../../lib/zaq/engine/connect/credential_documents.ex)
@@ -1422,11 +1433,13 @@ constant as the page grows to its 50-row bound.
 
 `ConnectorLifecycle.context/3` produces an exactly scoped, revisioned descriptor in
 Engine. `archive/2,3` validates scope/revision, stops data-source watches, requests
-confidential supplied-config provider teardown, then locks/rechecks the row and
-persists archival in Engine. It requests Channels runtime reconciliation and
-reconciles late watch cleanup afterward. Pre-archive failures
-leave the connector live. Runtime or cleanup failures after commit are returned as explicit
-pending stages, and retries resume the idempotent remaining work. BO callers and the
+confidential supplied-config provider teardown, and runs the optional adapter
+disable hook. It locks/rechecks the row to persist disablement, requires successful
+Channels runtime shutdown, then locks/rechecks again before archiving. Hook failures
+leave enablement unchanged; shutdown failures leave the connector disabled and
+unarchived. Retrying a disabled connector skips the hook and retries shutdown.
+Late watch cleanup is reconciled afterward and can return an explicit pending
+stage. No database row lock is held during adapter logout or runtime shutdown. BO callers and the
 `ArchiveChannelConnector` Action send only connector ID, provider, and kind with a current
 trusted actor.
 
