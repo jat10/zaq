@@ -371,6 +371,19 @@ defmodule Zaq.Channels.Api do
 
   def handle_event(
         %Event{request: %{config: config}} = event,
+        :connector_prepare_disable,
+        _context
+      ) do
+    response =
+      if Keyword.get(event.opts, :confidential) == true,
+        do: communication_bridge_module(event).before_disable(config, event.actor, event.opts),
+        else: {:error, :confidential_event_required}
+
+    %{event | response: response}
+  end
+
+  def handle_event(
+        %Event{request: %{config: config}} = event,
         :connector_teardown_ingress,
         _context
       ) do
@@ -895,6 +908,15 @@ defmodule Zaq.Channels.Api do
         bridge_module.capability_snapshot(provider, request)
       else
         bridge_module.capability_snapshot(provider)
+      end
+
+    %{event | response: response}
+  end
+
+  def handle_event(%Event{request: %{config: config}} = event, :connector_logout, _context) do
+    response =
+      with :ok <- authorize_pairing_operator(event) do
+        communication_bridge_module(event).logout(config, event.opts)
       end
 
     %{event | response: response}

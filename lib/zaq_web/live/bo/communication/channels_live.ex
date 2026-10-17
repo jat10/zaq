@@ -24,6 +24,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   alias ZaqWeb.Live.BO.AI.BOActor
   alias ZaqWeb.Live.BO.Communication.AgentRoutingOptions
   alias ZaqWeb.Live.BO.Communication.ChannelConfigPersistence
+  alias ZaqWeb.Live.BO.Communication.ChannelDisablePolicy
+  alias ZaqWeb.Live.BO.Communication.ChannelEnablePolicy
   alias ZaqWeb.Live.BO.Communication.IngressStatusUI
   alias ZaqWeb.Live.BO.Communication.LinkedDeviceUI
   alias ZaqWeb.Live.BO.Communication.OAuthClaimState
@@ -96,6 +98,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
      |> assign(:oauth_claim_modal, false)
      |> assign(:oauth_claim_url, nil)
      |> assign(:confirm_delete, nil)
+     |> assign(:confirm_disable, nil)
      |> assign(:capability_modal_open, false)
      |> assign(:capabilities_snapshot, capabilities)
      # test connection
@@ -498,21 +501,77 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
            "Cannot delete config: failed to teardown webhook ingress subscription (#{inspect(reason)})."
          )}
 
+      {:error, {:runtime_stop_failed, _reason}} ->
+        {:noreply,
+         socket
+         |> assign(:confirm_delete, nil)
+         |> refresh_connector_configs()
+         |> put_flash(
+           :error,
+           "The configuration is disabled, but its connection could not be stopped. Retry Delete to finish."
+         )}
+
+      {:error, {:disable_failed, _reason}} ->
+        {:noreply,
+         socket
+         |> assign(:confirm_delete, nil)
+         |> refresh_connector_configs()
+         |> put_flash(:error, "Could not disable the configuration. It was not deleted.")}
+
       {:error, reason} ->
         {:noreply,
          socket
          |> assign(:confirm_delete, nil)
+         |> refresh_connector_configs()
          |> put_flash(:error, "Cannot archive connector: #{inspect(reason)}")}
     end
   end
 
   def handle_event("toggle_enabled", %{"id" => id}, socket) do
-    previous_config = Repo.get!(ChannelConfig, id)
+    config = Repo.get!(ChannelConfig, id)
 
-    if previous_config.archived_at do
-      {:noreply, put_flash(socket, :error, "Archived connectors cannot be reactivated.")}
-    else
-      toggle_active_config(socket, previous_config)
+    cond do
+      config.provider != socket.assigns.provider ->
+        {:noreply,
+         put_flash(socket, :error, "Connector is no longer available. Refresh and try again.")}
+
+      config.archived_at ->
+        {:noreply, put_flash(socket, :error, "Archived connectors cannot be reactivated.")}
+
+      true ->
+        case ChannelDisablePolicy.before_disable(socket.assigns.provider, config) do
+          :proceed -> toggle_active_config(socket, config)
+          {:confirm, message} -> prepare_disable_confirmation(socket, config, message)
+        end
+    end
+  end
+
+  def handle_event("cancel_disable", _, socket),
+    do: {:noreply, assign(socket, :confirm_disable, nil)}
+
+  def handle_event("confirm_disable", _, %{assigns: %{confirm_disable: nil}} = socket),
+    do: {:noreply, socket}
+
+  def handle_event("confirm_disable", _, socket) do
+    pending = socket.assigns.confirm_disable
+    socket = assign(socket, :confirm_disable, nil)
+
+    case disable_connector(socket, Map.put(pending.request, :op, :disable)) do
+      {:ok, result} ->
+        {:noreply,
+         socket
+         |> refresh_connector_configs()
+         |> maybe_put_runtime_sync_flash(
+           if(result.runtime == :synced, do: :ok, else: {:error, :runtime_cleanup_pending}),
+           "#{pending.name} disabled and logged out."
+         )}
+
+      {:error, :stale_connector} ->
+        {:noreply, put_flash(socket, :error, "This profile changed. Refresh and confirm again.")}
+
+      {:error, _} ->
+        {:noreply,
+         put_flash(socket, :error, "Could not disable this profile. Refresh and try again.")}
     end
   end
 
@@ -975,20 +1034,68 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
       |> Repo.update!()
 
     sync_result = sync_channel_runtime(previous_config, config)
-    configs = list_configs(socket.assigns.provider)
-    selected = selected_config(configs, selected_id(socket))
 
     {:noreply,
      socket
-     |> assign(:configs, configs)
-     |> assign(:grants_by_config, grants_by_config(socket.assigns.kind, configs))
-     |> assign(:provider_default_agent_value, provider_default_agent_value(selected))
-     |> assign(:selected_config_id, selected && selected.id)
-     |> schedule_ingress_status_refresh(configs)
+     |> refresh_connector_configs()
      |> maybe_put_runtime_sync_flash(
        sync_result,
        "#{config.name} #{if previous_config.enabled, do: "disabled", else: "enabled"}."
-     )}
+     )
+     |> maybe_open_enabled_connection(config, sync_result)}
+  end
+
+  defp maybe_open_enabled_connection(%{assigns: %{linked_device: true}} = socket, config, :ok) do
+    case ChannelEnablePolicy.after_enable(config.provider, config) do
+      :open_connection -> LinkedDeviceUI.open(socket, config)
+      :proceed -> socket
+    end
+  end
+
+  defp maybe_open_enabled_connection(socket, _config, _sync_result), do: socket
+
+  defp prepare_disable_confirmation(socket, config, message) do
+    request = %{
+      op: :context,
+      channel_config_id: config.id,
+      provider: socket.assigns.provider,
+      kind: to_string(socket.assigns.kind)
+    }
+
+    case disable_connector(socket, request) do
+      {:ok, %{archived?: false} = descriptor} ->
+        {:noreply,
+         assign(socket, :confirm_disable, %{
+           request: descriptor,
+           name: config.name,
+           message: message
+         })}
+
+      _ ->
+        {:noreply,
+         put_flash(socket, :error, "Cannot disable this profile. Refresh and try again.")}
+    end
+  end
+
+  defp disable_connector(socket, request) do
+    Event.new(request, :engine,
+      actor: BOActor.build(socket.assigns.current_user),
+      opts: [action: :disable_channel_connector, confidential: true]
+    )
+    |> NodeRouter.dispatch()
+    |> Map.get(:response)
+  end
+
+  defp refresh_connector_configs(socket) do
+    configs = list_configs(socket.assigns.provider)
+    selected = selected_config(configs, selected_id(socket))
+
+    socket
+    |> assign(:configs, configs)
+    |> assign(:grants_by_config, grants_by_config(socket.assigns.kind, configs))
+    |> assign(:provider_default_agent_value, provider_default_agent_value(selected))
+    |> assign(:selected_config_id, selected && selected.id)
+    |> schedule_ingress_status_refresh(configs)
   end
 
   defp first_enabled_config(socket) do
@@ -1317,24 +1424,15 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   end
 
   defp put_archive_result_flash(socket, result, message) do
-    cond do
-      match?({:pending, _}, result.runtime) ->
-        put_flash(
-          socket,
-          :error,
-          "#{message} Runtime sync is pending: #{inspect(result.runtime)}"
-        )
-
-      match?({:warning, _}, result.ingress) ->
-        {:warning, reason} = result.ingress
-
+    case result.ingress do
+      {:warning, reason} ->
         put_flash(
           socket,
           :info,
           "#{message} Webhook ingress subscription was not deleted (#{inspect(reason)})."
         )
 
-      true ->
+      _ ->
         put_flash(socket, :info, message)
     end
   end
