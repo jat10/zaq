@@ -34,6 +34,9 @@ defmodule Zaq.Channels.SanitizedMediaHistoryIntegrationTest do
           send(self(), {:passive_capture, result.response})
           result
 
+        :conversation ->
+          Zaq.Engine.Api.handle_event(event, :conversation, %{})
+
         action when action in [:hydrate_attachments, :materialize_record] ->
           Zaq.Channels.Api.handle_event(event, action, %{})
       end
