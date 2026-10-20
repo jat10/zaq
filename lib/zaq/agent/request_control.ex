@@ -104,11 +104,7 @@ defmodule Zaq.Agent.RequestControl do
         {:ok, input_opts} ->
           payload =
             (input_opts[:input_presentation] || state[:input_presentation] || %{})
-            |> Map.merge(%{
-              content: content,
-              attachments: Keyword.get(opts, :attachments, []),
-              reply_context: Keyword.get(opts, :reply_context)
-            })
+            |> Map.merge(%{content: content, attachments: Keyword.get(opts, :attachments, [])})
             |> InputPrompt.render_message(opaque_alias_scope: state.server_id)
 
           invoke_control(
@@ -218,7 +214,6 @@ defmodule Zaq.Agent.RequestControl do
         case control(event, request_id, incoming.content, :steer_request, binding,
                followup?: true,
                include_answer_binding: true,
-               reply_context: incoming.reply_context,
                attachments: incoming.attachments
              ) do
           {:ok, accepted} ->

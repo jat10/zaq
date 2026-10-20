@@ -703,14 +703,13 @@ mailbox. They must not resolve the destination agent or workflow; final routing 
 is resolved by Engine through `Zaq.Engine.IncomingMessageRouter` and
 `Zaq.Engine.IncomingMessageRoutingRule`.
 
-Quoted replies carry optional `external_reply_to_id` and normalized `reply_context`
-separately from `thread_id`. `JidoChatBridge.to_internal/2` preserves available inline
-text and author, binding the quote to the enclosing provider, connector, room and
-source namespace. Conflicting explicit scope or message IDs discard the quote.
-Missing original text stays unavailable; quotes never trigger history or media
-fetches or grant access. WhatsApp quotes do not create native threads. Engine
-captures inline quote data with the replying message, and Agent renders it as
-attributed, untrusted message data for retrieval, execution and incoming steering.
+`JidoChatBridge.to_internal/2` maps the adapter's `external_thread_id` to
+`Incoming.thread_id`. The WhatsApp adapter uses the immediate replied-to message ID
+for this field and includes it in its chat-scoped event key. Non-replies have no
+thread ID. Reply chains are not collapsed into a common root: a reply to A uses A,
+while a reply to B uses B. Original content is supplied by Engine-authorized history,
+not by adapter quote text. WhatsApp message fetching is unsupported; unknown originals
+remain absent. Native outgoing quote options are independent of this history grouping.
 
 BO routing writes for global defaults, provider defaults, retrieval-channel assignments,
 and IMAP mailbox rules dispatch to Engine action `:upsert_incoming_message_routing_rules`.
