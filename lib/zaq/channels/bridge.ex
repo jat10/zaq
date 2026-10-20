@@ -15,7 +15,6 @@ defmodule Zaq.Channels.Bridge do
   """
 
   alias Zaq.Channels.{CommunicationBridge, DataSourceBridge}
-  alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Event
@@ -31,6 +30,7 @@ defmodule Zaq.Channels.Bridge do
   @callback start_runtime(runtime_target()) :: :ok | {:error, term()}
   @callback start_runtime(runtime_target(), keyword()) :: :ok | {:error, term()}
   @callback stop_runtime(map()) :: :ok | {:error, term()}
+  @callback resolve_connection_details(map(), map()) :: map()
   @callback before_disable(map(), map(), keyword()) :: :ok | {:error, term()}
   @callback sync_runtime(map() | nil, map()) :: :ok | {:error, term()}
   @callback sync_provider_runtime(runtime_target()) :: :ok | {:error, term()}
@@ -46,7 +46,8 @@ defmodule Zaq.Channels.Bridge do
               {:ok, {map(), map(), keyword()}} | {:error, term()}
   @callback after_incoming(map(), map(), keyword(), term(), module()) :: term()
 
-  @optional_callbacks start_runtime: 1,
+  @optional_callbacks resolve_connection_details: 2,
+                      start_runtime: 1,
                       start_runtime: 2,
                       stop_runtime: 1,
                       before_disable: 3,
@@ -162,13 +163,16 @@ defmodule Zaq.Channels.Bridge do
       def sync_provider_runtime(config, _opts) when is_map(config),
         do: sync_provider_runtime(config)
 
+      def resolve_connection_details(_config, details), do: details
+
       def runtime_update_enabled_enabled(_before, _after), do: :ok
 
       def runtime_supervisor_module, do: Zaq.Channels.Supervisor
 
       def runtime_bridge_id(config), do: ChannelBridge.default_bridge_id(config)
 
-      defoverridable start_runtime: 1,
+      defoverridable resolve_connection_details: 2,
+                     start_runtime: 1,
                      start_runtime: 2,
                      stop_runtime: 1,
                      sync_runtime: 2,
@@ -389,18 +393,12 @@ defmodule Zaq.Channels.Bridge do
       token: Map.get(runtime_config, :token) || Map.get(runtime_config, "token")
     }
 
-    case provider_config(
-           Map.get(runtime_config, :provider) || Map.get(runtime_config, "provider")
-         ) do
-      %{ingress_mode: :linked_device} ->
-        case JidoChatBridge.connection_profile(runtime_config) do
-          {:ok, profile} -> Map.put(details, :profile, profile)
-          {:error, _} -> details
-        end
+    provider = Map.get(runtime_config, :provider) || Map.get(runtime_config, "provider")
+    bridge = bridge_for(provider)
 
-      _ ->
-        details
-    end
+    if bridge_supports?(bridge, :resolve_connection_details, 2),
+      do: bridge.resolve_connection_details(runtime_config, details),
+      else: details
   end
 
   @doc "Fetches an enabled connector by provider; supply its ID if the provider is ambiguous."

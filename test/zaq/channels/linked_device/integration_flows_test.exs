@@ -460,8 +460,8 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppDeliveryTest do
     @moduledoc false
     defdelegate connection_options(binding, opts), to: Jido.Chat.WhatsApp.Adapter
     defdelegate prepare_connection(opts), to: Jido.Chat.WhatsApp.Adapter
-    defdelegate connection_profile(binding), to: Jido.Chat.WhatsApp.Adapter
-    defdelegate storage_runtime_spec(opts), to: Jido.Chat.WhatsApp.Adapter
+    defdelegate connection_identity(binding), to: Jido.Chat.WhatsApp.Adapter
+    defdelegate provider_child_specs(opts), to: Jido.Chat.WhatsApp.Adapter
 
     def send_message(room, body, opts) do
       send(self(), {:sent, room, body, opts})
