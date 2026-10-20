@@ -99,7 +99,7 @@ defmodule Zaq.Channels.JidoChatBridge do
     supervisor = Zaq.Config.get(:zaq, :chat_bridge_supervisor_module, Supervisor, opts)
 
     case supervisor.lookup_runtime(runtime_bridge_id(config)) do
-      {:ok, %{listener_pids: [listener]}} -> adapter.logout(listener)
+      {:ok, %{listener_pids: [listener]}} -> Adapter.logout(adapter, listener)
       {:error, _} = error -> error
       _ -> {:error, :unsupported}
     end
@@ -189,10 +189,10 @@ defmodule Zaq.Channels.JidoChatBridge do
   @doc """
   Public listener payloads route through bridge State; private requests are rejected here.
   """
-  def from_listener(_config, %Jido.Chat.WhatsApp.Pairing.Request{}, _opts),
+  def from_listener(_config, %Jido.Chat.Authentication.Request{}, _opts),
     do: {:error, :invalid_pairing_request}
 
-  def from_listener(_config, %Jido.Chat.WhatsApp.Storage.Request{}, _opts),
+  def from_listener(_config, %Jido.Chat.Storage.Request{}, _opts),
     do: {:error, :invalid_storage_request}
 
   def from_listener(config, payload, sink_opts) when is_map(payload) do
@@ -209,27 +209,27 @@ defmodule Zaq.Channels.JidoChatBridge do
   def from_listener(
         config,
         runtime_reference,
-        %Jido.Chat.WhatsApp.Pairing.Request{version: 1} = event,
+        %Jido.Chat.Authentication.Request{version: 1} = event,
         _opts
       )
       when is_reference(runtime_reference) do
     pairing_request(config, event)
   end
 
-  def from_listener(_config, _runtime_reference, %Jido.Chat.WhatsApp.Pairing.Request{}, _opts),
+  def from_listener(_config, _runtime_reference, %Jido.Chat.Authentication.Request{}, _opts),
     do: {:error, :invalid_pairing_request}
 
   def from_listener(
         config,
         runtime_reference,
-        %Jido.Chat.WhatsApp.Storage.Request{version: 1} = event,
+        %Jido.Chat.Storage.Request{version: 1} = event,
         _opts
       )
       when is_reference(runtime_reference) do
     storage_request(config, event)
   end
 
-  def from_listener(_config, _runtime_reference, %Jido.Chat.WhatsApp.Storage.Request{}, _opts),
+  def from_listener(_config, _runtime_reference, %Jido.Chat.Storage.Request{}, _opts),
     do: {:error, :invalid_storage_request}
 
   def from_listener(config, runtime_reference, payload, opts)
@@ -362,16 +362,16 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   @impl true
   def build_runtime_specs({:provider, provider}, opts) do
-    specs =
-      case Bridge.provider_config(provider, opts) do
-        %{ingress_mode: :linked_device, adapter: adapter} ->
-          [adapter.storage_runtime_spec(require_ram_schema: true)]
+    case Bridge.provider_config(provider, opts) do
+      %{adapter: adapter} = provider_config ->
+        with {:ok, specs} <-
+               Adapter.provider_child_specs(adapter, adapter_runtime_opts(provider_config)) do
+          {:ok, {nil, specs}}
+        end
 
-        _ ->
-          []
-      end
-
-    {:ok, {nil, specs}}
+      _ ->
+        {:ok, {nil, []}}
+    end
   end
 
   def build_runtime_specs(config, opts), do: super(config, opts)
@@ -622,7 +622,6 @@ defmodule Zaq.Channels.JidoChatBridge do
            is_atom(phase) and level in [:ok, :pending, :error] and is_binary(summary) and
              is_binary(mode),
          {:ok, ^profile} <- connection_profile(config),
-         :linked_device <- ingress_mode_for(config.provider),
          {:ok, adapter} <- adapter_for(config.provider),
          true <-
            action.adapter == adapter and action.adapter_name == provider_to_atom(config.provider) do
@@ -1137,17 +1136,24 @@ defmodule Zaq.Channels.JidoChatBridge do
   """
   @spec open_dm_channel(String.t(), map()) :: {:ok, String.t()} | {:error, term()}
   @impl true
-  def open_dm_channel(author_id, %{profile: _, provider: provider} = details)
+  def open_dm_channel(author_id, %{provider: provider} = details)
       when is_binary(author_id) do
     with {:ok, opts} <- adapter_call_opts(provider, details),
-         {:ok, adapter} <- resolve_adapter_for_provider(provider),
-         true <- function_exported?(adapter, :open_dm, 2) || {:error, :unsupported} do
-      adapter.open_dm(author_id, opts)
+         {:ok, adapter} <- resolve_adapter_for_provider(provider) do
+      if function_exported?(adapter, :connection_options, 2) and
+           function_exported?(adapter, :open_dm, 2),
+         do: adapter.open_dm(author_id, opts),
+         else: legacy_open_dm_channel(author_id, details)
     end
   end
 
-  def open_dm_channel(author_id, %{url: url, token: token, bot_user_id: bot_user_id} = details)
-      when is_binary(author_id) and is_binary(bot_user_id) do
+  def open_dm_channel(author_id, details), do: legacy_open_dm_channel(author_id, details)
+
+  defp legacy_open_dm_channel(
+         author_id,
+         %{url: url, token: token, bot_user_id: bot_user_id} = details
+       )
+       when is_binary(author_id) and is_binary(bot_user_id) do
     provider = Map.get(details, :provider, "mattermost")
 
     with {:ok, adapter} <- resolve_adapter_for_provider(provider),
@@ -1158,7 +1164,7 @@ defmodule Zaq.Channels.JidoChatBridge do
     end
   end
 
-  def open_dm_channel(_author_id, _details), do: {:error, :missing_connection_details}
+  defp legacy_open_dm_channel(_author_id, _details), do: {:error, :missing_connection_details}
 
   @doc "Resolves ZAQ roles for a message author by username. Returns `{:ok, roles | nil}`."
   def resolve_roles(%{author_name: nil}), do: {:ok, nil}
@@ -1310,12 +1316,17 @@ defmodule Zaq.Channels.JidoChatBridge do
        do: :ok
 
   defp handle_message_event(config, thread, %Chat.Incoming{} = incoming, normalized) do
-    if thread.adapter_name in [:whatsapp, "whatsapp"] and
+    if room_reply_policy(thread.adapter_name) == :mention_required and
          not incoming.channel_meta.is_dm and not incoming.was_mentioned do
       capture_unaddressed_message(config, thread, incoming, normalized)
     else
       route_message_event(config, thread, incoming, normalized)
     end
+  end
+
+  defp room_reply_policy(provider) do
+    (Bridge.provider_config(provider) || %{})
+    |> Map.get(:room_reply_policy, :default)
   end
 
   # History may be delivered even when synchronization was disabled. It must
@@ -1536,30 +1547,19 @@ defmodule Zaq.Channels.JidoChatBridge do
   end
 
   defp prepare_listener_opts(config, opts, adapter) do
-    if ingress_mode_for(config.provider) == :linked_device do
-      with {:ok, opts} <- linked_device_listener_opts(config, opts, adapter) do
-        {:ok,
-         Keyword.update!(opts, :ingress, fn ingress ->
-           Map.merge(ingress, %{sync_history: false, sync_full_history: false})
-         end)}
-      end
-    else
-      {:ok, opts}
-    end
+    opts =
+      opts
+      |> Keyword.put(:adapter_options, adapter_options(config.provider))
+      |> Keyword.put(:connection_options, Map.get(config, :authentication_connection_options))
+
+    Adapter.prepare_connection(adapter, opts)
   end
 
-  defp linked_device_listener_opts(
-         %{authentication_connection_options: %{} = options},
-         opts,
-         _adapter
-       ),
-       do: {:ok, Keyword.put(opts, :ingress, Map.put(options, :mode, :linked_device))}
+  defp adapter_runtime_opts(provider_config),
+    do: [adapter_options: Map.get(provider_config, :adapter_options, [])]
 
-  defp linked_device_listener_opts(config, opts, adapter) do
-    with {:ok, ingress} <- saved_connection_options(config, adapter) do
-      {:ok, Keyword.put(opts, :ingress, ingress)}
-    end
-  end
+  defp adapter_options(provider),
+    do: (Bridge.provider_config(provider) || %{}) |> Map.get(:adapter_options, [])
 
   defp listener_opts(config, bridge_id, runtime_opts) do
     channel_ids =
@@ -1602,26 +1602,50 @@ defmodule Zaq.Channels.JidoChatBridge do
   @doc "Delegates saved connection preparation to the adapter through the trusted sink."
   @spec saved_connection_options(map(), module()) :: {:ok, map()} | {:error, term()}
   def saved_connection_options(%{id: id} = config, adapter) when is_integer(id) and id > 0 do
-    if Code.ensure_loaded?(adapter) and function_exported?(adapter, :prepare_connection, 1),
-      do: adapter.prepare_connection(sink_mfa: storage_sink(config)),
-      else: {:error, :unsupported}
+    with true <-
+           (Code.ensure_loaded?(adapter) and function_exported?(adapter, :prepare_connection, 1)) ||
+             {:error, :unsupported},
+         {:ok, opts} <-
+           Adapter.prepare_connection(adapter,
+             sink_mfa: storage_sink(config),
+             adapter_options: adapter_options(config.provider)
+           ) do
+      {:ok, Keyword.get(opts, :ingress, %{})}
+    end
   end
 
   def saved_connection_options(_, _), do: {:error, :invalid_connector}
 
   @doc "Asks the adapter for its stable profile without putting provider state in ZAQ."
-  @spec connection_profile(map()) :: {:ok, String.t()} | {:error, term()}
+  @spec connection_profile(map()) :: {:ok, term()} | {:error, term()}
   def connection_profile(%{id: id, provider: provider} = config) when is_integer(id) and id > 0 do
     with {:ok, adapter} <- adapter_for(provider),
          true <-
-           (Code.ensure_loaded?(adapter) and function_exported?(adapter, :connection_profile, 1)) ||
+           (Code.ensure_loaded?(adapter) and function_exported?(adapter, :connection_identity, 1)) ||
              {:error, :unsupported},
          {:ok, binding} <- profile_binding(config) do
-      {:ok, adapter.connection_profile(binding)}
+      Adapter.connection_identity(adapter, binding)
     end
   end
 
   def connection_profile(_), do: {:error, :invalid_connector}
+
+  @doc "Resolves adapter-owned delivery options for the selected connector."
+  @impl Zaq.Channels.Bridge
+  def resolve_connection_details(config, details) do
+    with {:ok, adapter} <- adapter_for(config.provider),
+         true <-
+           Code.ensure_loaded?(adapter) and function_exported?(adapter, :connection_options, 2),
+         {:ok, binding} <- profile_binding(config),
+         {:ok, opts} <-
+           Adapter.connection_options(adapter, binding, [
+             {:sink_mfa, storage_sink(config)} | Map.to_list(details)
+           ]) do
+      Map.merge(details, Map.new(opts))
+    else
+      _ -> details
+    end
+  end
 
   defp profile_binding(config) do
     settings = Map.get(config, :settings) || %{}
@@ -2515,11 +2539,12 @@ defmodule Zaq.Channels.JidoChatBridge do
   defp metadata_message_id(_), do: nil
 
   defp adapter_call_opts(provider, details) do
-    opts = details |> Map.take([:url, :token, :profile]) |> Map.to_list()
+    opts = details |> Map.drop([:provider]) |> Map.to_list()
 
-    if ingress_mode_for(provider) == :linked_device and not is_binary(opts[:profile]),
-      do: {:error, :missing_linked_device_profile},
-      else: {:ok, opts}
+    case adapter_for(provider) do
+      {:ok, adapter} -> Adapter.connection_options(adapter, nil, opts)
+      {:error, _} -> {:ok, opts}
+    end
   end
 
   defp format_delivery_opts(opts, metadata) do

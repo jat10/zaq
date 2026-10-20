@@ -28,8 +28,8 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
     defdelegate channel_type(), to: Adapter
     defdelegate capabilities(), to: Adapter
     defdelegate prepare_connection(opts), to: Adapter
-    defdelegate connection_profile(binding), to: Adapter
-    defdelegate storage_runtime_spec(opts), to: Adapter
+    defdelegate connection_identity(binding), to: Adapter
+    defdelegate provider_child_specs(opts), to: Adapter
     defdelegate send_message(room, text, opts), to: Adapter
     defdelegate transform_incoming(payload), to: Adapter
     defdelegate logout(listener), to: Adapter

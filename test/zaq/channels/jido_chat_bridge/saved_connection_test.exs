@@ -5,9 +5,9 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
   import Zaq.AccountsFixtures
 
   alias Ecto.Adapters.SQL.Sandbox
+  alias Jido.Chat.Authentication.Request, as: PairingRequest
+  alias Jido.Chat.Storage.Request
   alias Jido.Chat.WhatsApp.Adapter
-  alias Jido.Chat.WhatsApp.Pairing.Request, as: PairingRequest
-  alias Jido.Chat.WhatsApp.Storage.Request
   alias Jido.Chat.WhatsApp.Storage.Split
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.JidoChatBridge.State
