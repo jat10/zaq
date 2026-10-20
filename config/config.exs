@@ -42,9 +42,7 @@ config :zaq, :channels, %{
   whatsapp: %{
     bridge: Zaq.Channels.JidoChatBridge,
     adapter: Jido.Chat.WhatsApp.Adapter,
-    ingress_mode: :linked_device,
-    room_reply_policy: :mention_required,
-    adapter_options: [require_ram_schema: true, sync_history: false, sync_full_history: false]
+    ingress_mode: :linked_device
   },
   google_drive: %{
     bridge: Zaq.Channels.JidoConnectBridge,
