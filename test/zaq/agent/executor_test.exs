@@ -1277,17 +1277,17 @@ defmodule Zaq.Agent.ExecutorTest do
       end
     end
 
-    test "inline WhatsApp quote reaches the model without a captured original" do
+    test "WhatsApp thread identity survives while inline quote data stays out of the question" do
       incoming =
         JidoChatBridge.to_internal(
           %Jido.Chat.Incoming{
             text: "@bot Explain this",
             external_room_id: "group@g.us",
+            external_thread_id: "original",
             external_reply_to_id: "original",
             reply_context: %Jido.Chat.ReplyContext{
               external_message_id: "original",
-              text: "The launch is Friday",
-              author: %Jido.Chat.Author{user_id: "alice", user_name: "Alice"}
+              text: "OBSOLETE_QUOTED_TEXT"
             }
           },
           %{provider: :whatsapp, id: 42}
@@ -1306,12 +1306,10 @@ defmodule Zaq.Agent.ExecutorTest do
       )
 
       assert_received {:coverage_ask, question, _configured_agent, context}
-      assert question =~ "@bot Explain this"
-      assert question =~ "The launch is Friday"
-      assert question =~ ~s("author_id":"alice")
-      assert question =~ ~s("external_message_id":"original")
+      assert [_header, "@bot Explain this"] = String.split(question, "\nMessage:\n", parts: 2)
       assert context.incoming.content == "@bot Explain this"
-      assert context.incoming.thread_id == nil
+      assert context.incoming.thread_id == "original"
+      refute Map.has_key?(context.incoming, :reply_context)
     end
 
     test "current attachment descriptors are visible to the model without runtime fields" do

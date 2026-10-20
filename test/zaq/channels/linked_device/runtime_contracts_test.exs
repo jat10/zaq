@@ -940,11 +940,10 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppIncomingTest do
     end
   end
 
-  test "self messages and quoted messages retain distinct facts" do
-    incoming = incoming(%{from_me: true, quoted: %{id: "original"}})
+  test "self messages do not imply a mention" do
+    incoming = incoming(%{from_me: true})
     assert incoming.author.is_me
     refute incoming.was_mentioned
-    assert incoming.external_reply_to_id == "original"
   end
 
   test "room identity is evidenced and unknown broadcasts remain unknown" do
