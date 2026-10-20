@@ -70,6 +70,15 @@ establish Repo-free Channels bootstrap or delivery.
 
 `Zaq.Engine.ChannelConfig` owns the existing `channel_configs` Ecto schema, queries,
 mutations, SMTP defaults, validation and token encryption/runtime resolution.
+Its canonical changeset also supplies and validates Jido connector reply policy;
+see [connector reply policy](channels.md#connector-reply-policy) for settings,
+compatibility, and rollout details.
+Provider startup defaults are defined in `Zaq.ConnectorConfig.Settings.defaults/1`.
+`ChannelConfig.create/2` applies them before insertion; settings projections resolve
+missing legacy values at runtime without a backfill. The generic changeset retains
+saved choices for configured default keys; adapters validate transport options.
+Linked-device confirmation and upsert creation share this API; see
+[listener settings](channels.md#whatsapp-listener-settings).
 Multiple named connectors may share a provider; explicit ID resolution checks
 scope and enablement, and ambiguous provider-only calls fail closed. No table,
 ID, foreign-key or credential encoding migration accompanies this namespace move.
@@ -78,7 +87,7 @@ Fields: `name`, `provider`, `kind` (`data_source` or `retrieval`), `url`, encryp
 `token`, `enabled`, `archived_at`, `notification_default`, and provider `settings`.
 `get_by_provider/1`, `get_any_by_provider/1`, `upsert_by_provider/2`,
 `list_enabled_by_kind/2` and `get_by_channel_id/2` retain their selection contracts.
-Pure `jido_chat` and IMAP projections delegate to `Zaq.ConnectorConfig.Settings`;
+Shared `jido_chat` and IMAP projections delegate to `Zaq.ConnectorConfig.Settings`;
 runtime transport consumers can use that shared module without Ecto dependency.
 Stored `jido_chat` fields include bot name/user ID, message patterns and ingress
 overrides. SMTP and IMAP lookup helpers live in `Zaq.ConnectorConfig`; bridge/listener

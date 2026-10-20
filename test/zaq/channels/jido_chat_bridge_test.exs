@@ -643,30 +643,40 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
     def list_accessible_role_ids(%{id: "u1"}), do: ["role1", "role2"]
   end
 
-  setup do
-    Application.put_env(:zaq, :pipeline_hooks_module, StubHooks)
-    Application.put_env(:zaq, :chat_bridge_pipeline_module, StubPipeline)
-    Application.put_env(:zaq, :chat_bridge_router_module, StubRouter)
-    Application.put_env(:zaq, :chat_bridge_accounts_module, StubAccounts)
-    Application.put_env(:zaq, :chat_bridge_permissions_module, StubPermissions)
-    Application.put_env(:zaq, :communication_bridge_identity_resolver, UnresolvedIdentityResolver)
-    Application.delete_env(:zaq, :chat_bridge_node_router_module)
-    Application.delete_env(:zaq, :chat_bridge_supervisor_module)
-    Application.delete_env(:zaq, :chat_bridge_oban_module)
-    Application.delete_env(:zaq, :chat_bridge_chat_module)
+  setup context do
+    unless context[:persisted_room_reply_policy] do
+      Application.put_env(:zaq, :pipeline_hooks_module, StubHooks)
+      Application.put_env(:zaq, :chat_bridge_pipeline_module, StubPipeline)
+      Application.put_env(:zaq, :chat_bridge_router_module, StubRouter)
+      Application.put_env(:zaq, :chat_bridge_accounts_module, StubAccounts)
+      Application.put_env(:zaq, :chat_bridge_permissions_module, StubPermissions)
 
-    on_exit(fn ->
-      Application.delete_env(:zaq, :pipeline_hooks_module)
-      Application.delete_env(:zaq, :chat_bridge_pipeline_module)
-      Application.delete_env(:zaq, :chat_bridge_router_module)
-      Application.delete_env(:zaq, :chat_bridge_accounts_module)
-      Application.delete_env(:zaq, :chat_bridge_permissions_module)
-      Application.delete_env(:zaq, :communication_bridge_identity_resolver)
+      Application.put_env(
+        :zaq,
+        :communication_bridge_identity_resolver,
+        UnresolvedIdentityResolver
+      )
+
       Application.delete_env(:zaq, :chat_bridge_node_router_module)
       Application.delete_env(:zaq, :chat_bridge_supervisor_module)
       Application.delete_env(:zaq, :chat_bridge_oban_module)
       Application.delete_env(:zaq, :chat_bridge_chat_module)
-    end)
+
+      on_exit(fn ->
+        Application.delete_env(:zaq, :pipeline_hooks_module)
+        Application.delete_env(:zaq, :chat_bridge_pipeline_module)
+        Application.delete_env(:zaq, :chat_bridge_router_module)
+        Application.delete_env(:zaq, :chat_bridge_accounts_module)
+        Application.delete_env(:zaq, :chat_bridge_permissions_module)
+        Application.delete_env(:zaq, :communication_bridge_identity_resolver)
+        Application.delete_env(:zaq, :chat_bridge_node_router_module)
+        Application.delete_env(:zaq, :chat_bridge_supervisor_module)
+        Application.delete_env(:zaq, :chat_bridge_oban_module)
+        Application.delete_env(:zaq, :chat_bridge_chat_module)
+      end)
+
+      :ok
+    end
 
     :ok
   end
@@ -4205,6 +4215,33 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
       refute new_state_pid == old_state_pid
     end
 
+    test "sync_runtime/2 restarts listeners when persisted ingress options change" do
+      config =
+        insert_channel_config(%{
+          settings: %{
+            "jido_chat" => %{
+              "ingress" => %{"sync_history" => false, "sync_full_history" => false}
+            }
+          }
+        })
+
+      bridge_id = "#{config.provider}_#{config.id}"
+      on_exit(fn -> JidoChatBridge.stop_runtime(config) end)
+      assert :ok = JidoChatBridge.start_runtime(config)
+      assert_received {:listener_child_specs_opts, initial}
+      assert initial[:ingress]["sync_history"] == false
+      assert {:ok, original_pid} = Supervisor.lookup_state_pid(bridge_id)
+
+      settings = put_in(config.settings, ["jido_chat", "ingress", "sync_history"], true)
+      updated = config |> ChannelConfig.changeset(%{settings: settings}) |> Repo.update!()
+      assert :ok = JidoChatBridge.sync_runtime(config, updated)
+      assert_received {:listener_child_specs_opts, after_opts}
+      assert after_opts[:ingress]["sync_history"] == true
+      assert after_opts[:ingress]["sync_full_history"] == false
+      assert {:ok, replacement_pid} = Supervisor.lookup_state_pid(bridge_id)
+      refute original_pid == replacement_pid
+    end
+
     test "sync_provider_runtime/1 reloads listener channel ids" do
       config = insert_channel_config(%{})
       bridge_id = "#{config.provider}_#{config.id}"
@@ -5880,5 +5917,143 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
       |> put_resp_content_type("application/json")
       |> send_resp(200, Jason.encode!(response))
     end
+  end
+
+  defmodule ReplyPolicyRouter do
+    def dispatch(event) do
+      send(Process.whereis(__MODULE__), {:policy_event, event.opts[:action], event.request})
+
+      response =
+        if event.opts[:action] == :receive_incoming_message,
+          do: {:ok, %{message_id: "stored"}},
+          else: :ok
+
+      %{event | response: response}
+    end
+  end
+
+  describe "persisted room reply policies" do
+    @describetag :persisted_room_reply_policy
+    setup do
+      Process.register(self(), ReplyPolicyRouter)
+      previous = Application.fetch_env(:zaq, :chat_bridge_node_router_module)
+      Application.put_env(:zaq, :chat_bridge_node_router_module, ReplyPolicyRouter)
+
+      on_exit(fn ->
+        case previous do
+          {:ok, value} -> Application.put_env(:zaq, :chat_bridge_node_router_module, value)
+          :error -> Application.delete_env(:zaq, :chat_bridge_node_router_module)
+        end
+      end)
+
+      :ok
+    end
+
+    test "two persisted Telegram connectors apply independent room reply policies" do
+      strict = reply_policy_connector("mention_required")
+      normal = reply_policy_connector("default")
+      assert {:ok, _, _} = process_reply_policy_message(strict, reply_policy_incoming())
+      assert_received {:policy_event, :receive_incoming_message, _}
+      refute_received {:policy_event, :route_incoming_message, _}
+      assert {:ok, _, _} = process_reply_policy_message(normal, reply_policy_incoming())
+      assert_received {:policy_event, :route_incoming_message, _}
+    end
+
+    test "mentions and direct messages retain normal admission while self and history messages do not reply" do
+      strict = reply_policy_connector("mention_required")
+
+      for message <- [
+            reply_policy_incoming() |> Map.put(:was_mentioned, true),
+            put_in(reply_policy_incoming().channel_meta.is_dm, true)
+          ] do
+        assert {:ok, _, _} = process_reply_policy_message(strict, message)
+        assert_receive {:policy_event, :route_incoming_message, _}
+      end
+
+      for message <- [
+            put_in(reply_policy_incoming().author.is_me, true),
+            %{reply_policy_incoming() | metadata: %{history: true}}
+          ] do
+        assert {:ok, _, _} = process_reply_policy_message(strict, message)
+        refute_received {:policy_event, :route_incoming_message, _}
+        refute_received {:policy_event, :run_pipeline, _}
+      end
+    end
+
+    test "saving only the reply policy refreshes the live State and its handlers" do
+      config = reply_policy_connector("mention_required") |> Map.put(:enabled, true)
+      assert :ok = JidoChatBridge.start_runtime(config)
+      on_exit(fn -> JidoChatBridge.stop_runtime(config) end)
+      bridge_id = JidoChatBridge.runtime_bridge_id(config)
+      assert {:ok, pid} = Supervisor.lookup_state_pid(bridge_id)
+      assert :ok = State.process_listener_payload(pid, config, reply_policy_payload(), [])
+      assert_receive {:policy_event, :receive_incoming_message, _}
+      refute_received {:policy_event, :route_incoming_message, _}
+
+      after_config =
+        config
+        |> ChannelConfig.changeset(%{
+          settings: %{
+            "jido_chat" => %{"room_reply_policy" => "default", "message_patterns" => ["deploy"]}
+          }
+        })
+        |> Repo.update!()
+
+      assert :ok = JidoChatBridge.sync_runtime(config, after_config)
+      assert {:ok, ^pid} = Supervisor.lookup_state_pid(bridge_id)
+      assert :ok = State.process_listener_payload(pid, after_config, reply_policy_payload(), [])
+      assert_receive {:policy_event, :route_incoming_message, _}
+    end
+  end
+
+  defp reply_policy_connector(policy) do
+    %ChannelConfig{}
+    |> ChannelConfig.changeset(%{
+      name: Ecto.UUID.generate(),
+      provider: "telegram",
+      kind: "retrieval",
+      enabled: false,
+      url: "https://example.com",
+      token: "test-token",
+      settings: %{
+        "jido_chat" => %{"room_reply_policy" => policy, "message_patterns" => ["deploy"]}
+      }
+    })
+    |> Repo.insert!()
+  end
+
+  defp process_reply_policy_message(config, message) do
+    chat =
+      Chat.new(adapters: %{telegram: Jido.Chat.Telegram.Adapter})
+      |> JidoChatBridge.register_handlers(config)
+
+    Chat.process_message(chat, :telegram, "room", message, [])
+  end
+
+  defp reply_policy_incoming do
+    %Chat.Incoming{
+      text: "deploy now",
+      external_room_id: "room",
+      external_message_id: Ecto.UUID.generate(),
+      author: %Jido.Chat.Author{user_id: "17", user_name: nil, is_me: false},
+      was_mentioned: false,
+      channel_meta: %{
+        adapter_name: :telegram,
+        external_room_id: "room",
+        chat_type: :group,
+        is_dm: false
+      }
+    }
+  end
+
+  defp reply_policy_payload do
+    %{
+      "message" => %{
+        "message_id" => System.unique_integer([:positive]),
+        "text" => "deploy now",
+        "chat" => %{"id" => -100, "type" => "supergroup"},
+        "from" => %{"id" => 17, "first_name" => "Author"}
+      }
+    }
   end
 end

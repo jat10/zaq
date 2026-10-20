@@ -1,5 +1,9 @@
 defmodule Zaq.Engine.ChannelConfigTest do
   use Zaq.DataCase, async: false
+  use ExUnitProperties
+
+  alias Ecto.Changeset
+  alias Zaq.ConnectorConfig.Settings
 
   alias Zaq.Channels.{AgentRouting, Bridge, DiskBridge, RetrievalChannel}
   alias Zaq.Engine.ChannelConfig
@@ -991,4 +995,259 @@ defmodule Zaq.Engine.ChannelConfigTest do
       Code.compiler_options(ignore_module_conflict: false)
     end
   end
+
+  test "WhatsApp creation persists the default alongside existing connector settings" do
+    settings = %{"owner_id" => 4, "jido_chat" => %{"bot_name" => "Support"}}
+    saved = create_reply_policy_config!("whatsapp", settings)
+
+    assert saved.settings ==
+             put_in(settings["jido_chat"]["room_reply_policy"], "mention_required")
+
+    assert Settings.jido_chat_room_reply_policy(ChannelConfig.to_runtime_config(saved)) ==
+             :mention_required
+  end
+
+  test "explicit policies work for every messaging provider and other providers retain their defaults" do
+    for provider <- ["whatsapp", "telegram", "mattermost", "discord"] do
+      for policy <- ["default", "mention_required"] do
+        saved =
+          create_reply_policy_config!(provider, %{"jido_chat" => %{"room_reply_policy" => policy}})
+
+        assert Settings.jido_chat_setting(saved, "room_reply_policy") == policy
+      end
+
+      unless provider == "whatsapp" do
+        saved = create_reply_policy_config!(provider, %{"unrelated" => true})
+        assert saved.settings == %{"unrelated" => true}
+        assert Settings.jido_chat_room_reply_policy(saved) == :default
+      end
+    end
+  end
+
+  test "partial settings edits preserve a saved policy until explicitly replaced" do
+    for provider <- ["whatsapp", "telegram"] do
+      saved =
+        create_reply_policy_config!(provider, %{
+          "jido_chat" => %{"room_reply_policy" => "default"}
+        })
+
+      updated =
+        saved |> ChannelConfig.changeset(%{settings: %{"account" => "updated"}}) |> Repo.update!()
+
+      assert updated.settings == %{
+               "account" => "updated",
+               "jido_chat" => %{"room_reply_policy" => "default"}
+             }
+
+      updated =
+        updated
+        |> ChannelConfig.changeset(%{
+          settings: %{"jido_chat" => %{"room_reply_policy" => "mention_required"}}
+        })
+        |> Repo.update!()
+
+      assert Settings.jido_chat_room_reply_policy(updated) == :mention_required
+    end
+  end
+
+  test "null policy is treated as absent and unsupported or malformed settings reject writes" do
+    config = %ChannelConfig{provider: "whatsapp", name: "Support", kind: "retrieval"}
+
+    for settings <- [%{}, %{"jido_chat" => nil}, %{"jido_chat" => %{"room_reply_policy" => nil}}] do
+      changeset = ChannelConfig.changeset(config, %{settings: settings})
+      assert changeset.valid?
+
+      assert Changeset.get_field(changeset, :settings)["jido_chat"]["room_reply_policy"] ==
+               "mention_required"
+    end
+
+    for settings <- [
+          %{"jido_chat" => "invalid"},
+          %{"jido_chat" => %{"room_reply_policy" => "all"}},
+          %{"jido_chat" => %{"room_reply_policy" => false}}
+        ] do
+      changeset = ChannelConfig.changeset(config, %{settings: settings})
+      refute changeset.valid?
+      assert errors_on(changeset).settings != []
+    end
+  end
+
+  property "default insertion retains arbitrary unrelated JSON keys and nested values" do
+    check all(value <- one_of([integer(), boolean(), string(:alphanumeric)]), max_runs: 30) do
+      original = %{"other" => value, "jido_chat" => %{"bot_name" => value}}
+
+      changeset =
+        ChannelConfig.changeset(%ChannelConfig{}, reply_policy_attrs("whatsapp", original))
+
+      assert changeset.valid?
+      result = Changeset.get_field(changeset, :settings)
+      assert result["other"] == value
+      assert Map.delete(result["jido_chat"], "room_reply_policy") == original["jido_chat"]
+    end
+  end
+
+  defp create_reply_policy_config!(provider, settings) do
+    %ChannelConfig{}
+    |> ChannelConfig.changeset(reply_policy_attrs(provider, settings))
+    |> Repo.insert!()
+  end
+
+  defp reply_policy_attrs(provider, settings),
+    do: %{
+      name: Ecto.UUID.generate(),
+      provider: provider,
+      kind: "retrieval",
+      enabled: false,
+      url: "https://example.com",
+      token: "test-token",
+      settings: settings
+    }
+
+  test "Engine creation and upsert save defaults while changesets only validate" do
+    attrs = %{provider: "whatsapp", name: "Support", kind: "retrieval", enabled: false}
+    assert {:ok, saved} = ChannelConfig.create(attrs)
+
+    assert saved_history_options(saved) == %{
+             "sync_history" => false,
+             "sync_full_history" => false
+           }
+
+    assert saved.settings["jido_chat"]["room_reply_policy"] == "mention_required"
+
+    settings =
+      Ecto.Changeset.get_field(ChannelConfig.changeset(%ChannelConfig{}, attrs), :settings)
+
+    refute Map.has_key?(settings["jido_chat"], "ingress")
+
+    Repo.delete!(saved)
+
+    assert {:ok, upserted} =
+             ChannelConfig.upsert_by_provider("whatsapp", Map.delete(attrs, :provider))
+
+    assert saved_history_options(upserted) == saved_history_options(saved)
+  end
+
+  test "explicit flags survive string-key creation, unrelated edits and upsert" do
+    attrs = %{
+      "provider" => "whatsapp",
+      "name" => "Support",
+      "kind" => "retrieval",
+      "enabled" => false,
+      "settings" => %{"owner_id" => 3, "jido_chat" => %{"ingress" => %{"sync_history" => true}}}
+    }
+
+    assert {:ok, saved} = ChannelConfig.create(attrs)
+    assert saved_history_options(saved) == %{"sync_history" => true, "sync_full_history" => false}
+    assert saved.settings["owner_id"] == 3
+
+    assert {:ok, updated} =
+             ChannelConfig.upsert_by_provider("whatsapp", %{settings: %{"account" => "changed"}})
+
+    assert saved_history_options(updated) == saved_history_options(saved)
+    assert updated.settings["account"] == "changed"
+
+    assert {:ok, updated} =
+             updated
+             |> ChannelConfig.changeset(%{
+               settings: %{
+                 "jido_chat" => %{
+                   "ingress" => %{"sync_history" => false, "sync_full_history" => true}
+                 }
+               }
+             })
+             |> Repo.update()
+
+    assert saved_history_options(updated) == %{
+             "sync_history" => false,
+             "sync_full_history" => true
+           }
+  end
+
+  test "partial edits retain provider options while replacing unrelated settings" do
+    attrs = %{
+      provider: "whatsapp",
+      name: "Support",
+      kind: "retrieval",
+      enabled: false,
+      settings: %{
+        "jido_chat" => %{"ingress" => %{"sync_history" => true}},
+        "obsolete" => true
+      }
+    }
+
+    assert {:ok, saved} = ChannelConfig.create(attrs)
+    assert saved_history_options(saved) == %{"sync_history" => true, "sync_full_history" => false}
+
+    assert {:ok, updated} =
+             saved
+             |> ChannelConfig.changeset(%{settings: %{"other" => "new"}})
+             |> Repo.update()
+
+    assert updated.settings == %{
+             "jido_chat" => %{
+               "room_reply_policy" => "mention_required",
+               "ingress" => %{"sync_history" => true, "sync_full_history" => false}
+             },
+             "other" => "new"
+           }
+  end
+
+  test "legacy connectors resolve missing defaults at runtime without a database backfill" do
+    assert {:ok, saved} =
+             ChannelConfig.create(%{
+               provider: "whatsapp",
+               name: "Legacy",
+               kind: "retrieval",
+               enabled: false
+             })
+
+    # Deliberately model a record saved before these settings existed.
+    legacy = saved |> Ecto.Changeset.change(settings: %{}) |> Repo.update!()
+    assert Settings.effective(legacy) == Settings.defaults("whatsapp")
+
+    assert Settings.jido_chat_setting(legacy, "ingress") == %{
+             "sync_history" => false,
+             "sync_full_history" => false
+           }
+
+    assert Settings.jido_chat_room_reply_policy(legacy) == :mention_required
+    assert Repo.get!(ChannelConfig, legacy.id).settings == %{}
+
+    override = %{
+      legacy
+      | settings: %{
+          "jido_chat" => %{
+            "ingress" => %{"sync_history" => true},
+            "room_reply_policy" => "default"
+          }
+        }
+    }
+
+    assert Settings.jido_chat_setting(override, "ingress") == %{
+             "sync_history" => true,
+             "sync_full_history" => false
+           }
+
+    assert Settings.jido_chat_room_reply_policy(override) == :default
+  end
+
+  test "providers without configured defaults preserve their existing settings" do
+    for provider <- ~w(telegram mattermost discord) do
+      attrs = %{
+        provider: provider,
+        name: provider,
+        kind: "retrieval",
+        url: "https://example.com",
+        token: "test",
+        enabled: false,
+        settings: %{"other" => true}
+      }
+
+      assert {:ok, saved} = ChannelConfig.create(attrs)
+      assert saved.settings == %{"other" => true}
+      assert Settings.effective(saved) == saved.settings
+    end
+  end
+
+  defp saved_history_options(config), do: config.settings["jido_chat"]["ingress"]
 end

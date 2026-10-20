@@ -7,11 +7,12 @@
 WhatsApp uses the same `JidoChatBridge` registration and adapter listener contract
 as other Jido channels. `JidoChatBridge` assembles trusted adapter startup options
 using one trusted `sink_mfa` for private pairing and storage requests. The adapter
-derives a stable profile and split storage scope from the saved binding, with both
-`sync_history: false` and `sync_full_history: false`. The adapter passes these values
-in its child specs; the generic supervisor only starts those specs. Persisted ingress settings
-cannot override these values. The adapter translates trusted host policy into transport options for both freshly
-confirmed accounts and restored connections. Messages marked as history cannot
+derives a stable profile and split storage scope from the saved binding. ZAQ saves
+`sync_history: false` and `sync_full_history: false` as initial connector settings;
+explicit boolean choices are configurable. The adapter passes the selected values
+in its child specs; the generic supervisor only starts those specs. See
+[WhatsApp listener settings](#whatsapp-listener-settings) for persistence and startup
+precedence on freshly confirmed accounts and restored connections. Messages marked as history cannot
 start AI replies or notify waiting reply hooks. The selected profile also scopes replies, edits,
 typing, reactions and direct-message operations. Multiple accounts remain independent.
 
@@ -35,7 +36,7 @@ and recovery. Transport infrastructure failure terminates affected listeners so
 their existing restart policy can restore connections without restarting unrelated
 bridges or resetting limiter counters. `JidoChatBridge` requests shared provider specs through
 `Jido.Chat.Adapter.provider_child_specs/2`. WhatsApp supplies its storage runtime
-with trusted `adapter_options` including `require_ram_schema: true`. `BridgeSupervisor` starts it once as
+with its own `require_ram_schema: true` default. `BridgeSupervisor` starts it once as
 `provider:whatsapp` before loading saved connectors. Backend and whole-storage-runtime outages pause only dependent WhatsApp
 connections. Workers retry storage readiness without consuming the shared bridge
 supervisor restart budget; unrelated providers retain their processes. Channels
@@ -1141,12 +1142,82 @@ logout. Legacy adapters keep their existing listener/options behavior. The base
 Bridge delegates connection details to its configured bridge. Host code forwards
 adapter option maps without interpreting transport profiles or storage layouts.
 
-Trusted provider `adapter_options` carry deployment policy. WhatsApp translates
-history flags and RAM schema policy inside its package; persisted ingress cannot
-override them. The common `room_reply_policy: :mention_required` is configured for
-WhatsApp and available to other providers. It uses normalized mention/DM facts;
-unaddressed room messages still enter history capture. History and self filtering,
-thread-root handling and existing defaults for other providers are retained.
+WhatsApp's provider registration needs only `bridge`, `adapter`, and `ingress_mode`,
+like Telegram. The adapter enforces its RAM-schema requirement. ZAQ owns its initial
+history choices in persisted connector settings, described below. The lower-level
+package storage and direct listener APIs retain their explicit options.
+
+### WhatsApp listener settings
+
+ZAQ defines initial connector settings in `Zaq.ConnectorConfig.Settings.defaults/1`.
+The provider registry contains only bridge, adapter and ingress-mode wiring.
+The WhatsApp defaults are:
+
+```elixir
+%{
+  "jido_chat" => %{
+    "room_reply_policy" => "mention_required",
+    "ingress" => %{"sync_history" => false, "sync_full_history" => false}
+  }
+}
+```
+
+`Zaq.ConnectorConfig.Settings` provides the shared lookup and merge. Engine applies
+these defaults before insertion through `ChannelConfig.create/2`, used by
+linked-device confirmation and the insert branch of `upsert_by_provider/2`.
+Missing nested keys are filled; supplied values win. The normal BO WhatsApp creation
+journey uses linked-device confirmation. Programmatic creation should use the Engine
+creation API. Adding defaults for another provider requires a clause in the shared
+`defaults/1` function, with no provider-specific settings module or application
+configuration block. Providers without a defaults clause receive an empty map.
+
+During settings edits, the generic changeset retains saved values for keys listed
+in the provider's defaults, unless explicitly replaced. Unrelated settings retain
+their existing replacement semantics. Transport option validation belongs to the
+adapter: WhatsApp rejects explicit null/nonboolean history flags during preparation.
+Persisted settings use string keys.
+
+The generic bridge forwards `settings["jido_chat"]["ingress"]`. WhatsApp preparation
+accepts the two boolean flags on both saved-binding and authenticated handoff paths.
+Explicit ingress flags override trusted handoff history values; omitted flags retain
+trusted values, falling back to `false` for prepared connections. Arbitrary persisted
+profile, storage or nested transport config overrides remain excluded. No extra MFA
+is needed. Other providers receive their own settings and retain their existing
+option behavior.
+
+The flags configure listener startup. Saving and synchronizing changed ingress
+settings restarts the listener through the existing generic lifecycle. Changing
+only reply policy uses the handler refresh described below.
+
+Existing connectors resolve missing keys through the shared settings projections
+at runtime, without writing their database rows. No history or reply-policy backfill
+migration is needed. Explicit stored values override defaults; explicit malformed
+values are not silently replaced. Changing defaults in code affects connectors
+whose keys remain absent. Reload affected runtimes after deploying changed
+defaults; normal saved-setting edits use the existing synchronization lifecycle.
+
+### Connector reply policy
+
+`ChannelConfig.settings["jido_chat"]["room_reply_policy"]` controls answer admission
+for each saved connector. Accepted strings are `"default"` and
+`"mention_required"`. WhatsApp's shared defaults entry selects `"mention_required"`.
+Engine's canonical changeset validates the policy and preserves explicit valid
+choices on subsequent settings edits. Other providers retain their existing behavior when the key is absent,
+and can explicitly select either policy. Invalid explicit policies reject writes;
+malformed legacy runtime values conservatively require a mention.
+
+The generic bridge uses normalized mention/DM facts. With `"mention_required"`,
+unmentioned group messages still reach the sink and history capture, but cannot
+trigger an answer through a message pattern. Mentions and DMs follow the existing
+admission/routing paths; self/history filtering and thread-root handling remain
+in effect. Changing only the saved policy and synchronizing the runtime refreshes
+State's handlers without restarting its listener. The adapter does not decide
+ZAQ's reply policy or discard unmentioned messages.
+
+For rollout, first publish and pin the adapter revision respecting these settings,
+then restart Channels so existing connectors resolve the provider defaults.
+Normal subsequent policy saves use the existing runtime synchronization path.
+Rolling back code retains saved settings; no data migration needs to be reversed.
 
 Lifecycle updates keep the existing Jido action route and source/attempt fencing.
 Their `profile` field is an opaque connection identity, not a bridge-derived

@@ -1,6 +1,7 @@
 defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
   use Zaq.DataCase, async: true
   import Ecto.Query
+  alias Zaq.ConnectorConfig.Settings
   alias Zaq.Engine.{ChannelConfig, Connect, LinkedDeviceConfirmation}
 
   test "durable attempt receipt prevents duplicates after response loss" do
@@ -92,5 +93,53 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
       identity: %{phone_number: "+15550001", display_name: nil},
       records: %{{"creds", "self"} => "opaque-package-record"}
     }
+  end
+
+  test "linked-device confirmation persists the policy and retries retain an explicit later choice" do
+    request = %{
+      attempt_id: Ecto.UUID.generate(),
+      identity: %{phone_number: "+15550001", display_name: "Support"},
+      records: %{{"creds", "self"} => "opaque"}
+    }
+
+    assert {:ok, saved} = LinkedDeviceConfirmation.save(request)
+
+    assert Settings.jido_chat_room_reply_policy(Repo.get!(ChannelConfig, saved.id)) ==
+             :mention_required
+
+    saved
+    |> ChannelConfig.changeset(%{
+      settings: put_in(saved.settings, ["jido_chat", "room_reply_policy"], "default")
+    })
+    |> Repo.update!()
+
+    assert {:ok, repeated} = LinkedDeviceConfirmation.save(request)
+    assert repeated.id == saved.id
+    assert Settings.jido_chat_room_reply_policy(repeated) == :default
+  end
+
+  test "confirmation saves defaults and repeated confirmation preserves a later choice" do
+    request = %{
+      attempt_id: Ecto.UUID.generate(),
+      identity: %{phone_number: "+15550003"},
+      records: %{{"creds", "self"} => "opaque"}
+    }
+
+    assert {:ok, saved} = LinkedDeviceConfirmation.save(request)
+
+    assert saved.settings["jido_chat"]["ingress"] == %{
+             "sync_history" => false,
+             "sync_full_history" => false
+           }
+
+    settings = put_in(saved.settings, ["jido_chat", "ingress", "sync_history"], true)
+    saved |> ChannelConfig.changeset(%{settings: settings}) |> Repo.update!()
+    assert {:ok, repeated} = LinkedDeviceConfirmation.save(request)
+    assert repeated.id == saved.id
+
+    assert repeated.settings["jido_chat"]["ingress"] == %{
+             "sync_history" => true,
+             "sync_full_history" => false
+           }
   end
 end

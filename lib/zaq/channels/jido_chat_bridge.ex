@@ -1316,17 +1316,12 @@ defmodule Zaq.Channels.JidoChatBridge do
        do: :ok
 
   defp handle_message_event(config, thread, %Chat.Incoming{} = incoming, normalized) do
-    if room_reply_policy(thread.adapter_name) == :mention_required and
+    if Settings.jido_chat_room_reply_policy(config) == :mention_required and
          not incoming.channel_meta.is_dm and not incoming.was_mentioned do
       capture_unaddressed_message(config, thread, incoming, normalized)
     else
       route_message_event(config, thread, incoming, normalized)
     end
-  end
-
-  defp room_reply_policy(provider) do
-    (Bridge.provider_config(provider) || %{})
-    |> Map.get(:room_reply_policy, :default)
   end
 
   # History may be delivered even when synchronization was disabled. It must
@@ -1608,6 +1603,7 @@ defmodule Zaq.Channels.JidoChatBridge do
          {:ok, opts} <-
            Adapter.prepare_connection(adapter,
              sink_mfa: storage_sink(config),
+             ingress: normalized_ingress(config),
              adapter_options: adapter_options(config.provider)
            ) do
       {:ok, Keyword.get(opts, :ingress, %{})}
@@ -2080,6 +2076,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   defp refresh_fingerprint(config) do
     %{
       bot_name: Settings.jido_chat_bot_name(config),
+      room_reply_policy: Settings.jido_chat_room_reply_policy(config),
       message_patterns: normalized_message_patterns(config)
     }
   end
