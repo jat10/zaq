@@ -10,7 +10,7 @@ using one trusted `sink_mfa` for private pairing and storage requests. The adapt
 derives a stable profile and split storage scope from the saved binding, with both
 `sync_history: false` and `sync_full_history: false`. The adapter passes these values
 in its child specs; the generic supervisor only starts those specs. Persisted ingress settings
-cannot override these values. The bridge applies this policy to both freshly
+cannot override these values. The adapter translates trusted host policy into transport options for both freshly
 confirmed accounts and restored connections. Messages marked as history cannot
 start AI replies or notify waiting reply hooks. The selected profile also scopes replies, edits,
 typing, reactions and direct-message operations. Multiple accounts remain independent.
@@ -33,9 +33,9 @@ Explicit runtime stop shuts down the adapter connection and retains credentials.
 bridge state. The `jido_chat_whatsapp` OTP application owns shared transport startup
 and recovery. Transport infrastructure failure terminates affected listeners so
 their existing restart policy can restore connections without restarting unrelated
-bridges or resetting limiter counters. `JidoChatBridge` supplies
-`Jido.Chat.WhatsApp.Storage.Runtime` with `require_ram_schema: true` through the
-provider-infrastructure path. `BridgeSupervisor` starts it once as
+bridges or resetting limiter counters. `JidoChatBridge` requests shared provider specs through
+`Jido.Chat.Adapter.provider_child_specs/2`. WhatsApp supplies its storage runtime
+with trusted `adapter_options` including `require_ram_schema: true`. `BridgeSupervisor` starts it once as
 `provider:whatsapp` before loading saved connectors. Backend and whole-storage-runtime outages pause only dependent WhatsApp
 connections. Workers retry storage readiness without consuming the shared bridge
 supervisor restart budget; unrelated providers retain their processes. Channels
@@ -107,10 +107,10 @@ messaging sessions and group sender keys from the durable snapshot. Engine's tru
 runtime `:confirm_linked_device` Action creates the connector and canonical encrypted
 credential document in one transaction, using an attempt UUID and the exact
 provider, operator and account for repeat-request idempotence. The package encodes
-protocol records before the host sink receives them. `Pairing.Request` with
+protocol records before the host sink receives them. `Jido.Chat.Authentication.Request` with
 `op: :persist` reuses that Engine Action; a separate `op: :start` request revalidates
 the operator and activates the saved connector through the existing runtime path.
-`Storage.Request` handles credential operations through the same sink. Both private
+`Jido.Chat.Storage.Request` handles credential operations through the same sink. Both private
 request types bypass serialized bridge State and are rejected by public listener
 ingress. Persistence failures
 retain the frozen snapshot for retry within the
@@ -135,7 +135,7 @@ retries preserve encrypted state. The shared component is in Storybook under
 `/storybook/modals/linked_device_pairing`.
 
 `Jido.Chat.WhatsApp.Storage.Split` routes pairing credentials (`creds`) and supporting
-protocol records through private `Storage.Request` calls to the host's trusted listener sink and the
+protocol records through private `Jido.Chat.Storage.Request` calls to the host's trusted listener sink and the
 [canonical credential document operation](engine.md#connector-credential-documents).
 Connector settings retain the credential reference, account label, owner and attempt
 ID; protocol records live in the encrypted canonical org `api_key` grant.
@@ -1141,6 +1141,33 @@ delivery; bridges do not write whole exchanges.
 ## Jido Chat Bridge
 
 `Zaq.Channels.JidoChatBridge` is the provider-facing bridge for the `jido_chat` adapter family (Mattermost, Telegram, Discord, etc.).
+
+
+### Shared adapter extension contracts
+
+The bridge consumes core-owned `Jido.Chat.Authentication.Request` and
+`Jido.Chat.Storage.Request` through the existing single `sink_mfa`. Public ingress
+rejects both types. Authorized private requests execute synchronously before
+serialized State routing, preserving storage reentrancy during outbound calls.
+The existing Engine confirmation and credential-document Actions remain the
+persistence and authorization owners; envelope types/references do not grant access.
+
+Optional `Jido.Chat.Adapter` wrappers own delegation for provider infrastructure,
+connection preparation, stable opaque identity, delivery options, and explicit
+logout. Legacy adapters keep their existing listener/options behavior. The base
+Bridge delegates connection details to its configured bridge. Host code forwards
+adapter option maps without interpreting transport profiles or storage layouts.
+
+Trusted provider `adapter_options` carry deployment policy. WhatsApp translates
+history flags and RAM schema policy inside its package; persisted ingress cannot
+override them. The common `room_reply_policy: :mention_required` is configured for
+WhatsApp and available to other providers. It uses normalized mention/DM facts;
+unaddressed room messages still enter history capture. History and self filtering,
+thread-root handling and existing defaults for other providers are retained.
+
+Lifecycle updates keep the existing Jido action route and source/attempt fencing.
+Their `profile` field is an opaque connection identity, not a bridge-derived
+transport profile. Adapter presentation is applied before sink acknowledgement.
 
 ### Bridge-Adapter Contract (mandatory)
 

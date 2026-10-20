@@ -129,8 +129,8 @@ defmodule Zaq.TestSupport.WhatsAppFlowAdapter do
   defdelegate capabilities(), to: Adapter
   defdelegate connection_options(binding, opts), to: Adapter
   defdelegate prepare_connection(opts), to: Adapter
-  defdelegate connection_profile(binding), to: Adapter
-  defdelegate storage_runtime_spec(opts), to: Adapter
+  defdelegate connection_identity(binding), to: Adapter
+  defdelegate provider_child_specs(opts), to: Adapter
 
   def authenticate(request, owner_id, opts),
     do:

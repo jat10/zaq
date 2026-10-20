@@ -371,7 +371,7 @@ defmodule Zaq.Channels.JidoChatBridge.State do
   end
 
   defp ok_ingress_status do
-    %{status: :ok, summary: "Ingress listener received a usable Mattermost event"}
+    %{status: :ok, summary: "Ingress listener received a usable event"}
   end
 
   defp current_lifecycle?(nil, _, _, _), do: true

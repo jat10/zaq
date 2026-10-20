@@ -604,7 +604,8 @@ Runtime access follows the [Engine document contract](engine.md#connector-creden
 
 Messaging sessions and group sender keys use package-owned RAM-only Mnesia on the
 Channels node, initialized by the explicitly configured WhatsApp storage runtime.
-ZAQ supplies authorized encrypted-database callbacks; the package owns namespace
+ZAQ handles shared private credential requests through the existing `sink_mfa`;
+Engine supplies authorized encrypted-database operations; the package owns namespace
 routing, temporary pairing sessions and volatile state handoff.
 They reset on Mnesia/node restart, which can interrupt message decryption while
 pairing remains saved. No Mnesia disk volume is required or used. Namespace routing,
