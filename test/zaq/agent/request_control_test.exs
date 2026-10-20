@@ -20,9 +20,9 @@ defmodule Zaq.Agent.RequestControlTest do
     def inject(_runtime, _content, _opts), do: exit(:runtime_gone)
   end
 
-  defmodule QuoteFactory do
+  defmodule RecordingFactory do
     def steer(_runtime, content, _opts) do
-      send(self(), {:quoted_control, content})
+      send(self(), {:steered_content, content})
       {:ok, :accepted}
     end
   end
@@ -75,23 +75,20 @@ defmodule Zaq.Agent.RequestControlTest do
     %{agent: agent, actor: actor, scope: scope, server: server, pid: GenServer.whereis(server)}
   end
 
-  test "incoming steering includes the quote after original-content admission", ctx do
+  test "incoming steering uses admitted content without obsolete quote metadata", ctx do
     {person_ctx, _id} = canonical_active(ctx)
-    input = incoming(person_ctx.info, "quoted-child", "Explain this")
+    input = incoming(person_ctx.info, "steered-child", "Explain this")
 
-    input =
-      Incoming.new(
-        Map.merge(Map.from_struct(input), %{
-          external_reply_to_id: "original",
-          reply_context: %{text: "Launch Friday", author_name: "Alice"}
-        })
-      )
+    input = %{
+      input
+      | metadata: Map.put(input.metadata, "reply_context", %{"text" => "OBSOLETE_QUOTED_TEXT"})
+    }
 
     assert {:ok, _} = HistoryIngress.capture(input)
     assert {:ok, binding} = Conversations.admit_incoming(input)
 
     event =
-      Event.new(input, :agent, actor: person_ctx.actor, opts: [factory_module: QuoteFactory])
+      Event.new(input, :agent, actor: person_ctx.actor, opts: [factory_module: RecordingFactory])
 
     assert {:queued, _} =
              RequestControl.queue_incoming(
@@ -102,10 +99,26 @@ defmodule Zaq.Agent.RequestControlTest do
                ctx.agent.id
              )
 
-    assert_receive {:quoted_control, content}
-    assert content =~ "Explain this"
-    assert content =~ "Launch Friday"
-    assert content =~ ~s("author_name":"Alice")
+    assert_receive {:steered_content, content}
+    assert [_header, "Explain this"] = String.split(content, "\nMessage:\n", parts: 2)
+  end
+
+  test "processing status rejects caller-supplied selectors even for an authorized Person", ctx do
+    {person_ctx, _id} = canonical_active(ctx)
+
+    assert {:ok, [%{user_message_id: message_id, status: :active}]} =
+             RequestControl.processing_status(event(person_ctx, %{}, confidential: true))
+
+    assert message_id == person_ctx.root.user_message_id
+
+    for request <- [
+          %{person_id: person_ctx.person.id},
+          %{scope: person_ctx.scope},
+          %{user_message_id: message_id}
+        ] do
+      assert {:error, :unauthorized} =
+               RequestControl.processing_status(event(person_ctx, request, confidential: true))
+    end
   end
 
   test "native control reports stale runtime when either Jido operation exits", ctx do

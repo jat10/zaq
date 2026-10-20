@@ -118,7 +118,7 @@ defmodule Zaq.Agent.PipelineTest do
     end
   end
 
-  defmodule QuotedRetrieval do
+  defmodule RecordingRetrieval do
     alias Zaq.Agent.PipelineTest.StubRetrieval
 
     def ask(content, opts) do
@@ -298,20 +298,16 @@ defmodule Zaq.Agent.PipelineTest do
 
   @incoming %Incoming{content: "What is the answer?", channel_id: "test", provider: :test}
 
-  test "retrieval sees the inline quote while execution keeps the original incoming content" do
-    incoming =
-      Incoming.new(%{
-        content: "Explain this",
-        channel_id: "room",
-        provider: :whatsapp,
-        reply_context: %{text: "Launch Friday", author_name: "Alice"}
-      })
+  test "retrieval receives the message body without obsolete quote metadata" do
+    incoming = %{
+      @incoming
+      | content: "Explain this",
+        metadata: %{"reply_context" => %{"text" => "OBSOLETE_QUOTED_TEXT"}}
+    }
 
-    Pipeline.run(incoming, Keyword.put(@base_opts, :retrieval, QuotedRetrieval))
-    assert_receive {:retrieval_input, content}
-    assert content =~ "Explain this"
-    assert content =~ "Launch Friday"
-    assert content =~ ~s("author_name":"Alice")
+    Pipeline.run(incoming, Keyword.put(@base_opts, :retrieval, RecordingRetrieval))
+
+    assert_receive {:retrieval_input, "Explain this"}
   end
 
   describe ":pipeline_complete chunks in hook payload" do

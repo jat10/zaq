@@ -5,6 +5,25 @@ defmodule Zaq.Engine.Messages.IncomingTest do
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Engine.Messages.Incoming.RoutingContext
 
+  test "thread identity is preserved without promoting obsolete reply fields" do
+    incoming =
+      Incoming.new(%{
+        content: "Explain this",
+        provider: :whatsapp,
+        channel_id: "group@g.us",
+        message_id: "reply",
+        thread_id: "original",
+        external_reply_to_id: "original",
+        reply_context: %{text: "OBSOLETE_QUOTED_TEXT"}
+      })
+
+    assert incoming.content == "Explain this"
+    assert incoming.message_id == "reply"
+    assert incoming.thread_id == "original"
+    refute Map.has_key?(incoming, :reply_context)
+    refute Map.has_key?(incoming, :external_reply_to_id)
+  end
+
   test "builds with required fields only" do
     msg = %Incoming{content: "hello", channel_id: "ch1", provider: :mattermost}
     assert msg.content == "hello"

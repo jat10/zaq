@@ -1649,14 +1649,14 @@ the [Person email normalization runbook](../operations/person-email-normalizatio
   ZAQ component.
 - When crossing nodes, this payload is carried in `%Zaq.Event.request`.
 
-Optional `external_reply_to_id` and `reply_context` preserve shallow quoted replies
-independently of native threads. `Incoming.new/1` normalizes quote text and author
-within the enclosing ingress scope. Quote text is limited to 8,000 characters,
-author fields to 255 characters, and reference IDs to 1,024 bytes (oversized IDs
-are rejected rather than truncated). Inline quotes persist in the replying
-message's `history_context` and are included in authorized canonical projections;
-they do not authorize original-message lookup. Agent input formatting leaves the
-admitted message content unchanged and explicitly marks quoted content as untrusted.
+Thread references select existing history scopes; they do not carry message content
+or grant access. Shared room history supplies local thread messages, bounded parent
+history, and an accessible parent message whose external ID matches the thread ID.
+If that original is absent, available authorized history remains usable without a
+provider fetch or a search of sibling transcripts. Direct-message history keeps its
+existing chat scope. These rules also apply when the WhatsApp adapter maps an
+immediate reply target into the shared thread field; quoted payload text is not
+injected into retrieval or agent prompts.
 
 ### Incoming Message Routing
 

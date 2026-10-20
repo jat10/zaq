@@ -11,6 +11,27 @@ defmodule Zaq.Agent.HistoryLoaderTest do
   alias Zaq.Repo
   alias Zaq.Utils.DateUtils
 
+  test "old quote metadata is ignored when restoring a message with attachments" do
+    message = %{
+      message_id: Ecto.UUID.generate(),
+      role: "external",
+      content: "Explain this",
+      reply_context: %{"text" => "OBSOLETE_TOP_LEVEL_QUOTE"},
+      metadata: %{
+        "reply_context" => %{"text" => "OBSOLETE_METADATA_QUOTE"},
+        "attachments" => [%{"name" => "photo.png"}]
+      },
+      history_context: %{"reply_context" => %{"text" => "OBSOLETE_HISTORY_QUOTE"}}
+    }
+
+    [entry] = HistoryLoader.from_projection([message]).entries
+
+    assert entry.content ==
+             "Author: \"Unknown author\"\nMessage:\nExplain this\nAttachments:\n[{\"name\":\"photo.png\"}]"
+
+    assert entry.refs == %{message_id: message.message_id}
+  end
+
   test "restored inputs use their directory author and original persisted source time" do
     person = insert_person()
     conversation = insert_conversation(person.id, "bo")

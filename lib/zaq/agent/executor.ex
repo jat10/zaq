@@ -208,11 +208,7 @@ defmodule Zaq.Agent.Executor do
            question <-
              (Keyword.get(execution_opts, :input_presentation) ||
                 MessageAuthor.from_input(incoming))
-             |> Map.merge(%{
-               content: question,
-               attachments: incoming.attachments,
-               reply_context: incoming.reply_context
-             })
+             |> Map.merge(%{content: question, attachments: incoming.attachments})
              |> InputPrompt.render_message(opaque_alias_scope: server_id),
            _ <-
              Event.new(
@@ -540,9 +536,17 @@ defmodule Zaq.Agent.Executor do
   defp effective_execution_opts(opts, _incoming, _actor_result), do: opts
 
   defp history_binding(opts) do
-    case conversation_id(opts) do
-      nil -> nil
-      conversation_id -> %{conversation_id: conversation_id}
+    case Keyword.get(opts, :execution_history) do
+      %{projection: %{kind: :canonical, transcript_id: transcript_id}} ->
+        # A canonical transcript can span several legacy conversation containers.
+        # Bind the runtime to the same authorized history identity as its scope.
+        %{transcript_id: transcript_id}
+
+      _ ->
+        case conversation_id(opts) do
+          nil -> nil
+          conversation_id -> %{conversation_id: conversation_id}
+        end
     end
   end
 

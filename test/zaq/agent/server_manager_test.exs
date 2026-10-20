@@ -20,6 +20,57 @@ defmodule Zaq.Agent.ServerManagerTest do
 
   @execution_actor %{kind: :system, subject: "server-manager-test"}
 
+  test "canonical transcript bindings preserve actor and transcript isolation on reuse" do
+    config = valid_configured_agent(System.unique_integer([:positive]))
+    scope = "canonical-binding:#{config.id}"
+    actor = %{person: %{id: 42}}
+    binding = %{transcript_id: Ecto.UUID.generate()}
+    on_exit(fn -> ServerManager.stop_server(config, scope) end)
+
+    assert {:ok, ref} =
+             ServerManager.ensure_server(config, scope, AIContext.new(),
+               actor: actor,
+               history_binding: binding
+             )
+
+    pid = GenServer.whereis(ref)
+
+    assert {:ok, ^ref} =
+             ServerManager.ensure_server(config, scope, nil,
+               actor: actor,
+               history_binding: binding
+             )
+
+    assert {:error, :history_binding_mismatch} =
+             ServerManager.ensure_server(config, scope, nil,
+               actor: actor,
+               history_binding: %{transcript_id: Ecto.UUID.generate()}
+             )
+
+    assert {:error, :history_binding_mismatch} =
+             ServerManager.ensure_server(config, scope, nil,
+               actor: actor,
+               history_binding: %{conversation_id: binding.transcript_id}
+             )
+
+    assert {:error, :execution_actor_mismatch} =
+             ServerManager.ensure_server(config, scope, nil,
+               actor: %{person: %{id: 43}},
+               history_binding: binding
+             )
+
+    for invalid <- [nil, "", 123] do
+      assert {:error, :invalid_history_binding} =
+               ServerManager.ensure_server(config, scope, nil,
+                 actor: actor,
+                 history_binding: %{transcript_id: invalid}
+               )
+    end
+
+    assert GenServer.whereis(ref) == pid
+    assert {:ok, %{raw_state: %{history_binding: ^binding}}} = Jido.AgentServer.status(ref)
+  end
+
   @tag :execution_identity
   test "missing and invalid actors reject public and raw legacy calls without state changes" do
     config = valid_configured_agent(System.unique_integer([:positive]))
