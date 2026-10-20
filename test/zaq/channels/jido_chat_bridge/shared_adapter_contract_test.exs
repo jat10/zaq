@@ -41,13 +41,22 @@ defmodule Zaq.Channels.JidoChatBridge.SharedAdapterContractTest do
       Map.put(previous, :review_chat, %{
         bridge: JidoChatBridge,
         adapter: Adapter,
-        ingress_mode: :webhook,
-        room_reply_policy: :mention_required
+        ingress_mode: :webhook
       })
     )
 
     on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
-    %{config: %{id: 42, provider: "review_chat", settings: %{"credential_document_id" => 7}}}
+
+    %{
+      config: %{
+        id: 42,
+        provider: "review_chat",
+        settings: %{
+          "credential_document_id" => 7,
+          "jido_chat" => %{"room_reply_policy" => "mention_required"}
+        }
+      }
+    }
   end
 
   test "non-WhatsApp provider infrastructure and delivery retain an opaque scope", %{
@@ -76,7 +85,7 @@ defmodule Zaq.Channels.JidoChatBridge.SharedAdapterContractTest do
     end)
 
     check all(text <- string(:alphanumeric, min_length: 1, max_length: 30), max_runs: 15) do
-      config = put_in(config.settings["jido_chat"], %{"message_patterns" => ["deploy"]})
+      config = put_in(config.settings["jido_chat"]["message_patterns"], ["deploy"])
 
       chat =
         Jido.Chat.new(adapters: %{review_chat: Adapter})

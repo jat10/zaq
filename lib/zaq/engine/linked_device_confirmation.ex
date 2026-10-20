@@ -107,18 +107,19 @@ defmodule Zaq.Engine.LinkedDeviceConfirmation do
         else: settings
 
     config =
-      %ChannelConfig{}
-      |> ChannelConfig.changeset(
-        %{
-          name: name,
-          provider: provider,
-          kind: "retrieval",
-          enabled: true,
-          settings: settings
-        },
-        adapter_authentication: true
-      )
-      |> Repo.insert!()
+      case ChannelConfig.create(
+             %{
+               name: name,
+               provider: provider,
+               kind: "retrieval",
+               enabled: true,
+               settings: settings
+             },
+             adapter_authentication: true
+           ) do
+        {:ok, config} -> config
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
 
     binding =
       case Connect.credential_document(%{op: :bind, channel_config_id: config.id}) do

@@ -603,7 +603,13 @@ restarts. The credential reference in connector settings contains no session sec
 Runtime access follows the [Engine document contract](engine.md#connector-credential-documents).
 
 Messaging sessions and group sender keys use package-owned RAM-only Mnesia on the
-Channels node, initialized by the explicitly configured WhatsApp storage runtime.
+Channels node, initialized by the WhatsApp adapter's provider runtime specs.
+The adapter supplies the RAM-schema requirement; the ZAQ provider registry needs
+no storage options. See [connector reply policy and rollout](channels.md#connector-reply-policy)
+for the separate persisted message policy and legacy runtime defaults.
+ZAQ's initial history flags are persisted separately in connector settings; see
+[WhatsApp listener settings](channels.md#whatsapp-listener-settings) for ownership,
+validation and runtime fallback for older connectors without a backfill.
 ZAQ handles shared private credential requests through the existing `sink_mfa`;
 Engine supplies authorized encrypted-database operations; the package owns namespace
 routing, temporary pairing sessions and volatile state handoff.

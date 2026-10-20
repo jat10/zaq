@@ -49,6 +49,60 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
     assert worker_opts[:config].storage == ingress.storage
   end
 
+  test "persisted history options reach saved and authenticated listener startup independently" do
+    for history <- [false, true], full <- [false, true] do
+      assert {:ok, config} =
+               ChannelConfig.create(%{
+                 name: Ecto.UUID.generate(),
+                 provider: "whatsapp",
+                 kind: "retrieval",
+                 settings: %{
+                   "jido_chat" => %{
+                     "ingress" => %{"sync_history" => history, "sync_full_history" => full}
+                   }
+                 }
+               })
+
+      config = Repo.get!(ChannelConfig, config.id)
+      assert {:ok, options} = JidoChatBridge.saved_connection_options(config, Adapter)
+      assert options.sync_history == history
+      assert options.sync_full_history == full
+
+      # The authenticated handoff may carry different transport defaults. Persisted
+      # connector settings still select the history behavior for this listener.
+      handoff = %{options | sync_history: not history, sync_full_history: not full}
+
+      for runtime <- [config, Map.put(config, :authentication_connection_options, handoff)] do
+        assert {_, [spec]} =
+                 JidoChatBridge.runtime_specs(runtime, "history_#{config.id}", channel_ids: :all)
+
+        {Jido.Chat.WhatsApp.ConnectionWorker, :start_link, [opts]} = spec.start
+        assert opts[:config].sync_history == history
+        assert opts[:config].sync_full_history == full
+        assert opts[:config].profile == options.profile
+        assert {Split, listener_storage} = opts[:config].storage
+        {Split, saved_storage} = options.storage
+        assert listener_storage[:context] == saved_storage[:context]
+        assert listener_storage[:scope] == saved_storage[:scope]
+      end
+    end
+  end
+
+  test "adapter validates saved history options while generic persistence remains transport agnostic" do
+    for flag <- ~w(sync_history sync_full_history), value <- [nil, "false", 0, []] do
+      assert {:ok, config} =
+               ChannelConfig.create(%{
+                 name: Ecto.UUID.generate(),
+                 provider: "whatsapp",
+                 kind: "retrieval",
+                 settings: %{"jido_chat" => %{"ingress" => %{flag => value}}}
+               })
+
+      assert {:error, :invalid_history_options} =
+               JidoChatBridge.saved_connection_options(config, Adapter)
+    end
+  end
+
   test "invalid and disabled connectors cannot yield saved options" do
     assert {:error, :invalid_connector} = JidoChatBridge.connection_profile(%{id: nil})
 
