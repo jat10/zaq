@@ -2,6 +2,10 @@
 
 ## Overview
 
+For a new provider, follow the
+[communication channel integration guide](../guides/communication-channel-integration.md)
+for implementation sequencing, ownership checks and acceptance scenarios.
+
 ### Linked-device integration
 
 WhatsApp uses the same `JidoChatBridge` registration and adapter listener contract
