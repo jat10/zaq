@@ -16,7 +16,7 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   """
 
   alias Zaq.Accounts.BOActor
-  alias Zaq.ConnectorConfig.LifecycleLock
+  alias Zaq.ConnectorConfig.Settings
   alias Zaq.Engine.{ChannelConfig, DataSources}
   alias Zaq.Event
   alias Zaq.NodeRouter
@@ -69,8 +69,8 @@ defmodule Zaq.Engine.ConnectorLifecycle do
     with %ChannelConfig{} = config <- ChannelConfig.get(id),
          :ok <- validate_scope(config, provider, kind) do
       # The operation reloads and revalidates after acquiring the lock.
-      if LifecycleLock.saved_binding?(config),
-        do: LifecycleLock.with_lock(id, operation),
+      if Settings.saved_binding?(config),
+        do: NodeRouter.with_coordination({:connector_lifecycle, id}, operation),
         else: operation.()
     else
       _ -> {:error, :connector_not_found}
@@ -181,7 +181,7 @@ defmodule Zaq.Engine.ConnectorLifecycle do
       when is_binary(provider) and is_binary(kind) and is_binary(expected) and is_list(opts) do
     case cast_id(id) do
       {:ok, id} ->
-        LifecycleLock.with_lock(id, fn ->
+        NodeRouter.with_coordination({:connector_lifecycle, id}, fn ->
           enable_scoped(id, provider, kind, expected, actor, opts)
         end)
 
@@ -445,6 +445,5 @@ defmodule Zaq.Engine.ConnectorLifecycle do
     forwarded
     |> Keyword.put(:action, action)
     |> Keyword.put(:confidential, true)
-    |> Keyword.put(:connector_lifecycle_owner, LifecycleLock.owner())
   end
 end

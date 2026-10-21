@@ -148,7 +148,7 @@ opt out of observation. People bearer operations and OTP delivery events use it.
 Hop type controls response timing:
 
 - `:sync` hop: `dispatch/1` waits for role API completion and returns the updated event.
-- `:async` hop: `dispatch/1` starts background work and returns immediately with the event that was dispatched.
+- `:async` hop: `dispatch/1` starts background work and returns the dispatched event. Coordinated hops wait for ownership acknowledgement before returning; ordinary hops return immediately.
 
 Multi-hop behavior is recursive:
 
@@ -179,6 +179,50 @@ Role mapping:
 - `:bo` → `Zaq.Bo.*`, `ZaqWeb.*`
 
 ---
+
+### Opt-in resource coordination
+
+`NodeRouter.with_coordination(resource, operation)` protects a complete synchronous
+domain operation on an opaque resource key. Trusted event builders may also set
+`opts: [coordination: resource]` to protect dispatched execution and its continuation.
+Normal events retain their existing execution path. Domain code owns authorization,
+eligibility, resource selection and consistent ordering when acquiring multiple resources.
+
+Lock contention waits default to 5 seconds. Callers may set
+`opts: [coordination: resource, coordination_timeout: 30_000]` on an event, or pass
+`coordination_timeout: 30_000` as the third argument to `with_coordination/3`.
+The value is a non-negative integer in milliseconds; zero makes one immediate
+acquisition attempt. Failure returns `{:error, :coordination_timeout}` (in the
+event response for dispatch). It never expires an existing holder or interrupts
+the operation after acquisition. Nested scopes inherit the remaining budget and
+cannot extend it. RPC handoff sends remaining milliseconds and rebases them on
+the receiver's monotonic clock; transport time is not an execution/RPC deadline.
+Individual distributed lock requests still depend on BEAM distribution health.
+
+The router captures active scopes before handing work to another process and uses
+the same execution wrapper for coordinated local and remote handlers. Each executor
+takes an independent `:global` hold under the shared requester. A caller's death
+releases only its holds; running receivers remain protected until completion or death.
+Nested dispatches inherit scopes automatically, including callbacks and async hops.
+For coordinated async hops, the caller retains its holds until the supervised worker
+acquires every scope and acknowledges readiness. The caller then commits the handoff;
+only then may the worker execute. A caller dying before commit cancels the worker,
+while a committed worker may outlive its caller. Acknowledgement uses the remaining
+coordination budget, so an exhausted budget can reject async handoff even when a
+lock is immediately available. Timeout kills the worker and waits for its termination
+before releasing caller holds. Startup or pre-acknowledgement worker failure returns
+`{:error, {:coordination_handoff_failed, reason}}` in the event response. Acceptance
+acknowledges ownership, not successful completion or durable delivery.
+
+Requester metadata travels as private router RPC arguments, outside the event envelope
+and observer broadcasts. Arbitrary spawned tasks do not inherit process scopes.
+
+Direct bootstrap/startup paths use the same scoped primitive. Connector lifecycle
+commands use `{:connector_lifecycle, id}` across cleanup, persistence and runtime
+reconciliation; saved-binding startup takes that scope before rechecking eligibility.
+Coordination precedes node-local runtime locks, and no database row lock spans RPC.
+This provides exclusion across connected BEAM nodes, not partition fencing or rollback
+of side effects after failure. See [Engine lifecycle ownership](services/engine.md#connector-configuration-persistence).
 
 ## Service Responsibilities
 

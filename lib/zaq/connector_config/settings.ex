@@ -1,6 +1,13 @@
 defmodule Zaq.ConnectorConfig.Settings do
   @moduledoc "Shared provider defaults, nested settings merging and connector projections."
 
+  @doc "Identifies saved credential bindings whose startup must be excluded during cleanup."
+  @spec saved_binding?(term()) :: boolean()
+  def saved_binding?(%{settings: settings}) when is_map(settings),
+    do: is_integer(settings["credential_document_id"] || settings[:credential_document_id])
+
+  def saved_binding?(_), do: false
+
   @doc "Returns initial provider settings; explicit saved settings take precedence."
   @spec defaults(atom() | String.t() | nil) :: map()
   def defaults(provider) when provider in [:whatsapp, "whatsapp"] do

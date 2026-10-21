@@ -109,9 +109,12 @@ persisted disablement, runtime shutdown and archival. Unbound connectors retain
 their existing disable/archive flow without acquiring this lock. Bound-runtime
 startup takes the same lock and resolves a fresh enabled,
 nonarchived snapshot through confidential `:connector_runtime_context` with the
-explicit runtime capability. Internal RPC callbacks share the private requester;
-database row locks remain confined to persistence transactions. Holder death
-releases locks; coordination covers connected nodes, without a quorum guarantee.
+explicit runtime capability. The complete command uses NodeRouter's
+`{:connector_lifecycle, id}` coordination scope; nested receivers independently
+hold it even if the Engine caller dies. Domain code carries no requester tokens.
+Database row locks remain confined to persistence transactions. See
+[router coordination](../architecture.md#opt-in-resource-coordination) for scope
+propagation and connected-node limits.
 
 Explicit connector enablement uses confidential `:enable_channel_connector` and
 `Actions.EnableChannelConnector`. Context preparation and execution require a

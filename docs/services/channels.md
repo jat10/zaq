@@ -105,9 +105,12 @@ across connected BEAM nodes. Startup rechecks the enabled, nonarchived Engine
 snapshot before preparing credentials. Logout stops existing runtime writers and
 performs a final idempotent clear before Engine persists disablement. The lock
 remains held through persistence and runtime reconciliation, rejecting stale
-startup snapshots afterward. Ordinary runtime stop retains credentials. Internal
-RPC callbacks share a private lock requester; no DB row transaction spans RPC or
-storage callbacks. This coordination does not provide partition quorum guarantees.
+startup snapshots afterward. Ordinary runtime stop retains credentials. NodeRouter
+propagates the scope and acquires an independent hold in each executing receiver,
+so cleanup stays protected after the originating Engine process dies. Direct
+startup uses the same scoped primitive. No DB row transaction spans RPC or storage
+callbacks. See [router coordination](../architecture.md#opt-in-resource-coordination)
+for propagation and connected-node limits.
 Adapters without this optional callback skip logout preparation during Delete;
 an explicit logout request for an unsupported adapter fails closed.
 
