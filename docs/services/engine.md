@@ -104,8 +104,10 @@ failure returns a pending stage. A persistence failure after successful provider
 logout cannot restore the remote session. Repeated already-disabled requests skip
 logout and retry runtime cleanup.
 
-The connector lifecycle lock covers cleanup, persisted disablement and runtime
-shutdown. Bound-runtime startup takes the same lock and resolves a fresh enabled,
+For connectors with a saved credential binding, the lifecycle lock covers cleanup,
+persisted disablement, runtime shutdown and archival. Unbound connectors retain
+their existing disable/archive flow without acquiring this lock. Bound-runtime
+startup takes the same lock and resolves a fresh enabled,
 nonarchived snapshot through confidential `:connector_runtime_context` with the
 explicit runtime capability. Internal RPC callbacks share the private requester;
 database row locks remain confined to persistence transactions. Holder death

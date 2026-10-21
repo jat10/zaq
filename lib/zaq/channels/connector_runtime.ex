@@ -10,7 +10,7 @@ defmodule Zaq.Channels.ConnectorRuntime do
         when result: term()
   def with_start(%{id: id, provider: provider, kind: kind, settings: settings} = config, fun)
       when is_integer(id) and id > 0 and is_map(settings) do
-    if is_integer(settings["credential_document_id"] || settings[:credential_document_id]) do
+    if LifecycleLock.saved_binding?(config) do
       LifecycleLock.with_lock(id, fn ->
         event =
           Event.new(%{channel_config_id: id, provider: provider, kind: kind}, :engine,

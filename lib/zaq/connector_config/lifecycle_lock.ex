@@ -15,6 +15,13 @@ defmodule Zaq.ConnectorConfig.LifecycleLock do
   @spec owner() :: {pid(), reference()} | nil
   def owner, do: Process.get(@owner_key)
 
+  @doc "Identifies saved credential bindings whose startup must be excluded during cleanup."
+  @spec saved_binding?(term()) :: boolean()
+  def saved_binding?(%{settings: settings}) when is_map(settings),
+    do: is_integer(settings["credential_document_id"] || settings[:credential_document_id])
+
+  def saved_binding?(_), do: false
+
   @doc "Runs a connector operation under one shared lock, retaining nested holds."
   @spec with_lock(pos_integer(), (-> result)) :: result | {:error, :lifecycle_unavailable}
         when result: term()
