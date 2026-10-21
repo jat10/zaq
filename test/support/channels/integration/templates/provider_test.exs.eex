@@ -1,0 +1,14 @@
+defmodule Zaq.Channels.Integration.Providers.<%= Macro.camelize(@provider) %>Test do
+  use Zaq.TestSupport.Channels.Integration.Case
+
+  @tag provider: :<%= @provider %>, scenario: :provider_contract
+  test "<%= @provider %> native provider contract and real round trip" do
+    session = channel_session(:<%= @provider %>, driver: <%= @driver %>, llm_answer: "Hello answer")
+    emission = emit_message(session, :direct, content: "Hello question")
+    result = await_exchange(session, emission)
+    assert result.reply.body == "Hello answer"
+    assert_transcript(session, emission, "direct", ["Hello question", "Hello answer"])
+    # Add native payload, authentication/readiness, error and capability tests here.
+    # Registry registration automatically runs every common scenario as well.
+  end
+end

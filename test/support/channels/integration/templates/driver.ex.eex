@@ -1,0 +1,31 @@
+defmodule <%= @driver %> do
+  @moduledoc "Native <%= @provider %> fake-provider driver; complete every callback before acceptance."
+  @behaviour Zaq.TestSupport.Channels.Integration.Driver
+
+  # The installed production adapter is <%= @adapter %>.
+  # Start only the external fake here; connect receives the real saved fixtures.
+  @impl true
+  def start(_opts), do: unfinished!(:start)
+
+  @impl true
+  def connect(_handle, _context), do: unfinished!(:connect)
+
+  # Emit native provider input through real ingress. Never insert ZAQ messages.
+  @impl true
+  def emit(_session, _message), do: unfinished!(:emit)
+
+  # Match operation/content before consuming a response; retain failed attempts.
+  @impl true
+  def script(_session, _script), do: unfinished!(:script)
+
+  @impl true
+  def deliveries(_session), do: unfinished!(:deliveries)
+
+  # Direct/shared are mandatory; document optional unsupported features honestly.
+  @impl true
+  def capabilities, do: unfinished!(:capabilities)
+
+  defp unfinished!(callback) do
+    raise "<%= @provider %>: implement #{callback} using the integration Driver contract"
+  end
+end

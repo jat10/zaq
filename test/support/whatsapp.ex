@@ -6,8 +6,13 @@ defmodule Zaq.TestSupport.WhatsAppFlowTransport do
   """
   use GenServer
 
+  alias Zaq.TestSupport.Channels.Integration.ProviderState
+
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
-  def init(opts), do: {:ok, %{observer: opts[:observer], messages: %{}}}
+  def init(opts), do: {:ok, %{observer: opts[:observer], messages: %{}, ledgers: %{}}}
+
+  @doc "Opt-in integration ledger; legacy callers keep their existing mailbox behavior."
+  def attach(profile, ledger), do: GenServer.call(__MODULE__, {:attach, profile, ledger})
 
   def connect(config, opts) do
     parent = Keyword.fetch!(opts, :parent)
@@ -91,17 +96,20 @@ defmodule Zaq.TestSupport.WhatsAppFlowTransport do
     end
   end
 
-  def send_text(conn, jid, text, _opts), do: deliver(conn, jid, Ecto.UUID.generate(), text)
-  def send_edit(conn, {jid, id, true}, text), do: deliver(conn, jid, id, text)
-  def send_chatstate(_conn, _jid, _state), do: :ok
+  def send_text(conn, jid, text, _opts), do: deliver(conn, jid, Ecto.UUID.generate(), text, :send)
+  def send_edit(conn, {jid, id, true}, text), do: deliver(conn, jid, id, text, :edit)
+
+  def send_chatstate(conn, jid, status) do
+    profile = Agent.get(conn, & &1.config.profile)
+    GenServer.call(__MODULE__, {:typing, profile, jid, status})
+  end
 
   def mailbox, do: GenServer.call(__MODULE__, :mailbox)
 
-  defp deliver(conn, jid, id, text) do
+  defp deliver(conn, jid, id, text, operation) do
     true = Agent.get(conn, & &1.paired?)
     profile = Agent.get(conn, & &1.config.profile)
-    :ok = GenServer.call(__MODULE__, {:deliver, profile, jid, id, text})
-    {:ok, id}
+    GenServer.call(__MODULE__, {:deliver, profile, jid, id, text, operation})
   end
 
   def handle_call({:connected, config}, _from, state) do
@@ -109,13 +117,61 @@ defmodule Zaq.TestSupport.WhatsAppFlowTransport do
     {:reply, :ok, state}
   end
 
-  def handle_call({:deliver, profile, jid, id, text}, _from, state) do
-    messages = Map.put(state.messages, {profile, jid, id}, text)
-    send(state.observer, {:whatsapp_recipient_received, profile, jid, id, text})
-    {:reply, :ok, %{state | messages: messages}}
+  def handle_call({:attach, profile, ledger}, _from, state),
+    do: {:reply, :ok, %{state | ledgers: Map.put(state.ledgers, profile, ledger)}}
+
+  def handle_call({:typing, profile, jid, status}, _from, state) do
+    result =
+      record(
+        state,
+        profile,
+        %{operation: :typing, channel_id: jid, native_payload: %{jid: jid, status: status}},
+        {:ok, nil}
+      )
+
+    reply =
+      case result do
+        {:ok, _} -> :ok
+        {:error, _} = error -> error
+      end
+
+    {:reply, reply, state}
+  end
+
+  def handle_call({:deliver, profile, jid, id, text, operation}, _from, state) do
+    result =
+      record(
+        state,
+        profile,
+        %{
+          operation: operation,
+          channel_id: jid,
+          message_id: id,
+          text: text,
+          native_payload: %{jid: jid, id: id, text: text}
+        },
+        {:ok, id}
+      )
+
+    case result do
+      {:ok, delivered_id} ->
+        messages = Map.put(state.messages, {profile, jid, delivered_id}, text)
+        send(state.observer, {:whatsapp_recipient_received, profile, jid, delivered_id, text})
+        {:reply, result, %{state | messages: messages}}
+
+      {:error, _} ->
+        {:reply, result, state}
+    end
   end
 
   def handle_call(:mailbox, _from, state), do: {:reply, state.messages, state}
+
+  defp record(state, profile, attrs, default) do
+    case Map.fetch(state.ledgers, profile) do
+      {:ok, ledger} -> ProviderState.attempt(ledger, attrs)
+      :error -> default
+    end
+  end
 end
 
 defmodule Zaq.TestSupport.WhatsAppFlowAdapter do
