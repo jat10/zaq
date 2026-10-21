@@ -2,7 +2,7 @@ defmodule Zaq.Channels.ConnectorRuntime do
   @moduledoc "Provider teardown and runtime stages for Engine-resolved connector configurations."
 
   alias Zaq.Channels.{Bridge, CommunicationBridge}
-  alias Zaq.ConnectorConfig.LifecycleLock
+  alias Zaq.ConnectorConfig.Settings
   alias Zaq.{Event, NodeRouter}
 
   @doc "Excludes lifecycle cleanup and rechecks saved-binding eligibility before runtime preparation."
@@ -10,8 +10,8 @@ defmodule Zaq.Channels.ConnectorRuntime do
         when result: term()
   def with_start(%{id: id, provider: provider, kind: kind, settings: settings} = config, fun)
       when is_integer(id) and id > 0 and is_map(settings) do
-    if LifecycleLock.saved_binding?(config) do
-      LifecycleLock.with_lock(id, fn ->
+    if Settings.saved_binding?(config) do
+      NodeRouter.with_coordination({:connector_lifecycle, id}, fn ->
         event =
           Event.new(%{channel_config_id: id, provider: provider, kind: kind}, :engine,
             opts: [
@@ -63,7 +63,7 @@ defmodule Zaq.Channels.ConnectorRuntime do
         %{id: id, provider: provider, kind: kind, enabled: true} = after_config,
         opts
       ) do
-    if LifecycleLock.owner() do
+    if NodeRouter.coordinated?({:connector_lifecycle, id}) do
       sync_enabled_runtime(before_config, after_config, opts)
     else
       {:error, :connector_mismatch}

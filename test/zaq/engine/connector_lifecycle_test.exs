@@ -2,7 +2,6 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
   use Zaq.DataCase, async: true
   use ExUnitProperties
 
-  alias Zaq.ConnectorConfig.LifecycleLock
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.ConnectorLifecycle
   alias Zaq.Event
@@ -96,7 +95,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
 
     holder =
       Task.async(fn ->
-        LifecycleLock.with_lock(config.id, fn ->
+        Zaq.NodeRouter.with_coordination({:connector_lifecycle, config.id}, fn ->
           send(owner, :lifecycle_lock_held)
 
           receive do
