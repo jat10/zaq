@@ -2,6 +2,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
   use Zaq.DataCase, async: true
   use ExUnitProperties
 
+  alias Zaq.ConnectorConfig.LifecycleLock
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.ConnectorLifecycle
   alias Zaq.Event
@@ -85,6 +86,50 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
                      %{after_config: %{id: ^id, enabled: false}}}
 
     assert_received {:reconcile_watches, ^id}
+  end
+
+  test "archiving an unbound disk connector does not wait for the saved-binding lifecycle lock",
+       %{
+         config: config
+       } do
+    owner = self()
+
+    holder =
+      Task.async(fn ->
+        LifecycleLock.with_lock(config.id, fn ->
+          send(owner, :lifecycle_lock_held)
+
+          receive do
+            :release -> :ok
+          end
+        end)
+      end)
+
+    try do
+      assert_receive :lifecycle_lock_held
+
+      deletion =
+        Task.async(fn ->
+          ConnectorLifecycle.archive(
+            %{channel_config_id: config.id, provider: config.provider, kind: config.kind},
+            %{user_id: 1},
+            router: Router,
+            data_sources_module: DataSourcesStub
+          )
+        end)
+
+      try do
+        ref = deletion.ref
+        id = config.id
+        assert_receive {^ref, {:ok, %{channel_config_id: ^id, status: :archived}}}, 1_000
+        assert Repo.get!(ChannelConfig, id).archived_at
+      after
+        Task.shutdown(deletion, :brutal_kill)
+      end
+    after
+      send(holder.pid, :release)
+      Task.shutdown(holder, :brutal_kill)
+    end
   end
 
   test "partial watch teardown stops before Channels archive" do

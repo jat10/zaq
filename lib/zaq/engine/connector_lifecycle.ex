@@ -9,8 +9,8 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   successful runtime shutdown. A shutdown failure leaves the disabled connector
   unarchived for retry; post-archive watch cleanup may remain pending.
 
-  The connector lifecycle lock spans preparation, credential cleanup, disable
-  persistence and runtime shutdown. Saved-binding startup shares that lock and
+  For saved credential bindings, the lifecycle lock spans preparation, credential
+  cleanup, disable persistence, runtime shutdown and archival. Startup shares that lock and
   rechecks current eligibility through a confidential Engine runtime event.
   No database row lock is held across Channels or credential-storage callbacks.
   """
@@ -53,12 +53,29 @@ defmodule Zaq.Engine.ConnectorLifecycle do
 
   def archive(request, actor, opts) when is_map(request) and is_list(opts) do
     case cast_id(request[:channel_config_id]) do
-      {:ok, id} -> LifecycleLock.with_lock(id, fn -> do_archive(request, actor, opts) end)
-      _ -> {:error, :connector_not_found}
+      {:ok, id} ->
+        with_saved_binding_lock(id, request[:provider], request[:kind], fn ->
+          do_archive(request, actor, opts)
+        end)
+
+      _ ->
+        {:error, :connector_not_found}
     end
   end
 
   def archive(_request, _actor, _opts), do: {:error, :invalid_request}
+
+  defp with_saved_binding_lock(id, provider, kind, operation) do
+    with %ChannelConfig{} = config <- ChannelConfig.get(id),
+         :ok <- validate_scope(config, provider, kind) do
+      # The operation reloads and revalidates after acquiring the lock.
+      if LifecycleLock.saved_binding?(config),
+        do: LifecycleLock.with_lock(id, operation),
+        else: operation.()
+    else
+      _ -> {:error, :connector_not_found}
+    end
+  end
 
   defp do_archive(request, actor, opts) do
     router = Keyword.get(opts, :router, NodeRouter)
@@ -132,7 +149,7 @@ defmodule Zaq.Engine.ConnectorLifecycle do
 
     case cast_id(id) do
       {:ok, id} ->
-        LifecycleLock.with_lock(id, fn ->
+        with_saved_binding_lock(id, provider, kind, fn ->
           disable_scoped(id, provider, kind, expected, router, actor, opts)
         end)
 
