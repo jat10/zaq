@@ -4,7 +4,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
   import Phoenix.LiveView, only: [start_async: 3]
   alias Zaq.{Event, NodeRouter}
   alias ZaqWeb.Live.BO.AI.BOActor
-  alias ZaqWeb.Live.ObservationPolling
+  alias ZaqWeb.Live.DeviceSignInPolling
 
   @doc "Begins adapter authentication without persisting a connector."
   def new(socket) do
@@ -70,7 +70,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
         :ok
     end
 
-    socket |> ObservationPolling.stop(:linked_device_timer) |> assign(:linked_device_modal, nil)
+    socket |> DeviceSignInPolling.stop(:linked_device_timer) |> assign(:linked_device_modal, nil)
   end
 
   @doc "Retries the current session without discarding a successfully linked account."
@@ -79,7 +79,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
       generation = make_ref()
 
       socket
-      |> ObservationPolling.stop(:linked_device_timer)
+      |> DeviceSignInPolling.stop(:linked_device_timer)
       |> assign(:linked_device_modal, %{
         modal
         | generation: generation,
@@ -117,7 +117,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
 
   @doc "Consumes one observation tick while retaining the modal's async-result generation."
   def poll(socket, generation, tick) do
-    case ObservationPolling.consume(socket, :linked_device_timer, generation, tick) do
+    case DeviceSignInPolling.consume(socket, :linked_device_timer, generation, tick) do
       {:ok, socket} -> refresh(socket, generation)
       :stale -> socket
     end
@@ -176,8 +176,8 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
           assign(socket, :linked_device_modal, %{modal | status: status, attempts: attempts})
 
         socket
-        |> ObservationPolling.stop(:linked_device_timer)
-        |> ObservationPolling.schedule(
+        |> DeviceSignInPolling.stop(:linked_device_timer)
+        |> DeviceSignInPolling.schedule(
           :linked_device_timer,
           generation,
           :linked_device_poll,
