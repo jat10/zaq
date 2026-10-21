@@ -38,7 +38,7 @@ defmodule Zaq.Channels.Api do
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Channels.MessageFormatter
   alias Zaq.Channels.Web.{Command, Context, Message}
-  alias Zaq.ConnectorConfig.Settings
+  alias Zaq.ConnectorConfig.{LifecycleLock, Settings}
   alias Zaq.Contracts.Record
   alias Zaq.Contracts.ToolStep
   alias Zaq.Engine.ChannelConfig
@@ -409,7 +409,13 @@ defmodule Zaq.Channels.Api do
       ) do
     response =
       if Keyword.get(event.opts, :confidential) == true,
-        do: ConnectorRuntime.sync_runtime(before_config, after_config, event.opts),
+        do:
+          LifecycleLock.with_owner(
+            event.opts[:connector_lifecycle_owner],
+            fn ->
+              ConnectorRuntime.sync_runtime(before_config, after_config, event.opts)
+            end
+          ),
         else: {:error, :confidential_event_required}
 
     %{event | response: response}

@@ -7,6 +7,9 @@ defmodule Zaq.Engine.LinkedDeviceConfirmation do
   persistence never starts a connection while the transaction is open. Channels
   supplies authorized callbacks; the package excludes volatile messaging sessions
   and seeds its local RAM backend after this commits.
+
+  Accounts use the shared `external_id` and optional `display_name` fields.
+  Provider-specific identity validation belongs to the adapter.
   """
   import Ecto.Query
   alias Ecto.Adapters.SQL
@@ -32,23 +35,9 @@ defmodule Zaq.Engine.LinkedDeviceConfirmation do
     end
   end
 
-  def save(
-        %{attempt_id: attempt, identity: %{phone_number: phone} = identity, records: records} =
-          request
-      )
-      when is_binary(attempt) and is_binary(phone) and is_map(records) and map_size(records) > 0 do
-    with {:ok, _} <- Ecto.UUID.cast(attempt),
-         true <- Regex.match?(~r/^\+[0-9]{5,15}$/, phone) do
-      account = %{external_id: phone, display_name: identity[:display_name]}
-      persist(attempt, "whatsapp", request[:owner_id], account, records, identity)
-    else
-      _ -> {:error, :invalid_identity}
-    end
-  end
-
   def save(_), do: {:error, :invalid_snapshot}
 
-  defp persist(attempt, provider, owner_id, account, records, legacy_identity \\ nil) do
+  defp persist(attempt, provider, owner_id, account, records) do
     Repo.transaction(fn ->
       SQL.query!(Repo, "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [
         "linked-device:" <> attempt
@@ -62,7 +51,7 @@ defmodule Zaq.Engine.LinkedDeviceConfirmation do
 
       case existing do
         nil ->
-          create(attempt, provider, owner_id, account, records, legacy_identity)
+          create(attempt, provider, owner_id, account, records)
 
         config ->
           verified_existing(config, provider, owner_id, account)
@@ -77,17 +66,14 @@ defmodule Zaq.Engine.LinkedDeviceConfirmation do
   end
 
   defp matching_attempt?(config, provider, owner_id, account) do
-    saved_account = config.settings["account"] || config.settings["account_identity"]
-
-    saved_external_id =
-      if is_map(saved_account),
-        do: saved_account["external_id"] || saved_account["phone_number"]
+    saved_account = config.settings["account"]
+    saved_external_id = if is_map(saved_account), do: saved_account["external_id"]
 
     config.provider == provider and config.settings["owner_id"] == owner_id and
       saved_external_id == account.external_id
   end
 
-  defp create(attempt, provider, owner_id, account, records, legacy_identity) do
+  defp create(attempt, provider, owner_id, account, records) do
     name = account[:display_name] || account.external_id
 
     settings = %{
@@ -95,16 +81,6 @@ defmodule Zaq.Engine.LinkedDeviceConfirmation do
       "owner_id" => owner_id,
       "account" => Map.take(account, [:external_id, :display_name])
     }
-
-    settings =
-      if legacy_identity,
-        do:
-          Map.put(
-            settings,
-            "account_identity",
-            Map.take(legacy_identity, [:phone_number, :display_name, :account_jids])
-          ),
-        else: settings
 
     config =
       case ChannelConfig.create(

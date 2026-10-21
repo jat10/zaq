@@ -104,6 +104,23 @@ failure returns a pending stage. A persistence failure after successful provider
 logout cannot restore the remote session. Repeated already-disabled requests skip
 logout and retry runtime cleanup.
 
+The connector lifecycle lock covers cleanup, persisted disablement and runtime
+shutdown. Bound-runtime startup takes the same lock and resolves a fresh enabled,
+nonarchived snapshot through confidential `:connector_runtime_context` with the
+explicit runtime capability. Internal RPC callbacks share the private requester;
+database row locks remain confined to persistence transactions. Holder death
+releases locks; coordination covers connected nodes, without a quorum guarantee.
+
+Explicit connector enablement uses confidential `:enable_channel_connector` and
+`Actions.EnableChannelConnector`. Context preparation and execution require a
+current super-admin; the lifecycle rechecks the actor after acquiring its lock.
+The command validates exact provider/kind and revision, rejects archived records,
+persists enablement in Engine and reconciles Channels outside the transaction.
+It returns only the connector ID, enabled/already-enabled status and synced/pending
+runtime stage. Repeating enable retries startup on the same connector without
+toggling it off. BO uses this command for WhatsApp; other provider toggles retain
+their existing permission policy.
+
 ### Connector credential documents
 
 [`Connect.CredentialDocuments`](../../lib/zaq/engine/connect/credential_documents.ex)
@@ -151,6 +168,13 @@ lock through canonical Connect configuration/grant persistence. Existing binding
 are revalidated without replacing state or reactivating revoked grants. Linked-device
 pairing uses these existing Connect tables directly; see
 [Channels](channels.md#linked-device-integration).
+
+Linked-device confirmation accepts the adapter's normalized `account` with
+`external_id` and optional `display_name`, plus encoded `credentials`. Engine
+persists these fields without interpreting provider identity formats. WhatsApp's
+adapter supplies the phone number as `external_id`; the connector name uses
+`display_name` when available and otherwise the account ID. Provider-specific
+`identity`/`records` snapshots are rejected.
 
 ### Conversations
 

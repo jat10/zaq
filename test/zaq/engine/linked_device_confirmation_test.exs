@@ -1,5 +1,6 @@
 defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
   use Zaq.DataCase, async: true
+  use ExUnitProperties
   import Ecto.Query
   alias Zaq.ConnectorConfig.Settings
   alias Zaq.Engine.{ChannelConfig, Connect, LinkedDeviceConfirmation}
@@ -16,7 +17,7 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
   test "oversized pairing credentials roll back the connector and its credential" do
     request = %{
       request()
-      | records: %{{"creds", "self"} => String.duplicate("s", 1024 * 1024 + 1)}
+      | credentials: %{{"creds", "self"} => String.duplicate("s", 1024 * 1024 + 1)}
     }
 
     count = Repo.aggregate(ChannelConfig, :count)
@@ -26,7 +27,7 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
 
   test "confirmation persists every record with one batch mutation after provisioning" do
     records = Map.new(1..20, &{{"creds", to_string(&1)}, "opaque-#{&1}"})
-    request = %{request() | records: records}
+    request = %{request() | credentials: records}
     assert {:ok, config} = LinkedDeviceConfirmation.save(request)
     credential_id = config.settings["credential_document_id"]
     binding = %{channel_config_id: config.id, credential_id: credential_id}
@@ -51,10 +52,60 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
     assert Repo.aggregate(notifications, :count) == 2
   end
 
-  test "absent or LID-only phone identity cannot be confirmed" do
-    for phone <- [nil, "123456@lid", "not a number", "+", ""] do
-      assert {:error, _} =
-               LinkedDeviceConfirmation.save(%{request() | identity: %{phone_number: phone}})
+  test "provider-specific legacy snapshots are rejected without creating a connector" do
+    count = Repo.aggregate(ChannelConfig, :count)
+
+    assert {:error, :invalid_snapshot} =
+             LinkedDeviceConfirmation.save(%{
+               attempt_id: Ecto.UUID.generate(),
+               owner_id: 42,
+               identity: %{phone_number: "+15550001", display_name: "Support"},
+               records: %{{"creds", "self"} => "opaque"}
+             })
+
+    assert Repo.aggregate(ChannelConfig, :count) == count
+  end
+
+  test "normalized WhatsApp accounts retain phone and name without provider-specific fields" do
+    for display_name <- ["Support", nil] do
+      request = %{request() | account: %{external_id: "+15550001", display_name: display_name}}
+      assert {:ok, config} = LinkedDeviceConfirmation.save(request)
+      assert config.provider == "whatsapp"
+      assert config.name == (display_name || "+15550001")
+
+      assert config.settings["account"] == %{
+               "external_id" => "+15550001",
+               "display_name" => display_name
+             }
+
+      refute Map.has_key?(config.settings, "account_identity")
+    end
+  end
+
+  test "malformed normalized snapshots fail before persistence" do
+    count = Repo.aggregate(ChannelConfig, :count)
+    request = request()
+
+    for invalid <- [
+          %{request | attempt_id: "invalid"},
+          %{request | provider: ""},
+          %{request | provider: String.duplicate("p", 65)},
+          %{request | account: %{external_id: ""}},
+          %{request | account: %{external_id: String.duplicate("a", 256)}},
+          %{request | credentials: %{}},
+          Map.delete(request, :credentials),
+          Map.delete(request, :owner_id)
+        ] do
+      assert {:error, _} = LinkedDeviceConfirmation.save(invalid)
+    end
+
+    assert Repo.aggregate(ChannelConfig, :count) == count
+  end
+
+  property "non-string account IDs never reach persistence" do
+    check all(id <- one_of([integer(), boolean(), constant(nil), list_of(integer())])) do
+      assert {:error, :invalid_snapshot} =
+               LinkedDeviceConfirmation.save(%{request() | account: %{external_id: id}})
     end
   end
 
@@ -90,17 +141,15 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
   defp request do
     %{
       attempt_id: Ecto.UUID.generate(),
-      identity: %{phone_number: "+15550001", display_name: nil},
-      records: %{{"creds", "self"} => "opaque-package-record"}
+      provider: "whatsapp",
+      owner_id: 42,
+      account: %{external_id: "+15550001", display_name: nil},
+      credentials: %{{"creds", "self"} => "opaque-package-record"}
     }
   end
 
   test "linked-device confirmation persists the policy and retries retain an explicit later choice" do
-    request = %{
-      attempt_id: Ecto.UUID.generate(),
-      identity: %{phone_number: "+15550001", display_name: "Support"},
-      records: %{{"creds", "self"} => "opaque"}
-    }
+    request = %{request() | account: %{external_id: "+15550001", display_name: "Support"}}
 
     assert {:ok, saved} = LinkedDeviceConfirmation.save(request)
 
@@ -119,11 +168,7 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
   end
 
   test "confirmation saves defaults and repeated confirmation preserves a later choice" do
-    request = %{
-      attempt_id: Ecto.UUID.generate(),
-      identity: %{phone_number: "+15550003"},
-      records: %{{"creds", "self"} => "opaque"}
-    }
+    request = %{request() | account: %{external_id: "+15550003"}}
 
     assert {:ok, saved} = LinkedDeviceConfirmation.save(request)
 

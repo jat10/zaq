@@ -1,6 +1,6 @@
 defmodule Zaq.Engine.ConnectorLifecycle do
   @moduledoc """
-  Coordinates connector archive and confirmed disable commands across service boundaries.
+  Coordinates connector enable, archive and confirmed disable commands across service boundaries.
 
   Engine owns connector scope, revision validation, archive persistence and
   data-source watch ordering/cleanup. Channels consumes resolved configurations
@@ -8,8 +8,15 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   Archival follows adapter disable preparation, persisted disablement and
   successful runtime shutdown. A shutdown failure leaves the disabled connector
   unarchived for retry; post-archive watch cleanup may remain pending.
+
+  The connector lifecycle lock spans preparation, credential cleanup, disable
+  persistence and runtime shutdown. Saved-binding startup shares that lock and
+  rechecks current eligibility through a confidential Engine runtime event.
+  No database row lock is held across Channels or credential-storage callbacks.
   """
 
+  alias Zaq.Accounts.BOActor
+  alias Zaq.ConnectorConfig.LifecycleLock
   alias Zaq.Engine.{ChannelConfig, DataSources}
   alias Zaq.Event
   alias Zaq.NodeRouter
@@ -45,6 +52,15 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   def archive(request, actor, opts \\ [])
 
   def archive(request, actor, opts) when is_map(request) and is_list(opts) do
+    case cast_id(request[:channel_config_id]) do
+      {:ok, id} -> LifecycleLock.with_lock(id, fn -> do_archive(request, actor, opts) end)
+      _ -> {:error, :connector_not_found}
+    end
+  end
+
+  def archive(_request, _actor, _opts), do: {:error, :invalid_request}
+
+  defp do_archive(request, actor, opts) do
     router = Keyword.get(opts, :router, NodeRouter)
     data_sources = Keyword.get(opts, :data_sources_module, DataSources)
 
@@ -77,8 +93,6 @@ defmodule Zaq.Engine.ConnectorLifecycle do
       _ -> {:error, :connector_not_found}
     end
   end
-
-  def archive(_request, _actor, _opts), do: {:error, :invalid_request}
 
   defp disable_before_archive(%{enabled: false} = config, _expected, _router, _actor, _opts),
     do: {:ok, config}
@@ -116,8 +130,21 @@ defmodule Zaq.Engine.ConnectorLifecycle do
       when is_binary(expected) do
     router = Keyword.get(opts, :router, NodeRouter)
 
-    with {:ok, id} <- cast_id(id),
-         %ChannelConfig{archived_at: nil} = before <- ChannelConfig.get(id),
+    case cast_id(id) do
+      {:ok, id} ->
+        LifecycleLock.with_lock(id, fn ->
+          disable_scoped(id, provider, kind, expected, router, actor, opts)
+        end)
+
+      _ ->
+        {:error, :connector_not_found}
+    end
+  end
+
+  def disable(_, _, _), do: {:error, :invalid_request}
+
+  defp disable_scoped(id, provider, kind, expected, router, actor, opts) do
+    with %ChannelConfig{archived_at: nil} = before <- ChannelConfig.get(id),
          :ok <- validate_scope(before, provider, kind) do
       disable_current(before, expected, router, actor, opts)
     else
@@ -125,7 +152,68 @@ defmodule Zaq.Engine.ConnectorLifecycle do
     end
   end
 
-  def disable(_, _, _), do: {:error, :invalid_request}
+  @doc "Enables an exact connector revision as a current super-admin, then reconciles runtime."
+  @spec enable(map(), map(), keyword()) :: {:ok, map()} | {:error, term()}
+  def enable(request, actor, opts \\ [])
+
+  def enable(
+        %{channel_config_id: id, provider: provider, kind: kind, revision: expected},
+        actor,
+        opts
+      )
+      when is_binary(provider) and is_binary(kind) and is_binary(expected) and is_list(opts) do
+    case cast_id(id) do
+      {:ok, id} ->
+        LifecycleLock.with_lock(id, fn ->
+          enable_scoped(id, provider, kind, expected, actor, opts)
+        end)
+
+      _ ->
+        {:error, :connector_not_found}
+    end
+  end
+
+  def enable(_, _, _), do: {:error, :invalid_request}
+
+  defp enable_scoped(id, provider, kind, expected, actor, opts) do
+    with {:ok, _user} <- BOActor.current_super_admin(actor),
+         %ChannelConfig{archived_at: nil} = before <- ChannelConfig.get(id),
+         :ok <- validate_scope(before, provider, kind) do
+      enable_current(before, expected, actor, opts)
+    else
+      {:error, :unauthorized} = error -> error
+      _ -> {:error, :connector_not_found}
+    end
+  end
+
+  defp enable_current(before, expected, actor, opts) do
+    with {:ok, enabled} <- persist_enable(before, expected) do
+      {:ok,
+       %{
+         channel_config_id: enabled.id,
+         status: if(before.enabled, do: :already_enabled, else: :enabled),
+         runtime:
+           sync_runtime(before, enabled, Keyword.get(opts, :router, NodeRouter), actor, opts)
+       }}
+    end
+  end
+
+  defp persist_enable(%{enabled: true} = config, _expected), do: {:ok, config}
+  defp persist_enable(config, expected), do: persist_enabled(config.id, expected, true)
+
+  @doc "Resolves a fresh enabled connector for explicitly trusted runtime startup."
+  @spec runtime_context(map()) :: {:ok, map()} | {:error, atom()}
+  def runtime_context(%{channel_config_id: id, provider: provider, kind: kind}) do
+    with {:ok, id} <- cast_id(id),
+         %ChannelConfig{enabled: true, archived_at: nil} = config <- ChannelConfig.get(id),
+         :ok <- validate_scope(config, provider, kind) do
+      {:ok, runtime_config(config)}
+    else
+      _ -> {:error, :connector_unavailable}
+    end
+  end
+
+  def runtime_context(_), do: {:error, :invalid_request}
 
   defp disable_current(%{enabled: false} = config, _expected, router, actor, opts) do
     {:ok,
@@ -160,10 +248,14 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   # Adapter logout can write credential storage through Engine. Never hold the row
   # lock across that service call; recheck the confirmed revision before persistence.
   defp persist_disable(id, expected) do
+    persist_enabled(id, expected, false)
+  end
+
+  defp persist_enabled(id, expected, enabled?) do
     Repo.transaction(fn ->
       case Repo.get(ChannelConfig, id, lock: "FOR UPDATE") do
         %ChannelConfig{} = current ->
-          persist_disabled_current(current, expected)
+          persist_enabled_current(current, expected, enabled?)
 
         _ ->
           Repo.rollback(:connector_not_found)
@@ -171,10 +263,10 @@ defmodule Zaq.Engine.ConnectorLifecycle do
     end)
   end
 
-  defp persist_disabled_current(current, expected) do
+  defp persist_enabled_current(current, expected, enabled?) do
     with :ok <- validate_revision(current, expected),
-         {:ok, disabled} <- current |> Ecto.Changeset.change(enabled: false) |> Repo.update() do
-      disabled
+         {:ok, saved} <- current |> Ecto.Changeset.change(enabled: enabled?) |> Repo.update() do
+      saved
     else
       {:error, reason} -> Repo.rollback(reason)
     end
@@ -336,5 +428,6 @@ defmodule Zaq.Engine.ConnectorLifecycle do
     forwarded
     |> Keyword.put(:action, action)
     |> Keyword.put(:confidential, true)
+    |> Keyword.put(:connector_lifecycle_owner, LifecycleLock.owner())
   end
 end

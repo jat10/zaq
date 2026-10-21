@@ -4,6 +4,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
   import Phoenix.LiveView, only: [start_async: 3]
   alias Zaq.{Event, NodeRouter}
   alias ZaqWeb.Live.BO.AI.BOActor
+  alias ZaqWeb.Live.ObservationPolling
 
   @doc "Begins adapter authentication without persisting a connector."
   def new(socket) do
@@ -69,18 +70,16 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
         :ok
     end
 
-    if timer = socket.assigns[:linked_device_timer], do: Process.cancel_timer(timer)
-    socket |> assign(:linked_device_timer, nil) |> assign(:linked_device_modal, nil)
+    socket |> ObservationPolling.stop(:linked_device_timer) |> assign(:linked_device_modal, nil)
   end
 
   @doc "Retries the current session without discarding a successfully linked account."
   def retry(%{assigns: %{linked_device_modal: %{config_id: nil} = modal}} = socket) do
     if is_pid(modal.session) and not Map.get(modal.status, :session_expired, false) do
-      if timer = socket.assigns[:linked_device_timer], do: Process.cancel_timer(timer)
       generation = make_ref()
 
       socket
-      |> assign(:linked_device_timer, nil)
+      |> ObservationPolling.stop(:linked_device_timer)
       |> assign(:linked_device_modal, %{
         modal
         | generation: generation,
@@ -115,6 +114,14 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
   end
 
   def retry(socket), do: socket
+
+  @doc "Consumes one observation tick while retaining the modal's async-result generation."
+  def poll(socket, generation, tick) do
+    case ObservationPolling.consume(socket, :linked_device_timer, generation, tick) do
+      {:ok, socket} -> refresh(socket, generation)
+      :stale -> socket
+    end
+  end
 
   @doc "Only the current modal generation may initiate or accept a poll."
   def refresh(socket, generation, operation \\ :status) do
@@ -160,8 +167,6 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
 
         watching = watching_status?(status)
 
-        if timer = socket.assigns[:linked_device_timer], do: Process.cancel_timer(timer)
-
         status =
           if attempts >= 90 and watching,
             do: %{phase: :expired, summary: "Connection window ended; retry to continue"},
@@ -170,15 +175,15 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
         socket =
           assign(socket, :linked_device_modal, %{modal | status: status, attempts: attempts})
 
-        if watching and attempts < 90 do
-          assign(
-            socket,
-            :linked_device_timer,
-            Process.send_after(self(), {:linked_device_poll, generation}, 2000)
-          )
-        else
-          assign(socket, :linked_device_timer, nil)
-        end
+        socket
+        |> ObservationPolling.stop(:linked_device_timer)
+        |> ObservationPolling.schedule(
+          :linked_device_timer,
+          generation,
+          :linked_device_poll,
+          2_000,
+          watching and attempts < 90
+        )
 
       _ ->
         discard_stale_session(socket, result)

@@ -14,7 +14,7 @@ defmodule Zaq.Channels.Bridge do
   bridge modules own transport-specific behavior.
   """
 
-  alias Zaq.Channels.{CommunicationBridge, DataSourceBridge}
+  alias Zaq.Channels.{CommunicationBridge, ConnectorRuntime, DataSourceBridge}
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Event
@@ -195,6 +195,12 @@ defmodule Zaq.Channels.Bridge do
   @doc false
   @spec start_runtime(module(), runtime_target(), keyword()) :: :ok | {:error, term()}
   def start_runtime(bridge, target, opts) do
+    ConnectorRuntime.with_start(target, fn current ->
+      do_start_runtime(bridge, current, opts)
+    end)
+  end
+
+  defp do_start_runtime(bridge, target, opts) do
     with {:ok, specs} <- runtime_specs(bridge, target, opts) do
       start_runtime_specs(bridge, target, specs)
     end
@@ -245,6 +251,12 @@ defmodule Zaq.Channels.Bridge do
 
   @spec restart_runtime(module(), map()) :: :ok | {:error, term()}
   def restart_runtime(bridge_module, config) when is_atom(bridge_module) and is_map(config) do
+    ConnectorRuntime.with_start(config, fn current ->
+      do_restart_runtime(bridge_module, current)
+    end)
+  end
+
+  defp do_restart_runtime(bridge_module, config) do
     with true <-
            function_exported?(bridge_module, :build_runtime_specs, 1) || {:error, :unsupported},
          :ok <- stop_runtime_normalized(bridge_module, config),

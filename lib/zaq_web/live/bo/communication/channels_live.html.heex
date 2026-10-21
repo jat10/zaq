@@ -90,6 +90,8 @@
         connector_id={config.id}
         toggle_event="toggle_enabled"
         toggle_button_id={"toggle-config-#{config.id}"}
+        toggle_disabled={not is_nil(ChannelEnablePolicy.disabled_reason(config, @current_user))}
+        toggle_disabled_reason={ChannelEnablePolicy.disabled_reason(config, @current_user)}
         edit_event="open_modal"
         edit_button_id={"edit-config-#{config.id}"}
         edit_action="edit"
