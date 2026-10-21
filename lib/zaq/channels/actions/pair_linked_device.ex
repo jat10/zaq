@@ -13,8 +13,8 @@ defmodule Zaq.Channels.Actions.PairLinkedDevice do
         %{request: %{provider: provider, op: _} = request},
         %{actor: actor, confidential: true} = context
       ) do
-    case BOActor.current_user(actor) do
-      {:ok, %{id: id, role: %{name: "super_admin"}}} ->
+    case BOActor.current_super_admin(actor) do
+      {:ok, %{id: id}} ->
         {:ok,
          %{
            result:

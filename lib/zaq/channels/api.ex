@@ -1262,7 +1262,7 @@ defmodule Zaq.Channels.Api do
 
   defp authorize_pairing_operator(%Event{actor: actor, opts: opts}) do
     with true <- Keyword.get(opts, :confidential) == true,
-         {:ok, %{role: %{name: "super_admin"}}} <- BOActor.current_user(actor) do
+         {:ok, _user} <- BOActor.current_super_admin(actor) do
       :ok
     else
       _ -> {:error, :unauthorized}

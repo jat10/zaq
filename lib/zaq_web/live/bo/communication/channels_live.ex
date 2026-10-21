@@ -76,7 +76,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
        authentication_capability(provider, socket.assigns.current_user) == :native
      )
      |> assign(:linked_device_modal, nil)
-     |> assign(:linked_device_timer, nil)
      |> assign(:configs, configs)
      |> assign(:ingress_statuses, %{})
      |> assign(:ingress_status_loading, ingress_status_loading(configs))

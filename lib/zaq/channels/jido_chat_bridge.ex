@@ -68,8 +68,8 @@ defmodule Zaq.Channels.JidoChatBridge do
   def before_disable(%{provider: provider} = config, actor, opts) do
     case logout_adapter(provider, opts) do
       {:ok, adapter} ->
-        case BOActor.current_user(actor) do
-          {:ok, %{role: %{name: "super_admin"}}} -> logout_listener(config, adapter, opts)
+        case BOActor.current_super_admin(actor) do
+          {:ok, _user} -> logout_listener(config, adapter, opts)
           _ -> {:error, :unauthorized}
         end
 
@@ -287,8 +287,8 @@ defmodule Zaq.Channels.JidoChatBridge do
          context: actor,
          request: %{op: :persist} = request
        }) do
-    case BOActor.current_user(actor) do
-      {:ok, %{role: %{name: "super_admin"}}} ->
+    case BOActor.current_super_admin(actor) do
+      {:ok, _user} ->
         persist_authentication(provider, actor, Map.delete(request, :op))
 
       _ ->
@@ -300,8 +300,8 @@ defmodule Zaq.Channels.JidoChatBridge do
          context: actor,
          request: %{op: :start, runtime: runtime}
        }) do
-    case BOActor.current_user(actor) do
-      {:ok, %{role: %{name: "super_admin"}}} -> start_authentication(provider, actor, runtime)
+    case BOActor.current_super_admin(actor) do
+      {:ok, _user} -> start_authentication(provider, actor, runtime)
       _ -> {:error, :unauthorized}
     end
   end

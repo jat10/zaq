@@ -10,8 +10,8 @@ defmodule Zaq.Engine.Actions.ConfirmLinkedDevice do
   alias Zaq.Engine.LinkedDeviceConfirmation
 
   def run(%{request: request}, %{actor: actor, linked_device_runtime: true}) do
-    case BOActor.current_user(actor) do
-      {:ok, %{id: id, role: %{name: "super_admin"}}} ->
+    case BOActor.current_super_admin(actor) do
+      {:ok, %{id: id}} ->
         {:ok, %{result: LinkedDeviceConfirmation.save(Map.put(request, :owner_id, id))}}
 
       _ ->

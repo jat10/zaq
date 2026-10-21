@@ -13,7 +13,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
     assert timer.interval_ms == 2_000
     assert LinkedDeviceUI.poll(watching, generation, make_ref()) == watching
     consumed = LinkedDeviceUI.poll(watching, generation, timer.generation)
-    assert consumed.assigns.linked_device_timer == nil
+    assert consumed.private.linked_device_timer == nil
     assert consumed.assigns.linked_device_modal.generation == generation
     assert LinkedDeviceUI.poll(consumed, generation, timer.generation) == consumed
 
@@ -32,8 +32,15 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
 
   test "closing cancels polling and clears QR material" do
     socket = socket()
-    timer = Process.send_after(self(), :should_not_arrive, 5000)
-    socket = Phoenix.Component.assign(socket, :linked_device_timer, timer)
+
+    socket =
+      LinkedDeviceUI.result(
+        socket,
+        socket.assigns.linked_device_modal.generation,
+        {:ok, {:ok, %{phase: :pairing, qr: "current"}}}
+      )
+
+    timer = socket.private.linked_device_timer.timer_ref
     closed = LinkedDeviceUI.close(socket)
     assert closed.assigns.linked_device_modal == nil
     assert Process.read_timer(timer) == false
@@ -58,7 +65,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
       LinkedDeviceUI.result(socket, generation, {:ok, {:ok, %{phase: :pairing, qr: "old"}}})
 
     assert expired.assigns.linked_device_modal.status.phase == :expired
-    assert expired.assigns.linked_device_timer == nil
+    assert expired.private.linked_device_timer == nil
   end
 
   test "provisional retry preserves the session even when the UI previously saw failure" do
@@ -95,15 +102,15 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
         {:ok, {:ok, %{phase: :pending, summary: "Reconnecting with the linked account", qr: nil}}}
       )
 
-    assert is_reference(pending.assigns.linked_device_timer)
-    Process.cancel_timer(pending.assigns.linked_device_timer)
+    assert is_reference(pending.private.linked_device_timer.timer_ref)
     confirmed = LinkedDeviceUI.result(pending, generation, {:ok, {:ok, %{phase: :confirm}}})
     assert confirmed.assigns.linked_device_modal.status.phase == :confirm
-    assert confirmed.assigns.linked_device_timer == nil
+    assert confirmed.private.linked_device_timer == nil
+    assert Process.read_timer(pending.private.linked_device_timer.timer_ref) == false
     expired = LinkedDeviceUI.result(socket, generation, {:ok, {:error, :pairing_expired}})
     assert expired.assigns.linked_device_modal.status.session_expired
     assert expired.assigns.linked_device_modal.status.phase == :expired
-    assert expired.assigns.linked_device_timer == nil
+    assert expired.private.linked_device_timer == nil
   end
 
   test "shared challenge rotation and account confirmation retain one session" do
@@ -130,7 +137,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
         {:ok, %{phase: :failed, session: self(), summary: "QR expired"}}
       })
 
-    assert is_reference(expired.assigns.linked_device_timer)
+    assert is_reference(expired.private.linked_device_timer.timer_ref)
     refute Map.has_key?(expired.assigns.linked_device_modal.status, :qr)
 
     replacement =
@@ -152,7 +159,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
 
     assert confirmed.assigns.linked_device_modal.status.phase == :confirm
     assert confirmed.assigns.linked_device_modal.status.account == account
-    assert confirmed.assigns.linked_device_timer == nil
+    assert confirmed.private.linked_device_timer == nil
   end
 
   for config_id <- [nil, 2] do
@@ -170,7 +177,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
       expired =
         LinkedDeviceUI.result(socket, modal.generation, {:ok, {:ok, %{phase: :expired, qr: nil}}})
 
-      timer = expired.assigns.linked_device_timer
+      timer = expired.private.linked_device_timer.timer_ref
       assert is_reference(timer)
       assert expired.assigns.linked_device_modal.status.qr == nil
 
@@ -185,7 +192,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
       assert replaced.assigns.linked_device_modal.status.qr == "replacement"
       assert replaced.assigns.linked_device_modal.session == self()
       assert replaced.assigns.linked_device_modal.generation == modal.generation
-      Process.cancel_timer(replaced.assigns.linked_device_timer)
+      Process.cancel_timer(replaced.private.linked_device_timer.timer_ref)
 
       bounded =
         Phoenix.Component.assign(expired, :linked_device_modal, %{
@@ -200,7 +207,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
           {:ok, {:ok, %{phase: :expired, qr: nil}}}
         )
 
-      assert stopped.assigns.linked_device_timer == nil
+      assert stopped.private.linked_device_timer == nil
 
       assert stopped.assigns.linked_device_modal.status.summary ==
                "Connection window ended; retry to continue"
@@ -238,7 +245,6 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
         __changed__: %{},
         provider: "whatsapp",
         provider_label: "WhatsApp",
-        linked_device_timer: nil,
         linked_device_modal: %{
           config_id: 2,
           name: "Second",
