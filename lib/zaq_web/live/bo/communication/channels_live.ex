@@ -145,8 +145,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   end
 
   @impl true
-  def handle_info({:linked_device_poll, generation}, socket),
-    do: {:noreply, LinkedDeviceUI.refresh(socket, generation)}
+  def handle_info({:linked_device_poll, generation, tick}, socket),
+    do: {:noreply, LinkedDeviceUI.poll(socket, generation, tick)}
 
   def handle_info({:linked_device_saved, saved}, socket) do
     configs = list_configs(socket.assigns.provider)
@@ -537,6 +537,9 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
 
       config.archived_at ->
         {:noreply, put_flash(socket, :error, "Archived connectors cannot be reactivated.")}
+
+      config.provider == "whatsapp" and not config.enabled ->
+        enable_whatsapp_config(socket, config)
 
       true ->
         case ChannelDisablePolicy.before_disable(socket.assigns.provider, config) do
@@ -1045,6 +1048,50 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
      |> maybe_open_enabled_connection(config, sync_result)}
   end
 
+  defp enable_whatsapp_config(socket, previous_config) do
+    request = %{
+      op: :context,
+      channel_config_id: previous_config.id,
+      provider: socket.assigns.provider,
+      kind: to_string(socket.assigns.kind)
+    }
+
+    with {:ok, descriptor} <- connector_command(socket, :enable_channel_connector, request),
+         {:ok, result} <-
+           connector_command(socket, :enable_channel_connector, Map.put(descriptor, :op, :enable)) do
+      {:noreply, present_enabled_connector(socket, previous_config, result)}
+    else
+      _ ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "Cannot enable this profile. Check your access and refresh before trying again."
+         )}
+    end
+  end
+
+  defp present_enabled_connector(socket, previous_config, result) do
+    sync_result = enable_sync_result(result.runtime)
+
+    socket =
+      socket
+      |> refresh_connector_configs()
+      |> maybe_put_runtime_sync_flash(sync_result, "#{previous_config.name} enabled.")
+
+    case Enum.find(socket.assigns.configs, &(&1.id == result.channel_config_id)) do
+      %ChannelConfig{enabled: true} = config ->
+        maybe_open_enabled_connection(socket, config, sync_result)
+
+      _ ->
+        socket
+    end
+  end
+
+  defp enable_sync_result(:synced), do: :ok
+  defp enable_sync_result({:pending, {:unexpected_response, other}}), do: other
+  defp enable_sync_result({:pending, reason}), do: {:error, reason}
+
   defp maybe_open_enabled_connection(%{assigns: %{linked_device: true}} = socket, config, :ok) do
     case ChannelEnablePolicy.after_enable(config.provider, config) do
       :open_connection -> LinkedDeviceUI.open(socket, config)
@@ -1077,10 +1124,13 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     end
   end
 
-  defp disable_connector(socket, request) do
+  defp disable_connector(socket, request),
+    do: connector_command(socket, :disable_channel_connector, request)
+
+  defp connector_command(socket, action, request) do
     Event.new(request, :engine,
       actor: BOActor.build(socket.assigns.current_user),
-      opts: [action: :disable_channel_connector, confidential: true]
+      opts: [action: action, confidential: true]
     )
     |> NodeRouter.dispatch()
     |> Map.get(:response)

@@ -493,11 +493,24 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       {:ok, view, _} =
         live(init_test_session(conn, %{user_id: user.id}), ~p"/bo/channels/retrieval/whatsapp")
 
-      view |> element("#toggle-config-#{config.id}") |> render_click()
+      render_hook(view, "toggle_enabled", %{"id" => to_string(config.id)})
       render_async(view, 1_000)
 
       refute has_element?(view, "#linked-device-pairing")
-      assert Repo.get!(ChannelConfig, config.id).enabled
+      refute Repo.get!(ChannelConfig, config.id).enabled
+      assert BridgeFake.calls(:sync_runtime) == []
+    end
+
+    test "WhatsApp enable control explains the super-admin restriction", %{conn: conn, user: user} do
+      config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+
+      {:ok, view, _} =
+        live(init_test_session(conn, %{user_id: user.id}), ~p"/bo/channels/retrieval/whatsapp")
+
+      assert has_element?(
+               view,
+               "#toggle-config-#{config.id}[disabled][title='Only super admins can enable a WhatsApp account.']"
+             )
     end
   end
 

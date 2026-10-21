@@ -75,7 +75,11 @@ Manual bot ID/mention fields are omitted for WhatsApp, including when editing.
 Disabling a WhatsApp profile in BO requires Confirm or Cancel after a warning
 that the profile will be logged out and must be linked again. The shared connector
 button delegates to its parent LiveView; `ChannelDisablePolicy` selects the warning.
-Enabling WhatsApp starts the saved connector through the existing runtime flow.
+Enabling WhatsApp uses the confidential Engine `:enable_channel_connector` Action,
+requiring a current super-admin at context preparation and execution. Engine owns
+exact scope/revision checks and enable persistence; BO never writes enablement for
+this flow. Repeated enable retries the same saved connector. Startup failure leaves
+it enabled with an explicit pending runtime stage.
 After successful startup, `ChannelEnablePolicy` opens that profile's connection
 modal for authorized linked-device operators. The package supplies a fresh QR when
 relinking is required, or connected status when a saved session remains valid.
@@ -87,12 +91,23 @@ then requests `:connector_logout` through Channels. `CommunicationBridge` delega
 to `JidoChatBridge`, which invokes the configured adapter's optional `logout/1`
 on that connector's single registered listener. The WhatsApp adapter delegates to
 the package's `ConnectionWorker.logout/1`; the package owns server unlink and clearing durable
-credentials and RAM sessions. Missing listeners or failed logout leave enablement
-unchanged. Engine persists disablement after successful logout, then reconciles
+credentials and RAM sessions. When the listener is absent, the configured adapter's
+optional `cleanup_connection/2` extension clears the existing binding through the
+trusted storage sink. Cleanup never provisions a missing binding. Unsupported or
+failed cleanup leaves enablement unchanged. Engine persists disablement after successful logout, then reconciles
 runtime shutdown. Runtime shutdown alone continues to preserve credentials.
 
-For local integration testing, `mix.exs` resolves `jido_chat_whatsapp` from
-`../jido_chat_whatsapp`. That sibling checkout must provide `Adapter.logout/1`.
+`mix.exs` resolves `jido_chat_whatsapp` from its Git branch; `mix.lock` pins the
+tested revision providing listener logout and offline saved-binding cleanup.
+
+Saved-binding runtime startup and Engine disable/archive share a connector lock
+across connected BEAM nodes. Startup rechecks the enabled, nonarchived Engine
+snapshot before preparing credentials. Logout stops existing runtime writers and
+performs a final idempotent clear before Engine persists disablement. The lock
+remains held through persistence and runtime reconciliation, rejecting stale
+startup snapshots afterward. Ordinary runtime stop retains credentials. Internal
+RPC callbacks share a private lock requester; no DB row transaction spans RPC or
+storage callbacks. This coordination does not provide partition quorum guarantees.
 Adapters without this optional callback skip logout preparation during Delete;
 an explicit logout request for an unsupported adapter fails closed.
 

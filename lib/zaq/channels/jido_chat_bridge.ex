@@ -37,6 +37,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Zaq.Channels.{
     Bridge,
     CommunicationBridge,
+    ConnectorRuntime,
     RetrievalChannel,
     Supervisor,
     WebhookUrl
@@ -99,13 +100,59 @@ defmodule Zaq.Channels.JidoChatBridge do
     supervisor = Zaq.Config.get(:zaq, :chat_bridge_supervisor_module, Supervisor, opts)
 
     case supervisor.lookup_runtime(runtime_bridge_id(config)) do
-      {:ok, %{listener_pids: [listener]}} -> Adapter.logout(adapter, listener)
-      {:error, _} = error -> error
-      _ -> {:error, :unsupported}
+      {:ok, %{listener_pids: [listener]}} ->
+        with :ok <- Adapter.logout(adapter, listener) do
+          finish_saved_logout(config, adapter, supervisor)
+        end
+
+      {:error, :not_running} ->
+        cleanup_saved_connection(config, adapter)
+
+      {:error, _} = error ->
+        error
+
+      _ ->
+        {:error, :unsupported}
     end
   catch
     :exit, _ -> {:error, :logout_unavailable}
   end
+
+  defp finish_saved_logout(config, adapter, supervisor) do
+    if Map.has_key?(config, :settings) and function_exported?(adapter, :cleanup_connection, 2) do
+      # Quiesce all old writers before a final clear. Startup is excluded by the
+      # Engine lifecycle lock until disable persistence and runtime sync finish.
+      case supervisor.stop_bridge_runtime(config, runtime_bridge_id(config)) do
+        result when result in [:ok, {:error, :not_running}] ->
+          cleanup_saved_connection(config, adapter)
+
+        {:error, _} = error ->
+          error
+      end
+    else
+      :ok
+    end
+  end
+
+  defp cleanup_saved_connection(%{settings: settings} = config, adapter) when is_map(settings) do
+    with true <- function_exported?(adapter, :cleanup_connection, 2),
+         {:ok, binding} <- profile_binding(config, false) do
+      case adapter.cleanup_connection(binding, sink_mfa: storage_sink(config)) do
+        :ok -> :ok
+        {:error, reason} when is_atom(reason) -> {:error, reason}
+        _ -> {:error, :cleanup_failed}
+      end
+    else
+      false -> {:error, :unsupported}
+      {:error, _} = error -> error
+    end
+  rescue
+    _ -> {:error, :cleanup_failed}
+  catch
+    _, _ -> {:error, :cleanup_failed}
+  end
+
+  defp cleanup_saved_connection(_config, _adapter), do: {:error, :not_running}
 
   @doc "Returns the configured adapter's optional authentication capability."
   @spec authentication_capability(atom() | String.t(), keyword()) ::
@@ -1442,6 +1489,12 @@ defmodule Zaq.Channels.JidoChatBridge do
   defp thread_bridge_id(channel_id, thread_id), do: "#{channel_id}_#{thread_id}"
 
   defp ensure_runtime_started(config, bridge_id, runtime_opts) do
+    ConnectorRuntime.with_start(config, fn current ->
+      do_ensure_runtime_started(current, bridge_id, runtime_opts)
+    end)
+  end
+
+  defp do_ensure_runtime_started(config, bridge_id, runtime_opts) do
     case supervisor_module().lookup_state_pid(bridge_id) do
       {:ok, state_pid} ->
         case state_module().refresh_config(state_pid, config) do
@@ -1643,13 +1696,20 @@ defmodule Zaq.Channels.JidoChatBridge do
     end
   end
 
-  defp profile_binding(config) do
+  defp profile_binding(config, provision? \\ true) do
     settings = Map.get(config, :settings) || %{}
     credential_id = settings["credential_document_id"] || settings[:credential_document_id]
 
-    if is_integer(credential_id),
-      do: {:ok, %{channel_config_id: config.id, credential_id: credential_id}},
-      else: dispatch_storage(config, %{op: :bind, channel_config_id: config.id})
+    cond do
+      is_integer(credential_id) ->
+        {:ok, %{channel_config_id: config.id, credential_id: credential_id}}
+
+      provision? ->
+        dispatch_storage(config, %{op: :bind, channel_config_id: config.id})
+
+      true ->
+        {:error, :invalid_binding}
+    end
   end
 
   defp ingress_mode_for(provider) do

@@ -204,13 +204,17 @@ no request-time database or Engine call. Public login uses one confidential Engi
 resolve/issue/notify request after that precheck;
 see [People authentication](services/people-access.md#rate-topology-and-retry-behavior).
 
-`Zaq.Channels.Supervisor` is a static `:rest_for_one` parent: it starts
-`Zaq.Channels.PeopleAuthRateLimiter`, the linked-device RAM session store, then the
-dynamic `Zaq.Channels.BridgeSupervisor`. Adapter packages own shared transport
-infrastructure; `jido_chat_whatsapp` starts its runtime as an OTP application.
-Failure restarts later children. The parent retains the Channels role-discovery
-name and delegates the existing runtime API; the dynamic child reloads enabled
-bridge configs on every startup.
+`Zaq.Channels.Supervisor` is a static `:one_for_one` parent with two children:
+`Zaq.Channels.PeopleAuthRateLimiter` and the dynamic `Zaq.Channels.BridgeSupervisor`.
+Each child restarts independently. During provider bootstrap, `JidoChatBridge`
+supplies the adapter-owned storage runtime as a dynamic child of `BridgeSupervisor`,
+before connector startup. WhatsApp's shared transport infrastructure is owned by
+the adapter package's OTP application. Storage-runtime recovery preserves unrelated
+listeners and limiter state, subject to the bridge supervisor's restart budget.
+The parent retains the Channels role-discovery name and delegates the runtime API;
+the dynamic child recreates provider infrastructure and reloads enabled bridge
+configs on startup. See [Channels supervision](services/channels.md#supervisor)
+for storage recovery and restart isolation details.
 
 Channels owns node-local Mnesia messaging sessions; Engine retains encrypted pairing
 credentials. Mnesia uses a RAM-only schema and `ram_copies`, so sessions survive

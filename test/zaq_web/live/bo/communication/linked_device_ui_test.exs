@@ -4,6 +4,25 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUITest do
   alias ZaqWeb.Components.DesignSystem.LinkedDevicePairing
   alias ZaqWeb.Live.BO.Communication.LinkedDeviceUI
 
+  test "poll ticks are consumed once without rotating the modal result generation" do
+    socket = Phoenix.Component.assign(socket(), :current_user, nil)
+    generation = socket.assigns.linked_device_modal.generation
+    watching = LinkedDeviceUI.result(socket, generation, {:ok, {:ok, %{phase: :pending}}})
+    timer = watching.private.linked_device_timer
+
+    assert timer.interval_ms == 2_000
+    assert LinkedDeviceUI.poll(watching, generation, make_ref()) == watching
+    consumed = LinkedDeviceUI.poll(watching, generation, timer.generation)
+    assert consumed.assigns.linked_device_timer == nil
+    assert consumed.assigns.linked_device_modal.generation == generation
+    assert LinkedDeviceUI.poll(consumed, generation, timer.generation) == consumed
+
+    successor = LinkedDeviceUI.result(consumed, generation, {:ok, {:ok, %{phase: :pending}}})
+    refute successor.private.linked_device_timer.generation == timer.generation
+    assert LinkedDeviceUI.poll(successor, generation, timer.generation) == successor
+    LinkedDeviceUI.close(successor)
+  end
+
   test "stale result and timer cannot update another selected connector" do
     socket = socket()
     assert LinkedDeviceUI.result(socket, make_ref(), {:ok, {:ok, %{qr: "wrong"}}}) == socket

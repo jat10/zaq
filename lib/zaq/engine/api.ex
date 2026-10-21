@@ -153,6 +153,20 @@ defmodule Zaq.Engine.Api do
     %{event | response: Telemetry.load_llm_performance(filters)}
   end
 
+  def handle_event(%Event{} = event, :enable_channel_connector, _context) do
+    response =
+      case Jido.Exec.run(Zaq.Engine.Actions.EnableChannelConnector, %{request: event.request}, %{
+             actor: event.actor,
+             confidential: event.opts[:confidential] == true,
+             opts: event.opts
+           }) do
+        {:ok, %{result: result}} -> result
+        {:error, _} = error -> error
+      end
+
+    %{event | response: response}
+  end
+
   def handle_event(%Event{} = event, :disable_channel_connector, _context) do
     response =
       case Jido.Exec.run(Zaq.Engine.Actions.DisableChannelConnector, %{request: event.request}, %{
@@ -163,6 +177,15 @@ defmodule Zaq.Engine.Api do
         {:ok, %{result: result}} -> result
         {:error, _} = error -> error
       end
+
+    %{event | response: response}
+  end
+
+  def handle_event(%Event{} = event, :connector_runtime_context, _context) do
+    response =
+      if event.opts[:confidential] == true and event.opts[:connector_runtime] == true,
+        do: ConnectorLifecycle.runtime_context(event.request),
+        else: {:error, :unauthorized}
 
     %{event | response: response}
   end

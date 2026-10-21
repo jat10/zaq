@@ -618,5 +618,12 @@ pairing remains saved. No Mnesia disk volume is required or used. Namespace rout
 legacy-record cleanup and recovery behavior are owned by the
 [linked-device storage contract](channels.md#linked-device-integration).
 
+Explicit disable also clears an existing saved binding when no listener survived
+activation. Cleanup uses the adapter's configured storage contract and never
+provisions a replacement binding. The connector lifecycle guard excludes startup
+through final credential clearing, disable persistence and shutdown; ordinary
+runtime stop retains credentials. See the linked-device contract above for
+partial failures and relinking behavior.
+
 Pairing provisions its credential document through the existing Connect tables.
 There are no dedicated linked-device tables or data-conversion migrations.
