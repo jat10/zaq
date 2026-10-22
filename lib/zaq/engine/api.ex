@@ -181,6 +181,15 @@ defmodule Zaq.Engine.Api do
     %{event | response: response}
   end
 
+  def handle_event(%Event{} = event, :connector_lifecycle, _context) do
+    response =
+      if event.opts[:confidential] == true and event.opts[:connector_lifecycle] == true,
+        do: ConnectorLifecycle.execute(event.request, event.actor, event.opts),
+        else: {:error, :unauthorized}
+
+    %{event | response: response}
+  end
+
   def handle_event(%Event{} = event, :connector_runtime_context, _context) do
     response =
       if event.opts[:confidential] == true and event.opts[:connector_runtime] == true,

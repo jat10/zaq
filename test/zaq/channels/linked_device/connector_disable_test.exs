@@ -1,4 +1,5 @@
 defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
+  import Zaq.TestSupport.NodeRouterCoordination, only: [coordinate: 2]
   use Zaq.DataCase, async: false
 
   import Zaq.AccountsFixtures
@@ -9,6 +10,20 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.{ChannelConfig, ConnectorLifecycle, LinkedDeviceConfirmation}
   alias Zaq.{Event, NodeRouter}
+
+  defmodule StartupProbe do
+    def build_runtime_specs(_config, opts) do
+      send(Keyword.fetch!(opts, :observer), :startup_entered)
+      :started
+    end
+  end
+
+  defmodule BlockingStartupProbe do
+    def build_runtime_specs(config, opts) do
+      send(Keyword.fetch!(opts, :observer), {:startup_prepared, self(), config})
+      receive do: (:finish -> {:error, :probe_complete})
+    end
+  end
 
   defmodule OfflineTransport do
     def connect(config, opts) do
@@ -230,7 +245,7 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
     assert {:ok, descriptor} = command(selected, :context, actor)
 
     enable =
-      NodeRouter.with_coordination({:connector_lifecycle, selected.id}, fn ->
+      coordinate({:connector_lifecycle, selected.id}, fn ->
         pending = Task.async(fn -> ConnectorLifecycle.enable(descriptor, actor) end)
         assert Task.yield(pending, 30) == nil
         staff = staff_fixture(%{must_change_password: false})
@@ -247,6 +262,38 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
 
     assert {:error, :not_running} =
              Zaq.Channels.Supervisor.lookup_runtime(JidoChatBridge.runtime_bridge_id(selected))
+  end
+
+  test "startup retains coordination after eligibility lookup and prepares the fresh configuration",
+       %{
+         actor: actor
+       } do
+    selected = connector(actor, "+15550013")
+    selected |> ChannelConfig.changeset(%{name: "fresh runtime"}) |> Repo.update!()
+    observer = self()
+
+    startup =
+      Task.async(fn ->
+        ConnectorRuntime.start(selected, {:start, BlockingStartupProbe, [observer: observer]})
+      end)
+
+    assert_receive {:startup_prepared, executor, current}
+    assert current.name == "fresh runtime"
+    assert current.id == selected.id
+
+    contender =
+      Task.async(fn -> coordinate({:connector_lifecycle, selected.id}, fn -> :entered end) end)
+
+    try do
+      assert Task.yield(contender, 50) == nil
+      send(executor, :finish)
+      assert Task.await(startup) == {:error, :probe_complete}
+      assert Task.await(contender) == :entered
+    after
+      send(executor, :finish)
+      Task.shutdown(startup, :brutal_kill)
+      Task.shutdown(contender, :brutal_kill)
+    end
   end
 
   test "routed cleanup keeps startup excluded when the Engine lifecycle caller dies", %{
@@ -275,10 +322,7 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
       Task.async(fn ->
         send(observer, :startup_requested)
 
-        ConnectorRuntime.with_start(selected, fn _ ->
-          send(observer, :startup_entered)
-          :started
-        end)
+        ConnectorRuntime.start(selected, {:start, StartupProbe, [observer: observer]})
       end)
 
     try do

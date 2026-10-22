@@ -1,6 +1,6 @@
 defmodule Zaq.Channels.ConnectorLifecycleLockTest do
+  import Zaq.TestSupport.NodeRouterCoordination, only: [coordinate: 2]
   use ExUnit.Case, async: true
-  alias Zaq.NodeRouter
   alias Zaq.NodeRouter.Coordination
 
   test "a shared RPC requester cannot release the root operation's lock" do
@@ -9,13 +9,13 @@ defmodule Zaq.Channels.ConnectorLifecycleLockTest do
 
     root =
       Task.async(fn ->
-        NodeRouter.with_coordination({:connector_lifecycle, id}, fn ->
+        coordinate({:connector_lifecycle, id}, fn ->
           token = Coordination.context()
 
           callback =
             Task.async(fn ->
               Coordination.run(token, fn ->
-                NodeRouter.with_coordination({:connector_lifecycle, id}, fn ->
+                coordinate({:connector_lifecycle, id}, fn ->
                   send(observer, :callback_completed)
                 end)
               end)
@@ -35,7 +35,7 @@ defmodule Zaq.Channels.ConnectorLifecycleLockTest do
 
     blocked =
       Task.async(fn ->
-        NodeRouter.with_coordination({:connector_lifecycle, id}, fn -> :acquired end)
+        coordinate({:connector_lifecycle, id}, fn -> :acquired end)
       end)
 
     assert Task.yield(blocked, 30) == nil
@@ -48,15 +48,15 @@ defmodule Zaq.Channels.ConnectorLifecycleLockTest do
     id = System.unique_integer([:positive])
 
     assert_raise RuntimeError, fn ->
-      NodeRouter.with_coordination({:connector_lifecycle, id}, fn ->
-        NodeRouter.with_coordination({:connector_lifecycle, id}, fn -> raise "abort" end)
+      coordinate({:connector_lifecycle, id}, fn ->
+        coordinate({:connector_lifecycle, id}, fn -> raise "abort" end)
       end)
     end
 
     assert Coordination.context() == %{}
 
     assert :released =
-             NodeRouter.with_coordination({:connector_lifecycle, id}, fn -> :released end)
+             coordinate({:connector_lifecycle, id}, fn -> :released end)
   end
 
   test "caller death releases a held connector lock" do
@@ -65,7 +65,7 @@ defmodule Zaq.Channels.ConnectorLifecycleLockTest do
 
     holder =
       spawn(fn ->
-        NodeRouter.with_coordination({:connector_lifecycle, id}, fn ->
+        coordinate({:connector_lifecycle, id}, fn ->
           send(observer, :held)
 
           receive do
@@ -80,6 +80,6 @@ defmodule Zaq.Channels.ConnectorLifecycleLockTest do
     assert_receive {:DOWN, ^monitor, :process, ^holder, :killed}
 
     assert :released =
-             NodeRouter.with_coordination({:connector_lifecycle, id}, fn -> :released end)
+             coordinate({:connector_lifecycle, id}, fn -> :released end)
   end
 end

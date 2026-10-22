@@ -11,6 +11,27 @@ defmodule Zaq.Channels.ConnectorRuntimeTest do
     end
   end
 
+  test "saved-binding startup requires confidentiality and coordination before execution" do
+    config = %{
+      id: 987_654,
+      provider: "whatsapp",
+      kind: "communication",
+      settings: %{"credential_document_id" => 123}
+    }
+
+    event = Event.new(%{config: config, operation: {:ensure, "fixture", []}}, :channels)
+
+    assert %{response: {:error, :confidential_event_required}} =
+             Api.handle_event(event, :connector_start_runtime, nil)
+
+    assert %{response: {:error, :coordination_required}} =
+             Api.handle_event(
+               %{event | opts: [confidential: true]},
+               :connector_start_runtime,
+               nil
+             )
+  end
+
   test "archive runtime leaf consumes supplied configuration without Repo or current BO lookup" do
     config = %{
       id: 987_654,

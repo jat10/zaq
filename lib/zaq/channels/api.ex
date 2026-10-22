@@ -376,6 +376,15 @@ defmodule Zaq.Channels.Api do
     %{event | response: runtime_module.sync_provider_runtime(provider)}
   end
 
+  def handle_event(%Event{} = event, :connector_start_runtime, _context) do
+    response =
+      if Keyword.get(event.opts, :confidential) == true,
+        do: ConnectorRuntime.execute_start(event.request),
+        else: {:error, :confidential_event_required}
+
+    %{event | response: response}
+  end
+
   def handle_event(
         %Event{request: %{config: config}} = event,
         :connector_prepare_disable,

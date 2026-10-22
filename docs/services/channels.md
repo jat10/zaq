@@ -107,8 +107,11 @@ performs a final idempotent clear before Engine persists disablement. The lock
 remains held through persistence and runtime reconciliation, rejecting stale
 startup snapshots afterward. Ordinary runtime stop retains credentials. NodeRouter
 propagates the scope and acquires an independent hold in each executing receiver,
-so cleanup stays protected after the originating Engine process dies. Direct
-startup uses the same scoped primitive. No DB row transaction spans RPC or storage
+so cleanup stays protected after the originating Engine process dies.
+`ConnectorRuntime.start/2` dispatches a confidential `:connector_start_runtime`
+command for start, restart or ensure-running. The complete handler rechecks Engine
+eligibility and prepares the runtime under the same scope, preserving bridge IDs
+and runtime options. No DB row transaction spans RPC or storage
 callbacks. See [router coordination](../architecture.md#opt-in-resource-coordination)
 for propagation and connected-node limits.
 Adapters without this optional callback skip logout preparation during Delete;
