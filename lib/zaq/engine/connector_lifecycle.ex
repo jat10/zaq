@@ -48,26 +48,10 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   @doc "Archives one exactly scoped connector and returns an ID-only staged result."
   def archive(request, actor, opts \\ [])
 
-  def archive(request, actor, opts) when is_map(request) and is_list(opts) do
-    case cast_id(request[:channel_config_id]) do
-      {:ok, id} ->
-        dispatch_saved_binding(:archive, id, request, actor, opts)
-
-      _ ->
-        {:error, :connector_not_found}
-    end
-  end
+  def archive(request, actor, opts) when is_map(request) and is_list(opts),
+    do: do_archive(request, actor, opts)
 
   def archive(_request, _actor, _opts), do: {:error, :invalid_request}
-
-  defp dispatch_saved_binding(operation, id, request, actor, opts) do
-    with %ChannelConfig{} = config <- ChannelConfig.get(id),
-         :ok <- validate_scope(config, request[:provider], request[:kind]) do
-      dispatch_command(operation, request, actor, opts)
-    else
-      _ -> {:error, :connector_not_found}
-    end
-  end
 
   defp dispatch_command(operation, request, actor, opts) do
     event =
@@ -93,7 +77,7 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   end
 
   def execute(%{operation: operation, request: %{channel_config_id: id} = request}, actor, opts)
-      when operation in [:archive, :enable] do
+      when operation == :enable do
     with {:ok, id} <- cast_id(id),
          %ChannelConfig{} <- ChannelConfig.get(id) do
       execute_command(operation, Map.put(request, :channel_config_id, id), actor, opts)
@@ -104,8 +88,6 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   end
 
   def execute(_, _, _), do: {:error, :invalid_request}
-
-  defp execute_command(:archive, request, actor, opts), do: do_archive(request, actor, opts)
 
   defp execute_command(
          operation,

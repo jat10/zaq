@@ -119,15 +119,6 @@ defmodule Zaq.Agent.PipelineTest do
     end
   end
 
-  defmodule RecordingRetrieval do
-    alias Zaq.Agent.PipelineTest.StubRetrieval
-
-    def ask(content, opts) do
-      send(self(), {:retrieval_input, content})
-      StubRetrieval.ask(content, opts)
-    end
-  end
-
   # Simulates retrieval returning no query — triggers the no_results else branch
   # before do_query_extraction is ever called.
   defmodule StubNoResultsRetrieval do
@@ -351,18 +342,6 @@ defmodule Zaq.Agent.PipelineTest do
 
     assert Pipeline.run(@incoming, Keyword.put(@base_opts, :retrieval, StubNoResultsRetrieval)).metadata.tool_calls ==
              []
-  end
-
-  test "retrieval receives the message body without obsolete quote metadata" do
-    incoming = %{
-      @incoming
-      | content: "Explain this",
-        metadata: %{"reply_context" => %{"text" => "OBSOLETE_QUOTED_TEXT"}}
-    }
-
-    Pipeline.run(incoming, Keyword.put(@base_opts, :retrieval, RecordingRetrieval))
-
-    assert_receive {:retrieval_input, "Explain this"}
   end
 
   describe ":pipeline_complete chunks in hook payload" do

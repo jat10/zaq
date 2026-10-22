@@ -435,6 +435,44 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       assert Repo.get!(ChannelConfig, first.id).enabled
     end
 
+    test "pairing completion refreshes ingress after its initial retry window", %{conn: conn} do
+      config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+      view |> element("#toggle-config-#{config.id}") |> render_click()
+      render_async(view, 1_000)
+      assert has_element?(view, "#ingress-status-dot-#{config.id} .status-warning")
+
+      # Model the exhausted ingress retry budget without waiting for wall-clock time.
+      :erlang.trace(view.pid, true, [:receive])
+
+      :sys.replace_state(view.pid, fn state ->
+        %{
+          state
+          | socket: Phoenix.Component.assign(state.socket, :ingress_status_refresh_attempts, 25)
+        }
+      end)
+
+      view_pid = view.pid
+      assert_receive {:trace, ^view_pid, :receive, :refresh_pending_ingress_statuses}, 1_000
+      render_async(view, 1_000)
+      :erlang.trace(view.pid, false, [:receive])
+
+      BridgeFake.put(
+        :channel_ingress_status,
+        {:ok, %{phase: :connected, status: :ok, summary: "Profile connected"}}
+      )
+
+      timer = :sys.get_state(view.pid).socket.private.linked_device_timer
+      send(view.pid, {:linked_device_poll, timer.identity, timer.generation})
+      render_async(view, 1_000)
+      render_async(view, 1_000)
+
+      assert has_element?(view, "#linked-device-pairing", "Profile connected")
+      assert has_element?(view, "#ingress-status-dot-#{config.id} .status-success")
+      view |> element("#linked-device-pairing button", "Close") |> render_click()
+      assert has_element?(view, "#ingress-status-dot-#{config.id} .status-success")
+    end
+
     test "a valid saved WhatsApp session displays connected status without a QR", %{conn: conn} do
       BridgeFake.put(
         :channel_ingress_status,

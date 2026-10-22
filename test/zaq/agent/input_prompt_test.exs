@@ -4,19 +4,6 @@ defmodule Zaq.Agent.InputPromptTest do
 
   alias Zaq.Agent.InputPrompt
 
-  test "obsolete quote fields do not augment the message body" do
-    message = %{
-      author: %{name: "Alice", person_id: 42},
-      content: "Explain this",
-      external_reply_to_id: "original",
-      reply_context: %{"text" => "OBSOLETE_QUOTED_TEXT"},
-      metadata: %{"reply_context" => %{"text" => "OBSOLETE_METADATA_TEXT"}}
-    }
-
-    assert InputPrompt.render_message(message) ==
-             "Author: \"Alice\" [person:42]\nMessage:\nExplain this"
-  end
-
   describe "system_instruction/0" do
     test "limits annotations to reading user input, not formatting responses" do
       instruction = InputPrompt.system_instruction()

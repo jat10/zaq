@@ -24,7 +24,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   alias ZaqWeb.Live.BO.AI.BOActor
   alias ZaqWeb.Live.BO.Communication.AgentRoutingOptions
   alias ZaqWeb.Live.BO.Communication.ChannelConfigPersistence
-  alias ZaqWeb.Live.BO.Communication.ChannelDisablePolicy
   alias ZaqWeb.Live.BO.Communication.ChannelEnablePolicy
   alias ZaqWeb.Live.BO.Communication.IngressStatusUI
   alias ZaqWeb.Live.BO.Communication.LinkedDeviceUI
@@ -133,8 +132,22 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   end
 
   @impl true
-  def handle_async({:linked_device, generation}, result, socket),
-    do: {:noreply, LinkedDeviceUI.result(socket, generation, result)}
+  def handle_async({:linked_device, generation}, result, socket) do
+    socket = LinkedDeviceUI.result(socket, generation, result)
+
+    case socket.assigns.linked_device_modal do
+      %{generation: ^generation, config_id: id, status: %{phase: :connected}}
+      when is_integer(id) ->
+        # Pairing can finish after the initial ingress retry budget is exhausted.
+        {:noreply,
+         socket
+         |> assign(:ingress_status_refresh_attempts, 0)
+         |> retry_ingress_status_refresh()}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
 
   def handle_async(:ingress_statuses, result, socket) do
     {:noreply,
@@ -1148,8 +1161,12 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
 
   defp disable_policy(socket, config) do
     case request_capability_snapshot(config.provider, %{config_id: config.id}) do
-      {:ok, snapshot} ->
-        ChannelDisablePolicy.before_disable(snapshot, config, socket.assigns.provider_label)
+      {:ok, %{resolved: %{logout_on_disable: true}}} ->
+        {:confirm,
+         "Disabling #{socket.assigns.provider_label} will log out this profile. You will need to link it again to reconnect."}
+
+      {:ok, _snapshot} ->
+        :proceed
 
       {:error, :unsupported} ->
         :proceed
