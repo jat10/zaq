@@ -110,7 +110,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     config: config
   } do
     event =
-      Event.new(%{operation: :enable, request: %{channel_config_id: config.id}}, :engine,
+      Event.new(%{operation: :context, request: %{channel_config_id: config.id}}, :engine,
         opts: [confidential: true]
       )
 
@@ -121,7 +121,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     assert Repo.get!(ChannelConfig, config.id).enabled
   end
 
-  test "archive cannot execute through the internal enable lifecycle route", %{config: config} do
+  test "archive cannot execute through the internal context route", %{config: config} do
     request = %{channel_config_id: config.id, provider: config.provider, kind: config.kind}
 
     event =
@@ -136,6 +136,19 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     current = Repo.get!(ChannelConfig, config.id)
     assert current.enabled
     assert is_nil(current.archived_at)
+  end
+
+  test "removed enable command cannot execute through the internal lifecycle route", %{
+    config: config
+  } do
+    request = %{channel_config_id: config.id, provider: config.provider, kind: config.kind}
+
+    assert {:error, :invalid_request} =
+             ConnectorLifecycle.execute(
+               %{operation: :enable, request: request},
+               Process.get(:actor),
+               []
+             )
   end
 
   test "data-source archive orders watch stop, Channels archive and reconciliation" do

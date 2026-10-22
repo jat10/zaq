@@ -8,18 +8,28 @@ defmodule ZaqWeb.Components.DesignSystem.LinkedDevicePairing do
   attr :name, :string, required: true
   attr :provider, :string, required: true
   attr :status, :map, required: true
+  attr :cancel_connection, :boolean, default: false
   attr :close_event, :string, default: "close_linked_device"
   attr :retry_event, :string, default: "retry_linked_device"
   attr :history_disabled, :boolean, default: false
 
   def modal(assigns) do
-    assigns = assign(assigns, :matrix, qr_matrix(assigns.status))
+    cancel? = assigns.cancel_connection and assigns.status[:phase] != :connected
+
+    assigns =
+      assigns
+      |> assign(:matrix, qr_matrix(assigns.status))
+      |> assign(
+        :dismiss_event,
+        if(cancel?, do: "cancel_linked_device_connection", else: assigns.close_event)
+      )
+      |> assign(:dismiss_label, if(cancel?, do: "Cancel connection", else: "Close"))
 
     ~H"""
     <BOModal.form_dialog
       id={@id}
       title={"Connect #{@provider}"}
-      cancel_event={@close_event}
+      cancel_event={@dismiss_event}
       max_width_class="zaq-modal--width-md"
     >
       <div class="zaq-layout-stack">
@@ -39,7 +49,7 @@ defmodule ZaqWeb.Components.DesignSystem.LinkedDevicePairing do
         </p>
       </div>
       <:actions>
-        <Button.button variant={:secondary} phx-click={@close_event}>Close</Button.button>
+        <Button.button variant={:secondary} phx-click={@dismiss_event}>{@dismiss_label}</Button.button>
         <Button.button
           :if={@status[:phase] == :confirm}
           phx-click="confirm_linked_device"

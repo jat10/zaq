@@ -83,15 +83,7 @@ defmodule Zaq.Channels.ConnectorRuntime do
 
   def teardown_ingress(_config, _opts), do: {:error, :invalid_request}
 
-  @doc "Reconciles the supplied exact connector runtime without repeating provider teardown."
-  def sync_runtime(
-        %{id: id, provider: provider, kind: kind} = before_config,
-        %{id: id, provider: provider, kind: kind, enabled: true} = after_config,
-        opts
-      ) do
-    sync_enabled_runtime(before_config, after_config, opts)
-  end
-
+  @doc "Stops the supplied exact connector runtime without repeating provider teardown."
   def sync_runtime(
         %{id: id, provider: provider, kind: kind},
         %{id: id, provider: provider, kind: kind, enabled: false} = after_config,
@@ -106,17 +98,6 @@ defmodule Zaq.Channels.ConnectorRuntime do
   end
 
   def sync_runtime(_before, _after, _opts), do: {:error, :connector_mismatch}
-
-  defp sync_enabled_runtime(%{provider: provider, kind: kind} = before_config, after_config, opts) do
-    with {:ok, bridge} <- runtime_bridge(provider, kind, opts),
-         true <-
-           (Code.ensure_loaded?(bridge) and function_exported?(bridge, :sync_runtime, 2)) ||
-             {:error, :unsupported} do
-      # Repeated explicit enable retries missing startup without restarting an
-      # already-running saved listener. Bridge startup owns that idempotence.
-      bridge.sync_runtime(Map.put(before_config, :enabled, false), after_config)
-    end
-  end
 
   defp runtime_bridge(provider, kind, opts) do
     key =

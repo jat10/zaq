@@ -1206,11 +1206,11 @@
         />
       </div>
 
-      <p :if={@linked_device} class="zaq-text-body-sm">
+      <p :if={@authentication_flow == :linked_device} class="zaq-text-body-sm">
         Use the status indicator to check this account’s connection or reconnect.
         <span :if={@provider == "whatsapp"}>History sync is disabled.</span>
       </p>
-      <div :if={@kind != :data_source and not @linked_device} class="mb-4">
+      <div :if={@kind != :data_source and @authentication_flow != :linked_device} class="mb-4">
         <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
           Instance URL
         </label>
@@ -1223,7 +1223,7 @@
         />
       </div>
 
-      <div :if={@kind != :data_source and not @linked_device} class="mb-6">
+      <div :if={@kind != :data_source and @authentication_flow != :linked_device} class="mb-6">
         <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
           Bot Token
         </label>
@@ -1309,7 +1309,7 @@
         </p>
       </div>
 
-      <div :if={@kind != :data_source and not @linked_device} class="mb-4">
+      <div :if={@kind != :data_source and @authentication_flow != :linked_device} class="mb-4">
         <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
           Bot Username
         </label>
@@ -1326,7 +1326,7 @@
         </p>
       </div>
 
-      <div :if={@kind != :data_source and not @linked_device} class="mb-6">
+      <div :if={@kind != :data_source and @authentication_flow != :linked_device} class="mb-6">
         <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
           Bot User ID
         </label>
@@ -1345,7 +1345,7 @@
         </p>
       </div>
 
-      <div class="flex items-center gap-3 mb-6">
+      <div :if={@modal == :new} class="flex items-center gap-3 mb-6">
         <input type="hidden" name="form[enabled]" value="false" />
         <input
           type="checkbox"
@@ -1796,6 +1796,7 @@
     name={@linked_device_modal.name}
     provider={@provider_label}
     status={@linked_device_modal.status}
+    cancel_connection={Map.get(@linked_device_modal, :cancel_connection, false)}
     history_disabled={@provider == "whatsapp"}
   />
 </ZaqWeb.Components.BOLayout.bo_layout>

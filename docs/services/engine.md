@@ -109,19 +109,20 @@ A successful provider logout cannot be undone if subsequent persistence fails.
 
 Saved-binding startup resolves a fresh enabled, nonarchived snapshot through
 confidential `:connector_runtime_context` with the explicit runtime capability.
-Lifecycle entry points dispatch through confidential `:connector_lifecycle` with
-the explicit trusted capability. Database row locks remain confined to persistence
-transactions; NodeRouter does not coordinate these operations.
+Disable confirmation reads scoped revision context through confidential
+`:connector_lifecycle` with the explicit trusted capability. Archive executes
+its existing Engine entry point directly. Database row locks remain confined to
+persistence transactions; NodeRouter does not coordinate these operations.
 
-Explicit connector enablement uses confidential `:enable_channel_connector` and
-`Actions.EnableChannelConnector`. Context preparation and execution require a
-current super-admin; the lifecycle rechecks the actor inside its command.
-The command validates exact provider/kind and revision, rejects archived records,
-persists enablement in Engine and reconciles Channels outside the transaction.
-It returns only the connector ID, enabled/already-enabled status and synced/pending
-runtime stage. Repeating enable retries startup on the same connector without
-toggling it off. Consumers opting into this command use its authorization contract; other connector
-toggle paths retain their existing permission policy.
+BO enablement uses the shared connector toggle and Channels `:sync_channel_runtime`
+before/after request. The toggle checks the current BO user against the enable
+policy, validates provider/kind and archive state, and rejects a changed record
+before persistence. WhatsApp enablement requires a current super-admin. It saves
+`enabled: true` before runtime sync so saved-credential access is available during
+startup. Failed startup leaves the connector enabled with runtime-failure feedback;
+the pairing UI opens only after successful sync. Repeated runtime startup reuses
+the selected saved profile. The UI retains toggle semantics: clicking an enabled
+profile begins Disable, rather than repeating an explicit enable command.
 
 ### Connector credential documents
 
@@ -176,6 +177,28 @@ Linked-device confirmation accepts the adapter's normalized `account` with
 persists these fields without interpreting provider identity formats. The connector
 name uses `display_name` when available and otherwise the account ID. Provider-specific
 `identity`/`records` snapshots are rejected.
+
+Paired retrieval connectors use the trusted `adapter_authentication: true`
+option on `ChannelConfig` creation, changesets and provider upsert to supply blank
+URL/token placeholders. Provider names and submitted attributes do not grant this
+exemption. Confirmation supplies the option directly; BO edits resolve it from the
+saved connector's Channels authentication-flow capability, retaining its provider
+and kind. Engine validation does not query adapter implementations. Ordinary
+retrieval connectors continue to require URL/token fields.
+
+On saved connectors, `ChannelConfig.changeset/3` preserves Engine-owned
+`credential_document_id`, `owner_id`, `pairing_attempt` and `account` when settings
+are replaced or cleared. Ordinary edits may supply identical values but cannot
+introduce or change these reserved fields. Confirmation initializes identity;
+credential provisioning writes the binding through its existing trusted operation.
+User-owned settings retain replacement semantics. Regression tests cover metadata
+omission and tampering, and reads through the original binding after BO settings edits.
+
+Communication Edit forms reject enabled-state changes at validation and persistence.
+Operators use the existing Enable/Disable controls, which retain authorization,
+confirmation and cleanup ordering. New-config creation and data-source forms retain
+their existing behavior. Authentication fields follow the saved connector's capability,
+independently of the operator's permission to pair a device.
 
 ### Conversations
 

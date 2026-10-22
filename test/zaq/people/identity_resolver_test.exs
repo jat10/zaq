@@ -18,14 +18,7 @@ defmodule Zaq.People.IdentityResolverTest do
     for sender <- ["15550001234@s.whatsapp.net", "1234567890@lid"] do
       resolved =
         for _ <- 1..2 do
-          config =
-            %ChannelConfig{}
-            |> ChannelConfig.changeset(%{
-              name: Ecto.UUID.generate(),
-              provider: "whatsapp",
-              kind: "retrieval"
-            })
-            |> Repo.insert!()
+          config = Zaq.WhatsAppFixtures.connector()
 
           assert {:ok, chat} =
                    Adapter.transform_incoming(%{
