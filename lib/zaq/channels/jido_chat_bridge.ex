@@ -74,7 +74,6 @@ defmodule Zaq.Channels.JidoChatBridge do
         end
 
       {:error, :unsupported} ->
-        Logger.info("Connector disable config_id=#{config.id}: adapter has no logout callback")
         :ok
 
       {:error, _} = error ->
@@ -95,21 +94,9 @@ defmodule Zaq.Channels.JidoChatBridge do
 
     case supervisor.lookup_runtime(runtime_bridge_id(config)) do
       {:ok, %{listener_pids: [listener]}} ->
-        Logger.info("Connector disable config_id=#{config.id}: calling live listener logout")
-        result = Adapter.logout(adapter, listener)
-        outcome = if result == :ok, do: "ok", else: "error"
-
-        Logger.info(
-          "Connector disable config_id=#{config.id}: listener logout returned #{outcome}"
-        )
-
-        result
+        Adapter.logout(adapter, listener)
 
       {:error, :not_running} ->
-        Logger.info(
-          "Connector disable config_id=#{config.id}: no listener; using saved-binding cleanup"
-        )
-
         cleanup_saved_connection(config, adapter)
 
       {:error, _} = error ->

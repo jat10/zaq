@@ -121,6 +121,23 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     assert Repo.get!(ChannelConfig, config.id).enabled
   end
 
+  test "archive cannot execute through the internal enable lifecycle route", %{config: config} do
+    request = %{channel_config_id: config.id, provider: config.provider, kind: config.kind}
+
+    event =
+      Event.new(%{operation: :archive, request: request}, :engine,
+        actor: Process.get(:actor),
+        opts: [confidential: true, connector_lifecycle: true]
+      )
+
+    assert %{response: {:error, :invalid_request}} =
+             Api.handle_event(event, :connector_lifecycle, nil)
+
+    current = Repo.get!(ChannelConfig, config.id)
+    assert current.enabled
+    assert is_nil(current.archived_at)
+  end
+
   test "data-source archive orders watch stop, Channels archive and reconciliation" do
     assert {:ok, result} = archive()
 

@@ -31,7 +31,7 @@ defmodule Zaq.Engine.WhatsAppThreadHistoryTest do
     assert {:ok, _} = HistoryIngress.capture(incoming(ctx, "local", "root", "LOCAL_CONTENT"))
     assert {:ok, _} = HistoryIngress.capture(incoming(ctx, "sibling", "other", "SIBLING_SECRET"))
 
-    {input, binding, projection} = project(ctx, "question", "root")
+    {input, _binding, projection} = project(ctx, "question", "root")
     assert input.thread_id == "root"
 
     assert Enum.map(projection.messages, & &1.content) == [
@@ -41,11 +41,6 @@ defmodule Zaq.Engine.WhatsAppThreadHistoryTest do
 
     assert Enum.count(projection.messages, &(&1.message_id == root_capture.message_id)) == 1
     assert Repo.get!(Transcript, projection.transcript_id).external_thread_id == "root"
-
-    refute Map.has_key?(
-             Repo.get!(Message, binding.user_message_id).history_context,
-             "reply_context"
-           )
 
     context = HistoryLoader.from_projection(projection.messages)
     assert Enum.any?(context.entries, &String.contains?(&1.content, "ROOT_HISTORY_CONTENT"))

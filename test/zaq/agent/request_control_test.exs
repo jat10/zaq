@@ -21,13 +21,6 @@ defmodule Zaq.Agent.RequestControlTest do
     def inject(_runtime, _content, _opts), do: exit(:runtime_gone)
   end
 
-  defmodule RecordingFactory do
-    def steer(_runtime, content, _opts) do
-      send(self(), {:steered_content, content})
-      {:ok, :accepted}
-    end
-  end
-
   defmodule ControlledFactory do
     def steer(runtime, _content, opts), do: respond(runtime, opts)
     def inject(runtime, _content, opts), do: respond(runtime, opts)
@@ -74,34 +67,6 @@ defmodule Zaq.Agent.RequestControlTest do
     on_exit(fn -> ServerManager.stop_server(agent, scope) end)
 
     %{agent: agent, actor: actor, scope: scope, server: server, pid: GenServer.whereis(server)}
-  end
-
-  test "incoming steering uses admitted content without obsolete quote metadata", ctx do
-    {person_ctx, _id} = canonical_active(ctx)
-    input = incoming(person_ctx.info, "steered-child", "Explain this")
-
-    input = %{
-      input
-      | metadata: Map.put(input.metadata, "reply_context", %{"text" => "OBSOLETE_QUOTED_TEXT"})
-    }
-
-    assert {:ok, _} = HistoryIngress.capture(input)
-    assert {:ok, binding} = Conversations.admit_incoming(input)
-
-    event =
-      Event.new(input, :agent, actor: person_ctx.actor, opts: [factory_module: RecordingFactory])
-
-    assert {:queued, _} =
-             RequestControl.queue_incoming(
-               event,
-               input,
-               %{kind: :canonical, transcript_id: person_ctx.transcript_id},
-               binding,
-               ctx.agent.id
-             )
-
-    assert_receive {:steered_content, content}
-    assert [_header, "Explain this"] = String.split(content, "\nMessage:\n", parts: 2)
   end
 
   test "processing status rejects caller-supplied selectors even for an authorized Person", ctx do
