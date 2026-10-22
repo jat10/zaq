@@ -16,14 +16,21 @@ defmodule Zaq.Engine.Workflows.Actions.ArchiveChannelConnectorTest do
 
       response =
         case event.opts[:action] do
-          :connector_teardown_ingress -> {:ok, :deleted}
-          :connector_prepare_disable -> :ok
-          :connector_sync_runtime -> :ok
-          action -> raise "unexpected Channels action: #{inspect(action)}"
+          :connector_teardown_ingress ->
+            {:ok, :deleted}
+
+          :connector_sync_runtime ->
+            :ok
+
+          action ->
+            raise "unexpected Channels action: #{inspect(action)}"
         end
 
       %{event | response: response}
     end
+
+    def before_disable(_config, _actor, _opts), do: :ok
+    def sync_config_runtime(_before, _after), do: :ok
   end
 
   defp insert_retrieval_config do
@@ -66,15 +73,11 @@ defmodule Zaq.Engine.Workflows.Actions.ArchiveChannelConnectorTest do
     assert ingress.actor == actor
     assert ingress.request.config.id == config.id
     assert_received {:channels_event, %Event{} = disable}
-    assert disable.opts[:action] == :connector_prepare_disable
+    assert disable.opts[:action] == :connector_sync_runtime
     assert disable.opts[:confidential] == true
     assert disable.actor == actor
-    assert disable.request.config.id == config.id
-    assert_received {:channels_event, %Event{} = runtime}
-    assert runtime.opts[:action] == :connector_sync_runtime
-    assert runtime.opts[:confidential] == true
-    assert runtime.actor == actor
-    assert runtime.request.after_config.id == config.id
+    assert disable.request.after_config.id == config.id
+    assert disable.request.after_config.enabled == false
 
     archived = Repo.get!(ChannelConfig, config.id)
     assert archived.archived_at

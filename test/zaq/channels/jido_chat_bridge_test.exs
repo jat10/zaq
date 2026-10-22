@@ -4531,6 +4531,38 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
       end)
     end
 
+    test "original runtime sync retries webhook cleanup after failure" do
+      config =
+        insert_channel_config(%{
+          enabled: true,
+          settings: %{"jido_chat" => %{"ingress" => %{"mode" => "webhook"}}}
+        })
+
+      user = Zaq.AccountsFixtures.super_admin_fixture(%{must_change_password: false})
+      Process.put(:stub_list_ingress_subscriptions_result, {:ok, [%{subscription_id: "sub-1"}]})
+      Process.put(:stub_delete_ingress_subscription_result, {:error, :delete_failed})
+
+      event =
+        Zaq.Event.new(
+          %{
+            before_config: ChannelConfig.to_runtime_config(config),
+            after_config: ChannelConfig.to_runtime_config(%{config | enabled: false})
+          },
+          :channels,
+          actor: %{user_id: user.id},
+          opts: [action: :sync_channel_runtime, confidential: true]
+        )
+
+      assert {:error, {:ingress_teardown_failed, :delete_failed}} =
+               Zaq.NodeRouter.dispatch(event).response
+
+      assert {:error, {:ingress_teardown_failed, :delete_failed}} =
+               Zaq.NodeRouter.dispatch(event).response
+
+      Process.put(:stub_delete_ingress_subscription_result, {:ok, %{deleted: "sub-1"}})
+      assert :ok = Zaq.NodeRouter.dispatch(event).response
+    end
+
     test "returns ingress_teardown_failed when stop succeeds but webhook deletion fails" do
       config =
         insert_channel_config(%{

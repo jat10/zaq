@@ -167,20 +167,6 @@ defmodule Zaq.Engine.Api do
     %{event | response: response}
   end
 
-  def handle_event(%Event{} = event, :disable_channel_connector, _context) do
-    response =
-      case Jido.Exec.run(Zaq.Engine.Actions.DisableChannelConnector, %{request: event.request}, %{
-             actor: event.actor,
-             confidential: event.opts[:confidential] == true,
-             opts: event.opts
-           }) do
-        {:ok, %{result: result}} -> result
-        {:error, _} = error -> error
-      end
-
-    %{event | response: response}
-  end
-
   def handle_event(%Event{} = event, :connector_lifecycle, _context) do
     response =
       if event.opts[:confidential] == true and event.opts[:connector_lifecycle] == true,

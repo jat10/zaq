@@ -1,12 +1,12 @@
 defmodule Zaq.Engine.ConnectorLifecycle do
   @moduledoc """
-  Coordinates connector enable, archive and confirmed disable commands across service boundaries.
+  Owns connector configuration persistence and archive commands across service boundaries.
 
   Engine owns connector scope, revision validation, archive persistence and
   data-source watch ordering/cleanup. Channels consumes resolved configurations
   for provider ingress teardown and runtime sync, without database access.
-  Archival follows adapter disable preparation, persisted disablement and
-  successful runtime shutdown. A shutdown failure leaves the disabled connector
+  Archival follows adapter disable preparation, successful runtime shutdown and
+  persisted disablement. A shutdown failure leaves the disabled connector
   unarchived for retry; post-archive watch cleanup may remain pending.
 
   Startup rechecks current eligibility through a confidential Engine runtime event.
@@ -86,8 +86,14 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   end
 
   @doc "Executes a trusted Engine lifecycle command."
+  def execute(%{operation: :context, request: request}, actor, _opts) do
+    with {:ok, _} <- BOActor.current_user(actor) do
+      context(request[:channel_config_id], request[:provider], request[:kind])
+    end
+  end
+
   def execute(%{operation: operation, request: %{channel_config_id: id} = request}, actor, opts)
-      when operation in [:archive, :disable, :enable] do
+      when operation in [:archive, :enable] do
     with {:ok, id} <- cast_id(id),
          %ChannelConfig{} <- ChannelConfig.get(id) do
       execute_command(operation, Map.put(request, :channel_config_id, id), actor, opts)
@@ -109,17 +115,6 @@ defmodule Zaq.Engine.ConnectorLifecycle do
        )
        when is_binary(expected) do
     case operation do
-      :disable ->
-        disable_scoped(
-          id,
-          provider,
-          kind,
-          expected,
-          Keyword.get(opts, :router, NodeRouter),
-          actor,
-          opts
-        )
-
       :enable ->
         enable_scoped(id, provider, kind, expected, actor, opts)
     end
@@ -141,7 +136,6 @@ defmodule Zaq.Engine.ConnectorLifecycle do
          {:ok, watches} <- stop_watches(context, data_sources),
          {:ok, ingress} <- teardown_ingress(before, router, actor, opts),
          {:ok, disabled} <- disable_before_archive(before, expected, router, actor, opts),
-         :ok <- stop_before_archive(before, disabled, router, actor, opts),
          {:ok, status, _archived} <- persist_archive(disabled, revision(disabled)) do
       archived = %{
         channel_config_id: id,
@@ -161,57 +155,27 @@ defmodule Zaq.Engine.ConnectorLifecycle do
     end
   end
 
-  defp disable_before_archive(%{enabled: false} = config, _expected, _router, _actor, _opts),
-    do: {:ok, config}
-
-  defp disable_before_archive(config, expected, router, actor, opts) do
-    case channels_call(
-           router,
-           :connector_prepare_disable,
-           %{config: runtime_config(config)},
-           actor,
-           opts
-         ) do
-      :ok -> persist_disable(config.id, expected)
-      {:error, reason} -> {:error, {:disable_failed, reason}}
-      other -> {:error, {:disable_failed, {:unexpected_response, other}}}
-    end
-  end
-
-  defp stop_before_archive(before, disabled, router, actor, opts) do
-    case sync_runtime(before, disabled, router, actor, opts) do
-      :synced -> :ok
+  defp disable_before_archive(%{archived_at: %DateTime{}} = config, _, router, actor, opts) do
+    case sync_runtime(config, config, router, actor, opts) do
+      :synced -> {:ok, config}
       {:pending, reason} -> {:error, {:runtime_stop_failed, reason}}
     end
   end
 
-  @doc "Logs out and disables exactly the connector revision confirmed by the operator."
-  @spec disable(map(), map(), keyword()) :: {:ok, map()} | {:error, term()}
-  def disable(request, actor, opts \\ [])
+  defp disable_before_archive(config, expected, router, actor, opts) do
+    result = sync_runtime(config, %{config | enabled: false}, router, actor, opts)
 
-  def disable(
-        %{channel_config_id: id, provider: _provider, kind: _kind, revision: expected} = request,
-        actor,
-        opts
-      )
-      when is_binary(expected) do
-    case cast_id(id) do
-      {:ok, id} ->
-        dispatch_saved_binding(:disable, id, request, actor, opts)
+    case result do
+      {:pending, {:disable_failed, _} = reason} ->
+        {:error, reason}
 
-      _ ->
-        {:error, :connector_not_found}
-    end
-  end
+      :synced ->
+        persist_enabled(config.id, expected, false)
 
-  def disable(_, _, _), do: {:error, :invalid_request}
-
-  defp disable_scoped(id, provider, kind, expected, router, actor, opts) do
-    with %ChannelConfig{archived_at: nil} = before <- ChannelConfig.get(id),
-         :ok <- validate_scope(before, provider, kind) do
-      disable_current(before, expected, router, actor, opts)
-    else
-      _ -> {:error, :connector_not_found}
+      {:pending, reason} ->
+        with {:ok, _disabled} <- persist_enabled(config.id, expected, false) do
+          {:error, {:runtime_stop_failed, reason}}
+        end
     end
   end
 
@@ -275,42 +239,6 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   end
 
   def runtime_context(_), do: {:error, :invalid_request}
-
-  defp disable_current(%{enabled: false} = config, _expected, router, actor, opts) do
-    {:ok,
-     %{
-       channel_config_id: config.id,
-       status: :already_disabled,
-       runtime: sync_runtime(%{config | enabled: true}, config, router, actor, opts)
-     }}
-  end
-
-  defp disable_current(before, expected, router, actor, opts) do
-    with :ok <- validate_revision(before, expected),
-         :ok <- logout(before, router, actor, opts),
-         {:ok, disabled} <- persist_disable(before.id, expected) do
-      {:ok,
-       %{
-         channel_config_id: before.id,
-         status: :disabled,
-         runtime: sync_runtime(before, disabled, router, actor, opts)
-       }}
-    end
-  end
-
-  defp logout(config, router, actor, opts) do
-    case channels_call(router, :connector_logout, %{config: runtime_config(config)}, actor, opts) do
-      :ok -> :ok
-      {:error, reason} -> {:error, {:logout_failed, reason}}
-      _ -> {:error, {:logout_failed, :unexpected_response}}
-    end
-  end
-
-  # Adapter logout can write credential storage through Engine. Never hold the row
-  # lock across that service call; recheck the confirmed revision before persistence.
-  defp persist_disable(id, expected) do
-    persist_enabled(id, expected, false)
-  end
 
   defp persist_enabled(id, expected, enabled?) do
     Repo.transaction(fn ->

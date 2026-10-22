@@ -541,9 +541,16 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
         enable_whatsapp_config(socket, config)
 
       true ->
-        case ChannelDisablePolicy.before_disable(socket.assigns.provider, config) do
-          :proceed -> toggle_active_config(socket, config)
-          {:confirm, message} -> prepare_disable_confirmation(socket, config, message)
+        case disable_policy(socket, config) do
+          :proceed ->
+            toggle_active_config(socket, config)
+
+          {:confirm, message} ->
+            prepare_disable_confirmation(socket, config, message)
+
+          {:error, _} ->
+            {:noreply,
+             put_flash(socket, :error, "Cannot disable this profile. Refresh and try again.")}
         end
     end
   end
@@ -558,22 +565,15 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     pending = socket.assigns.confirm_disable
     socket = assign(socket, :confirm_disable, nil)
 
-    case disable_connector(socket, Map.put(pending.request, :op, :disable)) do
-      {:ok, result} ->
-        {:noreply,
-         socket
-         |> refresh_connector_configs()
-         |> maybe_put_runtime_sync_flash(
-           if(result.runtime == :synced, do: :ok, else: {:error, :runtime_cleanup_pending}),
-           "#{pending.name} disabled and logged out."
-         )}
+    case connector_command(socket, :connector_lifecycle, %{
+           operation: :context,
+           request: pending.request
+         }) do
+      {:ok, %{revision: revision}} when revision == pending.request.revision ->
+        toggle_active_config(socket, Repo.get!(ChannelConfig, pending.request.channel_config_id))
 
-      {:error, :stale_connector} ->
+      _ ->
         {:noreply, put_flash(socket, :error, "This profile changed. Refresh and confirm again.")}
-
-      {:error, _} ->
-        {:noreply,
-         put_flash(socket, :error, "Could not disable this profile. Refresh and try again.")}
     end
   end
 
@@ -1030,21 +1030,42 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   end
 
   defp toggle_active_config(socket, previous_config) do
-    config =
-      previous_config
-      |> Ecto.Changeset.change(enabled: !previous_config.enabled)
-      |> Repo.update!()
+    desired = %{previous_config | enabled: !previous_config.enabled}
 
-    sync_result = sync_channel_runtime(previous_config, config)
+    sync_result =
+      if previous_config.enabled,
+        do:
+          sync_channel_runtime(
+            previous_config,
+            desired,
+            BOActor.build(socket.assigns.current_user)
+          ),
+        else: :ok
 
-    {:noreply,
-     socket
-     |> refresh_connector_configs()
-     |> maybe_put_runtime_sync_flash(
-       sync_result,
-       "#{config.name} #{if previous_config.enabled, do: "disabled", else: "enabled"}."
-     )
-     |> maybe_open_enabled_connection(config, sync_result)}
+    cond do
+      match?({:error, {:disable_failed, _}}, sync_result) ->
+        {:noreply,
+         put_flash(socket, :error, "Could not disable this profile. Refresh and try again.")}
+
+      Repo.get!(ChannelConfig, previous_config.id) != previous_config ->
+        {:noreply, put_flash(socket, :error, "This profile changed. Refresh and confirm again.")}
+
+      true ->
+        config =
+          previous_config |> Ecto.Changeset.change(enabled: desired.enabled) |> Repo.update!()
+
+        sync_result =
+          if config.enabled, do: sync_channel_runtime(previous_config, config), else: sync_result
+
+        {:noreply,
+         socket
+         |> refresh_connector_configs()
+         |> maybe_put_runtime_sync_flash(
+           sync_result,
+           "#{config.name} #{if config.enabled, do: "enabled", else: "disabled"}."
+         )
+         |> maybe_open_enabled_connection(config, sync_result)}
+    end
   end
 
   defp enable_whatsapp_config(socket, previous_config) do
@@ -1108,7 +1129,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
       kind: to_string(socket.assigns.kind)
     }
 
-    case disable_connector(socket, request) do
+    case connector_command(socket, :connector_lifecycle, %{operation: :context, request: request}) do
       {:ok, %{archived?: false} = descriptor} ->
         {:noreply,
          assign(socket, :confirm_disable, %{
@@ -1123,13 +1144,25 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     end
   end
 
-  defp disable_connector(socket, request),
-    do: connector_command(socket, :disable_channel_connector, request)
+  defp disable_policy(_socket, %{enabled: false}), do: :proceed
+
+  defp disable_policy(socket, config) do
+    case request_capability_snapshot(config.provider, %{config_id: config.id}) do
+      {:ok, snapshot} ->
+        ChannelDisablePolicy.before_disable(snapshot, config, socket.assigns.provider_label)
+
+      {:error, :unsupported} ->
+        :proceed
+
+      _ ->
+        {:error, :capabilities_unavailable}
+    end
+  end
 
   defp connector_command(socket, action, request) do
     Event.new(request, :engine,
       actor: BOActor.build(socket.assigns.current_user),
-      opts: [action: action, confidential: true]
+      opts: [action: action, confidential: true, connector_lifecycle: true]
     )
     |> NodeRouter.dispatch()
     |> Map.get(:response)
@@ -1453,7 +1486,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     NodeRouter.dispatch(event).response
   end
 
-  defp sync_channel_runtime(before_config, after_config) do
+  defp sync_channel_runtime(before_config, after_config, actor \\ nil) do
     action =
       if after_config.kind == "data_source",
         do: :sync_data_source_runtime,
@@ -1466,7 +1499,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
           after_config: ChannelConfig.to_runtime_config(after_config)
         },
         :channels,
-        opts: [action: action]
+        actor: actor,
+        opts: [action: action, confidential: true]
       )
 
     NodeRouter.dispatch(event).response
@@ -1714,13 +1748,19 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   defp ensure_global_base_url_for_oauth2(_), do: :ok
 
   defp capability_snapshot(provider) do
-    event =
-      Event.new(%{provider: provider}, :channels, opts: [action: :channel_capability_snapshot])
-
-    case NodeRouter.dispatch(event).response do
+    case request_capability_snapshot(provider, %{}) do
       {:ok, map} when is_map(map) -> map
       _ -> %{}
     end
+  end
+
+  defp request_capability_snapshot(provider, params) do
+    event =
+      Event.new(Map.put(params, :provider, provider), :channels,
+        opts: [action: :channel_capability_snapshot]
+      )
+
+    NodeRouter.dispatch(event).response
   end
 
   defp authentication_capability(provider, user) do
