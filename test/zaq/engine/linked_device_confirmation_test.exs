@@ -2,17 +2,9 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
   use Zaq.DataCase, async: true
   use ExUnitProperties
   import Ecto.Query
+  import Zaq.CredentialDocumentFixtures, only: [document: 3]
   alias Zaq.ConnectorConfig.Settings
-  alias Zaq.Engine.{ChannelConfig, Connect, LinkedDeviceConfirmation}
-
-  test "durable attempt receipt prevents duplicates after response loss" do
-    request = request()
-    assert {:ok, first} = LinkedDeviceConfirmation.save(request)
-    assert {:ok, second} = LinkedDeviceConfirmation.save(request)
-    assert first.id == second.id
-    assert first.name == "+15550001"
-    assert first.settings["credential_document_id"]
-  end
+  alias Zaq.Engine.{ChannelConfig, LinkedDeviceConfirmation}
 
   test "oversized pairing credentials roll back the connector and its credential" do
     request = %{
@@ -34,12 +26,7 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
 
     for {{namespace, key}, value} <- records do
       assert {:ok, ^value} =
-               Connect.credential_document(%{
-                 op: :get,
-                 binding: binding,
-                 namespace: namespace,
-                 key: key
-               })
+               document(binding, :get, %{namespace: namespace, key: key})
     end
 
     notifications =

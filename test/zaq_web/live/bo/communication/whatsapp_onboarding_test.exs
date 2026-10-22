@@ -10,17 +10,7 @@ defmodule ZaqWeb.Live.BO.Communication.WhatsAppOnboardingTest do
 
   test "new WhatsApp scans then confirms detected account without a manual form", %{conn: conn} do
     Mox.stub(Zaq.NodeRouterMock, :find_node, fn _ -> node() end)
-    channels = Application.fetch_env!(:zaq, :channels)
-
-    Application.put_env(:zaq, :channels, %{
-      whatsapp: %{
-        bridge: JidoChatBridge,
-        adapter: WhatsAppFlowAdapter,
-        ingress_mode: :linked_device
-      }
-    })
-
-    on_exit(fn -> Application.put_env(:zaq, :channels, channels) end)
+    Zaq.WhatsAppFixtures.configure_channels(WhatsAppFlowAdapter)
     start_supervised!({Transport, observer: self()})
     user = super_admin_fixture(%{must_change_password: false})
     count = Repo.aggregate(ChannelConfig, :count)

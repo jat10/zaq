@@ -18,15 +18,7 @@ defmodule Zaq.Engine.EnableChannelConnectorTest do
   setup do
     user = super_admin_fixture(%{must_change_password: false})
 
-    config =
-      %ChannelConfig{}
-      |> ChannelConfig.changeset(%{
-        name: "Saved account",
-        provider: "whatsapp",
-        kind: "retrieval",
-        enabled: false
-      })
-      |> Repo.insert!()
+    config = Zaq.WhatsAppFixtures.connector(%{name: "Saved account", enabled: false})
 
     context = %{
       actor: %{user_id: user.id, observer: self()},

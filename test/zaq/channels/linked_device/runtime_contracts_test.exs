@@ -1,21 +1,27 @@
 defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
   use ExUnit.Case, async: true
-  alias Jido.Chat.WhatsApp.Adapter
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.TestSupport.LinkedDeviceLifecycle
+  import Zaq.WhatsAppFixtures, only: [bound_profile: 1, runtime_config: 1]
 
-  test "each replacement lifecycle source is monitored and stale exits cannot disconnect it" do
+  setup do
     config = config()
 
     pid =
       start_supervised!({State, bridge_id: "whatsapp_42", config: config, provider: :whatsapp})
 
+    %{pid: pid, config: config}
+  end
+
+  test "each replacement lifecycle source is monitored and stale exits cannot disconnect it", %{
+    pid: pid
+  } do
     first = start_supervised!({Agent, fn -> :first end}, id: :first)
     second = start_supervised!({Agent, fn -> :second end}, id: :second)
 
     payload = %{
-      profile: profile(42),
+      profile: bound_profile(42),
       attempt_id: make_ref(),
       status: :pairing,
       qr: "private"
@@ -48,17 +54,12 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     :erlang.trace(pid, false, [:receive])
   end
 
-  test "listener exits cannot overwrite the current lifecycle source status" do
-    config = config()
-
-    pid =
-      start_supervised!({State, bridge_id: "whatsapp_42", config: config, provider: :whatsapp})
-
+  test "listener exits cannot overwrite the current lifecycle source status", %{pid: pid} do
     listener = start_supervised!({Agent, fn -> :listener end})
     State.monitor_listeners(pid, [listener])
 
     payload = %{
-      profile: profile(42),
+      profile: bound_profile(42),
       attempt_id: make_ref(),
       status: :connected,
       qr: nil
@@ -74,17 +75,15 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     :erlang.trace(pid, false, [:receive])
   end
 
-  test "a replacement event ahead of a queued old DOWN retains its status" do
-    config = config()
-
-    pid =
-      start_supervised!({State, bridge_id: "whatsapp_42", config: config, provider: :whatsapp})
-
+  test "a replacement event ahead of a queued old DOWN retains its status", %{
+    pid: pid,
+    config: config
+  } do
     first = start_supervised!({Agent, fn -> :first end}, id: :first)
     second = start_supervised!({Agent, fn -> :second end}, id: :second)
 
     payload = %{
-      profile: profile(42),
+      profile: bound_profile(42),
       attempt_id: make_ref(),
       status: :connected,
       qr: nil
@@ -119,16 +118,12 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     refute {:process, first} in monitors
   end
 
-  test "lifecycle is profile and attempt scoped, survives config refresh and clears expired QR" do
-    config = config()
-
-    pid =
-      start_supervised!({State, bridge_id: "whatsapp_42", config: config, provider: :whatsapp})
-
+  test "lifecycle is profile and attempt scoped, survives config refresh and clears expired QR",
+       %{pid: pid, config: config} do
     attempt = make_ref()
 
     event = %{
-      profile: profile(42),
+      profile: bound_profile(42),
       attempt_id: attempt,
       event: :qr,
       status: :pairing,
@@ -141,7 +136,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     assert %{phase: :pairing, qr: "private"} = State.ingress_status(pid)
     deliver(pid, self(), %{event | attempt_id: make_ref(), qr: "stale"})
 
-    deliver(pid, self(), %{event | profile: profile(99), qr: "foreign"})
+    deliver(pid, self(), %{event | profile: bound_profile(99), qr: "foreign"})
 
     assert %{qr: "private"} = State.ingress_status(pid)
     deliver(pid, self(), %{event | status: :expired, qr: nil})
@@ -157,25 +152,13 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
     State.process_listener_payload(pid, config, envelope, [])
   end
 
-  defp config,
-    do: %{
-      id: 42,
-      provider: "whatsapp",
-      settings: %{"credential_document_id" => 1},
-      url: "",
-      token: ""
-    }
-
-  defp profile(id) do
-    Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
-      context: :runtime,
-      sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})
-    ).profile
-  end
+  defp config, do: runtime_config(42)
 end
 
 defmodule Zaq.Channels.LinkedDevice.RestartTest do
   use Zaq.DataCase, async: false
+
+  import Zaq.WhatsAppFixtures, only: [connector: 0]
 
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.ChannelConfig
@@ -183,22 +166,7 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
   alias Zaq.TestSupport.WhatsAppFlowTransport, as: Transport
 
   test "fresh connection processes restore two accounts and disabling one preserves the other" do
-    previous = Application.fetch_env(:zaq, :channels)
-
-    Application.put_env(:zaq, :channels, %{
-      whatsapp: %{
-        bridge: JidoChatBridge,
-        adapter: WhatsAppFlowAdapter,
-        ingress_mode: :linked_device
-      }
-    })
-
-    on_exit(fn ->
-      case previous do
-        {:ok, value} -> Application.put_env(:zaq, :channels, value)
-        :error -> Application.delete_env(:zaq, :channels)
-      end
-    end)
+    Zaq.WhatsAppFixtures.configure_channels(WhatsAppFlowAdapter)
 
     start_supervised!({Transport, observer: self()})
     # Exercise cold provider bootstrap instead of relying on application startup
@@ -288,16 +256,6 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
     assert phase(enabled, :connected)
   end
 
-  defp connector do
-    %ChannelConfig{}
-    |> ChannelConfig.changeset(%{
-      name: Ecto.UUID.generate(),
-      provider: "whatsapp",
-      kind: "retrieval"
-    })
-    |> Repo.insert!()
-  end
-
   defp profile(config) do
     {:ok, profile} = JidoChatBridge.connection_profile(config)
     profile
@@ -327,6 +285,7 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
   alias Zaq.TestSupport.LinkedDeviceConnectionStub, as: Transport
   alias Zaq.TestSupport.LinkedDeviceFailingListener
   alias Zaq.TestSupport.LinkedDeviceLifecycle
+  import Zaq.WhatsAppFixtures, only: [bound_profile: 1, runtime_config: 1]
 
   test "adapter owns correlated lifecycle and expiry without sending control events to chat" do
     {worker, profile} = runtime(qr_timeout: 5)
@@ -408,21 +367,11 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
     bridge_id = "whatsapp_#{id}"
     profile = bound_profile(id)
 
-    config = %{
-      id: id,
-      provider: "whatsapp",
-      settings: %{"credential_document_id" => 1},
-      url: "",
-      token: ""
-    }
+    config = runtime_config(id)
 
     state_module = Zaq.Channels.JidoChatBridge.State
 
-    state_spec = %{
-      id: :state,
-      start:
-        {state_module, :start_link, [[bridge_id: bridge_id, config: config, provider: :whatsapp]]}
-    }
+    state_spec = Zaq.WhatsAppFixtures.state_spec(bridge_id, config)
 
     {:ok, listeners} =
       Adapter.listener_child_specs(bridge_id,
@@ -470,20 +419,11 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
     id = System.unique_integer([:positive])
     bridge_id = "whatsapp_#{id}"
 
-    config = %{
-      id: id,
-      provider: "whatsapp",
-      settings: %{"credential_document_id" => 1},
-      url: "",
-      token: ""
-    }
+    config = runtime_config(id)
 
     assert {:ok, %{phase: :disconnected, qr: nil}} = JidoChatBridge.channel_ingress_status(config)
 
-    spec = %{
-      id: :state,
-      start: {State, :start_link, [[bridge_id: bridge_id, config: config, provider: :whatsapp]]}
-    }
+    spec = Zaq.WhatsAppFixtures.state_spec(bridge_id, config)
 
     assert {:ok, %{state_pid: state}} = BridgeSupervisor.start_runtime(bridge_id, spec, [])
     on_exit(fn -> BridgeSupervisor.stop_bridge_runtime(%{}, bridge_id) end)
@@ -522,18 +462,9 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
     id = System.unique_integer([:positive])
     bridge_id = "whatsapp_#{id}"
 
-    config = %{
-      id: id,
-      provider: "whatsapp",
-      settings: %{"credential_document_id" => 1},
-      url: "",
-      token: ""
-    }
+    config = runtime_config(id)
 
-    state_spec = %{
-      id: :state,
-      start: {State, :start_link, [[bridge_id: bridge_id, config: config, provider: :whatsapp]]}
-    }
+    state_spec = Zaq.WhatsAppFixtures.state_spec(bridge_id, config)
 
     listener_spec = %{id: :listener, start: {DelayedListener, :start_link, [self()]}}
 
@@ -549,11 +480,7 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
     owner = self()
 
     payload = %{
-      profile:
-        Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
-          context: :runtime,
-          sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})
-        ).profile,
+      profile: bound_profile(id),
       attempt_id: make_ref(),
       status: :pairing,
       qr: "private-qr"
@@ -614,13 +541,6 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
              JidoChatBridge.from_listener(config, %{}, bridge_id: "whatsapp_999999998")
   end
 
-  defp bound_profile(id) do
-    Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
-      context: :runtime,
-      sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})
-    ).profile
-  end
-
   defp runtime(opts \\ []) do
     profile = "runtime_#{System.unique_integer([:positive])}"
 
@@ -651,6 +571,9 @@ end
 defmodule Zaq.Channels.JidoChatBridge.StorageTest do
   use Zaq.DataCase, async: true
 
+  import Zaq.WhatsAppFixtures, only: [connector: 0]
+  import Zaq.CredentialDocumentFixtures, only: [document: 3]
+
   alias Jido.Chat.WhatsApp.Adapter
   alias Jido.Chat.WhatsApp.Storage.{Mnesia, Split}
   alias Jido.Chat.WhatsApp.Transport.GuardedStorage
@@ -662,7 +585,7 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
   alias Zaq.Event
   alias Zaq.NodeRouter
 
-  test "shared bridge child specs enforce trusted storage and lifecycle callbacks" do
+  test "saved and runtime connection options enforce trusted storage and lifecycle callbacks" do
     config = connector()
 
     config = %{
@@ -678,17 +601,36 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
         }
     }
 
+    assert {:ok, ingress} = JidoChatBridge.saved_connection_options(config, Adapter)
+    assert ingress.mode == :linked_device
+    assert {:ok, ingress.profile} == JidoChatBridge.connection_profile(config)
+
+    assert {:ok, [saved_spec]} =
+             Adapter.listener_child_specs("connector_#{config.id}",
+               ingress: ingress,
+               sink_mfa: JidoChatBridge.storage_sink(config)
+             )
+
+    {_module, :start_link, [worker_opts]} = saved_spec.start
+    assert worker_opts[:config].profile == ingress.profile
+    assert worker_opts[:config].storage == ingress.storage
+
     runtime_config = ChannelConfig.to_runtime_config(config)
 
     assert {:ok, {_state, [spec]}} = JidoChatBridge.build_runtime_specs(runtime_config)
     assert {Jido.Chat.WhatsApp.ConnectionWorker, :start_link, [opts]} = spec.start
     {:ok, binding} = bind(config.id)
-    assert opts[:config].profile == connection_options(binding).profile
-    refute opts[:config].sync_history
-    refute opts[:config].sync_full_history
-    refute Map.has_key?(opts[:config], :storage_root)
-    assert {Split, storage_opts} = opts[:config].storage
-    assert storage_opts[:context].channel_config_id == config.id
+
+    for options <- [ingress, opts[:config]] do
+      assert options.profile == connection_options(binding).profile
+      refute options.sync_history
+      refute options.sync_full_history
+      refute Map.has_key?(options, :storage_root)
+      assert {Split, storage_opts} = options.storage
+      assert storage_opts[:context].channel_config_id == config.id
+    end
+
+    {Split, storage_opts} = opts[:config].storage
 
     assert {JidoChatBridge, :from_listener, [_, capability]} = storage_opts[:sink_mfa]
 
@@ -795,11 +737,7 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
       assert {:ok, ["peer"]} = Storage.list_keys(storage, profile, namespace)
 
       assert {:ok, []} =
-               Connect.credential_document(%{
-                 op: :list_keys,
-                 binding: binding,
-                 namespace: to_string(namespace)
-               })
+               document(binding, :list_keys, %{namespace: to_string(namespace)})
     end
 
     assert Repo.get!(Grant, grant.id) == grant
@@ -843,13 +781,7 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
 
     for namespace <- ["session", "sender_key"] do
       assert :ok =
-               Connect.credential_document(%{
-                 op: :put,
-                 binding: binding,
-                 namespace: namespace,
-                 key: "legacy",
-                 value: "old"
-               })
+               document(binding, :put, %{namespace: namespace, key: "legacy", value: "old"})
     end
 
     assert :ok = Storage.prepare(storage)
@@ -862,11 +794,7 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
 
     for namespace <- ["session", "sender_key"] do
       assert {:ok, []} =
-               Connect.credential_document(%{
-                 op: :list_keys,
-                 binding: binding,
-                 namespace: namespace
-               })
+               document(binding, :list_keys, %{namespace: namespace})
     end
   end
 
@@ -881,16 +809,6 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
     end)
 
     {storage, profile, binding}
-  end
-
-  defp connector do
-    %ChannelConfig{}
-    |> ChannelConfig.changeset(%{
-      name: Ecto.UUID.generate(),
-      provider: "whatsapp",
-      kind: "retrieval"
-    })
-    |> Repo.insert!()
   end
 
   defp connection_options(binding),

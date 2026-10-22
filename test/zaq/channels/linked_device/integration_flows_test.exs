@@ -1,26 +1,16 @@
 defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
   use Zaq.DataCase, async: false
   import Zaq.AccountsFixtures
+  import Zaq.CredentialDocumentFixtures, only: [document: 3]
   alias Jido.Chat.WhatsApp.ConnectionWorker
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.ChannelConfig
-  alias Zaq.Engine.Connect
   alias Zaq.{Event, NodeRouter}
   alias Zaq.TestSupport.WhatsAppFlowAdapter
   alias Zaq.TestSupport.WhatsAppFlowTransport, as: Transport
 
   setup do
-    previous = Application.fetch_env!(:zaq, :channels)
-
-    Application.put_env(:zaq, :channels, %{
-      whatsapp: %{
-        bridge: JidoChatBridge,
-        adapter: WhatsAppFlowAdapter,
-        ingress_mode: :linked_device
-      }
-    })
-
-    on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+    Zaq.WhatsAppFixtures.configure_channels(WhatsAppFlowAdapter)
     assert :ok = JidoChatBridge.start_runtime({:provider, :whatsapp}, [])
     start_supervised!({Transport, observer: self()})
     %{actor: %{user_id: super_admin_fixture(%{must_change_password: false}).id}}
@@ -88,11 +78,7 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
 
     for namespace <- ["session", "sender_key"] do
       assert {:ok, []} =
-               Connect.credential_document(%{
-                 op: :list_keys,
-                 binding: binding,
-                 namespace: namespace
-               })
+               document(binding, :list_keys, %{namespace: namespace})
     end
 
     assert {:ok, conn} = Transport.resolve_conn(profile: restored.profile)
@@ -260,7 +246,6 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
   use Zaq.DataCase, async: false
   import Zaq.AccountsFixtures
   alias Zaq.Channels.Api
-  alias Zaq.Engine.ChannelConfig
   alias Zaq.Event
 
   defmodule ExampleAdapter do
@@ -440,11 +425,7 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
     |> Map.fetch!(:response)
   end
 
-  defp connector do
-    %ChannelConfig{}
-    |> ChannelConfig.changeset(%{name: "Pairing", provider: "whatsapp", kind: "retrieval"})
-    |> Repo.insert!()
-  end
+  defp connector, do: Zaq.WhatsAppFixtures.connector(%{name: "Pairing"})
 end
 
 defmodule Zaq.Channels.LinkedDevice.WhatsAppDeliveryTest do
@@ -452,7 +433,6 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppDeliveryTest do
 
   alias Zaq.Channels.{Api, Bridge, JidoChatBridge}
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
 
@@ -571,16 +551,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppDeliveryTest do
     |> Map.fetch!(:response)
   end
 
-  defp connector(name) do
-    %ChannelConfig{}
-    |> ChannelConfig.changeset(%{
-      name: name,
-      provider: "whatsapp",
-      kind: "retrieval",
-      enabled: true
-    })
-    |> Repo.insert!()
-  end
+  defp connector(name), do: Zaq.WhatsAppFixtures.connector(%{name: name, enabled: true})
 end
 
 defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
@@ -605,7 +576,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
   alias Zaq.Engine.Conversations.{ExecutionRecord, Message}
   alias Zaq.Engine.IncomingMessageRouting
   alias Zaq.Repo
-  alias Zaq.TestSupport.{MultiAgentOpenAIStub, OpenAIStub, WhatsAppFlowAdapter}
+  alias Zaq.TestSupport.{ApplicationEnv, MultiAgentOpenAIStub, OpenAIStub, WhatsAppFlowAdapter}
   alias Zaq.TestSupport.WhatsAppFlowTransport, as: Transport
 
   @self_jid "15550001@s.whatsapp.net"
@@ -626,7 +597,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
   setup %{conn: conn} do
     Zaq.DataCase.isolate_event_registry()
     observer = self()
-    previous = Map.new(@runtime_keys, &{&1, Application.fetch_env(:zaq, &1)})
+    ApplicationEnv.preserve(:zaq, @runtime_keys)
     Enum.each(@runtime_keys, &Application.delete_env(:zaq, &1))
     Application.put_env(:zaq, :node_router, Zaq.NodeRouter)
 
@@ -637,13 +608,6 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
         ingress_mode: :linked_device
       }
     })
-
-    on_exit(fn ->
-      Enum.each(previous, fn
-        {key, {:ok, value}} -> Application.put_env(:zaq, key, value)
-        {key, :error} -> Application.delete_env(:zaq, key)
-      end)
-    end)
 
     assert :ok = JidoChatBridge.start_runtime({:provider, :whatsapp}, [])
     start_supervised!({Transport, observer: observer})
@@ -682,15 +646,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
         advanced_options: %{"stream" => false}
       })
 
-    config =
-      %ChannelConfig{}
-      |> ChannelConfig.changeset(%{
-        name: "WhatsApp full flow",
-        provider: "whatsapp",
-        kind: "retrieval",
-        enabled: true
-      })
-      |> Repo.insert!()
+    config = Zaq.WhatsAppFixtures.connector(%{name: "WhatsApp full flow", enabled: true})
 
     {:ok, _} =
       IncomingMessageRouting.upsert_rule(%{channel_config_id: config.id}, %{

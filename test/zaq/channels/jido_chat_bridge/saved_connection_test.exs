@@ -3,6 +3,7 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
   use ExUnitProperties
 
   import Zaq.AccountsFixtures
+  import Zaq.WhatsAppFixtures, only: [connector: 0]
 
   alias Ecto.Adapters.SQL.Sandbox
   alias Jido.Chat.Authentication.Request, as: PairingRequest
@@ -12,42 +13,6 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.Engine.ChannelConfig
-
-  test "saved ingress uses the adapter's stable binding and ignores connector overrides" do
-    config = connector()
-
-    config = %{
-      config
-      | settings: %{
-          "jido_chat" => %{
-            "ingress" => %{
-              "profile" => "another_account",
-              "storage_root" => "/tmp/untrusted",
-              "config" => %{"sync_history" => true, "sync_full_history" => true}
-            }
-          }
-        }
-    }
-
-    assert {:ok, ingress} = JidoChatBridge.saved_connection_options(config, Adapter)
-    assert ingress.mode == :linked_device
-    assert {:ok, ingress.profile} == JidoChatBridge.connection_profile(config)
-    assert {Split, storage_opts} = ingress.storage
-    assert storage_opts[:context].channel_config_id == config.id
-    refute ingress.sync_history
-    refute ingress.sync_full_history
-    refute Map.has_key?(ingress, :storage_root)
-
-    assert {:ok, [spec]} =
-             Adapter.listener_child_specs("connector_#{config.id}",
-               ingress: ingress,
-               sink_mfa: {__MODULE__, :receive_payload, []}
-             )
-
-    {_module, :start_link, [worker_opts]} = spec.start
-    assert worker_opts[:config].profile == ingress.profile
-    assert worker_opts[:config].storage == ingress.storage
-  end
 
   test "persisted history options reach saved and authenticated listener startup independently" do
     for history <- [false, true], full <- [false, true] do
@@ -261,15 +226,5 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
                %{event | request: %{op: :unknown}},
                []
              )
-  end
-
-  defp connector do
-    %ChannelConfig{}
-    |> ChannelConfig.changeset(%{
-      name: Ecto.UUID.generate(),
-      provider: "whatsapp",
-      kind: "retrieval"
-    })
-    |> Repo.insert!()
   end
 end

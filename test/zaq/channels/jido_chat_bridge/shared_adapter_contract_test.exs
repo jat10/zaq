@@ -5,6 +5,7 @@ defmodule Zaq.Channels.JidoChatBridge.SharedAdapterContractTest do
   alias Jido.Chat.{ActionEvent, EventEnvelope}
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.JidoChatBridge.State
+  alias Zaq.TestSupport.ApplicationEnv
 
   defmodule Adapter do
     use Jido.Chat.Adapter
@@ -74,15 +75,7 @@ defmodule Zaq.Channels.JidoChatBridge.SharedAdapterContractTest do
   property "room policy captures unmentioned pattern matches without requesting a reply", %{
     config: config
   } do
-    previous = Application.fetch_env(:zaq, :chat_bridge_node_router_module)
-    Application.put_env(:zaq, :chat_bridge_node_router_module, Router)
-
-    on_exit(fn ->
-      case previous do
-        {:ok, router} -> Application.put_env(:zaq, :chat_bridge_node_router_module, router)
-        :error -> Application.delete_env(:zaq, :chat_bridge_node_router_module)
-      end
-    end)
+    ApplicationEnv.put(:zaq, :chat_bridge_node_router_module, Router)
 
     check all(text <- string(:alphanumeric, min_length: 1, max_length: 30), max_runs: 15) do
       config = put_in(config.settings["jido_chat"]["message_patterns"], ["deploy"])

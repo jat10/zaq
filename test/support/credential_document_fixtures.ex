@@ -1,19 +1,14 @@
 defmodule Zaq.CredentialDocumentFixtures do
   @moduledoc false
 
-  alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Connect
   alias Zaq.Repo
 
+  def document(binding, op, fields \\ %{}),
+    do: Connect.credential_document(Map.merge(fields, %{binding: binding, op: op}))
+
   def credential_document_fixture do
-    config =
-      %ChannelConfig{}
-      |> ChannelConfig.changeset(%{
-        name: "Document #{Ecto.UUID.generate()}",
-        provider: "whatsapp",
-        kind: "retrieval"
-      })
-      |> Repo.insert!()
+    config = Zaq.WhatsAppFixtures.connector(%{name: "Document #{Ecto.UUID.generate()}"})
 
     {:ok, saved} =
       Connect.save_credential_configuration(

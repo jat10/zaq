@@ -93,17 +93,7 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
   end
 
   setup do
-    previous = Application.fetch_env!(:zaq, :channels)
-
-    Application.put_env(:zaq, :channels, %{
-      whatsapp: %{
-        bridge: JidoChatBridge,
-        adapter: OfflineAdapter,
-        ingress_mode: :linked_device
-      }
-    })
-
-    on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+    Zaq.WhatsAppFixtures.configure_channels(OfflineAdapter)
     assert :ok = JidoChatBridge.start_runtime({:provider, :whatsapp}, [])
     %{actor: %{user_id: super_admin_fixture(%{must_change_password: false}).id}}
   end
