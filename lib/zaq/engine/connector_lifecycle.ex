@@ -54,9 +54,7 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   def archive(request, actor, opts) when is_map(request) and is_list(opts) do
     case cast_id(request[:channel_config_id]) do
       {:ok, id} ->
-        with_saved_binding_lock(id, request[:provider], request[:kind], fn ->
-          do_archive(request, actor, opts)
-        end)
+        dispatch_saved_binding(:archive, id, request, actor, opts)
 
       _ ->
         {:error, :connector_not_found}
@@ -65,17 +63,87 @@ defmodule Zaq.Engine.ConnectorLifecycle do
 
   def archive(_request, _actor, _opts), do: {:error, :invalid_request}
 
-  defp with_saved_binding_lock(id, provider, kind, operation) do
+  defp dispatch_saved_binding(operation, id, request, actor, opts) do
     with %ChannelConfig{} = config <- ChannelConfig.get(id),
-         :ok <- validate_scope(config, provider, kind) do
-      # The operation reloads and revalidates after acquiring the lock.
-      if Settings.saved_binding?(config),
-        do: NodeRouter.with_coordination({:connector_lifecycle, id}, operation),
-        else: operation.()
+         :ok <- validate_scope(config, request[:provider], request[:kind]) do
+      coordination =
+        if Settings.saved_binding?(config),
+          do: [coordination: {:connector_lifecycle, id}],
+          else: []
+
+      dispatch_command(operation, request, actor, opts, coordination)
     else
       _ -> {:error, :connector_not_found}
     end
   end
+
+  defp dispatch_command(operation, request, actor, opts, coordination) do
+    event =
+      Event.new(%{operation: operation, request: request}, :engine,
+        actor: actor,
+        opts:
+          Keyword.merge(
+            opts,
+            [action: :connector_lifecycle, confidential: true, connector_lifecycle: true] ++
+              coordination
+          )
+      )
+
+    NodeRouter.dispatch(event).response
+  end
+
+  @doc "Executes a trusted lifecycle command inside its required routed coordination scope."
+  def execute(%{operation: operation, request: %{channel_config_id: id} = request}, actor, opts)
+      when operation in [:archive, :disable, :enable] do
+    with {:ok, id} <- cast_id(id),
+         %ChannelConfig{} = config <- ChannelConfig.get(id),
+         :ok <- execution_scope(operation, config) do
+      execute_command(operation, Map.put(request, :channel_config_id, id), actor, opts)
+    else
+      {:error, _} = error -> error
+      _ -> {:error, :connector_not_found}
+    end
+  end
+
+  def execute(_, _, _), do: {:error, :invalid_request}
+
+  defp execution_scope(operation, config) do
+    if operation == :enable or Settings.saved_binding?(config) do
+      if NodeRouter.coordinated?({:connector_lifecycle, config.id}),
+        do: :ok,
+        else: {:error, :coordination_required}
+    else
+      :ok
+    end
+  end
+
+  defp execute_command(:archive, request, actor, opts), do: do_archive(request, actor, opts)
+
+  defp execute_command(
+         operation,
+         %{channel_config_id: id, provider: provider, kind: kind, revision: expected},
+         actor,
+         opts
+       )
+       when is_binary(expected) do
+    case operation do
+      :disable ->
+        disable_scoped(
+          id,
+          provider,
+          kind,
+          expected,
+          Keyword.get(opts, :router, NodeRouter),
+          actor,
+          opts
+        )
+
+      :enable ->
+        enable_scoped(id, provider, kind, expected, actor, opts)
+    end
+  end
+
+  defp execute_command(_, _, _, _), do: {:error, :invalid_request}
 
   defp do_archive(request, actor, opts) do
     router = Keyword.get(opts, :router, NodeRouter)
@@ -140,18 +208,14 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   def disable(request, actor, opts \\ [])
 
   def disable(
-        %{channel_config_id: id, provider: provider, kind: kind, revision: expected},
+        %{channel_config_id: id, provider: _provider, kind: _kind, revision: expected} = request,
         actor,
         opts
       )
       when is_binary(expected) do
-    router = Keyword.get(opts, :router, NodeRouter)
-
     case cast_id(id) do
       {:ok, id} ->
-        with_saved_binding_lock(id, provider, kind, fn ->
-          disable_scoped(id, provider, kind, expected, router, actor, opts)
-        end)
+        dispatch_saved_binding(:disable, id, request, actor, opts)
 
       _ ->
         {:error, :connector_not_found}
@@ -174,16 +238,14 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   def enable(request, actor, opts \\ [])
 
   def enable(
-        %{channel_config_id: id, provider: provider, kind: kind, revision: expected},
+        %{channel_config_id: id, provider: provider, kind: kind, revision: expected} = request,
         actor,
         opts
       )
       when is_binary(provider) and is_binary(kind) and is_binary(expected) and is_list(opts) do
     case cast_id(id) do
       {:ok, id} ->
-        NodeRouter.with_coordination({:connector_lifecycle, id}, fn ->
-          enable_scoped(id, provider, kind, expected, actor, opts)
-        end)
+        dispatch_command(:enable, request, actor, opts, coordination: {:connector_lifecycle, id})
 
       _ ->
         {:error, :connector_not_found}

@@ -1,4 +1,5 @@
 defmodule Zaq.TestSupport.NodeRouterCoordinationPeer do
+  import Zaq.TestSupport.NodeRouterCoordination, only: [coordinate: 2]
   @moduledoc false
   import ExUnit.Assertions
   alias Zaq.{Event, NodeRouter}
@@ -16,7 +17,7 @@ defmodule Zaq.TestSupport.NodeRouterCoordinationPeer do
 
     root =
       spawn(fn ->
-        NodeRouter.with_coordination(resource, fn ->
+        coordinate(resource, fn ->
           NodeRouter.dispatch(event(:receive_work, [observer, resource]))
         end)
       end)
@@ -31,7 +32,7 @@ defmodule Zaq.TestSupport.NodeRouterCoordinationPeer do
       Task.async(fn ->
         send(observer, :contending)
 
-        NodeRouter.with_coordination(resource, fn ->
+        coordinate(resource, fn ->
           send(observer, :entered)
           :entered
         end)
@@ -40,7 +41,7 @@ defmodule Zaq.TestSupport.NodeRouterCoordinationPeer do
     try do
       assert_receive :contending, 5_000
       refute_receive :entered, 100
-      assert :independent = NodeRouter.with_coordination(make_ref(), fn -> :independent end)
+      assert :independent = coordinate(make_ref(), fn -> :independent end)
       send(receiver, :finish)
       assert Task.await(contender, 5_000) == :entered
       :ok
@@ -58,7 +59,7 @@ defmodule Zaq.TestSupport.NodeRouterCoordinationPeer do
   end
 
   def nested(resource) do
-    NodeRouter.with_coordination(resource, fn -> :nested end)
+    coordinate(resource, fn -> :nested end)
   end
 
   defp event(function, args) do

@@ -1489,12 +1489,11 @@ defmodule Zaq.Channels.JidoChatBridge do
   defp thread_bridge_id(channel_id, thread_id), do: "#{channel_id}_#{thread_id}"
 
   defp ensure_runtime_started(config, bridge_id, runtime_opts) do
-    ConnectorRuntime.with_start(config, fn current ->
-      do_ensure_runtime_started(current, bridge_id, runtime_opts)
-    end)
+    ConnectorRuntime.start(config, {:ensure, bridge_id, runtime_opts})
   end
 
-  defp do_ensure_runtime_started(config, bridge_id, runtime_opts) do
+  @doc "Ensures the resolved bridge runtime is current inside a routed startup command."
+  def execute_start(config, bridge_id, runtime_opts) do
     case supervisor_module().lookup_state_pid(bridge_id) do
       {:ok, state_pid} ->
         case state_module().refresh_config(state_pid, config) do

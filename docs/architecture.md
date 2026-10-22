@@ -182,15 +182,15 @@ Role mapping:
 
 ### Opt-in resource coordination
 
-`NodeRouter.with_coordination(resource, operation)` protects a complete synchronous
-domain operation on an opaque resource key. Trusted event builders may also set
-`opts: [coordination: resource]` to protect dispatched execution and its continuation.
+Trusted event builders set `opts: [coordination: resource]` on
+`NodeRouter.dispatch/1` to protect a complete domain operation and its continuation.
+The routed handler must include all protected effects, including work between
+nested dispatches; coordinating only an eligibility lookup does not protect later startup.
 Normal events retain their existing execution path. Domain code owns authorization,
 eligibility, resource selection and consistent ordering when acquiring multiple resources.
 
 Lock contention waits default to 5 seconds. Callers may set
-`opts: [coordination: resource, coordination_timeout: 30_000]` on an event, or pass
-`coordination_timeout: 30_000` as the third argument to `with_coordination/3`.
+`opts: [coordination: resource, coordination_timeout: 30_000]` on an event.
 The value is a non-negative integer in milliseconds; zero makes one immediate
 acquisition attempt. Failure returns `{:error, :coordination_timeout}` (in the
 event response for dispatch). It never expires an existing holder or interrupts
@@ -217,7 +217,8 @@ acknowledges ownership, not successful completion or durable delivery.
 Requester metadata travels as private router RPC arguments, outside the event envelope
 and observer broadcasts. Arbitrary spawned tasks do not inherit process scopes.
 
-Direct bootstrap/startup paths use the same scoped primitive. Connector lifecycle
+Direct bootstrap/startup paths dispatch complete runtime commands with the same
+coordination option. Connector lifecycle
 commands use `{:connector_lifecycle, id}` across cleanup, persistence and runtime
 reconciliation; saved-binding startup takes that scope before rechecking eligibility.
 Coordination precedes node-local runtime locks, and no database row lock spans RPC.

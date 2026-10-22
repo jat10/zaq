@@ -1,7 +1,9 @@
 defmodule Zaq.Engine.ConnectorLifecycleTest do
+  import Zaq.TestSupport.NodeRouterCoordination, only: [coordinate: 2]
   use Zaq.DataCase, async: true
   use ExUnitProperties
 
+  alias Zaq.Engine.Api
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.ConnectorLifecycle
   alias Zaq.Event
@@ -70,6 +72,26 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     %{config: config}
   end
 
+  test "internal lifecycle execution requires an explicit capability and its applicable scope", %{
+    config: config
+  } do
+    event =
+      Event.new(%{operation: :enable, request: %{channel_config_id: config.id}}, :engine,
+        opts: [confidential: true]
+      )
+
+    assert %{response: {:error, :unauthorized}} =
+             Api.handle_event(event, :connector_lifecycle, nil)
+
+    event = %{event | opts: [confidential: true, connector_lifecycle: true]}
+
+    assert %{response: {:error, :coordination_required}} =
+             Api.handle_event(event, :connector_lifecycle, nil)
+
+    assert {:error, :invalid_request} = ConnectorLifecycle.execute(%{}, nil, [])
+    assert Repo.get!(ChannelConfig, config.id).enabled
+  end
+
   test "data-source archive orders watch stop, Channels archive and reconciliation" do
     assert {:ok, result} = archive()
 
@@ -95,7 +117,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
 
     holder =
       Task.async(fn ->
-        Zaq.NodeRouter.with_coordination({:connector_lifecycle, config.id}, fn ->
+        coordinate({:connector_lifecycle, config.id}, fn ->
           send(owner, :lifecycle_lock_held)
 
           receive do

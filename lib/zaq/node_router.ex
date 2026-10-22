@@ -63,26 +63,6 @@ defmodule Zaq.NodeRouter do
   """
   def supervisor_map, do: @supervisor_map
 
-  @doc """
-  Protects an entire operation on an opaque resource, including nested dispatches.
-
-  Every routed receiver acquires an independent hold under this scope. Direct
-  bootstrap paths may use this same primitive. Domain authorization and eligibility
-  remain the caller's responsibility. Acquire before database or runtime locks.
-
-  `:coordination_timeout` defaults to 5_000 milliseconds and bounds contention
-  waits, not operation execution. Nested scopes inherit the remaining budget.
-  Timeout returns `{:error, :coordination_timeout}` without running the operation.
-  """
-  @spec with_coordination(term(), (-> result)) :: result | {:error, :coordination_timeout}
-        when result: term()
-  @spec with_coordination(term(), (-> result), keyword()) ::
-          result | {:error, :coordination_timeout}
-        when result: term()
-  def with_coordination(resource, operation, opts \\ []) do
-    Coordination.run(Coordination.capture(Keyword.put(opts, :coordination, resource)), operation)
-  end
-
   @doc "Returns whether this process currently holds coordination for the resource."
   @spec coordinated?(term()) :: boolean()
   def coordinated?(resource), do: Map.has_key?(Coordination.context(), resource)
@@ -91,6 +71,12 @@ defmodule Zaq.NodeRouter do
   Dispatches an event to the node that owns `event.next_hop.destination`.
 
   Always returns a `%Zaq.Event{}` for both sync and async hop types.
+
+  Trusted callers set `opts: [coordination: resource]` to protect the complete
+  dispatched operation, including nested dispatches and its continuation.
+  Resource selection and domain authorization remain the caller's responsibility.
+  Acquisition budgets and process handoff are managed internally; see
+  `Zaq.NodeRouter.Coordination` for the coordination contract.
   """
   @spec dispatch(Event.t()) :: Event.t()
   def dispatch(%Event{} = event), do: dispatch(event, %{})

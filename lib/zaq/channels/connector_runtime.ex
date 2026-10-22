@@ -1,38 +1,75 @@
 defmodule Zaq.Channels.ConnectorRuntime do
   @moduledoc "Provider teardown and runtime stages for Engine-resolved connector configurations."
 
-  alias Zaq.Channels.{Bridge, CommunicationBridge}
+  alias Zaq.Channels.{Bridge, CommunicationBridge, JidoChatBridge}
   alias Zaq.ConnectorConfig.Settings
   alias Zaq.{Event, NodeRouter}
 
-  @doc "Excludes lifecycle cleanup and rechecks saved-binding eligibility before runtime preparation."
-  @spec with_start(map() | tuple(), (map() | tuple() -> result)) :: result | {:error, term()}
-        when result: term()
-  def with_start(%{id: id, provider: provider, kind: kind, settings: settings} = config, fun)
-      when is_integer(id) and id > 0 and is_map(settings) do
-    if Settings.saved_binding?(config) do
-      NodeRouter.with_coordination({:connector_lifecycle, id}, fn ->
-        event =
-          Event.new(%{channel_config_id: id, provider: provider, kind: kind}, :engine,
-            opts: [
-              action: :connector_runtime_context,
-              confidential: true,
-              connector_runtime: true
-            ]
-          )
+  @type operation ::
+          {:start, module(), keyword()}
+          | {:restart, module()}
+          | {:ensure, String.t(), keyword()}
 
-        start_current(NodeRouter.dispatch(event).response, config, fun)
-      end)
-    else
-      fun.(config)
+  @doc "Routes complete runtime preparation, coordinating saved bindings with lifecycle cleanup."
+  @spec start(Bridge.runtime_target(), operation()) :: :ok | {:error, term()}
+  def start(config, operation) do
+    event =
+      Event.new(%{config: config, operation: operation}, :channels,
+        opts: [action: :connector_start_runtime, confidential: true] ++ coordination(config)
+      )
+
+    NodeRouter.dispatch(event).response
+  end
+
+  @doc "Rechecks eligibility and prepares the runtime inside the complete routed command."
+  def execute_start(%{config: config, operation: operation}) do
+    with {:ok, current} <- current_config(config) do
+      start_current(current, operation)
     end
   end
 
-  def with_start(config, fun), do: fun.(config)
+  def execute_start(_), do: {:error, :invalid_request}
 
-  defp start_current({:ok, current}, config, fun), do: fun.(Map.merge(config, current))
-  defp start_current({:error, _} = error, _config, _fun), do: error
-  defp start_current(_, _config, _fun), do: {:error, :connector_unavailable}
+  defp coordination(%{id: id, provider: _, kind: _, settings: settings} = config)
+       when is_integer(id) and id > 0 and is_map(settings) do
+    if Settings.saved_binding?(config), do: [coordination: {:connector_lifecycle, id}], else: []
+  end
+
+  defp coordination(_), do: []
+
+  defp current_config(config) do
+    case coordination(config) do
+      [] -> {:ok, config}
+      [coordination: resource] -> resolve_current(config, resource)
+    end
+  end
+
+  defp resolve_current(%{id: id, provider: provider, kind: kind} = config, resource) do
+    if NodeRouter.coordinated?(resource) do
+      event =
+        Event.new(%{channel_config_id: id, provider: provider, kind: kind}, :engine,
+          opts: [action: :connector_runtime_context, confidential: true, connector_runtime: true]
+        )
+
+      case NodeRouter.dispatch(event).response do
+        {:ok, current} -> {:ok, Map.merge(config, current)}
+        {:error, _} = error -> error
+        _ -> {:error, :connector_unavailable}
+      end
+    else
+      {:error, :coordination_required}
+    end
+  end
+
+  defp start_current(config, {:start, bridge, opts}),
+    do: Bridge.execute_start(bridge, config, opts)
+
+  defp start_current(config, {:restart, bridge}), do: Bridge.execute_restart(bridge, config)
+
+  defp start_current(config, {:ensure, bridge_id, opts}),
+    do: JidoChatBridge.execute_start(config, bridge_id, opts)
+
+  defp start_current(_, _), do: {:error, :invalid_request}
 
   @doc "Tears down ingress using supplied credentials, without configuration persistence."
   def teardown_ingress(%{kind: "data_source"}, _opts), do: {:ok, :not_required}

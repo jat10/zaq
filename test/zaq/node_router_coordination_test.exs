@@ -23,6 +23,7 @@ defmodule Zaq.NodeRouterCoordinationFixtures do
 end
 
 defmodule Zaq.NodeRouterCoordinationTest do
+  import Zaq.TestSupport.NodeRouterCoordination, only: [coordinate: 2]
   use ExUnit.Case, async: true
   use ExUnitProperties
 
@@ -30,13 +31,60 @@ defmodule Zaq.NodeRouterCoordinationTest do
 
   alias Zaq.{Event, NodeRouter}
 
+  test "coordination is exposed through dispatch options without an operation wrapper" do
+    refute function_exported?(NodeRouter, :with_coordination, 2)
+    refute function_exported?(NodeRouter, :with_coordination, 3)
+  end
+
+  test "an outer dispatch holds coordination between nested calls and local effects" do
+    supervisor = start_supervised!(Task.Supervisor)
+
+    for runtime <- [local_runtime(), remote_runtime(supervisor)] do
+      resource = {__MODULE__, make_ref()}
+
+      event =
+        event(__MODULE__, :complete_operation, [resource, self()])
+        |> Map.update!(:opts, &Keyword.put(&1, :coordination, resource))
+
+      operation = Task.async(fn -> NodeRouter.dispatch(event, runtime) end)
+      assert_receive {:between_calls, executor}
+      contender = contender(resource)
+
+      try do
+        refute_receive :entered, 50
+        send(executor, :finish)
+        assert %Event{response: :completed} = Task.await(operation)
+        assert Task.await(contender) == :entered
+        assert_receive :entered
+      after
+        send(executor, :finish)
+        Task.shutdown(operation, :brutal_kill)
+        Task.shutdown(contender, :brutal_kill)
+      end
+    end
+  end
+
+  def complete_operation(resource, observer) do
+    assert NodeRouter.dispatch(event(__MODULE__, :nested, [resource]), local_runtime()).response ==
+             :nested
+
+    send(observer, {:between_calls, self()})
+    receive do: (:finish -> :ok)
+    assert NodeRouter.coordinated?(resource)
+
+    assert NodeRouter.dispatch(event(__MODULE__, :nested, [resource]), local_runtime()).response ==
+             :nested
+
+    :completed
+  end
+
   test "nested local dispatch retains the operation hold until the outer scope returns" do
     resource = {__MODULE__, make_ref()}
     observer = self()
 
     root =
       Task.async(fn ->
-        NodeRouter.with_coordination(resource, fn ->
+        coordinate(resource, fn ->
           event = event(__MODULE__, :nested, [resource])
           assert NodeRouter.dispatch(event, local_runtime()).response == :nested
           send(observer, :outer_held)
@@ -59,7 +107,7 @@ defmodule Zaq.NodeRouterCoordinationTest do
 
     {:ok, root} =
       Task.Supervisor.start_child(supervisor, fn ->
-        NodeRouter.with_coordination(resource, fn ->
+        coordinate(resource, fn ->
           NodeRouter.dispatch(event(__MODULE__, :barrier, [observer]), remote_runtime(supervisor))
         end)
       end)
@@ -92,20 +140,20 @@ defmodule Zaq.NodeRouterCoordinationTest do
       resource = {__MODULE__, key, make_ref()}
 
       assert_raise RuntimeError, "abort", fn ->
-        NodeRouter.with_coordination(resource, fn ->
-          NodeRouter.with_coordination(resource, fn -> raise "abort" end)
+        coordinate(resource, fn ->
+          coordinate(resource, fn -> raise "abort" end)
         end)
       end
 
       refute NodeRouter.coordinated?(resource)
-      assert :released == NodeRouter.with_coordination(resource, fn -> :released end)
+      assert :released == coordinate(resource, fn -> :released end)
     end
   end
 
   test "independent resources can execute while another resource is held" do
-    NodeRouter.with_coordination({__MODULE__, make_ref()}, fn ->
+    coordinate({__MODULE__, make_ref()}, fn ->
       task =
-        Task.async(fn -> NodeRouter.with_coordination(make_ref(), fn -> :independent end) end)
+        Task.async(fn -> coordinate(make_ref(), fn -> :independent end) end)
 
       assert Task.await(task) == :independent
     end)
@@ -121,7 +169,7 @@ defmodule Zaq.NodeRouterCoordinationTest do
     event = event(__MODULE__, :barrier, [self()])
     event = %{event | next_hop: %{event.next_hop | type: :async}}
 
-    NodeRouter.with_coordination(resource, fn ->
+    coordinate(resource, fn ->
       assert NodeRouter.dispatch(event, runtime).response == nil
       assert_receive {:receiver_held, receiver}
       send(self(), {:async_receiver, receiver})
@@ -149,7 +197,7 @@ defmodule Zaq.NodeRouterCoordinationTest do
 
   def nested(resource) do
     true = NodeRouter.coordinated?(resource)
-    NodeRouter.with_coordination(resource, fn -> :nested end)
+    coordinate(resource, fn -> :nested end)
   end
 
   def barrier(observer) do
@@ -164,7 +212,7 @@ defmodule Zaq.NodeRouterCoordinationTest do
       Task.async(fn ->
         send(observer, :contending)
 
-        NodeRouter.with_coordination(resource, fn ->
+        coordinate(resource, fn ->
           send(observer, :entered)
           :entered
         end)
@@ -178,6 +226,7 @@ defmodule Zaq.NodeRouterCoordinationTest do
 end
 
 defmodule Zaq.NodeRouterCoordinationTimeoutTest do
+  import Zaq.TestSupport.NodeRouterCoordination, only: [coordinate: 2, coordinate: 3]
   use ExUnit.Case, async: false
 
   import Zaq.NodeRouterCoordinationFixtures, only: [event: 3, remote_runtime: 1]
@@ -195,12 +244,12 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
 
     default =
       Task.Supervisor.async_nolink(ctx.supervisor, fn ->
-        NodeRouter.with_coordination(resource, fn -> :unexpected end)
+        coordinate(resource, fn -> :unexpected end)
       end)
 
     longer =
       Task.Supervisor.async_nolink(ctx.supervisor, fn ->
-        NodeRouter.with_coordination(resource, fn -> :entered end, coordination_timeout: 30_000)
+        coordinate(resource, fn -> :entered end, coordination_timeout: 30_000)
       end)
 
     try do
@@ -246,7 +295,7 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
 
     caller =
       Task.Supervisor.async_nolink(ctx.supervisor, fn ->
-        NodeRouter.with_coordination(
+        coordinate(
           outer,
           fn ->
             # Consume most of the budget before the remote handoff. A receiver
@@ -263,7 +312,7 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
     try do
       assert %Event{response: {:error, :coordination_timeout}} = Task.await(caller, 1_000)
       refute_received :handler_ran
-      assert :released = NodeRouter.with_coordination(outer, fn -> :released end)
+      assert :released = coordinate(outer, fn -> :released end)
     after
       Task.shutdown(holder, :brutal_kill)
       Task.shutdown(caller, :brutal_kill)
@@ -273,17 +322,17 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
   test "expiry never interrupts an operation that already owns the resource", ctx do
     resource = {__MODULE__, make_ref()}
 
-    NodeRouter.with_coordination(
+    coordinate(
       resource,
       fn ->
         Process.send_after(self(), :past_deadline, 30)
         receive do: (:past_deadline -> :ok)
         assert NodeRouter.coordinated?(resource)
-        assert :nested = NodeRouter.with_coordination(resource, fn -> :nested end)
+        assert :nested = coordinate(resource, fn -> :nested end)
 
         contender =
           Task.Supervisor.async_nolink(ctx.supervisor, fn ->
-            NodeRouter.with_coordination(resource, fn -> :unexpected end, coordination_timeout: 0)
+            coordinate(resource, fn -> :unexpected end, coordination_timeout: 0)
           end)
 
         assert Task.await(contender) == {:error, :coordination_timeout}
@@ -295,9 +344,7 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
   test "invalid timeouts are rejected before running the operation" do
     for timeout <- [-1, nil, :infinity, "5000"] do
       assert_raise ArgumentError, fn ->
-        NodeRouter.with_coordination(make_ref(), fn -> flunk("must not execute") end,
-          coordination_timeout: timeout
-        )
+        coordinate(make_ref(), fn -> flunk("must not execute") end, coordination_timeout: timeout)
       end
     end
   end
@@ -312,7 +359,7 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
     waiter =
       Task.Supervisor.async_nolink(supervisor, fn ->
         send(observer, :waiter_started)
-        NodeRouter.with_coordination(resource, fn -> :entered end, coordination_timeout: 50)
+        coordinate(resource, fn -> :entered end, coordination_timeout: 50)
       end)
 
     try do
@@ -322,12 +369,12 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
 
       # A timed-out waiter must not release the live holder's lock.
       assert {:error, :coordination_timeout} =
-               NodeRouter.with_coordination(resource, fn -> :entered end, coordination_timeout: 0)
+               coordinate(resource, fn -> :entered end, coordination_timeout: 0)
 
       send(holder.pid, :release)
       assert Task.await(holder) == :released
 
-      assert :entered = NodeRouter.with_coordination(resource, fn -> :entered end)
+      assert :entered = coordinate(resource, fn -> :entered end)
     after
       Task.shutdown(holder, :brutal_kill)
       Task.shutdown(waiter, :brutal_kill)
@@ -358,7 +405,7 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
 
     parent =
       Task.Supervisor.async_nolink(supervisor, fn ->
-        NodeRouter.with_coordination(resource, fn ->
+        coordinate(resource, fn ->
           record_operation(history, :parent)
           assert NodeRouter.dispatch(event, runtime).response == nil
         end)
@@ -368,11 +415,11 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
     assert Task.yield(parent, 30) == nil
 
     assert {:error, :coordination_timeout} =
-             NodeRouter.with_coordination(resource, fn -> :entered end, coordination_timeout: 0)
+             coordinate(resource, fn -> :entered end, coordination_timeout: 0)
 
     contender =
       Task.Supervisor.async_nolink(supervisor, fn ->
-        NodeRouter.with_coordination(resource, fn ->
+        coordinate(resource, fn ->
           record_operation(history, :interloper)
         end)
       end)
@@ -399,9 +446,7 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
   def notify(observer), do: send(observer, :handler_ran)
 
   def acquire_nested(resource, observer) do
-    NodeRouter.with_coordination(resource, fn -> notify(observer) end,
-      coordination_timeout: 30_000
-    )
+    coordinate(resource, fn -> notify(observer) end, coordination_timeout: 30_000)
   end
 
   defp hold(supervisor, resource) do
@@ -409,7 +454,7 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
 
     holder =
       Task.Supervisor.async_nolink(supervisor, fn ->
-        NodeRouter.with_coordination(resource, fn ->
+        coordinate(resource, fn ->
           send(observer, :held)
           receive do: (:release -> :released)
         end)
@@ -423,6 +468,7 @@ defmodule Zaq.NodeRouterCoordinationTimeoutTest do
 end
 
 defmodule Zaq.NodeRouterAsyncHandoffTest do
+  import Zaq.TestSupport.NodeRouterCoordination, only: [coordinate: 2, coordinate: 3]
   use ExUnit.Case, async: true
 
   alias Zaq.NodeRouter
@@ -449,14 +495,12 @@ defmodule Zaq.NodeRouterAsyncHandoffTest do
     assert_receive {:executing, worker}
 
     assert {:error, :coordination_timeout} =
-             NodeRouter.with_coordination(ctx.resource, fn -> :entered end,
-               coordination_timeout: 0
-             )
+             coordinate(ctx.resource, fn -> :entered end, coordination_timeout: 0)
 
     monitor = Process.monitor(worker)
     send(worker, :finish)
     assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}
-    assert :entered = NodeRouter.with_coordination(ctx.resource, fn -> :entered end)
+    assert :entered = coordinate(ctx.resource, fn -> :entered end)
   end
 
   test "timeout cancels a delayed worker before releasing caller holds", ctx do
@@ -472,7 +516,7 @@ defmodule Zaq.NodeRouterAsyncHandoffTest do
     refute Process.alive?(worker)
     send(worker, :resume)
     refute_receive :executed, 30
-    assert :entered = NodeRouter.with_coordination(ctx.resource, fn -> :entered end)
+    assert :entered = coordinate(ctx.resource, fn -> :entered end)
   end
 
   test "caller death before commit cancels execution", ctx do
@@ -493,7 +537,7 @@ defmodule Zaq.NodeRouterAsyncHandoffTest do
     send(worker, :resume)
     assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}
     refute_receive :executed, 30
-    assert :entered = NodeRouter.with_coordination(ctx.resource, fn -> :entered end)
+    assert :entered = coordinate(ctx.resource, fn -> :entered end)
   end
 
   test "worker death and startup failure are returned to the caller", ctx do
@@ -515,7 +559,7 @@ defmodule Zaq.NodeRouterAsyncHandoffTest do
 
     assert reason in [:shutdown, :noproc]
 
-    assert :entered = NodeRouter.with_coordination(ctx.resource, fn -> :entered end)
+    assert :entered = coordinate(ctx.resource, fn -> :entered end)
   end
 
   test "caller death after ready but before commit releases prepared worker without executing",
@@ -544,7 +588,7 @@ defmodule Zaq.NodeRouterAsyncHandoffTest do
     Task.shutdown(parent, :brutal_kill)
     assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}
     refute_receive :executed, 30
-    assert :entered = NodeRouter.with_coordination(ctx.resource, fn -> :entered end)
+    assert :entered = coordinate(ctx.resource, fn -> :entered end)
   end
 
   defp delayed_start(supervisor, observer) do

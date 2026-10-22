@@ -111,7 +111,12 @@ startup takes the same lock and resolves a fresh enabled,
 nonarchived snapshot through confidential `:connector_runtime_context` with the
 explicit runtime capability. The complete command uses NodeRouter's
 `{:connector_lifecycle, id}` coordination scope; nested receivers independently
-hold it even if the Engine caller dies. Domain code carries no requester tokens.
+hold it even if the Engine caller dies. Lifecycle entry points dispatch the complete
+operation through confidential `:connector_lifecycle` with the explicit trusted
+`connector_lifecycle: true` option. This internal command reuses domain execution;
+operator authorization remains in the existing Actions/archive API, and enable
+rechecks the actor after coordination. Direct Action/workflow callers use the same
+entry points. Domain code carries no requester tokens.
 Database row locks remain confined to persistence transactions. See
 [router coordination](../architecture.md#opt-in-resource-coordination) for scope
 propagation and connected-node limits.
