@@ -11,6 +11,7 @@ defmodule Zaq.Channels.SanitizedMediaHistoryIntegrationTest do
   alias Zaq.Materialization.Handle
   alias Zaq.Permissions
   alias Zaq.Permissions.ChannelHistoryResource
+  alias Zaq.TestSupport.ApplicationEnv
 
   defmodule MediaTransport do
     def resolve_conn(_opts), do: {:ok, :connection}
@@ -45,7 +46,7 @@ defmodule Zaq.Channels.SanitizedMediaHistoryIntegrationTest do
 
   setup do
     channels = Application.fetch_env!(:zaq, :channels)
-    router = Application.fetch_env(:zaq, :chat_bridge_node_router_module)
+    ApplicationEnv.preserve(:zaq, [:channels, :chat_bridge_node_router_module])
 
     Application.put_env(
       :zaq,
@@ -54,15 +55,6 @@ defmodule Zaq.Channels.SanitizedMediaHistoryIntegrationTest do
     )
 
     Application.put_env(:zaq, :chat_bridge_node_router_module, LocalRouter)
-
-    on_exit(fn ->
-      Application.put_env(:zaq, :channels, channels)
-
-      case router do
-        {:ok, original} -> Application.put_env(:zaq, :chat_bridge_node_router_module, original)
-        :error -> Application.delete_env(:zaq, :chat_bridge_node_router_module)
-      end
-    end)
 
     config =
       %ChannelConfig{}

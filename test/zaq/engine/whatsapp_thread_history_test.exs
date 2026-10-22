@@ -9,7 +9,7 @@ defmodule Zaq.Engine.WhatsAppThreadHistoryTest do
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Api, as: EngineApi
-  alias Zaq.Engine.{ChannelConfig, ChannelHistoryMembership, Conversations, HistoryIngress}
+  alias Zaq.Engine.{ChannelHistoryMembership, Conversations, HistoryIngress}
   alias Zaq.Engine.Conversations.{Message, Transcript}
   alias Zaq.Event
   alias Zaq.Materialization.Handle
@@ -329,16 +329,8 @@ defmodule Zaq.Engine.WhatsAppThreadHistoryTest do
     {input, binding, projection}
   end
 
-  defp connector do
-    %ChannelConfig{}
-    |> ChannelConfig.changeset(%{
-      name: "Thread #{Ecto.UUID.generate()}",
-      provider: "whatsapp",
-      kind: "retrieval",
-      enabled: true
-    })
-    |> Repo.insert!()
-  end
+  defp connector,
+    do: Zaq.WhatsAppFixtures.connector(%{name: "Thread #{Ecto.UUID.generate()}", enabled: true})
 
   defp add_identity(person, config) do
     assert {:ok, _} =

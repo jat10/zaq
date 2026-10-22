@@ -73,9 +73,7 @@ defmodule Zaq.Engine.Connect.CredentialDocumentsTest do
     assert {:error, :rollback} =
              Repo.transaction(fn ->
                assert :ok =
-                        Connect.credential_document(%{
-                          op: :put_many,
-                          binding: binding,
+                        document(binding, :put_many, %{
                           records: %{{"a", "key"} => "replacement", {"a", "new"} => "new"}
                         })
 
@@ -119,11 +117,7 @@ defmodule Zaq.Engine.Connect.CredentialDocumentsTest do
     assert {:error, :rollback} =
              Repo.transaction(fn ->
                assert :ok =
-                        Connect.credential_document(%{
-                          op: :delete_namespace,
-                          binding: binding,
-                          namespace: "session"
-                        })
+                        document(binding, :delete_namespace, %{namespace: "session"})
 
                Repo.rollback(:rollback)
              end)
@@ -444,14 +438,7 @@ defmodule Zaq.Engine.Connect.CredentialDocumentsConcurrencyTest do
   end
 
   defp operation(binding, op, key, value \\ nil),
-    do:
-      Connect.credential_document(%{
-        binding: binding,
-        op: op,
-        namespace: "session",
-        key: key,
-        value: value
-      })
+    do: document(binding, op, %{namespace: "session", key: key, value: value})
 
   defp notification_query(binding) do
     from j in Oban.Job,

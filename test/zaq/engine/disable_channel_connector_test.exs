@@ -54,7 +54,7 @@ defmodule Zaq.Engine.DisableChannelConnectorTest do
     request = Map.put(descriptor, :op, :disable)
 
     assert {:ok, %{result: {:ok, %{status: :disabled, runtime: :synced}}}} =
-             Jido.Exec.run(DisableChannelConnector, %{request: request}, context)
+             run(request, context)
 
     assert_receive {:channels_command, :connector_logout, %{config: %{id: id, enabled: true}}}
     assert id == config.id
@@ -65,7 +65,7 @@ defmodule Zaq.Engine.DisableChannelConnectorTest do
     refute Repo.get!(ChannelConfig, id).enabled
 
     assert {:ok, %{result: {:ok, %{status: :already_disabled}}}} =
-             Jido.Exec.run(DisableChannelConnector, %{request: request}, context)
+             run(request, context)
 
     refute_received {:channels_command, :connector_logout, _}
   end
@@ -75,11 +75,7 @@ defmodule Zaq.Engine.DisableChannelConnectorTest do
     assert {:ok, %{result: {:ok, descriptor}}} = run(:context, config, context)
 
     assert {:ok, %{result: {:error, {:logout_failed, :logout_failed}}}} =
-             Jido.Exec.run(
-               DisableChannelConnector,
-               %{request: Map.put(descriptor, :op, :disable)},
-               context
-             )
+             run(Map.put(descriptor, :op, :disable), context)
 
     assert Repo.get!(ChannelConfig, config.id).enabled
     refute_received {:channels_command, :connector_sync_runtime, _}
@@ -93,11 +89,7 @@ defmodule Zaq.Engine.DisableChannelConnectorTest do
     config |> Ecto.Changeset.change(name: "Changed") |> Repo.update!()
 
     assert {:ok, %{result: {:error, :stale_connector}}} =
-             Jido.Exec.run(
-               DisableChannelConnector,
-               %{request: Map.put(descriptor, :op, :disable)},
-               context
-             )
+             run(Map.put(descriptor, :op, :disable), context)
 
     assert Repo.get!(ChannelConfig, config.id).enabled
     refute_received {:channels_command, _, _}
@@ -111,11 +103,7 @@ defmodule Zaq.Engine.DisableChannelConnectorTest do
     assert {:ok, %{result: {:ok, descriptor}}} = run(:context, config, context)
 
     assert {:ok, %{result: {:ok, %{status: :disabled, runtime: {:pending, :unavailable}}}}} =
-             Jido.Exec.run(
-               DisableChannelConnector,
-               %{request: Map.put(descriptor, :op, :disable)},
-               context
-             )
+             run(Map.put(descriptor, :op, :disable), context)
 
     refute Repo.get!(ChannelConfig, config.id).enabled
   end
@@ -138,6 +126,9 @@ defmodule Zaq.Engine.DisableChannelConnectorTest do
     refute_received {:channels_command, _, _}
   end
 
+  defp run(request, context),
+    do: Jido.Exec.run(DisableChannelConnector, %{request: request}, context)
+
   defp run(op, config, context) do
     Jido.Exec.run(
       DisableChannelConnector,
@@ -153,9 +144,6 @@ defmodule Zaq.Engine.DisableChannelConnectorTest do
     )
   end
 
-  defp insert_config(provider) do
-    %ChannelConfig{}
-    |> ChannelConfig.changeset(%{name: "Account", provider: provider, kind: "retrieval"})
-    |> Repo.insert!()
-  end
+  defp insert_config(provider),
+    do: Zaq.WhatsAppFixtures.connector(%{name: "Account", provider: provider})
 end

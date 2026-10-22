@@ -3,7 +3,6 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
 
   alias Jido.Chat.{ActionEvent, EventEnvelope}
   alias Jido.Chat.WhatsApp.{Adapter, ConnectionWorker}
-  alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.JidoChatBridge.State
   alias Zaq.TestSupport.LinkedDeviceLifecycle
 
@@ -27,11 +26,7 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
   setup do
     id = System.unique_integer([:positive])
 
-    profile =
-      Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
-        context: :runtime,
-        sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})
-      ).profile
+    profile = Zaq.WhatsAppFixtures.bound_profile(id)
 
     config = %{id: id, provider: "whatsapp", settings: %{"credential_document_id" => 1}}
 
@@ -77,12 +72,6 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
     assert metadata.attempt_id == ConnectionWorker.status(context.worker).attempt_id
     assert metadata.qr == "synthetic-review-qr"
     assert State.ingress_status(context.state) == metadata.presentation
-  end
-
-  test "ZAQ exposes the pairing QR before acknowledging the lifecycle event", context do
-    send(context.relay, {:amarula, :connection_update, %{qr: "synthetic-review-qr"}})
-    assert_receive {:delivered, %EventEnvelope{event_type: :action}, :ok}, 1_000
-
     assert %{phase: :pairing, qr: "synthetic-review-qr"} = State.ingress_status(context.state)
   end
 
@@ -99,12 +88,7 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
           %{envelope.payload | adapter_name: :telegram}
         ] do
       assert {:error, :invalid_adapter} =
-               State.process_listener_payload(
-                 context.state,
-                 context.config,
-                 %{envelope | payload: action},
-                 []
-               )
+               deliver(context, %{envelope | payload: action})
 
       assert State.ingress_status(context.state) == nil
     end
@@ -118,12 +102,7 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
           %{envelope.payload | metadata: Map.put(envelope.payload.metadata, :qr, %{secret: true})}
         ] do
       assert :ok =
-               State.process_listener_payload(
-                 context.state,
-                 context.config,
-                 %{envelope | payload: action},
-                 []
-               )
+               deliver(context, %{envelope | payload: action})
 
       assert State.ingress_status(context.state) == nil
     end
@@ -153,7 +132,7 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
       )
 
     envelope = %{envelope | payload: %{envelope.payload | metadata: metadata}}
-    assert :ok = State.process_listener_payload(context.state, context.config, envelope, [])
+    assert :ok = deliver(context, envelope)
     assert State.ingress_status(context.state) == presentation
   end
 
@@ -168,4 +147,7 @@ defmodule Zaq.Channels.JidoChatBridge.WhatsAppLifecycleIngressTest do
     assert_receive {:delivered, _, :ok}, 1_000
     assert %{phase: :connected, qr: nil} = State.ingress_status(context.state)
   end
+
+  defp deliver(context, envelope),
+    do: State.process_listener_payload(context.state, context.config, envelope, [])
 end

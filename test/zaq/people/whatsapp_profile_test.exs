@@ -6,7 +6,6 @@ defmodule Zaq.People.WhatsAppProfileTest do
   alias Zaq.Accounts.People
   alias Zaq.Channels.Bridge
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Engine.ChannelConfig
   alias Zaq.People.IdentityResolver
 
   test "a profile phone links a new WhatsApp identity to the existing person" do
@@ -150,14 +149,7 @@ defmodule Zaq.People.WhatsAppProfileTest do
   end
 
   defp connection do
-    config =
-      %ChannelConfig{}
-      |> ChannelConfig.changeset(%{
-        name: Ecto.UUID.generate(),
-        provider: "whatsapp",
-        kind: "retrieval"
-      })
-      |> Repo.insert!()
+    config = Zaq.WhatsAppFixtures.connector()
 
     profile = Bridge.fetch_connection_details_for_config(config).profile
     assert {:ok, conn} = Amarula.Testing.start_offline(profile: profile)
