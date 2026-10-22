@@ -1,4 +1,4 @@
-defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
+defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
   use Zaq.DataCase, async: false
 
   import Zaq.AccountsFixtures
@@ -10,10 +10,12 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
   alias Zaq.{Event, NodeRouter}
 
   defmodule OfflineTransport do
+    alias Jido.Chat.WhatsApp.Transport.GuardedStorage
+
     def connect(config, opts) do
       Amarula.Testing.start_offline(
         profile: config.profile,
-        storage: config.storage,
+        storage: {GuardedStorage, storage: config.storage, notify: Keyword.fetch!(opts, :parent)},
         parent_pid: Keyword.fetch!(opts, :parent)
       )
     end
@@ -135,7 +137,7 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
     selected = selected |> Ecto.Changeset.change(settings: settings) |> Repo.update!()
     assert {:ok, descriptor} = command(selected, :context, actor)
 
-    assert {:error, {:logout_failed, :invalid_binding}} =
+    assert {:error, {:disable_failed, :invalid_binding}} =
              dispatch(Map.put(descriptor, :op, :disable), actor)
 
     assert Repo.get!(ChannelConfig, selected.id).enabled
@@ -274,12 +276,33 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
         actor
       )
 
-  defp dispatch(request, actor) do
-    Event.new(request, :engine,
+  defp dispatch(%{op: :context} = request, actor) do
+    Event.new(%{operation: :context, request: request}, :engine,
       actor: actor,
-      opts: [action: :disable_channel_connector, confidential: true]
+      opts: [action: :connector_lifecycle, confidential: true, connector_lifecycle: true]
     )
     |> NodeRouter.dispatch()
     |> Map.fetch!(:response)
+  end
+
+  defp dispatch(request, actor) do
+    before = Repo.get!(ChannelConfig, request.channel_config_id)
+    after_config = %{before | enabled: false}
+
+    event =
+      Event.new(
+        %{
+          before_config: ChannelConfig.to_runtime_config(before),
+          after_config: ChannelConfig.to_runtime_config(after_config)
+        },
+        :channels,
+        actor: actor,
+        opts: [action: :sync_channel_runtime, confidential: true]
+      )
+
+    with :ok <- NodeRouter.dispatch(event).response,
+         {:ok, _} <- before |> Ecto.Changeset.change(enabled: false) |> Repo.update() do
+      {:ok, %{status: :disabled, runtime: :synced}}
+    end
   end
 end

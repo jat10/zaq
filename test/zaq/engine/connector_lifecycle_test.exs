@@ -2,13 +2,30 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
   use Zaq.DataCase, async: true
   use ExUnitProperties
 
+  import Zaq.AccountsFixtures
+
   alias Zaq.Engine.Api
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.ConnectorLifecycle
   alias Zaq.Event
 
   defmodule Router do
-    def dispatch(%Event{opts: opts} = event) do
+    alias Zaq.Channels.Api, as: ChannelsApi
+
+    def dispatch(%Event{opts: opts, request: %{before_config: _, after_config: _}} = event) do
+      opts =
+        opts
+        |> Keyword.put(:runtime_module, __MODULE__)
+        |> Keyword.put(:communication_runtime_module, __MODULE__)
+        |> Keyword.put(:data_source_runtime_module, __MODULE__)
+
+      result = ChannelsApi.handle_event(%{event | opts: opts}, :connector_sync_runtime, nil)
+      if Process.get(:router_mode) == :non_event, do: result.response, else: result
+    end
+
+    def dispatch(%Event{opts: opts} = event), do: record(event, opts)
+
+    defp record(event, opts) do
       send(self(), {:channels_call, opts[:action], event.request})
 
       supplied = event.request[:config] || event.request[:after_config]
@@ -27,7 +44,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
           {:connector_teardown_ingress, _} ->
             Process.get(:teardown_response, {:ok, :not_required})
 
-          {:connector_prepare_disable, _} ->
+          {:prepare_transition, _} ->
             Process.get(:disable_response, :ok)
 
           {:connector_sync_runtime, _} ->
@@ -41,6 +58,21 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
         %{event | response: response}
       end
     end
+
+    def before_disable(config, _actor, _opts) do
+      dispatch(Event.new(%{config: config}, :channels, opts: [action: :prepare_transition])).response
+    end
+
+    def sync_config_runtime(before_config, after_config) do
+      event =
+        Event.new(%{before_config: before_config, after_config: after_config}, :channels,
+          opts: [action: :connector_sync_runtime]
+        )
+
+      record(event, event.opts).response
+    end
+
+    def stop_runtime(config), do: sync_config_runtime(%{config | enabled: true}, config)
   end
 
   defmodule DataSourcesStub do
@@ -56,6 +88,9 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
   end
 
   setup do
+    actor = %{user_id: super_admin_fixture(%{must_change_password: false}).id}
+    Process.put(:actor, actor)
+
     config =
       %ChannelConfig{}
       |> ChannelConfig.changeset(%{
@@ -137,19 +172,21 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     assert {:ok, %{channel_config_id: id, status: :archived}} =
              ConnectorLifecycle.archive(
                %{channel_config_id: to_string(config.id), provider: "disk", kind: "retrieval"},
-               %{user_id: 1},
+               Process.get(:actor),
                router: Router
              )
 
     assert id == config.id
     refute Repo.get!(ChannelConfig, id).enabled
     assert_received {:channels_call, :connector_teardown_ingress, _}
-    assert_received {:channels_call, :connector_prepare_disable, _}
+    assert_received {:channels_call, :prepare_transition, _}
     assert_received {:channels_call, :connector_sync_runtime, _}
-    assert {:error, :invalid_request} = ConnectorLifecycle.archive(:not_a_map, %{user_id: 1}, [])
 
     assert {:error, :invalid_request} =
-             ConnectorLifecycle.archive(%{}, %{user_id: 1}, :not_a_list)
+             ConnectorLifecycle.archive(:not_a_map, Process.get(:actor), [])
+
+    assert {:error, :invalid_request} =
+             ConnectorLifecycle.archive(%{}, Process.get(:actor), :not_a_list)
 
     refute_received {:channels_call, _, _}
   end
@@ -168,7 +205,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     assert {:ok, result} =
              ConnectorLifecycle.archive(
                Map.take(fresh_descriptor, [:channel_config_id, :provider, :kind, :revision]),
-               %{user_id: 1},
+               Process.get(:actor),
                router: Router,
                data_sources_module: DataSourcesStub
              )
@@ -193,7 +230,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     request = %{channel_config_id: config.id, provider: "disk", kind: "retrieval"}
 
     assert {:ok, %{runtime: :synced}} =
-             ConnectorLifecycle.archive(request, %{user_id: 1}, router: Router)
+             ConnectorLifecycle.archive(request, Process.get(:actor), router: Router)
   end
 
   test "router ingress error and unexpected response keep connector live" do
@@ -206,7 +243,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
         ] do
       Process.put(:teardown_response, response)
       request = %{channel_config_id: config.id, provider: "disk", kind: "retrieval"}
-      assert ^expected = ConnectorLifecycle.archive(request, %{user_id: 1}, router: Router)
+      assert ^expected = ConnectorLifecycle.archive(request, Process.get(:actor), router: Router)
       assert Repo.get!(ChannelConfig, config.id).archived_at == nil
       refute_received {:channels_call, :connector_sync_runtime, _}
     end
@@ -219,7 +256,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     request = %{channel_config_id: config.id, provider: "disk", kind: "retrieval"}
 
     assert {:error, {:runtime_stop_failed, {:unexpected_response, :unexpected}}} =
-             ConnectorLifecycle.archive(request, %{user_id: 1}, router: Router)
+             ConnectorLifecycle.archive(request, Process.get(:actor), router: Router)
 
     refute Repo.get!(ChannelConfig, config.id).archived_at
     refute Repo.get!(ChannelConfig, config.id).enabled
@@ -252,14 +289,14 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
       assert {:ok, %{status: :archived, runtime: :synced}} =
                ConnectorLifecycle.archive(
                  %{channel_config_id: config.id, provider: provider, kind: "retrieval"},
-                 %{user_id: 1},
+                 Process.get(:actor),
                  router: Router
                )
 
       assert Process.get(:lifecycle_states) == [
                {:connector_teardown_ingress, true, nil},
-               {:connector_prepare_disable, true, nil},
-               {:connector_sync_runtime, false, nil}
+               {:prepare_transition, true, nil},
+               {:connector_sync_runtime, true, nil}
              ]
 
       assert Repo.get!(ChannelConfig, config.id).archived_at
@@ -280,20 +317,20 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
   } do
     Process.put(:runtime_response, {:error, :unavailable})
     assert {:error, {:runtime_stop_failed, :unavailable}} = archive()
-    assert_received {:channels_call, :connector_prepare_disable, _}
+    assert_received {:channels_call, :prepare_transition, _}
     refute Repo.get!(ChannelConfig, config.id).enabled
     refute Repo.get!(ChannelConfig, config.id).archived_at
 
     Process.put(:runtime_response, :ok)
     assert {:ok, %{status: :archived}} = archive()
-    refute_received {:channels_call, :connector_prepare_disable, _}
+    refute_received {:channels_call, :prepare_transition, _}
     assert Repo.get!(ChannelConfig, config.id).archived_at
   end
 
-  test "re-enabling during runtime shutdown prevents archival", %{config: config} do
+  test "editing during runtime shutdown prevents archival", %{config: config} do
     Process.put(:on_runtime_stop, fn ->
       Repo.get!(ChannelConfig, config.id)
-      |> Ecto.Changeset.change(enabled: true)
+      |> Ecto.Changeset.change(name: "Changed during shutdown")
       |> Repo.update!()
     end)
 
@@ -311,7 +348,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
       Process.put(:router_mode, mode)
 
       assert {:error, {:ingress_teardown_failed, :channels_unavailable}} =
-               ConnectorLifecycle.archive(request, %{user_id: 1}, router: Router)
+               ConnectorLifecycle.archive(request, Process.get(:actor), router: Router)
 
       assert Repo.get!(ChannelConfig, config.id).archived_at == nil
       refute_received {:channels_call, :connector_sync_runtime, _}
@@ -325,7 +362,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
         provider: "disk",
         kind: Repo.get!(ChannelConfig, Process.get(:config_id)).kind
       },
-      %{user_id: 1},
+      Process.get(:actor),
       router: Router,
       data_sources_module: DataSourcesStub
     )

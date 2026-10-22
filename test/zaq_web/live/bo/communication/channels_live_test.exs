@@ -61,8 +61,22 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       fetch_state(:sync_provider_runtime_result, :ok)
     end
 
-    def capability_snapshot(_config) do
-      fetch_state(:capability_snapshot, {:ok, %{resolved: %{}}})
+    def capability_snapshot(config) do
+      default =
+        {:ok, %{resolved: %{logout_on_disable: config.provider in [:whatsapp, "whatsapp"]}}}
+
+      case fetch_state(:capability_snapshot, default) do
+        {:ok, %{resolved: resolved} = snapshot} ->
+          {:ok,
+           %{
+             snapshot
+             | resolved:
+                 Map.put(resolved, :logout_on_disable, config.provider in [:whatsapp, "whatsapp"])
+           }}
+
+        other ->
+          other
+      end
     end
 
     def authentication_capability(_provider),
@@ -307,6 +321,25 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     refute has_element?(view, "#disable-config-confirmation")
   end
 
+  test "capability discovery failure cannot silently skip destructive disable confirmation", %{
+    conn: conn
+  } do
+    admin = super_admin_fixture(%{must_change_password: false})
+    channels = Application.get_env(:zaq, :channels)
+    Application.put_env(:zaq, :channels, Map.put(channels, :whatsapp, %{bridge: BridgeFake}))
+    config = insert_channel_config(%{provider: "whatsapp"})
+    BridgeFake.put(:capability_snapshot, {:error, :unavailable})
+
+    {:ok, view, _} =
+      live(init_test_session(conn, %{user_id: admin.id}), ~p"/bo/channels/retrieval/whatsapp")
+
+    view |> element("#toggle-config-#{config.id}") |> render_click()
+    assert render(view) =~ "Cannot disable this profile"
+    assert Repo.get!(ChannelConfig, config.id).enabled
+    assert BridgeFake.calls(:logout) == []
+    assert BridgeFake.calls(:sync_runtime) == []
+  end
+
   test "WhatsApp logout failure and stale confirmation preserve enabled state", %{conn: conn} do
     admin = super_admin_fixture(%{must_change_password: false})
     conn = init_test_session(conn, %{user_id: admin.id})
@@ -378,7 +411,12 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       assert Repo.aggregate(ChannelConfig, :count) == config_count
       assert BridgeFake.calls(:logout) == [first.id]
 
-      assert [{before_enable, enabled}] = BridgeFake.calls(:sync_runtime)
+      assert [{before_disable, disabled}, {before_enable, enabled}] =
+               BridgeFake.calls(:sync_runtime)
+
+      assert before_disable.id == first.id
+      assert before_disable.enabled
+      refute disabled.enabled
       refute before_enable.enabled
       assert enabled.id == first.id
       assert enabled.enabled
@@ -386,14 +424,14 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       view |> element("#linked-device-pairing button", "Close") |> render_click()
       refute has_element?(view, "#linked-device-pairing")
       assert Repo.get!(ChannelConfig, first.id).enabled
-      assert length(BridgeFake.calls(:sync_runtime)) == 1
+      assert length(BridgeFake.calls(:sync_runtime)) == 2
       assert BridgeFake.calls(:logout) == [first.id]
 
       # A second toggle asks to disable; it cannot start a duplicate runtime.
       view |> element("#toggle-config-#{first.id}") |> render_click()
       assert has_element?(view, "#disable-config-confirmation")
       view |> element("#disable-config-confirmation button", "Cancel") |> render_click()
-      assert length(BridgeFake.calls(:sync_runtime)) == 1
+      assert length(BridgeFake.calls(:sync_runtime)) == 2
       assert Repo.get!(ChannelConfig, first.id).enabled
     end
 
@@ -638,7 +676,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     refute html =~ disabled_agent.name
   end
 
-  test "delete stops a disabled connector before archive and permits retry", %{conn: conn} do
+  test "delete stops before disable persistence and permits retry", %{conn: conn} do
     config = insert_channel_config(%{})
     BridgeFake.put(:stop_runtime, {:error, :shutdown_failed})
     {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/mattermost")
@@ -648,7 +686,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     assert %ChannelConfig{enabled: false, archived_at: nil} = Repo.get!(ChannelConfig, config.id)
     assert has_element?(view, "#toggle-config-#{config.id}", "Enable")
     assert render(view) =~ "Retry Delete to finish."
-    assert [%{enabled: false, archived_at: nil}] = BridgeFake.calls(:stop_runtime_states)
+    assert [%{enabled: true, archived_at: nil}] = BridgeFake.calls(:stop_runtime_states)
     assert BridgeFake.calls(:logout) == []
 
     BridgeFake.put(:stop_runtime, :ok)

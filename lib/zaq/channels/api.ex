@@ -343,10 +343,12 @@ defmodule Zaq.Channels.Api do
     runtime_module = Keyword.get(event.opts, :runtime_module, CommunicationBridge)
 
     response =
-      runtime_module.sync_config_runtime(
-        ChannelConfig.to_runtime_config(before_config),
-        ChannelConfig.to_runtime_config(after_config)
-      )
+      with :ok <- prepare_runtime_disable(before_config, after_config, event) do
+        runtime_module.sync_config_runtime(
+          ChannelConfig.to_runtime_config(before_config),
+          ChannelConfig.to_runtime_config(after_config)
+        )
+      end
 
     %{event | response: response}
   end
@@ -387,19 +389,6 @@ defmodule Zaq.Channels.Api do
 
   def handle_event(
         %Event{request: %{config: config}} = event,
-        :connector_prepare_disable,
-        _context
-      ) do
-    response =
-      if Keyword.get(event.opts, :confidential) == true,
-        do: communication_bridge_module(event).before_disable(config, event.actor, event.opts),
-        else: {:error, :confidential_event_required}
-
-    %{event | response: response}
-  end
-
-  def handle_event(
-        %Event{request: %{config: config}} = event,
         :connector_teardown_ingress,
         _context
       ) do
@@ -417,9 +406,13 @@ defmodule Zaq.Channels.Api do
         _context
       ) do
     response =
-      if Keyword.get(event.opts, :confidential) == true,
-        do: ConnectorRuntime.sync_runtime(before_config, after_config, event.opts),
-        else: {:error, :confidential_event_required}
+      if Keyword.get(event.opts, :confidential) == true do
+        with :ok <- prepare_runtime_disable(before_config, after_config, event) do
+          ConnectorRuntime.sync_runtime(before_config, after_config, event.opts)
+        end
+      else
+        {:error, :confidential_event_required}
+      end
 
     %{event | response: response}
   end
@@ -929,15 +922,6 @@ defmodule Zaq.Channels.Api do
     %{event | response: response}
   end
 
-  def handle_event(%Event{request: %{config: config}} = event, :connector_logout, _context) do
-    response =
-      with :ok <- authorize_pairing_operator(event) do
-        communication_bridge_module(event).logout(config, event.opts)
-      end
-
-    %{event | response: response}
-  end
-
   def handle_event(%Event{} = event, :pair_linked_device, _context) do
     response =
       case Jido.Exec.run(Zaq.Channels.Actions.PairLinkedDevice, %{request: event.request}, %{
@@ -1412,4 +1396,32 @@ defmodule Zaq.Channels.Api do
     do: {:ok, %{provider: "web"}}
 
   defp normalize_upsert_config(_provider, config), do: config
+
+  defp prepare_runtime_disable(%{enabled: true} = before, %{enabled: false}, event) do
+    runtime = Keyword.get(event.opts, :runtime_module, CommunicationBridge)
+
+    result =
+      with {:module, _} <- Code.ensure_loaded(runtime) do
+        if function_exported?(runtime, :before_disable, 3),
+          do:
+            runtime.before_disable(
+              ChannelConfig.to_runtime_config(before),
+              event.actor,
+              event.opts
+            ),
+          else: :ok
+      end
+
+    case result do
+      :ok -> :ok
+      {:error, reason} -> {:error, {:disable_failed, reason}}
+      other -> {:error, {:disable_failed, {:unexpected_response, other}}}
+    end
+  rescue
+    _ -> {:error, {:disable_failed, :preparation_unavailable}}
+  catch
+    :exit, _ -> {:error, {:disable_failed, :logout_unavailable}}
+  end
+
+  defp prepare_runtime_disable(_, _, _), do: :ok
 end

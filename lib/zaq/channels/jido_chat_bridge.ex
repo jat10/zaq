@@ -73,26 +73,20 @@ defmodule Zaq.Channels.JidoChatBridge do
           _ -> {:error, :unauthorized}
         end
 
-      _ ->
+      {:error, :unsupported} ->
+        Logger.info("Connector disable config_id=#{config.id}: adapter has no logout callback")
         :ok
-    end
-  end
 
-  @doc "Logs out the selected listener through its configured adapter's optional logout callback."
-  @spec logout(map(), keyword()) :: :ok | {:error, term()}
-  def logout(%{id: id, provider: provider} = config, opts \\ []) when is_integer(id) and id > 0 do
-    with {:ok, adapter} <- logout_adapter(provider, opts) do
-      logout_listener(config, adapter, opts)
+      {:error, _} = error ->
+        error
     end
   end
 
   defp logout_adapter(provider, opts) do
     with {:ok, adapter} <- adapter_for(provider, opts),
          {:module, _} <- Code.ensure_loaded(adapter),
-         true <- function_exported?(adapter, :logout, 1) do
+         true <- function_exported?(adapter, :logout, 1) || {:error, :unsupported} do
       {:ok, adapter}
-    else
-      _ -> {:error, :unsupported}
     end
   end
 
@@ -101,11 +95,21 @@ defmodule Zaq.Channels.JidoChatBridge do
 
     case supervisor.lookup_runtime(runtime_bridge_id(config)) do
       {:ok, %{listener_pids: [listener]}} ->
-        with :ok <- Adapter.logout(adapter, listener) do
-          finish_saved_logout(config, adapter, supervisor)
-        end
+        Logger.info("Connector disable config_id=#{config.id}: calling live listener logout")
+        result = Adapter.logout(adapter, listener)
+        outcome = if result == :ok, do: "ok", else: "error"
+
+        Logger.info(
+          "Connector disable config_id=#{config.id}: listener logout returned #{outcome}"
+        )
+
+        result
 
       {:error, :not_running} ->
+        Logger.info(
+          "Connector disable config_id=#{config.id}: no listener; using saved-binding cleanup"
+        )
+
         cleanup_saved_connection(config, adapter)
 
       {:error, _} = error ->
@@ -116,22 +120,6 @@ defmodule Zaq.Channels.JidoChatBridge do
     end
   catch
     :exit, _ -> {:error, :logout_unavailable}
-  end
-
-  defp finish_saved_logout(config, adapter, supervisor) do
-    if Map.has_key?(config, :settings) and function_exported?(adapter, :cleanup_connection, 2) do
-      # Quiesce all old writers before a final clear. Startup is excluded by the
-      # Engine lifecycle lock until disable persistence and runtime sync finish.
-      case supervisor.stop_bridge_runtime(config, runtime_bridge_id(config)) do
-        result when result in [:ok, {:error, :not_running}] ->
-          cleanup_saved_connection(config, adapter)
-
-        {:error, _} = error ->
-          error
-      end
-    else
-      :ok
-    end
   end
 
   defp cleanup_saved_connection(%{settings: settings} = config, adapter) when is_map(settings) do
@@ -613,7 +601,8 @@ defmodule Zaq.Channels.JidoChatBridge do
           )
         end)
 
-      {:ok, %{resolved: resolved}}
+      {:ok,
+       %{resolved: Map.put(resolved, :logout_on_disable, function_exported?(adapter, :logout, 1))}}
     end
   end
 

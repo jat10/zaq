@@ -294,25 +294,27 @@ still live. The post-archive reconciliation and late watch upserts schedule
 durable cleanup on the existing renewal worker. Only this cleanup path may use
 archived credentials to unwatch the exact matching connector; regular ingress
 and watch creation remain unavailable after archive.
-Engine `ConnectorLifecycle` owns descriptor/revision validation, watch ordering
-and archive persistence. Channels `ConnectorRuntime` owns only provider ingress
-teardown and runtime reconciliation. Engine sends resolved maps through confidential
-`:connector_teardown_ingress` (`%{config: runtime_config}`) and
-`:connector_sync_runtime` (`%{before_config: before, after_config: after}`). These
-leaf events perform no Repo lookup or database-backed BO authorization. The separate
-confidential `:connector_prepare_disable` event calls the optional bridge
-`before_disable/3` callback with the current actor. Bridges without a callback
-continue normally; JidoChatBridge delegates configured logout and enforces the
-applicable operator authorization. Webhook teardown and adapter logout precede
-persisted disablement. Already-disabled connectors skip these steps while still
-requiring successful runtime shutdown. Archived rows skip destructive teardown
-on retry but still stop the exact runtime.
-Archive runtime reconciliation resolves the configured bridge and calls its
-`stop_runtime/1` callback directly. It never invokes the ordinary enabled/disabled
-update flow, which may also tear down ingress. Already-stopped runtimes succeed;
-stop failures prevent archival. A retry stops the disabled connector again before
-archiving; it does not repeat logout. Late watch cleanup can still be pending after
-archive persistence.
+Engine `ConnectorLifecycle` owns archive descriptor/revision validation, watch ordering
+and configuration persistence. BO Disable uses the original `:sync_channel_runtime`
+before/after configuration request. Channels checks the optional bridge
+`before_disable/3` hook before running the existing runtime synchronization. BO
+performs this call before writing disabled, keeping credentials available during
+logout. Save and enable continue to use the original runtime-sync contract.
+BO selects confirmation from the exact connector capability snapshot's
+`resolved.logout_on_disable` flag. Adapters without logout retain normal teardown.
+JidoChatBridge loads the configured adapter, detects optional `logout/1`, enforces
+super-admin permission and waits for logout before teardown. A failed logout prevents
+teardown and disable persistence. Missing listeners use saved-binding cleanup;
+local cleanup alone does not prove remote device unlinking.
+
+Archive retains its existing watch and webhook teardown followed by confidential
+`:connector_sync_runtime`. That existing runtime-stop handler uses the same optional
+pre-disable hook before stopping the runtime. Engine persists disabled afterward
+and refuses archival on runtime failure. Already-disabled archive retries skip
+logout and retry runtime shutdown. Archived rows reconcile runtime and watch cleanup.
+These Channels events perform no configuration persistence. There is no ID-based
+disable request, Engine prepare/persist RPC sequence, controller, stopping state or
+router coordination.
 The public result contains IDs and bounded outcomes, never credentials.
 
 ### Replicated email history contract (#768)

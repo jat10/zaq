@@ -93,15 +93,19 @@ Stored `jido_chat` fields include bot name/user ID, message patterns and ingress
 overrides. SMTP and IMAP lookup helpers live in `Zaq.ConnectorConfig`; bridge/listener
 normalization remains provider-local in Channels.
 
-Confirmed logout and disable use the confidential `:disable_channel_connector`
-event and `Actions.DisableChannelConnector`. Both confirmation context and execution
-revalidate the current super-admin actor. `ConnectorLifecycle` validates exact
-provider/kind and a secret-free revision before calling adapter logout.
-It locks and rechecks the revision before persisting `enabled: false`, then reconciles
-runtime shutdown. Logout failure leaves enablement unchanged; post-save runtime
-failure returns a pending stage. A persistence failure after successful provider
-logout cannot restore the remote session. Repeated already-disabled requests skip
-logout and retry runtime cleanup.
+Disable uses the original Channels runtime-sync before/after configuration contract.
+The existing runtime handlers perform optional adapter logout before teardown;
+Channels does not ask Engine to prepare or persist a separate disable command.
+BO runs disable synchronization while credentials remain enabled, then writes the
+disabled state. Failed logout leaves enablement unchanged. Runtime failure after
+successful preparation is reported by the existing runtime-sync error handling.
+
+Delete retains Engine's existing archive flow and `:connector_sync_runtime` call.
+That call performs optional logout and runtime shutdown before Engine persists
+disabled and archives. Engine rechecks the revision when persisting after runtime
+work; runtime failure leaves disabled state available for retry, while logout
+failure leaves enablement unchanged. No database row lock spans callbacks or RPC.
+A successful provider logout cannot be undone if subsequent persistence fails.
 
 Saved-binding startup resolves a fresh enabled, nonarchived snapshot through
 confidential `:connector_runtime_context` with the explicit runtime capability.

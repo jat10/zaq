@@ -38,15 +38,6 @@ defmodule Zaq.Channels.CommunicationBridge do
     end
   end
 
-  @doc "Delegates explicit logout to the configured bridge without stopping other connectors."
-  @spec logout(map(), keyword()) :: :ok | {:error, term()}
-  def logout(%{provider: provider} = config, opts \\ []) do
-    with {:ok, bridge} <- Bridge.resolve_bridge(provider, opts),
-         true <- function_exported?(bridge, :logout, 2) || {:error, :unsupported} do
-      bridge.logout(config, opts)
-    end
-  end
-
   @doc "Delegates an authorized authentication command to the configured provider bridge."
   @spec authenticate(atom() | String.t(), map(), term(), map(), keyword()) ::
           {:ok, map()} | {:error, term()}

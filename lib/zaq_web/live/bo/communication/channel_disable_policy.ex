@@ -1,12 +1,12 @@
 defmodule ZaqWeb.Live.BO.Communication.ChannelDisablePolicy do
-  @moduledoc "Adapter-specific confirmation copy for the shared connector toggle event."
+  @moduledoc "Confirmation presentation for destructive shared connector transitions."
 
-  @doc "Requests confirmation only when disabling a WhatsApp profile."
-  @spec before_disable(atom() | String.t(), map()) :: :proceed | {:confirm, String.t()}
-  def before_disable(provider, %{enabled: true}) when provider in [:whatsapp, "whatsapp"] do
+  @doc "Requests confirmation when Channels reports logout on disable."
+  @spec before_disable(map(), map(), String.t()) :: :proceed | {:confirm, String.t()}
+  def before_disable(%{resolved: %{logout_on_disable: true}}, %{enabled: true}, label) do
     {:confirm,
-     "Disabling WhatsApp will log out this profile. You will need to link it again to reconnect."}
+     "Disabling #{label} will log out this profile. You will need to link it again to reconnect."}
   end
 
-  def before_disable(_, _), do: :proceed
+  def before_disable(_, _, _), do: :proceed
 end
