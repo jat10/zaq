@@ -8,210 +8,21 @@ for implementation sequencing, ownership checks and acceptance scenarios.
 
 ### Linked-device integration
 
-WhatsApp uses the same `JidoChatBridge` registration and adapter listener contract
-as other Jido channels. `JidoChatBridge` assembles trusted adapter startup options
-using one trusted `sink_mfa` for private pairing and storage requests. The adapter
-derives a stable profile and split storage scope from the saved binding. ZAQ saves
-`sync_history: false` and `sync_full_history: false` as initial connector settings;
-explicit boolean choices are configurable. The adapter passes the selected values
-in its child specs; the generic supervisor only starts those specs. See
-[WhatsApp listener settings](#whatsapp-listener-settings) for persistence and startup
-precedence on freshly confirmed accounts and restored connections. Messages marked as history cannot
-start AI replies or notify waiting reply hooks. The selected profile also scopes replies, edits,
-typing, reactions and direct-message operations. Multiple accounts remain independent.
+Interactive authentication uses the optional `Jido.Chat.Adapter.authenticate/4`
+contract through `CommunicationBridge` and `JidoChatBridge`. The confidential
+`:pair_linked_device` Action revalidates the current super-admin on every command.
+Adapters without this capability retain their existing configuration path.
+The adapter owns provisional connections, challenges, expiry and cancellation;
+Channels owns delegation and runtime activation. Private authentication and storage
+requests use the trusted sink and never enter public message ingress.
 
-The adapter owns WhatsApp protocol connections, self/mention normalization, history
-filtering and QR expiry. Group agent requests require a mention of the receiving
-account; unaddressed history capture remains Engine policy. Ordinary queued messages
-still enter the normal pipeline and persistent replay protection. Timestamp age is
-not used to discard messages. Unsupported broadcast rooms are rejected by the adapter.
-ZAQ retains only its canonical history/identity mapping.
-
-All Jido listeners run directly under `BridgeSupervisor`. WebSocket, gateway and
-polling listeners use `restart: :temporary`, preserving terminal-failure behavior:
-a failed listener stays stopped until explicitly restarted or reconfigured, rather
-than exhausting the shared restart budget. Linked-device listeners retain the
-adapter's restart policy. BridgeSupervisor refreshes the registered PID on
-restart, so status and explicit stop target the current listener. Restart intensity
-is shared by the dynamic supervisor; there is no separate per-listener budget.
-Explicit runtime stop shuts down the adapter connection and retains credentials. Partial startup failures clean up started children and
-bridge state. The `jido_chat_whatsapp` OTP application owns shared transport startup
-and recovery. Transport infrastructure failure terminates affected listeners so
-their existing restart policy can restore connections without restarting unrelated
-bridges or resetting limiter counters. `JidoChatBridge` requests shared provider specs through
-`Jido.Chat.Adapter.provider_child_specs/2`. WhatsApp supplies its storage runtime
-with its own `require_ram_schema: true` default. `BridgeSupervisor` starts it once as
-`provider:whatsapp` before loading saved connectors. Backend and whole-storage-runtime outages pause only dependent WhatsApp
-connections. Workers retry storage readiness without consuming the shared bridge
-supervisor restart budget; unrelated providers retain their processes. Channels
-uses one-for-one recovery, including for limiter supervisor failures. The adapter refuses
-duplicate profile ownership rather than adopting another listener's connection.
-This does not provide distributed fencing across disconnected clusters sharing a DB.
-
-The adapter delivers lifecycle `ActionEvent` envelopes through the existing
-`sink_mfa`. Jido routes `connection_update` actions to the bridge handler, which
-checks the configured adapter, lifecycle category and exact connector profile.
-Bridge State consumes the adapter-supplied presentation and applies source/attempt
-guards before acknowledging the synchronous sink call. The adapter owns connection
-phase/status messages and QR projection for both provisional and saved connections;
-ZAQ only supplies a host-level status when the listener/runtime stops. The originating worker PID is
-preserved; the dispatcher's PID is not used as lifecycle identity. QR material is
-kept only in the status presentation and redacted from process diagnostics.
-
-An explicit listener bridge ID waits for runtime registration for up to 200 retries
-at 25 ms intervals without recursively starting listeners. Exhaustion returns
-`:runtime_unavailable`, a terminal response that does not trigger the adapter's
-`:runtime_not_ready` retry loop. Listener startup and stop remain supervisor-owned.
-Source death clears the QR and marks the device disconnected; stale source exits
-and attempts cannot overwrite a newer source's status. Lifecycle actions do not
-run message handlers. BO status and retry still require confidential events and
-current super-admin authorization for the exact enabled configuration.
-
-In BO, choose Communication Channels → WhatsApp → New configuration to scan a QR
-code, then confirm the detected phone number and display name. A missing display
-name falls back to the phone number; an unavailable phone number cannot be confirmed.
-Manual bot ID/mention fields are omitted for WhatsApp, including when editing.
-
-Disabling a WhatsApp profile in BO requires Confirm or Cancel after a warning
-that the profile will be logged out and must be linked again. The shared connector
-button delegates to its parent LiveView; `ChannelDisablePolicy` selects the warning.
-Enabling WhatsApp uses the confidential Engine `:enable_channel_connector` Action,
-requiring a current super-admin at context preparation and execution. Engine owns
-exact scope/revision checks and enable persistence; BO never writes enablement for
-this flow. Repeated enable retries the same saved connector. Startup failure leaves
-it enabled with an explicit pending runtime stage.
-After successful startup, `ChannelEnablePolicy` opens that profile's connection
-modal for authorized linked-device operators. The package supplies a fresh QR when
-relinking is required, or connected status when a saved session remains valid.
-This reuses the same configuration and profile rather than provisional onboarding.
-Startup failures retain the existing runtime error feedback without opening the
-connection modal. Other adapters retain their existing toggle presentation.
-The confidential Engine disable Action validates the selected connector revision,
-then requests `:connector_logout` through Channels. `CommunicationBridge` delegates
-to `JidoChatBridge`, which invokes the configured adapter's optional `logout/1`
-on that connector's single registered listener. The WhatsApp adapter delegates to
-the package's `ConnectionWorker.logout/1`; the package owns server unlink and clearing durable
-credentials and RAM sessions. When the listener is absent, the configured adapter's
-optional `cleanup_connection/2` extension clears the existing binding through the
-trusted storage sink. Cleanup never provisions a missing binding. Unsupported or
-failed cleanup leaves enablement unchanged. Engine persists disablement after successful logout, then reconciles
-runtime shutdown. Runtime shutdown alone continues to preserve credentials.
-
-`mix.exs` resolves `jido_chat_whatsapp` from its Git branch; `mix.lock` pins the
-tested revision providing listener logout and offline saved-binding cleanup.
-
-Saved-binding runtime startup and Engine disable/archive share a connector lock
-across connected BEAM nodes. Startup rechecks the enabled, nonarchived Engine
-snapshot before preparing credentials. Logout stops existing runtime writers and
-performs a final idempotent clear before Engine persists disablement. The lock
-remains held through persistence and runtime reconciliation, rejecting stale
-startup snapshots afterward. Ordinary runtime stop retains credentials. NodeRouter
-propagates the scope and acquires an independent hold in each executing receiver,
-so cleanup stays protected after the originating Engine process dies.
-`ConnectorRuntime.start/2` dispatches a confidential `:connector_start_runtime`
-command for start, restart or ensure-running. The complete handler rechecks Engine
-eligibility and prepares the runtime under the same scope, preserving bridge IDs
-and runtime options. No DB row transaction spans RPC or storage
-callbacks. See [router coordination](../architecture.md#opt-in-resource-coordination)
-for propagation and connected-node limits.
-Adapters without this optional callback skip logout preparation during Delete;
-an explicit logout request for an unsupported adapter fails closed.
-
-The confidential Channels `:pair_linked_device` Action authorizes current super
-admins on every command. It passes the selected provider through
-`CommunicationBridge` and `JidoChatBridge` to the optional
-`Jido.Chat.Adapter.authenticate/4` contract. Adapters without this capability
-retain their existing configuration path. The package's `PairingSession` owns an
-operator- and provider-scoped provisional connection with
-bounded, memory-only storage. It discards chat ingress and expires after three
-minutes or browser disconnect. Cancellation attempts logout and stops the temporary
-runtime. QR codes and session records never enter BO persistence or workflow events.
-
-The UI confirms the displayed account ID explicitly. Confirmation stops protocol
-writes before taking a snapshot. The package excludes
-messaging sessions and group sender keys from the durable snapshot. Engine's trusted
-runtime `:confirm_linked_device` Action creates the connector and canonical encrypted
-credential document in one transaction, using an attempt UUID and the exact
-provider, operator and account for repeat-request idempotence. The package encodes
-protocol records before the host sink receives them. `Jido.Chat.Authentication.Request` with
-`op: :persist` reuses that Engine Action; a separate `op: :start` request revalidates
-the operator and activates the saved connector through the existing runtime path.
-`Jido.Chat.Storage.Request` handles credential operations through the same sink. Both private
-request types bypass serialized bridge State and are rejected by public listener
-ingress. Persistence failures
-retain the frozen snapshot for retry within the
-pairing window. After persistence, the package seeds the volatile records once into
-Mnesia, then starts the normal bridge. A late snapshot cannot overwrite advanced
-sessions or resurrect cleared keys. A RAM-seeding or startup failure is reported as
-saved with connection pending, not a failed save. On server restart,
-`BridgeSupervisor` restores enabled connectors through the shared runtime loader;
-disabled and archived connectors stay stopped.
-
-The pairing modal polls only its selected account and rejects stale results. Closing
-an existing connector's status modal leaves its saved connection running; closing a
-new onboarding modal cancels the provisional session. Retry keeps a live provisional
-session and its credentials: the adapter waits for recovery, refreshes account
-identity, or reconnects that same profile as needed. Only an expired provisional
-session starts a fresh pairing on Retry. Recoverable transport errors remain pending
-and polling continues within the original session lifetime. An individual QR's
-expiry also keeps polling for a replacement; it clears the displayed QR without
-ending the session. A replacement appears automatically in the same modal.
-Session expiry and the bounded UI polling window still stop observation. Existing connector
-retries preserve encrypted state. The shared component is in Storybook under
-`/storybook/modals/linked_device_pairing`.
-
-`Jido.Chat.WhatsApp.Storage.Split` routes pairing credentials (`creds`) and supporting
-protocol records through private `Jido.Chat.Storage.Request` calls to the host's trusted listener sink and the
-[canonical credential document operation](engine.md#connector-credential-documents).
-Connector settings retain the credential reference, account label, owner and attempt
-ID; protocol records live in the encrypted canonical org `api_key` grant.
-Credentials can change after pairing
-(for example, one-time prekeys), and those changes still persist.
-
-The frequently updated `session` and `sender_key` namespaces instead live in
-the package's `Storage.Mnesia`, a node-local Mnesia `ram_copies` table with a RAM-only
-schema. There are no disk writes, checkpoints, replication or database fallback for
-these namespaces. Individual record updates are transactional and bounded to 1 MiB
-per encoded value and 16 MiB per connector/credential/profile scope. Every callback
-still revalidates the current Engine credential binding; RAM storage eliminates
-credential rewrites and their notifications, not authorization database reads.
-
-Listener restarts retain these records while Mnesia remains running. A Mnesia/node
-restart or moving the connector to another node loses them. Pairing survives with
-the database and encryption key, but message decryption may fail until protocol
-sessions/group keys are re-established; retries cannot guarantee message recovery.
-Keep those durable resources across restarts; no container file store is used.
-
-Before a saved connector starts, its obsolete database `session` and `sender_key`
-namespaces are removed through the authorized document operation. They are never
-loaded as a stale fallback. Disabled/archived connectors retain their old encrypted
-records until next enabled startup. Clear/logout erases both stores for that exact
-scope. Missing records differ from unreadable/unavailable state; the adapter guard
-latches storage failures and stops protocol progress. No callback calls a provider
-process while waiting for a database transaction.
-
-Linked-device persistence uses the existing Connect credential and grant tables;
-no dedicated linked-device tables or schema migration are required. See
-[system configuration](system-config.md#connector-session-state).
-
-The GitHub dependency revision must include the storage-request contract before
-deploying these host changes. Shared authentication still requires a compatible
-`jido_chat` version.
-Stop saved and provisional listeners during rollout/rollback; pairing remains in
-Connect, but volatile sessions start empty and decryption may need re-establishment.
-
-`JidoChatBridge` owns adapter delegation, persistence and normal runtime
-activation callbacks, lifecycle action handling and status through its shared
-runtime path. The package prepares saved connection storage and derives its stable
-profile from an opaque host binding. `JidoChatBridge` dispatches private storage
-requests directly to the confidential Engine document Action before looking up
-listener State, including during bootstrap. Storage callbacks never enter chat
-routing, history, or the lifecycle dispatcher, avoiding send/storage reentrancy.
-The trusted sink captures host context; public message ingress rejects request
-structs. Engine validates the expected provider and exact binding on every call. Package
-`PairingSession`, `Storage.Split`, `Storage.Temporary` and `Storage.Mnesia` own
-generic mechanics. No raw snapshots are
-returned to BO. Persistence callbacks use the existing confidential Engine Actions.
+Engine's trusted `:confirm_linked_device` Action persists a normalized account and
+encoded credentials atomically, with attempt-scoped idempotence. Activation follows
+persistence; a startup failure leaves a saved connector with runtime pending.
+See [credential documents](engine.md#connector-credential-documents) for persistence
+and authorization, and [shared extension contracts](#shared-adapter-extension-contracts)
+for the adapter boundary. Provider-specific onboarding, transport settings and
+recovery remain adapter-owned.
 
 For normalization, identity resolution and confirmed delivery call chains across
 roles, see the [message lifecycle sequences](message-lifecycle.md).
@@ -233,8 +44,8 @@ a message. Conversation binding/restoration belong to Conversations behind the
 closed Engine boundary; Channels retains only transport correlation and projection.
 `PersonIdentity` owns the native key `(platform, authority, identifier)`;
 `PersonChannel` retains connector-specific routing and preferences. Channels'
-`IdentityScope` defines authority: Telegram/Discord/WhatsApp native IDs and normalized email
-are global within their platform; Mattermost IDs are scoped to the canonical server
+`IdentityScope` defines authority: platform-global native IDs and normalized email
+use their platform authority; server-scoped IDs use the canonical server
 endpoint (including deployment path). Providers without attested tenant scope remain
 connector-local. Bots on the same authority therefore reuse one Person without
 requiring profile email. Normalized profile email can also join established People
@@ -301,14 +112,10 @@ fetched channel metadata with channel type 1; message `type` and absent guild
 fields are not evidence. Unknown kinds, Mattermost group DM, Discord DM
 without independent room evidence, and missing Discord thread parents remain
 unknown. Slack and Teams have no configured adapter in `config/config.exs`.
-Adapters that sanitize media retain the transport facts needed by their provider
-integration. WhatsApp seals private media descriptors upstream and keeps only
-`channel_jid`, `from_jid` and a Unix-second `timestamp` in the media message's
-`raw` map. Telegram retains its native message facts, including chat, sender and
-date. Both use the ordinary `IncomingNormalization.normalize/3` path; the shared
-bridge has no fallback for missing raw evidence. Discord retains its independent
-channel-evidence requirements. These are trusted internal adapter outputs, not
-authentication of arbitrary external messages.
+Adapters that sanitize media must retain the transport facts required by their
+provider's `IncomingNormalization.normalize/3` implementation. The shared bridge
+has no fallback for missing raw evidence. These are trusted internal adapter
+outputs, not authentication of arbitrary external messages.
 This is only transport context, not authentication of arbitrary external
 envelopes, a grant, passive capture, or a resolved Person. Engine resolves the
 actor after routing; strategy consumers must use authorized transcript reads.
@@ -322,8 +129,8 @@ refresh capabilities remain unsupported rather than inferred from a message.
 
 Trusted Mattermost/Telegram ingress additionally normalizes `sender_membership`
 only when the raw provider sender matches the adapter author in a verified room.
-WhatsApp media uses the retained sender fact and the same author consistency
-check without retaining private media fields.
+Sanitized media must preserve the sender evidence needed for the same author
+consistency check without exposing private media fields.
 After scoped Person resolution and canonical capture, Engine may bootstrap that
 sender's provider grant once on the parent resource. This is message-local
 presence, not a complete snapshot: replay or later posts cannot override removal
@@ -495,10 +302,11 @@ teardown and runtime reconciliation. Engine sends resolved maps through confiden
 leaf events perform no Repo lookup or database-backed BO authorization. The separate
 confidential `:connector_prepare_disable` event calls the optional bridge
 `before_disable/3` callback with the current actor. Bridges without a callback
-continue normally; JidoChatBridge invokes configured logout and validates the current
-superadmin for WhatsApp. Already-disabled connectors skip ingress teardown and
-this preparation on retry, while still requiring successful runtime shutdown. Retries
-skip destructive teardown for archived rows but still stop the exact runtime.
+continue normally; JidoChatBridge delegates configured logout and enforces the
+applicable operator authorization. Webhook teardown and adapter logout precede
+persisted disablement. Already-disabled connectors skip these steps while still
+requiring successful runtime shutdown. Archived rows skip destructive teardown
+on retry but still stop the exact runtime.
 Archive runtime reconciliation resolves the configured bridge and calls its
 `stop_runtime/1` callback directly. It never invokes the ordinary enabled/disabled
 update flow, which may also tear down ingress. Already-stopped runtimes succeed;
@@ -540,7 +348,7 @@ provenance before using those matches for capture.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, before the RAM session store and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, before `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -557,7 +365,7 @@ for cache refresh/expiry and eventual-consistency limitations.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, before the RAM session store and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, before `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -577,7 +385,7 @@ for cache refresh/expiry and eventual-consistency limitations.
 ### People authentication rate ownership (V1)
 
 `Zaq.Channels.PeopleAuthRateLimiter` is the first child of the static
-`Zaq.Channels.Supervisor`, before the RAM session store and `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
+`Zaq.Channels.Supervisor`, before `Zaq.Channels.BridgeSupervisor`. It owns only unsuccessful-identification IP
 protection via `check_identification/1` (non-consuming) and
 `record_failed_identification/1`. Both use local counters and a background-refreshed
 typed config snapshot; neither queries Repo nor dispatches to Engine. Missing,
@@ -730,12 +538,10 @@ is resolved by Engine through `Zaq.Engine.IncomingMessageRouter` and
 `Zaq.Engine.IncomingMessageRoutingRule`.
 
 `JidoChatBridge.to_internal/2` maps the adapter's `external_thread_id` to
-`Incoming.thread_id`. The WhatsApp adapter uses the immediate replied-to message ID
-for this field and includes it in its chat-scoped event key. Non-replies have no
-thread ID. Reply chains are not collapsed into a common root: a reply to A uses A,
-while a reply to B uses B. Original content is supplied by Engine-authorized history,
-not by adapter quote text. WhatsApp message fetching is unsupported; unknown originals
-remain absent. Native outgoing quote options are independent of this history grouping.
+`Incoming.thread_id`. The adapter owns the provider's thread-reference semantics.
+Original content comes from Engine-authorized history; thread references do not
+grant access or inject adapter quote text. Native outgoing quote options are
+independent of history grouping.
 
 BO routing writes for global defaults, provider defaults, retrieval-channel assignments,
 and IMAP mailbox rules dispatch to Engine action `:upsert_incoming_message_routing_rules`.
@@ -1199,68 +1005,35 @@ logout. Legacy adapters keep their existing listener/options behavior. The base
 Bridge delegates connection details to its configured bridge. Host code forwards
 adapter option maps without interpreting transport profiles or storage layouts.
 
-WhatsApp's provider registration needs only `bridge`, `adapter`, and `ingress_mode`,
-like Telegram. The adapter enforces its RAM-schema requirement. ZAQ owns its initial
-history choices in persisted connector settings, described below. The lower-level
-package storage and direct listener APIs retain their explicit options.
+### Connector listener settings
 
-### WhatsApp listener settings
+`Zaq.ConnectorConfig.Settings.defaults/1` owns initial provider settings; the provider
+registry contains bridge, adapter and ingress-mode wiring. Engine applies defaults
+through `ChannelConfig.create/2`, including upsert insertion and authentication
+confirmation. Missing nested keys are filled; supplied values win. Providers without
+a defaults clause receive an empty map.
 
-ZAQ defines initial connector settings in `Zaq.ConnectorConfig.Settings.defaults/1`.
-The provider registry contains only bridge, adapter and ingress-mode wiring.
-The WhatsApp defaults are:
+During edits, the canonical changeset preserves saved values for defaulted keys
+unless explicitly replaced. Other settings retain their replacement semantics.
+Persisted settings use string keys. Shared projections resolve absent legacy values
+at runtime without a backfill; explicit malformed values are not silently replaced.
+Adapters validate transport options. The bridge forwards the connector's
+`settings["jido_chat"]["ingress"]` without interpreting provider storage or profiles.
 
-```elixir
-%{
-  "jido_chat" => %{
-    "room_reply_policy" => "mention_required",
-    "ingress" => %{"sync_history" => false, "sync_full_history" => false}
-  }
-}
-```
-
-`Zaq.ConnectorConfig.Settings` provides the shared lookup and merge. Engine applies
-these defaults before insertion through `ChannelConfig.create/2`, used by
-linked-device confirmation and the insert branch of `upsert_by_provider/2`.
-Missing nested keys are filled; supplied values win. The normal BO WhatsApp creation
-journey uses linked-device confirmation. Programmatic creation should use the Engine
-creation API. Adding defaults for another provider requires a clause in the shared
-`defaults/1` function, with no provider-specific settings module or application
-configuration block. Providers without a defaults clause receive an empty map.
-
-During settings edits, the generic changeset retains saved values for keys listed
-in the provider's defaults, unless explicitly replaced. Unrelated settings retain
-their existing replacement semantics. Transport option validation belongs to the
-adapter: WhatsApp rejects explicit null/nonboolean history flags during preparation.
-Persisted settings use string keys.
-
-The generic bridge forwards `settings["jido_chat"]["ingress"]`. WhatsApp preparation
-accepts the two boolean flags on both saved-binding and authenticated handoff paths.
-Explicit ingress flags override trusted handoff history values; omitted flags retain
-trusted values, falling back to `false` for prepared connections. Arbitrary persisted
-profile, storage or nested transport config overrides remain excluded. No extra MFA
-is needed. Other providers receive their own settings and retain their existing
-option behavior.
-
-The flags configure listener startup. Saving and synchronizing changed ingress
-settings restarts the listener through the existing generic lifecycle. Changing
-only reply policy uses the handler refresh described below.
-
-Existing connectors resolve missing keys through the shared settings projections
-at runtime, without writing their database rows. No history or reply-policy backfill
-migration is needed. Explicit stored values override defaults; explicit malformed
-values are not silently replaced. Changing defaults in code affects connectors
-whose keys remain absent. Reload affected runtimes after deploying changed
-defaults; normal saved-setting edits use the existing synchronization lifecycle.
+Saving and synchronizing changed ingress settings restarts the listener through the
+shared lifecycle. Changing only reply policy refreshes handlers. Changes to defaults
+in code affect connectors with absent keys; reload affected runtimes on deployment.
+Provider-specific defaults and startup precedence follow the adapter contract.
 
 ### Connector reply policy
 
 `ChannelConfig.settings["jido_chat"]["room_reply_policy"]` controls answer admission
 for each saved connector. Accepted strings are `"default"` and
-`"mention_required"`. WhatsApp's shared defaults entry selects `"mention_required"`.
+`"mention_required"`. Provider defaults may select the initial policy.
 Engine's canonical changeset validates the policy and preserves explicit valid
-choices on subsequent settings edits. Other providers retain their existing behavior when the key is absent,
-and can explicitly select either policy. Invalid explicit policies reject writes;
+choices on subsequent settings edits. Providers without a policy default retain
+their existing behavior when the key is absent and can explicitly select either
+policy. Invalid explicit policies reject writes;
 malformed legacy runtime values conservatively require a mention.
 
 The generic bridge uses normalized mention/DM facts. With `"mention_required"`,
@@ -1270,11 +1043,6 @@ admission/routing paths; self/history filtering and thread-root handling remain
 in effect. Changing only the saved policy and synchronizing the runtime refreshes
 State's handlers without restarting its listener. The adapter does not decide
 ZAQ's reply policy or discard unmentioned messages.
-
-For rollout, first publish and pin the adapter revision respecting these settings,
-then restart Channels so existing connectors resolve the provider defaults.
-Normal subsequent policy saves use the existing runtime synchronization path.
-Rolling back code retains saved settings; no data migration needs to be reversed.
 
 Lifecycle updates keep the existing Jido action route and source/attempt fencing.
 Their `profile` field is an opaque connection identity, not a bridge-derived
@@ -1328,7 +1096,7 @@ or wrapped in a matched pair of colons, with an optional `_light_skin_tone`,
 Only complete shortcodes match: custom prefixes, invalid suffixes, trailing junk,
 and unpaired colons remain ignored. This rating lookup does not change adapter
 event normalization or other providers' shortcode mappings. Across providers,
-including WhatsApp, Unicode thumbs up/down map to 5/1 when bare or followed by
+Unicode thumbs up/down map to 5/1 when bare or followed by
 exactly one standard skin-tone modifier (U+1F3FB–U+1F3FF). Repeated modifiers,
 variation selectors, surrounding text and malformed sequences remain ignored.
 Reaction removals and unrelated emoji still dispatch no rating.
@@ -1594,22 +1362,21 @@ It uses `Supervisor` with `:one_for_one` and starts these children in order:
 1. `Zaq.Channels.PeopleAuthRateLimiter` — failed-identification counters and config cache.
 2. `Zaq.Channels.BridgeSupervisor` — `DynamicSupervisor` for provider infrastructure, bridge state, listeners and temporary pairing sessions.
 
-For a configured linked-device provider, `JidoChatBridge` supplies the shared
-package storage runtime during provider bootstrap, before connector startup.
-The WhatsApp runtime uses the distinct `provider:whatsapp` registry entry, even
-when no connector has been saved yet, so provisional pairing can use it. The
-Channels parent contains no WhatsApp-specific child.
+`JidoChatBridge` requests shared provider children through
+`Jido.Chat.Adapter.provider_child_specs/2` before loading saved connectors. Provider
+runtimes use distinct registry IDs and can start before any connector is saved.
+The static Channels parent contains no provider-specific children. Adapter packages
+own transport infrastructure, storage readiness and recovery behavior.
 
-Backend and whole-storage-runtime failures pause dependent WhatsApp connections
-and retry readiness inside their workers. They preserve the bridge supervisor,
-unrelated listeners, and limiter counters/cache. A limiter-supervisor failure
-resets only its own local resources. Parent shutdown stops all its children and
-their adapter connections. WhatsApp's shared transport infrastructure remains
-owned by the adapter package's OTP application. Bridge-supervisor restart also
-recreates its storage child; the package retains Mnesia tables, while old handles
-are fenced and new connections acquire fresh generations. Repeated failure of
-the entire storage-runtime supervisor can exhaust the shared bridge restart
-budget; ordinary backend replacement remains inside the package runtime.
+All Jido listeners run under `BridgeSupervisor`. WebSocket, gateway and polling
+listeners use `restart: :temporary`; linked-device listeners retain their adapter's
+restart policy. Registered PIDs refresh after restart. Partial startup cleans up
+started children and bridge state. The dynamic supervisor has a shared restart
+budget, not a separate budget for each listener. Runtime stop retains credentials;
+explicit logout follows the adapter cleanup contract.
+
+A limiter-supervisor failure resets only its own local resources. Bridge restarts
+preserve limiter counters and cache. Parent shutdown stops both subtrees.
 
 The widget's shared `{WebWidget, opts}` and connector supervisors are dynamic bridge
 children; neither the application nor the static Channels parent knows widget options.

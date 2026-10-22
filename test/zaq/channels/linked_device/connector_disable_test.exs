@@ -1,29 +1,13 @@
 defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
-  import Zaq.TestSupport.NodeRouterCoordination, only: [coordinate: 2]
   use Zaq.DataCase, async: false
 
   import Zaq.AccountsFixtures
 
   alias Jido.Chat.WhatsApp.Adapter
   alias Jido.Chat.WhatsApp.Transport.AmarulaClient
-  alias Zaq.Channels.ConnectorRuntime
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.{ChannelConfig, ConnectorLifecycle, LinkedDeviceConfirmation}
   alias Zaq.{Event, NodeRouter}
-
-  defmodule StartupProbe do
-    def build_runtime_specs(_config, opts) do
-      send(Keyword.fetch!(opts, :observer), :startup_entered)
-      :started
-    end
-  end
-
-  defmodule BlockingStartupProbe do
-    def build_runtime_specs(config, opts) do
-      send(Keyword.fetch!(opts, :observer), {:startup_prepared, self(), config})
-      receive do: (:finish -> {:error, :probe_complete})
-    end
-  end
 
   defmodule OfflineTransport do
     def connect(config, opts) do
@@ -69,22 +53,6 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
     defdelegate logout(listener), to: Adapter
     defdelegate cleanup_connection(binding, opts), to: Adapter
     def listener_child_specs(_, _), do: {:error, :activation_failed}
-  end
-
-  defmodule CleanupBarrierRouter do
-    def dispatch(%Event{opts: opts} = event) do
-      result = NodeRouter.dispatch(event)
-
-      if opts[:action] == :connector_logout and result.response == :ok do
-        send(event.actor.observer, {:cleanup_completed, self()})
-
-        receive do
-          :persist_disable -> :ok
-        end
-      end
-
-      result
-    end
   end
 
   defmodule RpcRuntimeRouter do
@@ -174,48 +142,6 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
     refute Repo.get!(ChannelConfig, selected.id).settings["credential_document_id"]
   end
 
-  test "startup waits through cleanup and persistence, then rejects its stale snapshot", %{
-    actor: actor
-  } do
-    selected = connector(actor, "+15550008")
-    start_connector(selected)
-    assert {:ok, descriptor} = command(selected, :context, actor)
-    actor = Map.put(actor, :observer, self())
-
-    disable =
-      Task.async(fn ->
-        ConnectorLifecycle.disable(Map.put(descriptor, :op, :disable), actor,
-          router: CleanupBarrierRouter
-        )
-      end)
-
-    assert_receive {:cleanup_completed, root}
-    assert Repo.get!(ChannelConfig, selected.id).enabled
-
-    assert {:error, :not_running} =
-             Zaq.Channels.Supervisor.lookup_runtime(JidoChatBridge.runtime_bridge_id(selected))
-
-    start = Task.async(fn -> JidoChatBridge.start_runtime(selected) end)
-
-    enable =
-      Task.async(fn ->
-        ConnectorLifecycle.enable(Map.put(descriptor, :op, :enable), actor)
-      end)
-
-    assert Task.yield(start, 30) == nil
-    assert Task.yield(enable, 30) == nil
-    send(root, :persist_disable)
-
-    assert {:ok, %{status: :disabled, runtime: :synced}} = Task.await(disable)
-    assert {:error, :connector_unavailable} = Task.await(start)
-    assert {:error, :stale_connector} = Task.await(enable)
-    assert {:error, :connector_unavailable} = JidoChatBridge.start_runtime(selected)
-    refute Repo.get!(ChannelConfig, selected.id).enabled
-
-    assert {:error, :not_running} =
-             Zaq.Channels.Supervisor.lookup_runtime(JidoChatBridge.runtime_bridge_id(selected))
-  end
-
   test "explicit enable reuses the saved profile across an RPC-like runtime callback", %{
     actor: actor
   } do
@@ -237,105 +163,6 @@ defmodule Zaq.Channels.LinkedDevice.ConnectorDisableTest do
 
     assert Repo.get!(ChannelConfig, selected.id).settings["credential_document_id"] ==
              selected.settings["credential_document_id"]
-  end
-
-  test "enable revalidates privileges after waiting for lifecycle cleanup", %{actor: actor} do
-    selected = connector(actor, "+15550011")
-    selected = selected |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
-    assert {:ok, descriptor} = command(selected, :context, actor)
-
-    enable =
-      coordinate({:connector_lifecycle, selected.id}, fn ->
-        pending = Task.async(fn -> ConnectorLifecycle.enable(descriptor, actor) end)
-        assert Task.yield(pending, 30) == nil
-        staff = staff_fixture(%{must_change_password: false})
-
-        Repo.get!(Zaq.Accounts.User, actor.user_id)
-        |> Ecto.Changeset.change(role_id: staff.role_id)
-        |> Repo.update!()
-
-        pending
-      end)
-
-    assert {:error, :unauthorized} = Task.await(enable)
-    refute Repo.get!(ChannelConfig, selected.id).enabled
-
-    assert {:error, :not_running} =
-             Zaq.Channels.Supervisor.lookup_runtime(JidoChatBridge.runtime_bridge_id(selected))
-  end
-
-  test "startup retains coordination after eligibility lookup and prepares the fresh configuration",
-       %{
-         actor: actor
-       } do
-    selected = connector(actor, "+15550013")
-    selected |> ChannelConfig.changeset(%{name: "fresh runtime"}) |> Repo.update!()
-    observer = self()
-
-    startup =
-      Task.async(fn ->
-        ConnectorRuntime.start(selected, {:start, BlockingStartupProbe, [observer: observer]})
-      end)
-
-    assert_receive {:startup_prepared, executor, current}
-    assert current.name == "fresh runtime"
-    assert current.id == selected.id
-
-    contender =
-      Task.async(fn -> coordinate({:connector_lifecycle, selected.id}, fn -> :entered end) end)
-
-    try do
-      assert Task.yield(contender, 50) == nil
-      send(executor, :finish)
-      assert Task.await(startup) == {:error, :probe_complete}
-      assert Task.await(contender) == :entered
-    after
-      send(executor, :finish)
-      Task.shutdown(startup, :brutal_kill)
-      Task.shutdown(contender, :brutal_kill)
-    end
-  end
-
-  test "routed cleanup keeps startup excluded when the Engine lifecycle caller dies", %{
-    actor: actor
-  } do
-    selected = connector(actor, "+15550012")
-    assert {:ok, descriptor} = command(selected, :context, actor)
-    supervisor = start_supervised!(Task.Supervisor)
-    actor = Map.merge(actor, %{observer: self(), task_supervisor: supervisor})
-
-    {:ok, caller} =
-      Task.Supervisor.start_child(supervisor, fn ->
-        ConnectorLifecycle.disable(descriptor, actor,
-          router: Zaq.TestSupport.ConnectorCleanupRouter,
-          communication_bridge_module: Zaq.TestSupport.ConnectorCleanupRouter
-        )
-      end)
-
-    assert_receive {:cleanup_held, receiver, true}
-    monitor = Process.monitor(caller)
-    Process.exit(caller, :kill)
-    assert_receive {:DOWN, ^monitor, :process, ^caller, :killed}
-    observer = self()
-
-    startup =
-      Task.async(fn ->
-        send(observer, :startup_requested)
-
-        ConnectorRuntime.start(selected, {:start, StartupProbe, [observer: observer]})
-      end)
-
-    try do
-      assert_receive :startup_requested
-      refute_receive :startup_entered, 50
-      send(receiver, :finish_cleanup)
-      assert Task.await(startup) == :started
-      # The dead caller did not persist disablement; retry remains a domain concern.
-      assert Repo.get!(ChannelConfig, selected.id).enabled
-    after
-      send(receiver, :finish_cleanup)
-      Task.shutdown(startup, :brutal_kill)
-    end
   end
 
   test "runtime snapshot requires the confidential runtime capability", %{actor: actor} do

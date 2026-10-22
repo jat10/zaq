@@ -9,7 +9,6 @@ defmodule Zaq.NodeRouter do
   - Support both sync and async hop execution.
   - Support multi-hop event chains by recursively dispatching returned
     `next_hop` values.
-  - Coordinate opted-in resource scopes with independent holds in each executor.
 
   Trusted callers carrying secrets set `opts: [confidential: true]`. These hops still
   route normally but are never published to the workflow trigger stream, and async
@@ -32,7 +31,6 @@ defmodule Zaq.NodeRouter do
   require Logger
 
   alias Zaq.{Event, EventHop}
-  alias Zaq.NodeRouter.{AsyncHandoff, Coordination}
 
   @discovery_rpc_timeout 30_000
   @execution_rpc_timeout :infinity
@@ -63,20 +61,11 @@ defmodule Zaq.NodeRouter do
   """
   def supervisor_map, do: @supervisor_map
 
-  @doc "Returns whether this process currently holds coordination for the resource."
-  @spec coordinated?(term()) :: boolean()
-  def coordinated?(resource), do: Map.has_key?(Coordination.context(), resource)
-
   @doc """
   Dispatches an event to the node that owns `event.next_hop.destination`.
 
   Always returns a `%Zaq.Event{}` for both sync and async hop types.
 
-  Trusted callers set `opts: [coordination: resource]` to protect the complete
-  dispatched operation, including nested dispatches and its continuation.
-  Resource selection and domain authorization remain the caller's responsibility.
-  Acquisition budgets and process handoff are managed internally; see
-  `Zaq.NodeRouter.Coordination` for the coordination contract.
   """
   @spec dispatch(Event.t()) :: Event.t()
   def dispatch(%Event{} = event), do: dispatch(event, %{})
@@ -106,18 +95,15 @@ defmodule Zaq.NodeRouter do
         api_module: Map.fetch!(@role_api_map, role),
         current: current_node(runtime),
         role: role,
-        coordination: Coordination.capture(event.opts),
         runtime: runtime
       }
 
-      Coordination.run(dispatch_ctx.coordination, fn ->
-        {:ok,
-         Enum.map(targets, fn target ->
-           dispatch_ctx
-           |> Map.put(:target, target)
-           |> do_dispatch_sync()
-         end)}
-      end)
+      {:ok,
+       Enum.map(targets, fn target ->
+         dispatch_ctx
+         |> Map.put(:target, target)
+         |> do_dispatch_sync()
+       end)}
     else
       :async -> {:error, {:invalid_fanout, :async_hop}}
       true -> {:error, {:service_unavailable, role}}
@@ -299,7 +285,6 @@ defmodule Zaq.NodeRouter do
        current: current,
        target: target,
        role: role,
-       coordination: Coordination.capture(event.opts),
        runtime: runtime
      }}
   end
@@ -312,20 +297,9 @@ defmodule Zaq.NodeRouter do
     execute_dispatch(dispatch_ctx)
   end
 
-  defp do_dispatch(%{hop_type: :async, coordination: scopes} = ctx) when map_size(scopes) == 0 do
+  defp do_dispatch(%{hop_type: :async} = ctx) do
     _ = async_start(ctx.runtime, fn -> execute_async(ctx) end)
     ctx.event
-  end
-
-  defp do_dispatch(%{hop_type: :async} = ctx) do
-    case AsyncHandoff.start(
-           ctx.coordination,
-           fn work -> async_start(ctx.runtime, work) end,
-           fn -> execute_async(ctx) end
-         ) do
-      :ok -> ctx.event
-      {:error, _} = error -> %{ctx.event | response: error}
-    end
   end
 
   defp execute_async(ctx) do
@@ -334,31 +308,10 @@ defmodule Zaq.NodeRouter do
   end
 
   defp execute_dispatch(dispatch_ctx) do
-    result =
-      Coordination.run(dispatch_ctx.coordination, fn ->
-        dispatch_ctx
-        |> do_dispatch_sync()
-        |> continue_dispatch(dispatch_ctx.runtime)
-      end)
-
-    coordinated_event(result, dispatch_ctx.event)
+    dispatch_ctx
+    |> do_dispatch_sync()
+    |> continue_dispatch(dispatch_ctx.runtime)
   end
-
-  @doc "Executes a trusted coordinated role hop on its destination node with independent holds."
-  @spec execute_coordinated(Event.t(), atom(), Coordination.handoff()) :: Event.t()
-  def execute_coordinated(%Event{} = event, role, scopes) do
-    result =
-      Coordination.run(Coordination.import(scopes), fn ->
-        Map.fetch!(@role_api_map, role).handle_event(event, action_for(event), nil)
-      end)
-
-    coordinated_event(result, event)
-  end
-
-  defp coordinated_event({:error, :coordination_timeout} = error, event),
-    do: %{event | response: error}
-
-  defp coordinated_event(result, _event), do: result
 
   defp broadcast_event(%Event{} = event) do
     unless confidential?(event) do
@@ -374,26 +327,17 @@ defmodule Zaq.NodeRouter do
          action: action,
          current: current,
          target: target,
-         role: role,
-         coordination: coordination,
          runtime: runtime
        }) do
-    {module, function, args} =
-      if map_size(coordination) == 0 do
-        {api_module, :handle_event, [event, action, nil]}
-      else
-        {__MODULE__, :execute_coordinated, [event, role, Coordination.export(coordination)]}
-      end
-
     if target == current do
-      apply(module, function, args)
+      api_module.handle_event(event, action, nil)
     else
       case rpc_call(
              runtime,
              target,
-             module,
-             function,
-             args,
+             api_module,
+             :handle_event,
+             [event, action, nil],
              @execution_rpc_timeout
            ) do
         {:badrpc, reason} ->

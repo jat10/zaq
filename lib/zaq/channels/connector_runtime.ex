@@ -10,12 +10,12 @@ defmodule Zaq.Channels.ConnectorRuntime do
           | {:restart, module()}
           | {:ensure, String.t(), keyword()}
 
-  @doc "Routes complete runtime preparation, coordinating saved bindings with lifecycle cleanup."
+  @doc "Routes complete runtime preparation through Channels."
   @spec start(Bridge.runtime_target(), operation()) :: :ok | {:error, term()}
   def start(config, operation) do
     event =
       Event.new(%{config: config, operation: operation}, :channels,
-        opts: [action: :connector_start_runtime, confidential: true] ++ coordination(config)
+        opts: [action: :connector_start_runtime, confidential: true]
       )
 
     NodeRouter.dispatch(event).response
@@ -30,34 +30,23 @@ defmodule Zaq.Channels.ConnectorRuntime do
 
   def execute_start(_), do: {:error, :invalid_request}
 
-  defp coordination(%{id: id, provider: _, kind: _, settings: settings} = config)
+  defp current_config(%{id: id, provider: _, kind: _, settings: settings} = config)
        when is_integer(id) and id > 0 and is_map(settings) do
-    if Settings.saved_binding?(config), do: [coordination: {:connector_lifecycle, id}], else: []
+    if Settings.saved_binding?(config), do: resolve_current(config), else: {:ok, config}
   end
 
-  defp coordination(_), do: []
+  defp current_config(config), do: {:ok, config}
 
-  defp current_config(config) do
-    case coordination(config) do
-      [] -> {:ok, config}
-      [coordination: resource] -> resolve_current(config, resource)
-    end
-  end
+  defp resolve_current(%{id: id, provider: provider, kind: kind} = config) do
+    event =
+      Event.new(%{channel_config_id: id, provider: provider, kind: kind}, :engine,
+        opts: [action: :connector_runtime_context, confidential: true, connector_runtime: true]
+      )
 
-  defp resolve_current(%{id: id, provider: provider, kind: kind} = config, resource) do
-    if NodeRouter.coordinated?(resource) do
-      event =
-        Event.new(%{channel_config_id: id, provider: provider, kind: kind}, :engine,
-          opts: [action: :connector_runtime_context, confidential: true, connector_runtime: true]
-        )
-
-      case NodeRouter.dispatch(event).response do
-        {:ok, current} -> {:ok, Map.merge(config, current)}
-        {:error, _} = error -> error
-        _ -> {:error, :connector_unavailable}
-      end
-    else
-      {:error, :coordination_required}
+    case NodeRouter.dispatch(event).response do
+      {:ok, current} -> {:ok, Map.merge(config, current)}
+      {:error, _} = error -> error
+      _ -> {:error, :connector_unavailable}
     end
   end
 
@@ -100,11 +89,7 @@ defmodule Zaq.Channels.ConnectorRuntime do
         %{id: id, provider: provider, kind: kind, enabled: true} = after_config,
         opts
       ) do
-    if NodeRouter.coordinated?({:connector_lifecycle, id}) do
-      sync_enabled_runtime(before_config, after_config, opts)
-    else
-      {:error, :connector_mismatch}
-    end
+    sync_enabled_runtime(before_config, after_config, opts)
   end
 
   def sync_runtime(

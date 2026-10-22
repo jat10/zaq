@@ -431,7 +431,7 @@ Rate ownership is split by role, after shared PubSub:
 | Owner    | Runtime / API                                                                                                   | Budget                                     |
 | -------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
 | Engine   | `PeopleAuth` issuance policy using `Zaq.People.AuthRateLimiter` mechanics under `Engine.Supervisor`              | OTP issuance/resend per Person and IP      |
-| Channels | `Zaq.Channels.PeopleAuthRateLimiter` under the static `Channels.Supervisor`, before shared infrastructure and `Channels.BridgeSupervisor` | Unsuccessful-identification IP budget only |
+| Channels | `Zaq.Channels.PeopleAuthRateLimiter` under the static `Channels.Supervisor`, before `Channels.BridgeSupervisor` | Unsuccessful-identification IP budget only |
 | Engine   | `PeopleAuth.verify_challenge/3` and persisted challenge row                                                     | Current configured verification maximum    |
 
 The shared `Zaq.People.AuthRateLimiter` supervisor implementation starts one instance
@@ -441,10 +441,9 @@ per owner: Engine keeps its existing name; Channels uses
 listeners use the corresponding `.Listener` names. PubSub topics are
 `zaq:people_auth:issuance:v1` and `zaq:people_auth:identification:v1`.
 Combined-role nodes start both once, without sharing counters or adapter lifecycle.
-The Channels parent uses `:rest_for_one`, ordered limiter, shared infrastructure,
-then bridge supervisor. Infrastructure and bridge restarts preserve limiter counters
-and cache. Restarting the whole limiter resets its local resources and restarts the
-later channel children. Parent shutdown stops all children.
+The Channels parent uses `:one_for_one`. Bridge restarts preserve limiter counters
+and cache; restarting the limiter resets only its own local resources. Parent
+shutdown stops both subtrees. See [Channels supervision](channels.md#supervisor).
 
 Dependency **Hammer 7.5.0** provides built-in `Hammer.ETS` fixed windows. Its local
 counter and application-owned listener follow the official
