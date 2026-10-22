@@ -12,17 +12,72 @@ defmodule Zaq.Engine.ChannelConfigTest do
   alias Zaq.System.SecretConfig
   alias Zaq.SystemConfigFixtures
 
-  test "multiple WhatsApp configurations do not require token or URL" do
+  property "ordinary settings replacement preserves saved pairing metadata" do
+    metadata = %{
+      "owner_id" => 7,
+      "account" => "paired-account",
+      "pairing_attempt" => "attempt",
+      "credential_document_id" => "binding"
+    }
+
+    saved = create_reply_policy_config!("whatsapp", metadata)
+
+    check all(value <- string(:alphanumeric), enabled <- boolean(), max_runs: 20) do
+      config = %{saved | enabled: enabled}
+      changeset = ChannelConfig.changeset(config, %{settings: %{"custom" => value}})
+      assert changeset.valid?
+      settings = Changeset.get_field(changeset, :settings)
+      assert Map.take(settings, Map.keys(metadata)) == metadata
+      assert settings["custom"] == value
+    end
+
+    cleared = ChannelConfig.changeset(saved, %{settings: nil})
+    assert cleared.valid?
+    assert Map.take(Changeset.get_field(cleared, :settings), Map.keys(metadata)) == metadata
+  end
+
+  test "settings reject replacement of pairing identity and permit identical metadata" do
+    metadata = %{
+      "owner_id" => 7,
+      "account" => "paired-account",
+      "pairing_attempt" => "attempt",
+      "credential_document_id" => "binding"
+    }
+
+    saved = create_reply_policy_config!("whatsapp", metadata)
+    assert ChannelConfig.changeset(saved, %{settings: metadata}).valid?
+
+    refute ChannelConfig.changeset(saved, %{settings: Map.put(metadata, :account, "replacement")}).valid?
+
+    for key <- Map.keys(metadata),
+        value <- [nil, "replacement"],
+        representation <- [:string, :atom] do
+      field = if representation == :atom, do: String.to_existing_atom(key), else: key
+      changeset = ChannelConfig.changeset(saved, %{settings: %{field => value}})
+      refute changeset.valid?
+      assert {:error, _} = Repo.update(changeset)
+      assert Repo.get!(ChannelConfig, saved.id).settings == saved.settings
+    end
+
+    legacy = create_reply_policy_config!("whatsapp", %{})
+    refute ChannelConfig.changeset(legacy, %{settings: metadata}).valid?
+    assert ChannelConfig.changeset(legacy, %{settings: %{"custom" => "allowed"}}).valid?
+  end
+
+  test "trusted adapter authentication supports multiple configurations without URL or token" do
     configs =
       for name <- ["WhatsApp Sales", "WhatsApp Support"] do
         assert {:ok, config} =
                  %ChannelConfig{}
-                 |> ChannelConfig.changeset(%{
-                   name: name,
-                   provider: "whatsapp",
-                   kind: "retrieval",
-                   enabled: false
-                 })
+                 |> ChannelConfig.changeset(
+                   %{
+                     name: name,
+                     provider: "whatsapp",
+                     kind: "retrieval",
+                     enabled: false
+                   },
+                   adapter_authentication: true
+                 )
                  |> Repo.insert()
 
         assert config.token == ""
@@ -32,6 +87,45 @@ defmodule Zaq.Engine.ChannelConfigTest do
 
     assert [first, second] = configs
     refute first.id == second.id
+  end
+
+  test "provider names and submitted authentication flags cannot bypass connection validation" do
+    for provider <- ["whatsapp", "mattermost", "telegram"],
+        flag <- [true, "true", false] do
+      attrs = %{
+        "name" => "Untrusted",
+        "provider" => provider,
+        "kind" => "retrieval",
+        "adapter_authentication" => flag
+      }
+
+      assert {:error, changeset} = ChannelConfig.create(attrs)
+      assert "can't be blank" in errors_on(changeset).url
+      assert "can't be blank" in errors_on(changeset).token
+    end
+  end
+
+  test "trusted adapter authentication is provider independent and supports saved edits" do
+    for provider <- ["whatsapp", "mattermost"] do
+      assert {:ok, saved} =
+               ChannelConfig.create(
+                 %{name: "Paired", provider: provider, kind: "retrieval"},
+                 adapter_authentication: true
+               )
+
+      assert saved.url == ""
+      assert saved.token == ""
+
+      assert {:ok, updated} =
+               saved
+               |> ChannelConfig.changeset(%{name: "Renamed"}, adapter_authentication: true)
+               |> Repo.update()
+
+      assert updated.id == saved.id
+      assert updated.name == "Renamed"
+      assert updated.url == ""
+      assert updated.token == ""
+    end
   end
 
   # ── Token encryption ────────────────────────────────────────────────────
@@ -1051,7 +1145,13 @@ defmodule Zaq.Engine.ChannelConfigTest do
   end
 
   test "null policy is treated as absent and unsupported or malformed settings reject writes" do
-    config = %ChannelConfig{provider: "whatsapp", name: "Support", kind: "retrieval"}
+    config = %ChannelConfig{
+      provider: "whatsapp",
+      name: "Support",
+      kind: "retrieval",
+      url: "https://example.test",
+      token: "test-token"
+    }
 
     for settings <- [%{}, %{"jido_chat" => nil}, %{"jido_chat" => %{"room_reply_policy" => nil}}] do
       changeset = ChannelConfig.changeset(config, %{settings: settings})
@@ -1105,7 +1205,7 @@ defmodule Zaq.Engine.ChannelConfigTest do
 
   test "Engine creation and upsert save defaults while changesets only validate" do
     attrs = %{provider: "whatsapp", name: "Support", kind: "retrieval", enabled: false}
-    assert {:ok, saved} = ChannelConfig.create(attrs)
+    assert {:ok, saved} = ChannelConfig.create(attrs, adapter_authentication: true)
 
     assert saved_history_options(saved) == %{
              "sync_history" => false,
@@ -1115,14 +1215,19 @@ defmodule Zaq.Engine.ChannelConfigTest do
     assert saved.settings["jido_chat"]["room_reply_policy"] == "mention_required"
 
     settings =
-      Ecto.Changeset.get_field(ChannelConfig.changeset(%ChannelConfig{}, attrs), :settings)
+      Ecto.Changeset.get_field(
+        ChannelConfig.changeset(%ChannelConfig{}, attrs, adapter_authentication: true),
+        :settings
+      )
 
     refute Map.has_key?(settings["jido_chat"], "ingress")
 
     Repo.delete!(saved)
 
     assert {:ok, upserted} =
-             ChannelConfig.upsert_by_provider("whatsapp", Map.delete(attrs, :provider))
+             ChannelConfig.upsert_by_provider("whatsapp", Map.delete(attrs, :provider),
+               adapter_authentication: true
+             )
 
     assert saved_history_options(upserted) == saved_history_options(saved)
   end
@@ -1136,25 +1241,30 @@ defmodule Zaq.Engine.ChannelConfigTest do
       "settings" => %{"owner_id" => 3, "jido_chat" => %{"ingress" => %{"sync_history" => true}}}
     }
 
-    assert {:ok, saved} = ChannelConfig.create(attrs)
+    assert {:ok, saved} = ChannelConfig.create(attrs, adapter_authentication: true)
     assert saved_history_options(saved) == %{"sync_history" => true, "sync_full_history" => false}
     assert saved.settings["owner_id"] == 3
 
     assert {:ok, updated} =
-             ChannelConfig.upsert_by_provider("whatsapp", %{settings: %{"account" => "changed"}})
+             ChannelConfig.upsert_by_provider("whatsapp", %{settings: %{"custom" => "changed"}},
+               adapter_authentication: true
+             )
 
     assert saved_history_options(updated) == saved_history_options(saved)
-    assert updated.settings["account"] == "changed"
+    assert updated.settings["custom"] == "changed"
 
     assert {:ok, updated} =
              updated
-             |> ChannelConfig.changeset(%{
-               settings: %{
-                 "jido_chat" => %{
-                   "ingress" => %{"sync_history" => false, "sync_full_history" => true}
+             |> ChannelConfig.changeset(
+               %{
+                 settings: %{
+                   "jido_chat" => %{
+                     "ingress" => %{"sync_history" => false, "sync_full_history" => true}
+                   }
                  }
-               }
-             })
+               },
+               adapter_authentication: true
+             )
              |> Repo.update()
 
     assert saved_history_options(updated) == %{
@@ -1175,12 +1285,14 @@ defmodule Zaq.Engine.ChannelConfigTest do
       }
     }
 
-    assert {:ok, saved} = ChannelConfig.create(attrs)
+    assert {:ok, saved} = ChannelConfig.create(attrs, adapter_authentication: true)
     assert saved_history_options(saved) == %{"sync_history" => true, "sync_full_history" => false}
 
     assert {:ok, updated} =
              saved
-             |> ChannelConfig.changeset(%{settings: %{"other" => "new"}})
+             |> ChannelConfig.changeset(%{settings: %{"other" => "new"}},
+               adapter_authentication: true
+             )
              |> Repo.update()
 
     assert updated.settings == %{
@@ -1194,12 +1306,15 @@ defmodule Zaq.Engine.ChannelConfigTest do
 
   test "legacy connectors resolve missing defaults at runtime without a database backfill" do
     assert {:ok, saved} =
-             ChannelConfig.create(%{
-               provider: "whatsapp",
-               name: "Legacy",
-               kind: "retrieval",
-               enabled: false
-             })
+             ChannelConfig.create(
+               %{
+                 provider: "whatsapp",
+                 name: "Legacy",
+                 kind: "retrieval",
+                 enabled: false
+               },
+               adapter_authentication: true
+             )
 
     # Deliberately model a record saved before these settings existed.
     legacy = saved |> Ecto.Changeset.change(settings: %{}) |> Repo.update!()

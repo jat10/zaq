@@ -144,9 +144,12 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
              :mention_required
 
     saved
-    |> ChannelConfig.changeset(%{
-      settings: put_in(saved.settings, ["jido_chat", "room_reply_policy"], "default")
-    })
+    |> ChannelConfig.changeset(
+      %{
+        settings: put_in(saved.settings, ["jido_chat", "room_reply_policy"], "default")
+      },
+      adapter_authentication: true
+    )
     |> Repo.update!()
 
     assert {:ok, repeated} = LinkedDeviceConfirmation.save(request)
@@ -165,7 +168,11 @@ defmodule Zaq.Engine.LinkedDeviceConfirmationTest do
            }
 
     settings = put_in(saved.settings, ["jido_chat", "ingress", "sync_history"], true)
-    saved |> ChannelConfig.changeset(%{settings: settings}) |> Repo.update!()
+
+    saved
+    |> ChannelConfig.changeset(%{settings: settings}, adapter_authentication: true)
+    |> Repo.update!()
+
     assert {:ok, repeated} = LinkedDeviceConfirmation.save(request)
     assert repeated.id == saved.id
 

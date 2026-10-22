@@ -2827,6 +2827,31 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
   end
 
   describe "capability_snapshot/1" do
+    test "connection UI requires linked-device ingress and native authentication regardless of provider name" do
+      previous = Application.get_env(:zaq, :channels, %{})
+      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+
+      for provider <- [:whatsapp, :mattermost],
+          ingress <- [:linked_device, :websocket, :webhook],
+          adapter <- [Jido.Chat.WhatsApp.Adapter, StubAdapterCapabilities] do
+        Application.put_env(:zaq, :channels, %{
+          provider => %{bridge: JidoChatBridge, adapter: adapter, ingress_mode: ingress}
+        })
+
+        assert {:ok, %{resolved: resolved}} =
+                 JidoChatBridge.capability_snapshot(%{provider: to_string(provider)})
+
+        assert resolved.connection_ui_on_enable ==
+                 (ingress == :linked_device and adapter == Jido.Chat.WhatsApp.Adapter)
+
+        assert resolved.authentication_flow ==
+                 if(ingress == :linked_device and adapter == Jido.Chat.WhatsApp.Adapter,
+                   do: :linked_device,
+                   else: :default
+                 )
+      end
+    end
+
     test "resolves required capabilities and filters absent keys" do
       previous = Application.get_env(:zaq, :channels, %{})
 

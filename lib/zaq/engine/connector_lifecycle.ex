@@ -53,22 +53,6 @@ defmodule Zaq.Engine.ConnectorLifecycle do
 
   def archive(_request, _actor, _opts), do: {:error, :invalid_request}
 
-  defp dispatch_command(operation, request, actor, opts) do
-    event =
-      Event.new(%{operation: operation, request: request}, :engine,
-        actor: actor,
-        opts:
-          Keyword.merge(
-            opts,
-            action: :connector_lifecycle,
-            confidential: true,
-            connector_lifecycle: true
-          )
-      )
-
-    NodeRouter.dispatch(event).response
-  end
-
   @doc "Executes a trusted Engine lifecycle command."
   def execute(%{operation: :context, request: request}, actor, _opts) do
     with {:ok, _} <- BOActor.current_user(actor) do
@@ -76,33 +60,7 @@ defmodule Zaq.Engine.ConnectorLifecycle do
     end
   end
 
-  def execute(%{operation: operation, request: %{channel_config_id: id} = request}, actor, opts)
-      when operation == :enable do
-    with {:ok, id} <- cast_id(id),
-         %ChannelConfig{} <- ChannelConfig.get(id) do
-      execute_command(operation, Map.put(request, :channel_config_id, id), actor, opts)
-    else
-      {:error, _} = error -> error
-      _ -> {:error, :connector_not_found}
-    end
-  end
-
   def execute(_, _, _), do: {:error, :invalid_request}
-
-  defp execute_command(
-         operation,
-         %{channel_config_id: id, provider: provider, kind: kind, revision: expected},
-         actor,
-         opts
-       )
-       when is_binary(expected) do
-    case operation do
-      :enable ->
-        enable_scoped(id, provider, kind, expected, actor, opts)
-    end
-  end
-
-  defp execute_command(_, _, _, _), do: {:error, :invalid_request}
 
   defp do_archive(request, actor, opts) do
     router = Keyword.get(opts, :router, NodeRouter)
@@ -160,53 +118,6 @@ defmodule Zaq.Engine.ConnectorLifecycle do
         end
     end
   end
-
-  @doc "Enables an exact connector revision as a current super-admin, then reconciles runtime."
-  @spec enable(map(), map(), keyword()) :: {:ok, map()} | {:error, term()}
-  def enable(request, actor, opts \\ [])
-
-  def enable(
-        %{channel_config_id: id, provider: provider, kind: kind, revision: expected} = request,
-        actor,
-        opts
-      )
-      when is_binary(provider) and is_binary(kind) and is_binary(expected) and is_list(opts) do
-    case cast_id(id) do
-      {:ok, id} ->
-        dispatch_command(:enable, Map.put(request, :channel_config_id, id), actor, opts)
-
-      _ ->
-        {:error, :connector_not_found}
-    end
-  end
-
-  def enable(_, _, _), do: {:error, :invalid_request}
-
-  defp enable_scoped(id, provider, kind, expected, actor, opts) do
-    with {:ok, _user} <- BOActor.current_super_admin(actor),
-         %ChannelConfig{archived_at: nil} = before <- ChannelConfig.get(id),
-         :ok <- validate_scope(before, provider, kind) do
-      enable_current(before, expected, actor, opts)
-    else
-      {:error, :unauthorized} = error -> error
-      _ -> {:error, :connector_not_found}
-    end
-  end
-
-  defp enable_current(before, expected, actor, opts) do
-    with {:ok, enabled} <- persist_enable(before, expected) do
-      {:ok,
-       %{
-         channel_config_id: enabled.id,
-         status: if(before.enabled, do: :already_enabled, else: :enabled),
-         runtime:
-           sync_runtime(before, enabled, Keyword.get(opts, :router, NodeRouter), actor, opts)
-       }}
-    end
-  end
-
-  defp persist_enable(%{enabled: true} = config, _expected), do: {:ok, config}
-  defp persist_enable(config, expected), do: persist_enabled(config.id, expected, true)
 
   @doc "Resolves a fresh enabled connector for explicitly trusted runtime startup."
   @spec runtime_context(map()) :: {:ok, map()} | {:error, atom()}

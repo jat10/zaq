@@ -588,8 +588,19 @@ defmodule Zaq.Channels.JidoChatBridge do
           )
         end)
 
-      {:ok,
-       %{resolved: Map.put(resolved, :logout_on_disable, function_exported?(adapter, :logout, 1))}}
+      linked_device_auth? =
+        ingress_mode == :linked_device and adapter_capabilities.authenticate == :native
+
+      resolved =
+        resolved
+        |> Map.put(:logout_on_disable, function_exported?(adapter, :logout, 1))
+        |> Map.put(:connection_ui_on_enable, linked_device_auth?)
+        |> Map.put(
+          :authentication_flow,
+          if(linked_device_auth?, do: :linked_device, else: :default)
+        )
+
+      {:ok, %{resolved: resolved}}
     end
   end
 

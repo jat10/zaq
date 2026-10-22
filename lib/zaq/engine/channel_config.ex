@@ -5,7 +5,8 @@ defmodule Zaq.Engine.ChannelConfig do
 
   Provider defaults are applied on creation and resolved at runtime for older
   connectors. Settings edits preserve configured startup options unless explicitly
-  replaced; unrelated settings retain their existing replacement semantics.
+  replaced. Saved pairing identity and credential bindings are protected from
+  ordinary edits; user-owned settings retain their replacement semantics.
 
   ## Kinds
   - `:data_source` — document source adapters (Google Drive, SharePoint, ...)
@@ -27,6 +28,8 @@ defmodule Zaq.Engine.ChannelConfig do
   alias Zaq.Storage.VolumeConfig
   alias Zaq.Types.EncryptedString
   alias Zaq.Utils.ParseUtils
+
+  @pairing_metadata_fields ~w(credential_document_id owner_id pairing_attempt account)a
 
   @smtp_provider "email:smtp"
   @imap_provider "email:imap"
@@ -51,6 +54,9 @@ defmodule Zaq.Engine.ChannelConfig do
     timestamps(type: :utc_datetime)
   end
 
+  @type t :: %__MODULE__{}
+
+  @doc "Validates connector fields; adapter_authentication is a trusted server option, never an input attribute."
   def changeset(config, attrs, opts \\ []) do
     config
     |> cast(attrs, [:name, :provider, :kind, :url, :token, :enabled, :settings])
@@ -81,12 +87,56 @@ defmodule Zaq.Engine.ChannelConfig do
 
   defp merge_saved_settings(changeset) do
     case fetch_change(changeset, :settings) do
-      {:ok, settings} when is_map(settings) ->
+      {:ok, settings} when is_map(settings) or is_nil(settings) ->
         config = Map.put(changeset.data, :provider, get_field(changeset, :provider))
-        put_change(changeset, :settings, Settings.preserve(config, settings))
+
+        changeset
+        |> put_change(:settings, Settings.preserve(config, settings || %{}))
+        |> preserve_pairing_metadata()
 
       _ ->
         changeset
+    end
+  end
+
+  # These values are written by confirmation/binding operations, never by ordinary edits.
+  defp preserve_pairing_metadata(%{data: %{id: id, settings: saved}} = changeset)
+       when not is_nil(id) and is_map(saved) do
+    Enum.reduce(@pairing_metadata_fields, changeset, fn field, acc ->
+      key = Atom.to_string(field)
+      settings = get_field(acc, :settings)
+      previous = fetch_metadata(saved, field)
+
+      changed? =
+        Enum.any?([field, key], fn candidate ->
+          supplied = Map.fetch(settings, candidate)
+          supplied != :error and supplied != previous
+        end)
+
+      acc =
+        if changed?,
+          do:
+            add_error(acc, :settings, "Connection identity cannot be changed through settings."),
+          else: acc
+
+      settings = Map.drop(settings, [field, key])
+
+      settings =
+        case previous do
+          {:ok, value} -> Map.put(settings, key, value)
+          :error -> settings
+        end
+
+      put_change(acc, :settings, settings)
+    end)
+  end
+
+  defp preserve_pairing_metadata(changeset), do: changeset
+
+  defp fetch_metadata(settings, field) do
+    case Map.fetch(settings, Atom.to_string(field)) do
+      :error -> Map.fetch(settings, field)
+      value -> value
     end
   end
 
@@ -207,11 +257,6 @@ defmodule Zaq.Engine.ChannelConfig do
     case {kind, get_field(changeset, :provider),
           Keyword.get(opts, :adapter_authentication, false)} do
       {"retrieval", _provider, true} ->
-        changeset
-        |> maybe_put_placeholder(:url)
-        |> maybe_put_placeholder(:token)
-
-      {"retrieval", "whatsapp", _} ->
         changeset
         |> maybe_put_placeholder(:url)
         |> maybe_put_placeholder(:token)
@@ -676,7 +721,8 @@ defmodule Zaq.Engine.ChannelConfig do
   `attrs` can include any ChannelConfig fields; provider is always forced to the
   function argument.
   """
-  def upsert_by_provider(provider, attrs) when is_binary(provider) and is_map(attrs) do
+  def upsert_by_provider(provider, attrs, opts \\ [])
+      when is_binary(provider) and is_map(attrs) do
     attrs = Map.put(attrs, :provider, provider)
 
     case __MODULE__
@@ -684,11 +730,11 @@ defmodule Zaq.Engine.ChannelConfig do
          |> limit(2)
          |> Zaq.Repo.all() do
       [] ->
-        create(attrs)
+        create(attrs, opts)
 
       [%__MODULE__{} = config] ->
         config
-        |> changeset(attrs)
+        |> changeset(attrs, opts)
         |> Zaq.Repo.update()
 
       _ ->

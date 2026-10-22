@@ -6,7 +6,7 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
   alias Jido.Chat.WhatsApp.Adapter
   alias Jido.Chat.WhatsApp.Transport.AmarulaClient
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Engine.{ChannelConfig, ConnectorLifecycle, LinkedDeviceConfirmation}
+  alias Zaq.Engine.{ChannelConfig, LinkedDeviceConfirmation}
   alias Zaq.{Event, NodeRouter}
 
   defmodule OfflineTransport do
@@ -55,26 +55,6 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
     defdelegate logout(listener), to: Adapter
     defdelegate cleanup_connection(binding, opts), to: Adapter
     def listener_child_specs(_, _), do: {:error, :activation_failed}
-  end
-
-  defmodule RpcRuntimeRouter do
-    def dispatch(%Event{opts: opts} = event) do
-      if opts[:action] == :connector_sync_runtime do
-        NodeRouter.dispatch(event, %{
-          whereis_fn: fn _ -> nil end,
-          node_list_fn: fn -> [:channels@host] end,
-          rpc_call_fn: fn
-            _, Process, :whereis, [_] ->
-              self()
-
-            _, module, function, args ->
-              Task.async(fn -> apply(module, function, args) end) |> Task.await()
-          end
-        })
-      else
-        NodeRouter.dispatch(event)
-      end
-    end
   end
 
   setup do
@@ -144,23 +124,26 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
     refute Repo.get!(ChannelConfig, selected.id).settings["credential_document_id"]
   end
 
-  test "explicit enable reuses the saved profile across an RPC-like runtime callback", %{
-    actor: actor
-  } do
+  test "shared enable sync reuses the selected saved profile and listener", %{actor: actor} do
     selected = connector(actor, "+15550010")
-    selected = selected |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
-    assert {:ok, descriptor} = command(selected, :context, actor)
-    request = Map.put(descriptor, :op, :enable)
+    before = %{selected | enabled: false}
 
-    assert {:ok, %{status: :enabled, runtime: :synced}} =
-             ConnectorLifecycle.enable(request, actor, router: RpcRuntimeRouter)
+    event =
+      Event.new(
+        %{
+          before_config: ChannelConfig.to_runtime_config(before),
+          after_config: ChannelConfig.to_runtime_config(selected)
+        },
+        :channels,
+        actor: actor,
+        opts: [action: :sync_channel_runtime, confidential: true]
+      )
 
+    assert :ok = NodeRouter.dispatch(event).response
     bridge_id = JidoChatBridge.runtime_bridge_id(selected)
     assert {:ok, %{listener_pids: [first]}} = Zaq.Channels.Supervisor.lookup_runtime(bridge_id)
 
-    assert {:ok, %{status: :already_enabled, runtime: :synced}} =
-             ConnectorLifecycle.enable(request, actor, router: RpcRuntimeRouter)
-
+    assert :ok = NodeRouter.dispatch(event).response
     assert {:ok, %{listener_pids: [^first]}} = Zaq.Channels.Supervisor.lookup_runtime(bridge_id)
 
     assert Repo.get!(ChannelConfig, selected.id).settings["credential_document_id"] ==

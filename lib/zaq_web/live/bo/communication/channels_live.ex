@@ -70,6 +70,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
      |> assign(:kind, kind)
      |> assign(:provider, provider)
      |> assign(:provider_label, label)
+     |> assign(:authentication_flow, :default)
      |> assign(
        :linked_device,
        authentication_capability(provider, socket.assigns.current_user) == :native
@@ -194,6 +195,33 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     {:noreply, socket}
   end
 
+  def handle_event(
+        "cancel_linked_device_connection",
+        _,
+        %{assigns: %{linked_device_modal: %{config_id: id, cancel_connection: true}}} = socket
+      )
+      when is_integer(id) do
+    with {:ok, _user} <-
+           Zaq.Accounts.BOActor.current_super_admin(BOActor.build(socket.assigns.current_user)),
+         %ChannelConfig{archived_at: nil} = config <- Repo.get(ChannelConfig, id),
+         true <-
+           config.provider == socket.assigns.provider and
+             config.kind == to_string(socket.assigns.kind) do
+      {:noreply, socket} =
+        if config.enabled, do: toggle_active_config(socket, config), else: {:noreply, socket}
+
+      if Repo.get!(ChannelConfig, id).enabled,
+        do: {:noreply, socket},
+        else: {:noreply, LinkedDeviceUI.close(socket)}
+    else
+      _ ->
+        {:noreply,
+         put_flash(socket, :error, "Cannot cancel this connection. Refresh and try again.")}
+    end
+  end
+
+  def handle_event("cancel_linked_device_connection", _, socket), do: {:noreply, socket}
+
   def handle_event("close_linked_device", _, socket), do: {:noreply, LinkedDeviceUI.close(socket)}
 
   def handle_event("confirm_linked_device", _, socket),
@@ -230,36 +258,47 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   # Config CRUD events
   # -------------------------------------------------------------------------
 
-  def handle_event(
-        "open_modal",
-        %{"action" => "new"},
-        %{assigns: %{provider: "whatsapp"}} = socket
-      ) do
-    if BOActor.super_admin?(socket.assigns.current_user),
-      do: {:noreply, LinkedDeviceUI.new(socket)},
-      else:
-        {:noreply, put_flash(socket, :error, "Only super admins can link a WhatsApp account.")}
-  end
-
   def handle_event("open_modal", %{"action" => "new"}, socket) do
-    changeset =
-      ChannelConfig.changeset(%ChannelConfig{}, %{"provider" => socket.assigns.provider})
+    case request_capability_snapshot(socket.assigns.provider, %{scope: :provider}) do
+      {:ok, %{resolved: %{authentication_flow: :linked_device}}} ->
+        case Zaq.Accounts.BOActor.current_super_admin(BOActor.build(socket.assigns.current_user)) do
+          {:ok, _user} ->
+            {:noreply, LinkedDeviceUI.new(socket)}
 
-    {:noreply,
-     socket
-     |> assign(:modal, :new)
-     |> assign(:changeset, changeset)
-     |> assign(:form, to_form(changeset, as: :form))
-     |> assign(:modal_errors, [])}
+          {:error, :unauthorized} ->
+            {:noreply, put_flash(socket, :error, "Only super admins can link a device account.")}
+        end
+
+      _ ->
+        changeset =
+          ChannelConfig.changeset(%ChannelConfig{}, %{"provider" => socket.assigns.provider})
+
+        {:noreply,
+         socket
+         |> assign(:modal, :new)
+         |> assign(:authentication_flow, :default)
+         |> assign(:changeset, changeset)
+         |> assign(:form, to_form(changeset, as: :form))
+         |> assign(:modal_errors, [])}
+    end
   end
 
   def handle_event("open_modal", %{"action" => "edit", "id" => id}, socket) do
     config = Repo.get!(ChannelConfig, id)
-    changeset = config |> ChannelConfig.changeset(%{}) |> with_visible_token()
+    opts = config_changeset_options(config, %{})
+
+    changeset =
+      config
+      |> ChannelConfig.changeset(%{}, opts)
+      |> with_visible_token()
 
     {:noreply,
      socket
      |> assign(:modal, :edit)
+     |> assign(
+       :authentication_flow,
+       if(opts[:adapter_authentication], do: :linked_device, else: :default)
+     )
      |> assign(:changeset, changeset)
      |> assign(:form, to_form(changeset, as: :form))
      |> assign(:modal_errors, [])}
@@ -366,8 +405,12 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
       end
 
     changeset =
-      socket.assigns.changeset.data
-      |> ChannelConfig.changeset(params)
+      ChannelConfigPersistence.changeset(
+        socket.assigns.modal,
+        socket.assigns.changeset.data,
+        params,
+        config_changeset_options(socket.assigns.changeset.data, params)
+      )
       |> maybe_validate_connect_credential_provider(socket.assigns.provider)
       |> maybe_validate_global_base_url_requirement(socket.assigns.kind, socket.assigns.provider)
       |> with_visible_token(raw_token)
@@ -401,7 +444,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
           changeset
           |> maybe_validate_connect_credential_provider(provider)
           |> maybe_validate_global_base_url_requirement(socket.assigns.kind, provider)
-        end
+        end,
+        config_changeset_options(socket.assigns.changeset.data, params)
       )
 
     case result do
@@ -543,15 +587,20 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     config = Repo.get!(ChannelConfig, id)
 
     cond do
-      config.provider != socket.assigns.provider ->
+      config.provider != socket.assigns.provider or config.kind != to_string(socket.assigns.kind) ->
         {:noreply,
          put_flash(socket, :error, "Connector is no longer available. Refresh and try again.")}
 
       config.archived_at ->
         {:noreply, put_flash(socket, :error, "Archived connectors cannot be reactivated.")}
 
-      config.provider == "whatsapp" and not config.enabled ->
-        enable_whatsapp_config(socket, config)
+      not enable_authorized?(socket, config) ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "Cannot enable this profile. Check your access and refresh before trying again."
+         )}
 
       true ->
         case disable_policy(socket, config) do
@@ -1035,6 +1084,24 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     |> MapSet.new(& &1["id"])
   end
 
+  defp config_changeset_options(%ChannelConfig{id: id} = config, params) when is_integer(id) do
+    capability_params = if config.enabled, do: %{config_id: id}, else: %{scope: :provider}
+
+    same_identity? =
+      Map.get(params, "provider", config.provider) == config.provider and
+        Map.get(params, "kind", config.kind) == config.kind
+
+    with true <- same_identity?,
+         {:ok, %{resolved: %{authentication_flow: :linked_device}}} <-
+           request_capability_snapshot(config.provider, capability_params) do
+      [adapter_authentication: true]
+    else
+      _ -> []
+    end
+  end
+
+  defp config_changeset_options(_config, _params), do: []
+
   defp list_configs(provider) do
     ChannelConfig
     |> where([c], c.provider == ^provider and is_nil(c.archived_at))
@@ -1081,54 +1148,22 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     end
   end
 
-  defp enable_whatsapp_config(socket, previous_config) do
-    request = %{
-      op: :context,
-      channel_config_id: previous_config.id,
-      provider: socket.assigns.provider,
-      kind: to_string(socket.assigns.kind)
-    }
+  defp enable_authorized?(_socket, %{enabled: true}), do: true
 
-    with {:ok, descriptor} <- connector_command(socket, :enable_channel_connector, request),
-         {:ok, result} <-
-           connector_command(socket, :enable_channel_connector, Map.put(descriptor, :op, :enable)) do
-      {:noreply, present_enabled_connector(socket, previous_config, result)}
-    else
-      _ ->
-        {:noreply,
-         put_flash(
-           socket,
-           :error,
-           "Cannot enable this profile. Check your access and refresh before trying again."
-         )}
+  defp enable_authorized?(socket, config) do
+    case Zaq.Accounts.BOActor.current_user(BOActor.build(socket.assigns.current_user)) do
+      {:ok, user} -> is_nil(ChannelEnablePolicy.disabled_reason(config, user))
+      _ -> false
     end
   end
 
-  defp present_enabled_connector(socket, previous_config, result) do
-    sync_result = enable_sync_result(result.runtime)
-
-    socket =
-      socket
-      |> refresh_connector_configs()
-      |> maybe_put_runtime_sync_flash(sync_result, "#{previous_config.name} enabled.")
-
-    case Enum.find(socket.assigns.configs, &(&1.id == result.channel_config_id)) do
-      %ChannelConfig{enabled: true} = config ->
-        maybe_open_enabled_connection(socket, config, sync_result)
+  defp maybe_open_enabled_connection(%{assigns: %{linked_device: true}} = socket, config, :ok) do
+    case request_capability_snapshot(config.provider, %{config_id: config.id}) do
+      {:ok, %{resolved: %{connection_ui_on_enable: true}}} ->
+        LinkedDeviceUI.open(socket, config, cancel_connection: true)
 
       _ ->
         socket
-    end
-  end
-
-  defp enable_sync_result(:synced), do: :ok
-  defp enable_sync_result({:pending, {:unexpected_response, other}}), do: other
-  defp enable_sync_result({:pending, reason}), do: {:error, reason}
-
-  defp maybe_open_enabled_connection(%{assigns: %{linked_device: true}} = socket, config, :ok) do
-    case ChannelEnablePolicy.after_enable(config.provider, config) do
-      :open_connection -> LinkedDeviceUI.open(socket, config)
-      :proceed -> socket
     end
   end
 

@@ -16,6 +16,27 @@ The adapter owns provisional connections, challenges, expiry and cancellation;
 Channels owns delegation and runtime activation. Private authentication and storage
 requests use the trusted sink and never enter public message ingress.
 
+After shared enable synchronization succeeds, BO opens the saved connection UI
+only when the selected connector's capability snapshot declares
+`connection_ui_on_enable: true` and authorized native authentication is available.
+`JidoChatBridge` projects this capability for `:linked_device` ingress with native
+adapter authentication. Native authentication alone does not select this UI;
+provider names do not determine the post-enable presentation.
+
+While that saved-profile connection is pending, the popup offers **Cancel
+connection**. Cancellation reuses the shared disable flow, including adapter
+cleanup before teardown, and closes the popup only after the profile is disabled.
+Cleanup failure keeps the popup available for retry. Once connected, **Close**
+only dismisses the popup. A cancellation already sent still disables if pairing
+finishes before it is handled. New unsaved profiles retain provisional-session
+cancellation.
+
+New connector onboarding uses the same capability transport with `scope: :provider`,
+without selecting a saved connector. `authentication_flow: :linked_device` selects
+the existing provisional pairing UI after a current super-admin check; `:default`
+preserves the standard form and OAuth flow. JidoChatBridge declares linked-device
+authentication only for linked-device ingress with native adapter authentication.
+
 Engine's trusted `:confirm_linked_device` Action persists a normalized account and
 encoded credentials atomically, with attempt-scoped idempotence. Activation follows
 persistence; a startup failure leaves a saved connector with runtime pending.
@@ -1016,7 +1037,9 @@ confirmation. Missing nested keys are filled; supplied values win. Providers wit
 a defaults clause receive an empty map.
 
 During edits, the canonical changeset preserves saved values for defaulted keys
-unless explicitly replaced. Other settings retain their replacement semantics.
+unless explicitly replaced. Engine also protects
+[paired identity and credential metadata](engine.md#connector-credential-documents).
+User-owned settings retain their replacement semantics.
 Persisted settings use string keys. Shared projections resolve absent legacy values
 at runtime without a backfill; explicit malformed values are not silently replaced.
 Adapters validate transport options. The bridge forwards the connector's

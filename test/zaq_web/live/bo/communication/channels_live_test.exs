@@ -71,7 +71,26 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
            %{
              snapshot
              | resolved:
-                 Map.put(resolved, :logout_on_disable, config.provider in [:whatsapp, "whatsapp"])
+                 resolved
+                 |> Map.put(:logout_on_disable, config.provider in [:whatsapp, "whatsapp"])
+                 |> Map.put_new(
+                   :authentication_flow,
+                   if(
+                     get_in(
+                       Application.get_env(:zaq, :channels),
+                       [String.to_existing_atom(to_string(config.provider)), :ingress_mode]
+                     ) == :linked_device,
+                     do: :linked_device,
+                     else: :default
+                   )
+                 )
+                 |> Map.put_new(
+                   :connection_ui_on_enable,
+                   get_in(
+                     Application.get_env(:zaq, :channels),
+                     [String.to_existing_atom(to_string(config.provider)), :ingress_mode]
+                   ) == :linked_device
+                 )
            }}
 
         other ->
@@ -209,6 +228,67 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     refute has_element?(view, "#config-form")
   end
 
+  test "new connector pairing is selected by provider capability without a saved profile", %{
+    conn: conn
+  } do
+    admin = super_admin_fixture(%{must_change_password: false})
+    conn = init_test_session(conn, %{user_id: admin.id})
+    BridgeFake.put(:authentication_capability, :native)
+
+    BridgeFake.put(
+      :capability_snapshot,
+      {:ok, %{resolved: %{authentication_flow: :linked_device}}}
+    )
+
+    initial_count = Repo.aggregate(ChannelConfig, :count)
+
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/mattermost")
+    view |> element("#new-config-button") |> render_click()
+    assert has_element?(view, "#linked-device-pairing")
+    refute has_element?(view, "#config-form")
+    assert Repo.aggregate(ChannelConfig, :count) == initial_count
+    view |> element("#linked-device-pairing button", "Close") |> render_click()
+    refute has_element?(view, "#linked-device-pairing")
+  end
+
+  test "native authentication alone preserves the new connector form", %{conn: conn} do
+    admin = super_admin_fixture(%{must_change_password: false})
+    BridgeFake.put(:authentication_capability, :native)
+    BridgeFake.put(:capability_snapshot, {:ok, %{resolved: %{authentication_flow: :default}}})
+
+    {:ok, view, _} =
+      live(init_test_session(conn, %{user_id: admin.id}), ~p"/bo/channels/retrieval/mattermost")
+
+    view |> element("#new-config-button") |> render_click()
+    assert has_element?(view, "#config-form")
+    refute has_element?(view, "#linked-device-pairing")
+  end
+
+  test "new pairing rejects unprivileged and subsequently revoked operators", %{
+    conn: conn,
+    user: user
+  } do
+    BridgeFake.put(
+      :capability_snapshot,
+      {:ok, %{resolved: %{authentication_flow: :linked_device}}}
+    )
+
+    {:ok, denied, _} = live(conn, ~p"/bo/channels/retrieval/mattermost")
+    render_hook(denied, "open_modal", %{"action" => "new"})
+    refute has_element?(denied, "#linked-device-pairing")
+    refute has_element?(denied, "#config-form")
+
+    admin = super_admin_fixture(%{must_change_password: false})
+
+    {:ok, view, _} =
+      live(init_test_session(conn, %{user_id: admin.id}), ~p"/bo/channels/retrieval/mattermost")
+
+    admin |> Ecto.Changeset.change(role_id: user.role_id) |> Repo.update!()
+    render_hook(view, "open_modal", %{"action" => "new"})
+    refute has_element?(view, "#linked-device-pairing")
+    assert render(view) =~ "Only super admins can link a device account."
+  end
+
   test "linked-device setup hides tokens and pairs only the selected configuration", %{conn: conn} do
     admin = super_admin_fixture()
     {:ok, admin} = Accounts.change_password(admin, %{password: "StrongPass1!"})
@@ -231,20 +311,26 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
 
     first =
       %ChannelConfig{}
-      |> ChannelConfig.changeset(%{
-        name: "First account",
-        provider: "whatsapp",
-        kind: "retrieval"
-      })
+      |> ChannelConfig.changeset(
+        %{
+          name: "First account",
+          provider: "whatsapp",
+          kind: "retrieval"
+        },
+        adapter_authentication: true
+      )
       |> Repo.insert!()
 
     second =
       %ChannelConfig{}
-      |> ChannelConfig.changeset(%{
-        name: "Second account",
-        provider: "whatsapp",
-        kind: "retrieval"
-      })
+      |> ChannelConfig.changeset(
+        %{
+          name: "Second account",
+          provider: "whatsapp",
+          kind: "retrieval"
+        },
+        adapter_authentication: true
+      )
       |> Repo.insert!()
 
     {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
@@ -384,6 +470,116 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       %{conn: init_test_session(conn, %{user_id: admin.id})}
     end
 
+    test "Edit rejects forged lifecycle transitions for admins and ordinary operators", %{
+      conn: conn
+    } do
+      operator = user_fixture(%{must_change_password: false})
+
+      for session <- [conn, init_test_session(conn, %{user_id: operator.id})],
+          enabled <- [true, false] do
+        config = insert_channel_config(%{provider: "whatsapp", enabled: enabled})
+        {:ok, view, _} = live(session, ~p"/bo/channels/retrieval/whatsapp")
+        view |> element("#edit-config-#{config.id}") |> render_click()
+        refute has_element?(view, "#form_enabled")
+        refute has_element?(view, "input[name='form[url]']")
+        refute has_element?(view, "input[name='form[token]']")
+
+        params = %{"form" => %{"enabled" => to_string(not enabled)}}
+        render_hook(view, "validate", params)
+        assert Repo.get!(ChannelConfig, config.id).enabled == enabled
+        render_hook(view, "save", params)
+
+        assert has_element?(view, "#config-form")
+        assert render(view) =~ "Use the Enable or Disable control"
+        assert Repo.get!(ChannelConfig, config.id).enabled == enabled
+      end
+
+      assert BridgeFake.calls(:logout) == []
+      assert BridgeFake.calls(:sync_runtime) == []
+    end
+
+    test "nested settings edits preserve paired identity and readable credentials", %{conn: conn} do
+      operator = user_fixture(%{must_change_password: false})
+
+      for session <- [conn, init_test_session(conn, %{user_id: operator.id})] do
+        metadata = %{
+          "owner_id" => operator.id,
+          "account" => "synthetic-account",
+          "pairing_attempt" => "attempt"
+        }
+
+        {:ok, config} =
+          ChannelConfig.create(
+            %{
+              name: "Paired",
+              provider: "whatsapp",
+              kind: "retrieval",
+              enabled: true,
+              settings: metadata
+            },
+            adapter_authentication: true
+          )
+
+        {:ok, binding} = Connect.credential_document(%{op: :bind, channel_config_id: config.id})
+
+        assert :ok =
+                 Connect.credential_document(%{
+                   op: :put,
+                   binding: binding,
+                   namespace: "auth",
+                   key: "session",
+                   value: "synthetic-session"
+                 })
+
+        saved = Repo.get!(ChannelConfig, config.id)
+        {:ok, view, _} = live(session, ~p"/bo/channels/retrieval/whatsapp")
+        view |> element("#edit-config-#{config.id}") |> render_click()
+
+        render_hook(view, "save", %{
+          "form" => %{"settings" => %{"jido_chat" => %{"bot_name" => "Edited"}}}
+        })
+
+        refute has_element?(view, "#config-form")
+        updated = Repo.get!(ChannelConfig, config.id)
+
+        assert Map.take(updated.settings, Map.keys(metadata) ++ ["credential_document_id"]) ==
+                 Map.take(saved.settings, Map.keys(metadata) ++ ["credential_document_id"])
+
+        assert updated.settings["jido_chat"]["bot_name"] == "Edited"
+
+        assert {:ok, "synthetic-session"} =
+                 Connect.credential_document(%{
+                   op: :get,
+                   binding: binding,
+                   namespace: "auth",
+                   key: "session"
+                 })
+      end
+    end
+
+    test "editing a paired profile preserves blank connection fields and its credential binding",
+         %{conn: conn} do
+      assert {:ok, config} =
+               ChannelConfig.create(
+                 %{name: "Paired", provider: "whatsapp", kind: "retrieval", enabled: true},
+                 adapter_authentication: true
+               )
+
+      {:ok, binding} = Connect.credential_document(%{op: :bind, channel_config_id: config.id})
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+      view |> element("#edit-config-#{config.id}") |> render_click()
+      view |> element("#config-form") |> render_change(%{"form" => %{"name" => "Renamed"}})
+      view |> element("#config-form") |> render_submit(%{"form" => %{"name" => "Renamed"}})
+      refute has_element?(view, "#config-form")
+      updated = Repo.get!(ChannelConfig, config.id)
+      assert updated.name == "Renamed"
+      assert updated.url == ""
+      assert updated.token == ""
+
+      assert {:ok, ^binding} =
+               Connect.credential_document(%{op: :bind, channel_config_id: config.id})
+    end
+
     test "WhatsApp enable after logout opens only the original saved profile", %{conn: conn} do
       first = insert_channel_config(%{provider: "whatsapp", name: "First profile"})
       second = insert_channel_config(%{provider: "whatsapp", name: "Second profile"})
@@ -421,18 +617,74 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       assert enabled.id == first.id
       assert enabled.enabled
 
-      view |> element("#linked-device-pairing button", "Close") |> render_click()
+      view |> element("#linked-device-pairing button", "Cancel connection") |> render_click()
       refute has_element?(view, "#linked-device-pairing")
-      assert Repo.get!(ChannelConfig, first.id).enabled
-      assert length(BridgeFake.calls(:sync_runtime)) == 2
-      assert BridgeFake.calls(:logout) == [first.id]
+      refute Repo.get!(ChannelConfig, first.id).enabled
+      assert Repo.get!(ChannelConfig, second.id).enabled
+      assert length(BridgeFake.calls(:sync_runtime)) == 3
+      assert BridgeFake.calls(:logout) == [first.id, first.id]
 
-      # A second toggle asks to disable; it cannot start a duplicate runtime.
-      view |> element("#toggle-config-#{first.id}") |> render_click()
-      assert has_element?(view, "#disable-config-confirmation")
-      view |> element("#disable-config-confirmation button", "Cancel") |> render_click()
+      render_hook(view, "cancel_linked_device_connection", %{})
+      refute Repo.get!(ChannelConfig, first.id).enabled
+      assert length(BridgeFake.calls(:sync_runtime)) == 3
+    end
+
+    test "cancel connection keeps the popup open on cleanup failure and can be retried", %{
+      conn: conn
+    } do
+      config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+      view |> element("#toggle-config-#{config.id}") |> render_click()
+      render_async(view, 1_000)
+      BridgeFake.put(:logout_result, {:error, :cleanup_failed})
+
+      view |> element("#linked-device-pairing button", "Cancel connection") |> render_click()
+      assert has_element?(view, "#linked-device-pairing")
+      assert Repo.get!(ChannelConfig, config.id).enabled
+      assert render(view) =~ "Could not disable this profile"
+      assert length(BridgeFake.calls(:sync_runtime)) == 1
+
+      BridgeFake.put(:logout_result, :ok)
+      view |> element("#linked-device-pairing button", "Cancel connection") |> render_click()
+      refute has_element?(view, "#linked-device-pairing")
+      refute Repo.get!(ChannelConfig, config.id).enabled
       assert length(BridgeFake.calls(:sync_runtime)) == 2
-      assert Repo.get!(ChannelConfig, first.id).enabled
+    end
+
+    test "cancel connection checks current privileges", %{conn: conn, user: user} do
+      config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+      view |> element("#toggle-config-#{config.id}") |> render_click()
+      render_async(view, 1_000)
+      admin = :sys.get_state(view.pid).socket.assigns.current_user
+      admin |> Ecto.Changeset.change(role_id: user.role_id) |> Repo.update!()
+
+      view |> element("#linked-device-pairing button", "Cancel connection") |> render_click()
+      assert has_element?(view, "#linked-device-pairing")
+      assert Repo.get!(ChannelConfig, config.id).enabled
+      assert BridgeFake.calls(:logout) == []
+      assert length(BridgeFake.calls(:sync_runtime)) == 1
+    end
+
+    test "cancel remains a disable when connection completes before the click arrives", %{
+      conn: conn
+    } do
+      config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+      view |> element("#toggle-config-#{config.id}") |> render_click()
+      render_async(view, 1_000)
+      assert has_element?(view, "#linked-device-pairing button", "Cancel connection")
+
+      BridgeFake.put(:channel_ingress_status, {:ok, %{phase: :connected, status: :ok}})
+      timer = :sys.get_state(view.pid).socket.private.linked_device_timer
+      send(view.pid, {:linked_device_poll, timer.identity, timer.generation})
+      render_async(view, 1_000)
+      assert has_element?(view, "#linked-device-pairing button", "Close")
+
+      render_hook(view, "cancel_linked_device_connection", %{})
+      refute Repo.get!(ChannelConfig, config.id).enabled
+      assert BridgeFake.calls(:logout) == [config.id]
+      refute has_element?(view, "#linked-device-pairing")
     end
 
     test "pairing completion refreshes ingress after its initial retry window", %{conn: conn} do
@@ -471,6 +723,9 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       assert has_element?(view, "#ingress-status-dot-#{config.id} .status-success")
       view |> element("#linked-device-pairing button", "Close") |> render_click()
       assert has_element?(view, "#ingress-status-dot-#{config.id} .status-success")
+      assert Repo.get!(ChannelConfig, config.id).enabled
+      assert BridgeFake.calls(:logout) == []
+      assert length(BridgeFake.calls(:sync_runtime)) == 1
     end
 
     test "a valid saved WhatsApp session displays connected status without a QR", %{conn: conn} do
@@ -515,6 +770,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       render_async(view, 1_000)
 
       assert has_element?(view, "#linked-device-pairing", "Scan replacement")
+      assert has_element?(view, "#linked-device-pairing button", "Cancel connection")
       assert has_element?(view, "#linked-device-pairing svg")
       assert [%{id: id}] = BridgeFake.calls(:sync_provider_runtime)
       assert id == config.id
@@ -563,6 +819,39 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       assert id == config.id
     end
 
+    test "a non-WhatsApp connector opens connection UI when Channels declares the capability", %{
+      conn: conn
+    } do
+      BridgeFake.put(:capability_snapshot, {:ok, %{resolved: %{connection_ui_on_enable: true}}})
+      config = insert_channel_config(%{enabled: false})
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/mattermost")
+
+      view |> element("#toggle-config-#{config.id}") |> render_click()
+      render_async(view, 1_000)
+
+      assert Repo.get!(ChannelConfig, config.id).enabled
+      assert has_element?(view, "#linked-device-pairing")
+      assert [{_, %{id: id, enabled: true}}] = BridgeFake.calls(:sync_runtime)
+      assert id == config.id
+    end
+
+    test "WhatsApp does not open connection UI without an affirmative capability", %{conn: conn} do
+      for snapshot <- [
+            {:ok, %{resolved: %{connection_ui_on_enable: false}}},
+            {:error, :unsupported}
+          ] do
+        config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+        BridgeFake.put(:capability_snapshot, snapshot)
+        {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+
+        view |> element("#toggle-config-#{config.id}") |> render_click()
+        render_async(view, 1_000)
+
+        assert Repo.get!(ChannelConfig, config.id).enabled
+        refute has_element?(view, "#linked-device-pairing")
+      end
+    end
+
     test "WhatsApp enable cannot expose QR to an unprivileged operator", %{conn: conn, user: user} do
       config = insert_channel_config(%{provider: "whatsapp", enabled: false})
 
@@ -575,6 +864,41 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       refute has_element?(view, "#linked-device-pairing")
       refute Repo.get!(ChannelConfig, config.id).enabled
       assert BridgeFake.calls(:sync_runtime) == []
+    end
+
+    test "enable checks current privileges after the page was opened", %{conn: conn, user: user} do
+      config = insert_channel_config(%{provider: "whatsapp", enabled: false})
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+      current_user = :sys.get_state(view.pid).socket.assigns.current_user
+      current_user |> Ecto.Changeset.change(role_id: user.role_id) |> Repo.update!()
+
+      render_hook(view, "toggle_enabled", %{"id" => to_string(config.id)})
+      render_async(view, 1_000)
+
+      refute Repo.get!(ChannelConfig, config.id).enabled
+      refute has_element?(view, "#linked-device-pairing")
+      assert BridgeFake.calls(:sync_runtime) == []
+    end
+
+    test "shared enable rejects archived and mismatched-kind profiles", %{conn: conn} do
+      archived = insert_channel_config(%{provider: "whatsapp", enabled: false})
+
+      archived
+      |> Ecto.Changeset.change(archived_at: DateTime.utc_now() |> DateTime.truncate(:second))
+      |> Repo.update!()
+
+      other_kind =
+        insert_channel_config(%{provider: "whatsapp", kind: "data_source", enabled: false})
+
+      {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+
+      for config <- [archived, other_kind] do
+        render_hook(view, "toggle_enabled", %{"id" => to_string(config.id)})
+        refute Repo.get!(ChannelConfig, config.id).enabled
+      end
+
+      assert BridgeFake.calls(:sync_runtime) == []
+      refute has_element?(view, "#linked-device-pairing")
     end
 
     test "WhatsApp enable control explains the super-admin restriction", %{conn: conn, user: user} do
@@ -611,11 +935,14 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
 
     config =
       %ChannelConfig{}
-      |> ChannelConfig.changeset(%{
-        name: "Retry account",
-        provider: "whatsapp",
-        kind: "retrieval"
-      })
+      |> ChannelConfig.changeset(
+        %{
+          name: "Retry account",
+          provider: "whatsapp",
+          kind: "retrieval"
+        },
+        adapter_authentication: true
+      )
       |> Repo.insert!()
 
     {:ok, denied_view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")

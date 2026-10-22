@@ -40,13 +40,14 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
   def confirm(socket), do: socket
 
   @doc "Opens one selected connector; previous timers and results become stale."
-  def open(socket, config) do
+  def open(socket, config, opts \\ []) do
     socket = close(socket)
     generation = make_ref()
 
     socket
     |> assign(:linked_device_modal, %{
       config_id: config.id,
+      cancel_connection: Keyword.get(opts, :cancel_connection, false),
       name: config.name,
       generation: generation,
       attempts: 0,
@@ -96,12 +97,14 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
     config = Enum.find(socket.assigns.configs, &(&1.id == id and &1.enabled))
 
     if config do
+      cancel_connection = Map.get(socket.assigns.linked_device_modal, :cancel_connection, false)
       socket = close(socket)
       generation = make_ref()
 
       socket
       |> assign(:linked_device_modal, %{
         config_id: id,
+        cancel_connection: cancel_connection,
         name: config.name,
         generation: generation,
         attempts: 0,

@@ -12,7 +12,7 @@ defmodule Zaq.WhatsAppFixtures do
     defaults = %{name: Ecto.UUID.generate(), provider: "whatsapp", kind: "retrieval"}
 
     %ChannelConfig{}
-    |> ChannelConfig.changeset(Map.merge(defaults, attrs))
+    |> ChannelConfig.changeset(Map.merge(defaults, attrs), adapter_authentication: true)
     |> Repo.insert!()
   end
 

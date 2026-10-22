@@ -17,16 +17,19 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
   test "persisted history options reach saved and authenticated listener startup independently" do
     for history <- [false, true], full <- [false, true] do
       assert {:ok, config} =
-               ChannelConfig.create(%{
-                 name: Ecto.UUID.generate(),
-                 provider: "whatsapp",
-                 kind: "retrieval",
-                 settings: %{
-                   "jido_chat" => %{
-                     "ingress" => %{"sync_history" => history, "sync_full_history" => full}
+               ChannelConfig.create(
+                 %{
+                   name: Ecto.UUID.generate(),
+                   provider: "whatsapp",
+                   kind: "retrieval",
+                   settings: %{
+                     "jido_chat" => %{
+                       "ingress" => %{"sync_history" => history, "sync_full_history" => full}
+                     }
                    }
-                 }
-               })
+                 },
+                 adapter_authentication: true
+               )
 
       config = Repo.get!(ChannelConfig, config.id)
       assert {:ok, options} = JidoChatBridge.saved_connection_options(config, Adapter)
@@ -56,12 +59,15 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
   test "adapter validates saved history options while generic persistence remains transport agnostic" do
     for flag <- ~w(sync_history sync_full_history), value <- [nil, "false", 0, []] do
       assert {:ok, config} =
-               ChannelConfig.create(%{
-                 name: Ecto.UUID.generate(),
-                 provider: "whatsapp",
-                 kind: "retrieval",
-                 settings: %{"jido_chat" => %{"ingress" => %{flag => value}}}
-               })
+               ChannelConfig.create(
+                 %{
+                   name: Ecto.UUID.generate(),
+                   provider: "whatsapp",
+                   kind: "retrieval",
+                   settings: %{"jido_chat" => %{"ingress" => %{flag => value}}}
+                 },
+                 adapter_authentication: true
+               )
 
       assert {:error, :invalid_history_options} =
                JidoChatBridge.saved_connection_options(config, Adapter)
