@@ -9,14 +9,11 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   successful runtime shutdown. A shutdown failure leaves the disabled connector
   unarchived for retry; post-archive watch cleanup may remain pending.
 
-  For saved credential bindings, the lifecycle lock spans preparation, credential
-  cleanup, disable persistence, runtime shutdown and archival. Startup shares that lock and
-  rechecks current eligibility through a confidential Engine runtime event.
+  Startup rechecks current eligibility through a confidential Engine runtime event.
   No database row lock is held across Channels or credential-storage callbacks.
   """
 
   alias Zaq.Accounts.BOActor
-  alias Zaq.ConnectorConfig.Settings
   alias Zaq.Engine.{ChannelConfig, DataSources}
   alias Zaq.Event
   alias Zaq.NodeRouter
@@ -66,38 +63,33 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   defp dispatch_saved_binding(operation, id, request, actor, opts) do
     with %ChannelConfig{} = config <- ChannelConfig.get(id),
          :ok <- validate_scope(config, request[:provider], request[:kind]) do
-      coordination =
-        if Settings.saved_binding?(config),
-          do: [coordination: {:connector_lifecycle, id}],
-          else: []
-
-      dispatch_command(operation, request, actor, opts, coordination)
+      dispatch_command(operation, request, actor, opts)
     else
       _ -> {:error, :connector_not_found}
     end
   end
 
-  defp dispatch_command(operation, request, actor, opts, coordination) do
+  defp dispatch_command(operation, request, actor, opts) do
     event =
       Event.new(%{operation: operation, request: request}, :engine,
         actor: actor,
         opts:
           Keyword.merge(
             opts,
-            [action: :connector_lifecycle, confidential: true, connector_lifecycle: true] ++
-              coordination
+            action: :connector_lifecycle,
+            confidential: true,
+            connector_lifecycle: true
           )
       )
 
     NodeRouter.dispatch(event).response
   end
 
-  @doc "Executes a trusted lifecycle command inside its required routed coordination scope."
+  @doc "Executes a trusted Engine lifecycle command."
   def execute(%{operation: operation, request: %{channel_config_id: id} = request}, actor, opts)
       when operation in [:archive, :disable, :enable] do
     with {:ok, id} <- cast_id(id),
-         %ChannelConfig{} = config <- ChannelConfig.get(id),
-         :ok <- execution_scope(operation, config) do
+         %ChannelConfig{} <- ChannelConfig.get(id) do
       execute_command(operation, Map.put(request, :channel_config_id, id), actor, opts)
     else
       {:error, _} = error -> error
@@ -106,16 +98,6 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   end
 
   def execute(_, _, _), do: {:error, :invalid_request}
-
-  defp execution_scope(operation, config) do
-    if operation == :enable or Settings.saved_binding?(config) do
-      if NodeRouter.coordinated?({:connector_lifecycle, config.id}),
-        do: :ok,
-        else: {:error, :coordination_required}
-    else
-      :ok
-    end
-  end
 
   defp execute_command(:archive, request, actor, opts), do: do_archive(request, actor, opts)
 
@@ -245,7 +227,7 @@ defmodule Zaq.Engine.ConnectorLifecycle do
       when is_binary(provider) and is_binary(kind) and is_binary(expected) and is_list(opts) do
     case cast_id(id) do
       {:ok, id} ->
-        dispatch_command(:enable, request, actor, opts, coordination: {:connector_lifecycle, id})
+        dispatch_command(:enable, Map.put(request, :channel_config_id, id), actor, opts)
 
       _ ->
         {:error, :connector_not_found}

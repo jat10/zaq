@@ -78,7 +78,7 @@ Provider startup defaults are defined in `Zaq.ConnectorConfig.Settings.defaults/
 missing legacy values at runtime without a backfill. The generic changeset retains
 saved choices for configured default keys; adapters validate transport options.
 Linked-device confirmation and upsert creation share this API; see
-[listener settings](channels.md#whatsapp-listener-settings).
+[listener settings](channels.md#connector-listener-settings).
 Multiple named connectors may share a provider; explicit ID resolution checks
 scope and enablement, and ambiguous provider-only calls fail closed. No table,
 ID, foreign-key or credential encoding migration accompanies this namespace move.
@@ -96,40 +96,28 @@ normalization remains provider-local in Channels.
 Confirmed logout and disable use the confidential `:disable_channel_connector`
 event and `Actions.DisableChannelConnector`. Both confirmation context and execution
 revalidate the current super-admin actor. `ConnectorLifecycle` validates exact
-provider/kind and a secret-free revision before requesting Channels logout. It holds
-no database row lock during logout, since adapter storage callbacks return to Engine.
+provider/kind and a secret-free revision before calling adapter logout.
 It locks and rechecks the revision before persisting `enabled: false`, then reconciles
 runtime shutdown. Logout failure leaves enablement unchanged; post-save runtime
 failure returns a pending stage. A persistence failure after successful provider
 logout cannot restore the remote session. Repeated already-disabled requests skip
 logout and retry runtime cleanup.
 
-For connectors with a saved credential binding, the lifecycle lock covers cleanup,
-persisted disablement, runtime shutdown and archival. Unbound connectors retain
-their existing disable/archive flow without acquiring this lock. Bound-runtime
-startup takes the same lock and resolves a fresh enabled,
-nonarchived snapshot through confidential `:connector_runtime_context` with the
-explicit runtime capability. The complete command uses NodeRouter's
-`{:connector_lifecycle, id}` coordination scope; nested receivers independently
-hold it even if the Engine caller dies. Lifecycle entry points dispatch the complete
-operation through confidential `:connector_lifecycle` with the explicit trusted
-`connector_lifecycle: true` option. This internal command reuses domain execution;
-operator authorization remains in the existing Actions/archive API, and enable
-rechecks the actor after coordination. Direct Action/workflow callers use the same
-entry points. Domain code carries no requester tokens.
-Database row locks remain confined to persistence transactions. See
-[router coordination](../architecture.md#opt-in-resource-coordination) for scope
-propagation and connected-node limits.
+Saved-binding startup resolves a fresh enabled, nonarchived snapshot through
+confidential `:connector_runtime_context` with the explicit runtime capability.
+Lifecycle entry points dispatch through confidential `:connector_lifecycle` with
+the explicit trusted capability. Database row locks remain confined to persistence
+transactions; NodeRouter does not coordinate these operations.
 
 Explicit connector enablement uses confidential `:enable_channel_connector` and
 `Actions.EnableChannelConnector`. Context preparation and execution require a
-current super-admin; the lifecycle rechecks the actor after acquiring its lock.
+current super-admin; the lifecycle rechecks the actor inside its command.
 The command validates exact provider/kind and revision, rejects archived records,
 persists enablement in Engine and reconciles Channels outside the transaction.
 It returns only the connector ID, enabled/already-enabled status and synced/pending
 runtime stage. Repeating enable retries startup on the same connector without
-toggling it off. BO uses this command for WhatsApp; other provider toggles retain
-their existing permission policy.
+toggling it off. Consumers opting into this command use its authorization contract; other connector
+toggle paths retain their existing permission policy.
 
 ### Connector credential documents
 
@@ -163,8 +151,8 @@ are atomic and identical batches are silent. Pairing confirmation uses this oper
 after Channels obtains encoded records from the adapter package. Engine does not
 serialize provider protocol terms.
 `delete_namespace` atomically removes all records in one namespace, leaving other
-namespaces intact; removing an absent namespace is a silent no-op. Linked-device
-startup uses it to discard legacy database copies of now-volatile messaging state.
+namespaces intact; removing an absent namespace is a silent no-op. Namespace
+selection and storage migration policy belong to the adapter.
 
 Missing records return `:error`; unusable credentials, malformed documents and
 storage failures return sanitized `{:error, reason}` results. Versioned JSON stores
@@ -181,9 +169,8 @@ pairing uses these existing Connect tables directly; see
 
 Linked-device confirmation accepts the adapter's normalized `account` with
 `external_id` and optional `display_name`, plus encoded `credentials`. Engine
-persists these fields without interpreting provider identity formats. WhatsApp's
-adapter supplies the phone number as `external_id`; the connector name uses
-`display_name` when available and otherwise the account ID. Provider-specific
+persists these fields without interpreting provider identity formats. The connector
+name uses `display_name` when available and otherwise the account ID. Provider-specific
 `identity`/`records` snapshots are rejected.
 
 ### Conversations
@@ -1759,9 +1746,8 @@ or grant access. Shared room history supplies local thread messages, bounded par
 history, and an accessible parent message whose external ID matches the thread ID.
 If that original is absent, available authorized history remains usable without a
 provider fetch or a search of sibling transcripts. Direct-message history keeps its
-existing chat scope. These rules also apply when the WhatsApp adapter maps an
-immediate reply target into the shared thread field; quoted payload text is not
-injected into retrieval or agent prompts.
+existing chat scope. Adapter-supplied quoted payload text is not injected into
+retrieval or agent prompts.
 
 ### Incoming Message Routing
 

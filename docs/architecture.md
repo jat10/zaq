@@ -180,50 +180,11 @@ Role mapping:
 
 ---
 
-### Opt-in resource coordination
+### Connector lifecycle ownership
 
-Trusted event builders set `opts: [coordination: resource]` on
-`NodeRouter.dispatch/1` to protect a complete domain operation and its continuation.
-The routed handler must include all protected effects, including work between
-nested dispatches; coordinating only an eligibility lookup does not protect later startup.
-Normal events retain their existing execution path. Domain code owns authorization,
-eligibility, resource selection and consistent ordering when acquiring multiple resources.
-
-Lock contention waits default to 5 seconds. Callers may set
-`opts: [coordination: resource, coordination_timeout: 30_000]` on an event.
-The value is a non-negative integer in milliseconds; zero makes one immediate
-acquisition attempt. Failure returns `{:error, :coordination_timeout}` (in the
-event response for dispatch). It never expires an existing holder or interrupts
-the operation after acquisition. Nested scopes inherit the remaining budget and
-cannot extend it. RPC handoff sends remaining milliseconds and rebases them on
-the receiver's monotonic clock; transport time is not an execution/RPC deadline.
-Individual distributed lock requests still depend on BEAM distribution health.
-
-The router captures active scopes before handing work to another process and uses
-the same execution wrapper for coordinated local and remote handlers. Each executor
-takes an independent `:global` hold under the shared requester. A caller's death
-releases only its holds; running receivers remain protected until completion or death.
-Nested dispatches inherit scopes automatically, including callbacks and async hops.
-For coordinated async hops, the caller retains its holds until the supervised worker
-acquires every scope and acknowledges readiness. The caller then commits the handoff;
-only then may the worker execute. A caller dying before commit cancels the worker,
-while a committed worker may outlive its caller. Acknowledgement uses the remaining
-coordination budget, so an exhausted budget can reject async handoff even when a
-lock is immediately available. Timeout kills the worker and waits for its termination
-before releasing caller holds. Startup or pre-acknowledgement worker failure returns
-`{:error, {:coordination_handoff_failed, reason}}` in the event response. Acceptance
-acknowledges ownership, not successful completion or durable delivery.
-
-Requester metadata travels as private router RPC arguments, outside the event envelope
-and observer broadcasts. Arbitrary spawned tasks do not inherit process scopes.
-
-Direct bootstrap/startup paths dispatch complete runtime commands with the same
-coordination option. Connector lifecycle
-commands use `{:connector_lifecycle, id}` across cleanup, persistence and runtime
-reconciliation; saved-binding startup takes that scope before rechecking eligibility.
-Coordination precedes node-local runtime locks, and no database row lock spans RPC.
-This provides exclusion across connected BEAM nodes, not partition fencing or rollback
-of side effects after failure. See [Engine lifecycle ownership](services/engine.md#connector-configuration-persistence).
+NodeRouter transports events; it does not own locks, resource scopes or async
+ownership handoffs. Engine owns connector configuration persistence and Channels
+owns runtime startup and shutdown. See [Engine lifecycle ownership](services/engine.md#connector-configuration-persistence).
 
 ## Service Responsibilities
 
@@ -250,23 +211,24 @@ resolve/issue/notify request after that precheck;
 see [People authentication](services/people-access.md#rate-topology-and-retry-behavior).
 
 `Zaq.Channels.Supervisor` is a static `:one_for_one` parent with two children:
-`Zaq.Channels.PeopleAuthRateLimiter` and the dynamic `Zaq.Channels.BridgeSupervisor`.
+`Zaq.Channels.PeopleAuthRateLimiter` and the
+dynamic `Zaq.Channels.BridgeSupervisor`.
 Each child restarts independently. During provider bootstrap, `JidoChatBridge`
-supplies the adapter-owned storage runtime as a dynamic child of `BridgeSupervisor`,
-before connector startup. WhatsApp's shared transport infrastructure is owned by
-the adapter package's OTP application. Storage-runtime recovery preserves unrelated
-listeners and limiter state, subject to the bridge supervisor's restart budget.
+supplies adapter-owned provider runtimes as dynamic children of `BridgeSupervisor`
+before connector startup. Adapter packages own shared transport infrastructure
+and storage recovery. Dynamic children share the bridge supervisor's restart
+budget; bridge restarts preserve the independent limiter's state.
 The parent retains the Channels role-discovery name and delegates the runtime API;
 the dynamic child recreates provider infrastructure and reloads enabled bridge
 configs on startup. See [Channels supervision](services/channels.md#supervisor)
-for storage recovery and restart isolation details.
+for runtime ownership and restart isolation details.
 
-Channels owns node-local Mnesia messaging sessions; Engine retains encrypted pairing
-credentials. Mnesia uses a RAM-only schema and `ram_copies`, so sessions survive
-listener restarts but reset on Mnesia/node restart. The current credential binding
-is still checked through Engine for each storage callback. See the
-[linked-device contract](services/channels.md#linked-device-integration) for namespace
-ownership, confirmation handoff, cleanup and message-recovery limitations.
+Adapter packages own volatile session storage and recovery; Engine owns encrypted
+credential persistence and validates the current binding on storage requests.
+See the [linked-device contract](services/channels.md#linked-device-integration)
+for authentication and confirmation boundaries, and
+[connector session state](services/system-config.md#connector-session-state)
+for shared secret-persistence requirements.
 
 Engine is the largest service. It owns several internal subsystems:
 

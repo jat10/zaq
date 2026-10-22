@@ -596,34 +596,16 @@ When adding a new key/token/password field:
 
 ## Connector session state
 
-Linked-device pairing credentials and supporting protocol records use canonical
-encrypted org `api_key` grants as opaque state, not HTTP bearer tokens or OAuth2
-device tokens. Retain the database and its encryption key across application/container
-restarts. The credential reference in connector settings contains no session secrets.
-Runtime access follows the [Engine document contract](engine.md#connector-credential-documents).
+Connector credential documents use canonical encrypted org `api_key` grants as
+opaque runtime state, not outbound HTTP bearer tokens or OAuth device tokens.
+Connector settings hold references, never protocol secrets. Retain the database
+and its encryption key across application/container restarts. Authorization,
+binding checks and record operations follow the
+[Engine document contract](engine.md#connector-credential-documents).
 
-Messaging sessions and group sender keys use package-owned RAM-only Mnesia on the
-Channels node, initialized by the WhatsApp adapter's provider runtime specs.
-The adapter supplies the RAM-schema requirement; the ZAQ provider registry needs
-no storage options. See [connector reply policy and rollout](channels.md#connector-reply-policy)
-for the separate persisted message policy and legacy runtime defaults.
-ZAQ's initial history flags are persisted separately in connector settings; see
-[WhatsApp listener settings](channels.md#whatsapp-listener-settings) for ownership,
-validation and runtime fallback for older connectors without a backfill.
-ZAQ handles shared private credential requests through the existing `sink_mfa`;
-Engine supplies authorized encrypted-database operations; the package owns namespace
-routing, temporary pairing sessions and volatile state handoff.
-They reset on Mnesia/node restart, which can interrupt message decryption while
-pairing remains saved. No Mnesia disk volume is required or used. Namespace routing,
-legacy-record cleanup and recovery behavior are owned by the
-[linked-device storage contract](channels.md#linked-device-integration).
-
-Explicit disable also clears an existing saved binding when no listener survived
-activation. Cleanup uses the adapter's configured storage contract and never
-provisions a replacement binding. The connector lifecycle guard excludes startup
-through final credential clearing, disable persistence and shutdown; ordinary
-runtime stop retains credentials. See the linked-device contract above for
-partial failures and relinking behavior.
-
-Pairing provisions its credential document through the existing Connect tables.
-There are no dedicated linked-device tables or data-conversion migrations.
+Adapter packages own the division between durable and volatile state, storage
+backends and recovery semantics. The host passes private storage requests through
+a trusted sink; Engine owns authorized encrypted persistence. Transport-specific
+namespaces, retention, cleanup and deployment requirements follow the adapter's
+contract. Ordinary runtime shutdown and explicit credential cleanup are
+separate operations; follow the [connector lifecycle](engine.md#connector-configuration-persistence).

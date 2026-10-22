@@ -1,5 +1,4 @@
 defmodule Zaq.Engine.ConnectorLifecycleTest do
-  import Zaq.TestSupport.NodeRouterCoordination, only: [coordinate: 2]
   use Zaq.DataCase, async: true
   use ExUnitProperties
 
@@ -72,7 +71,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     %{config: config}
   end
 
-  test "internal lifecycle execution requires an explicit capability and its applicable scope", %{
+  test "internal lifecycle execution requires an explicit capability", %{
     config: config
   } do
     event =
@@ -81,11 +80,6 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
       )
 
     assert %{response: {:error, :unauthorized}} =
-             Api.handle_event(event, :connector_lifecycle, nil)
-
-    event = %{event | opts: [confidential: true, connector_lifecycle: true]}
-
-    assert %{response: {:error, :coordination_required}} =
              Api.handle_event(event, :connector_lifecycle, nil)
 
     assert {:error, :invalid_request} = ConnectorLifecycle.execute(%{}, nil, [])
@@ -107,50 +101,6 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
                      %{after_config: %{id: ^id, enabled: false}}}
 
     assert_received {:reconcile_watches, ^id}
-  end
-
-  test "archiving an unbound disk connector does not wait for the saved-binding lifecycle lock",
-       %{
-         config: config
-       } do
-    owner = self()
-
-    holder =
-      Task.async(fn ->
-        coordinate({:connector_lifecycle, config.id}, fn ->
-          send(owner, :lifecycle_lock_held)
-
-          receive do
-            :release -> :ok
-          end
-        end)
-      end)
-
-    try do
-      assert_receive :lifecycle_lock_held
-
-      deletion =
-        Task.async(fn ->
-          ConnectorLifecycle.archive(
-            %{channel_config_id: config.id, provider: config.provider, kind: config.kind},
-            %{user_id: 1},
-            router: Router,
-            data_sources_module: DataSourcesStub
-          )
-        end)
-
-      try do
-        ref = deletion.ref
-        id = config.id
-        assert_receive {^ref, {:ok, %{channel_config_id: ^id, status: :archived}}}, 1_000
-        assert Repo.get!(ChannelConfig, id).archived_at
-      after
-        Task.shutdown(deletion, :brutal_kill)
-      end
-    after
-      send(holder.pid, :release)
-      Task.shutdown(holder, :brutal_kill)
-    end
   end
 
   test "partial watch teardown stops before Channels archive" do
