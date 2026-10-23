@@ -3,9 +3,6 @@ defmodule Zaq.Channels.WhatsAppMarkdownDeliveryTest do
   Regression contract for Markdown replies delivered through the real WhatsApp
   adapter. Only the external transport is replaced; the shared formatter uses
   the application's provider configuration.
-
-  These tests intentionally fail until WhatsApp renders canonical Markdown for
-  both new replies and edits of status messages.
   """
 
   use ExUnit.Case, async: false

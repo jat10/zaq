@@ -1,6 +1,7 @@
 defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
   use Zaq.DataCase, async: false
   import Zaq.AccountsFixtures
+  import Zaq.TestSupport.Eventually
   import Zaq.CredentialDocumentFixtures, only: [document: 3]
   alias Jido.Chat.WhatsApp.ConnectionWorker
   alias Zaq.Channels.JidoChatBridge
@@ -150,19 +151,13 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     assert :error = Amarula.Storage.get(scope, restored.profile, :session, "peer")
   end
 
-  defp identity_ready?(worker, attempts \\ 100)
-  defp identity_ready?(_, 0), do: false
-
-  defp identity_ready?(worker, attempts) do
-    case ConnectionWorker.status(worker) do
-      %{identity: %{phone_number: "+15550002"}} ->
-        true
-
-      _ ->
-        Process.sleep(10)
-        identity_ready?(worker, attempts - 1)
-    end
-  end
+  defp identity_ready?(worker),
+    do:
+      eventually(fn -> ConnectionWorker.status(worker) end,
+        matches: &match?(%{identity: %{phone_number: "+15550002"}}, &1),
+        timeout: 1_000,
+        label: "replacement account identity"
+      )
 
   test "owner scoping and cancellation remove provisional sessions", %{actor: actor} do
     assert {:ok, %{session: session}} = call(%{op: :begin, owner: self()}, actor)
@@ -227,19 +222,13 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     id
   end
 
-  defp await_phase(session, actor, phase, attempts \\ 100)
-  defp await_phase(_, _, _, 0), do: false
-
-  defp await_phase(session, actor, phase, attempts) do
-    case call(%{op: :status, session: session}, actor) do
-      {:ok, %{phase: ^phase}} ->
-        true
-
-      _ ->
-        Process.sleep(10)
-        await_phase(session, actor, phase, attempts - 1)
-    end
-  end
+  defp await_phase(session, actor, phase),
+    do:
+      eventually(fn -> call(%{op: :status, session: session}, actor) end,
+        matches: &match?({:ok, %{phase: ^phase}}, &1),
+        timeout: 1_000,
+        label: "pairing phase #{phase}"
+      )
 end
 
 defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
@@ -566,6 +555,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
   import Phoenix.LiveViewTest
   import Zaq.AccountsFixtures
   import Zaq.SystemConfigFixtures
+  import Zaq.TestSupport.Eventually
 
   alias Zaq.Accounts
   alias Zaq.Accounts.People
@@ -827,17 +817,5 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
       timestamp: System.system_time(:second),
       raw: %{}
     }
-  end
-
-  defp eventually(fun, attempts \\ 100)
-  defp eventually(_fun, 0), do: false
-
-  defp eventually(fun, attempts) do
-    if fun.() do
-      true
-    else
-      Process.sleep(20)
-      eventually(fun, attempts - 1)
-    end
   end
 end

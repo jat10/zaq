@@ -43,7 +43,12 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       fetch_state(:stop_runtime, :ok)
     end
 
-    def before_disable(%{provider: "whatsapp"} = config, _actor, opts), do: logout(config, opts)
+    def before_disable(%{provider: "whatsapp"} = config, actor, opts) do
+      # Authorization belongs to the real bridge; this fake must still catch a lost actor.
+      ExUnit.Assertions.assert(is_integer(actor.user_id))
+      logout(config, opts)
+    end
+
     def before_disable(_config, _actor, _opts), do: :ok
 
     def logout(config, _opts) do

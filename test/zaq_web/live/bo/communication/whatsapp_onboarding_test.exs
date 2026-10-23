@@ -5,6 +5,7 @@ defmodule ZaqWeb.Live.BO.Communication.WhatsAppOnboardingTest do
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Repo
+  alias Zaq.TestSupport.Eventually
   alias Zaq.TestSupport.WhatsAppFlowAdapter
   alias Zaq.TestSupport.WhatsAppFlowTransport, as: Transport
 
@@ -74,16 +75,11 @@ defmodule ZaqWeb.Live.BO.Communication.WhatsAppOnboardingTest do
     refute has_element?(view, "input[name='form[settings][jido_chat][bot_name]']")
   end
 
-  defp eventually(fun, attempts \\ 300)
-  defp eventually(_, 0), do: false
-
-  defp eventually(fun, attempts) do
-    if fun.(),
-      do: true,
-      else:
-        (
-          Process.sleep(20)
-          eventually(fun, attempts - 1)
-        )
-  end
+  defp eventually(probe),
+    do:
+      Eventually.eventually(probe,
+        timeout: 6_000,
+        interval: 20,
+        label: "onboarding UI"
+      )
 end

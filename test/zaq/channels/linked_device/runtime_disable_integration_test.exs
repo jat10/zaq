@@ -1,10 +1,14 @@
 defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
-  use Zaq.DataCase, async: false
+  use ZaqWeb.ConnCase, async: false
+
+  import Phoenix.LiveViewTest
+  alias Zaq.Repo
 
   import Zaq.AccountsFixtures
 
   alias Jido.Chat.WhatsApp.Adapter
   alias Jido.Chat.WhatsApp.Transport.AmarulaClient
+  alias Zaq.Accounts
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.{ChannelConfig, LinkedDeviceConfirmation}
   alias Zaq.{Event, NodeRouter}
@@ -57,14 +61,19 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
     def listener_child_specs(_, _), do: {:error, :activation_failed}
   end
 
-  setup do
+  setup %{conn: conn} do
+    Mox.stub(Zaq.NodeRouterMock, :find_node, fn _ -> node() end)
     Zaq.WhatsAppFixtures.configure_channels(OfflineAdapter)
     assert :ok = JidoChatBridge.start_runtime({:provider, :whatsapp}, [])
-    %{actor: %{user_id: super_admin_fixture(%{must_change_password: false}).id}}
+    user = super_admin_fixture(%{must_change_password: false})
+    %{actor: %{user_id: user.id}, conn: init_test_session(conn, %{user_id: user.id})}
   end
 
   for operation <- [:disable, :archive] do
-    test "#{operation} cleans a saved account whose activation failed", %{actor: actor} do
+    test "#{operation} cleans a saved account whose activation failed", %{
+      actor: actor,
+      conn: conn
+    } do
       selected = connector(actor, "+15550005")
       other = connector(actor, "+15550006")
       assert {:ok, options} = JidoChatBridge.saved_connection_options(selected, OfflineAdapter)
@@ -86,8 +95,8 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
 
       case unquote(operation) do
         :disable ->
-          assert {:ok, descriptor} = command(selected, :context, actor)
-          assert {:ok, %{status: :disabled}} = dispatch(Map.put(descriptor, :op, :disable), actor)
+          view = confirm_disable(conn, selected)
+          assert render(view) =~ "disabled"
 
         :archive ->
           event =
@@ -111,14 +120,15 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
     end
   end
 
-  test "missing saved binding is not provisioned during offline cleanup", %{actor: actor} do
+  test "missing saved binding is not provisioned during offline cleanup", %{
+    actor: actor,
+    conn: conn
+  } do
     selected = connector(actor, "+15550007")
     settings = Map.delete(selected.settings, "credential_document_id")
     selected = selected |> Ecto.Changeset.change(settings: settings) |> Repo.update!()
-    assert {:ok, descriptor} = command(selected, :context, actor)
-
-    assert {:error, {:disable_failed, :invalid_binding}} =
-             dispatch(Map.put(descriptor, :op, :disable), actor)
+    view = confirm_disable(conn, selected)
+    assert render(view) =~ "Could not disable"
 
     assert Repo.get!(ChannelConfig, selected.id).enabled
     refute Repo.get!(ChannelConfig, selected.id).settings["credential_document_id"]
@@ -164,7 +174,8 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
   end
 
   test "confirmed disable crosses real role boundaries and clears only its profile stores", %{
-    actor: actor
+    actor: actor,
+    conn: conn
   } do
     first = connector(actor, "+15550001")
     second = connector(actor, "+15550002")
@@ -178,10 +189,8 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
       assert :ok = Amarula.Storage.put(scope, options.profile, :session, "peer", "ratchet")
     end
 
-    assert {:ok, descriptor} = command(first, :context, actor)
-
-    assert {:ok, %{status: :disabled, runtime: :synced}} =
-             dispatch(Map.put(descriptor, :op, :disable), actor)
+    view = confirm_disable(conn, first)
+    assert render(view) =~ "disabled"
 
     refute Repo.get!(ChannelConfig, first.id).enabled
     assert Repo.get!(ChannelConfig, second.id).enabled
@@ -232,6 +241,33 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
              Zaq.Channels.Supervisor.lookup_runtime(JidoChatBridge.runtime_bridge_id(second))
   end
 
+  for change <- [:profile, :operator] do
+    test "real disable confirmation rejects a changed #{change} before teardown", %{
+      conn: conn,
+      actor: actor
+    } do
+      config = connector(actor, "+15550011")
+      start_connector(config)
+      view = open_disable(conn, config)
+
+      case unquote(change) do
+        :profile ->
+          config |> Ecto.Changeset.change(name: "Changed") |> Repo.update!()
+
+        :operator ->
+          Accounts.get_user!(actor.user_id)
+          |> Ecto.Changeset.change(must_change_password: true)
+          |> Repo.update!()
+      end
+
+      view |> element("#confirm-disable-config-button") |> render_click()
+      assert Repo.get!(ChannelConfig, config.id).enabled
+
+      assert {:ok, _} =
+               Zaq.Channels.Supervisor.lookup_runtime(JidoChatBridge.runtime_bridge_id(config))
+    end
+  end
+
   defp connector(actor, phone) do
     {:ok, config} =
       LinkedDeviceConfirmation.save(%{
@@ -252,40 +288,17 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
     options
   end
 
-  defp command(config, op, actor),
-    do:
-      dispatch(
-        %{op: op, channel_config_id: config.id, provider: config.provider, kind: config.kind},
-        actor
-      )
-
-  defp dispatch(%{op: :context} = request, actor) do
-    Event.new(%{operation: :context, request: request}, :engine,
-      actor: actor,
-      opts: [action: :connector_lifecycle, confidential: true, connector_lifecycle: true]
-    )
-    |> NodeRouter.dispatch()
-    |> Map.fetch!(:response)
+  defp confirm_disable(conn, config) do
+    view = open_disable(conn, config)
+    view |> element("#confirm-disable-config-button") |> render_click()
+    view
   end
 
-  defp dispatch(request, actor) do
-    before = Repo.get!(ChannelConfig, request.channel_config_id)
-    after_config = %{before | enabled: false}
-
-    event =
-      Event.new(
-        %{
-          before_config: ChannelConfig.to_runtime_config(before),
-          after_config: ChannelConfig.to_runtime_config(after_config)
-        },
-        :channels,
-        actor: actor,
-        opts: [action: :sync_channel_runtime, confidential: true]
-      )
-
-    with :ok <- NodeRouter.dispatch(event).response,
-         {:ok, _} <- before |> Ecto.Changeset.change(enabled: false) |> Repo.update() do
-      {:ok, %{status: :disabled, runtime: :synced}}
-    end
+  defp open_disable(conn, config) do
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+    view |> element("#toggle-config-#{config.id}") |> render_click()
+    assert Repo.get!(ChannelConfig, config.id).enabled
+    assert has_element?(view, "#confirm-disable-config-button")
+    view
   end
 end

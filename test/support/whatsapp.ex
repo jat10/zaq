@@ -34,6 +34,11 @@ defmodule Zaq.TestSupport.WhatsAppFlowTransport do
 
   def stop(conn, _opts) when is_pid(conn), do: Agent.stop(conn)
 
+  def logout(conn, _opts) do
+    %{config: config, storage: storage} = Agent.get(conn, & &1)
+    with :ok <- Amarula.Storage.clear(storage, config.profile), do: Agent.stop(conn)
+  end
+
   def account_identity(conn) do
     {:ok,
      Agent.get(
@@ -131,6 +136,8 @@ defmodule Zaq.TestSupport.WhatsAppFlowAdapter do
   defdelegate prepare_connection(opts), to: Adapter
   defdelegate connection_identity(binding), to: Adapter
   defdelegate provider_child_specs(opts), to: Adapter
+  defdelegate logout(listener), to: Adapter
+  defdelegate cleanup_connection(binding, opts), to: Adapter
 
   def authenticate(request, owner_id, opts),
     do:
