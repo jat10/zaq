@@ -75,6 +75,8 @@ defmodule Zaq.Engine.ConnectorLifecycle do
          :ok <- validate_revision(before, expected),
          {:ok, watches} <- stop_watches(context, data_sources),
          {:ok, ingress} <- teardown_ingress(before, router, actor, opts),
+         %ChannelConfig{} = before <- ChannelConfig.get(id),
+         :ok <- validate_revision(before, expected),
          {:ok, disabled} <- disable_before_archive(before, expected, router, actor, opts),
          {:ok, status, _archived} <- persist_archive(disabled, revision(disabled)) do
       archived = %{

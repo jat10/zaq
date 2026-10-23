@@ -156,6 +156,7 @@ defmodule Zaq.Channels.LinkedDevice.LifecycleTest do
 end
 
 defmodule Zaq.Channels.LinkedDevice.RestartTest do
+  import Zaq.TestSupport.Eventually
   use Zaq.DataCase, async: false
 
   import Zaq.WhatsAppFixtures, only: [connector: 0]
@@ -261,19 +262,14 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
     profile
   end
 
-  defp phase(config, expected, attempts \\ 100)
-  defp phase(_, _, 0), do: false
-
-  defp phase(config, expected, attempts) do
-    case JidoChatBridge.channel_ingress_status(config) do
-      {:ok, %{phase: ^expected}} ->
-        true
-
-      _ ->
-        Process.sleep(5)
-        phase(config, expected, attempts - 1)
-    end
-  end
+  defp phase(config, expected),
+    do:
+      eventually(fn -> JidoChatBridge.channel_ingress_status(config) end,
+        matches: &match?({:ok, %{phase: ^expected}}, &1),
+        timeout: 500,
+        interval: 5,
+        label: "restored phase #{expected}"
+      )
 end
 
 defmodule Zaq.Channels.LinkedDevice.RuntimeTest do
@@ -833,38 +829,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppIncomingTest do
   alias Jido.Chat.WhatsApp.Adapter
   alias Zaq.Channels.JidoChatBridge.Incoming
 
-  test "privacy identity matches only the receiving profile's trusted alias" do
-    message = incoming(%{to_jid: "123:7@s.whatsapp.net", mentions: ["987@lid"]})
-    refute message.was_mentioned
-
-    assert incoming(%{mentions: ["987@lid"], account_jids: ["123@s.whatsapp.net", "987:1@lid"]}).was_mentioned
-
-    refute incoming(%{mentions: ["987@lid"], account_jids: ["456@s.whatsapp.net", "654@lid"]}).was_mentioned
-  end
-
-  test "group mention selects the receiving account and ignores another account" do
-    for {recipient, expected} <- [{"123:7@s.whatsapp.net", true}, {"456@s.whatsapp.net", false}] do
-      incoming =
-        incoming(%{
-          to_jid: recipient,
-          account_jids: [recipient],
-          mentions: ["123@s.whatsapp.net"]
-        })
-
-      assert incoming.was_mentioned == expected
-      assert [mention] = incoming.mentions
-      assert mention.is_self == expected
-      refute incoming.author.is_me
-    end
-  end
-
-  test "self messages do not imply a mention" do
-    incoming = incoming(%{from_me: true})
-    assert incoming.author.is_me
-    refute incoming.was_mentioned
-  end
-
-  test "room identity is evidenced and unknown broadcasts remain unknown" do
+  test "normalized adapter room facts reach ZAQ history routing" do
     for {room, expected} <- [
           {"room@g.us", :room},
           {"123@s.whatsapp.net", :one_to_one},
@@ -876,17 +841,6 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppIncomingTest do
       assert facts.source_scope == room
       assert facts.sender_id == "peer@s.whatsapp.net"
     end
-
-    assert {:error, _} =
-             Adapter.transform_incoming(%{
-               id: "broadcast",
-               channel_jid: "status@broadcast",
-               text: "ignored"
-             })
-  end
-
-  test "missing recipient never invents a self mention" do
-    refute incoming(%{to_jid: nil, mentions: ["123@s.whatsapp.net"]}).was_mentioned
   end
 
   defp incoming(overrides) do

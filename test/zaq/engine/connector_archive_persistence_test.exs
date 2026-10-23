@@ -36,8 +36,8 @@ defmodule Zaq.Engine.ConnectorArchivePersistenceTest do
     previous = Application.get_env(:zaq, :channels)
 
     Application.put_env(:zaq, :channels, %{
-      mattermost: %{ingress_mode: :webhook},
-      disk: %{ingress_mode: :polling}
+      mattermost: %{bridge: IngressStub, ingress_mode: :webhook},
+      disk: %{bridge: IngressStub, ingress_mode: :polling}
     })
 
     on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)

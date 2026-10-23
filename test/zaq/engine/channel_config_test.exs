@@ -1126,10 +1126,10 @@ defmodule Zaq.Engine.ChannelConfigTest do
         })
 
       updated =
-        saved |> ChannelConfig.changeset(%{settings: %{"account" => "updated"}}) |> Repo.update!()
+        saved |> ChannelConfig.changeset(%{settings: %{"custom" => "updated"}}) |> Repo.update!()
 
       assert updated.settings == %{
-               "account" => "updated",
+               "custom" => "updated",
                "jido_chat" => %{"room_reply_policy" => "default"}
              }
 
