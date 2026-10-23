@@ -286,7 +286,7 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
         opts: [confidential: true, bridge_module: FailingRuntime]
       )
 
-    assert Api.handle_event(event, :channel_retry_linked_device, nil).response ==
+    assert Api.handle_event(event, :sync_provider_runtime, nil).response ==
              {:error, :connection_start_failed}
   end
 
@@ -350,7 +350,7 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
     admin = super_admin_fixture(%{must_change_password: false})
     user = user_fixture()
 
-    for action <- [:channel_ingress_status, :channel_retry_linked_device],
+    for action <- [:channel_ingress_status, :sync_provider_runtime],
         {actor, confidential} <- [
           {nil, true},
           {%{user_id: user.id}, true},
@@ -369,7 +369,7 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
 
     config |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
     assert {:error, _} = call(config, :channel_ingress_status, %{user_id: admin.id}, true)
-    assert {:error, _} = call(config, :channel_retry_linked_device, %{user_id: admin.id}, true)
+    assert {:error, _} = call(config, :sync_provider_runtime, %{user_id: admin.id}, true)
   end
 
   test "status and retry revalidate an operator whose password must now change" do
@@ -380,8 +380,18 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
     assert {:ok, _} = call(config, :channel_ingress_status, actor, true)
     admin |> Ecto.Changeset.change(must_change_password: true) |> Repo.update!()
 
-    for action <- [:channel_ingress_status, :channel_retry_linked_device] do
+    for action <- [:channel_ingress_status, :sync_provider_runtime] do
       assert {:error, :unauthorized} = call(config, action, actor, true)
+    end
+  end
+
+  test "connector-scoped sync rejects invalid IDs instead of falling back to a supplied config" do
+    config = connector()
+    admin = super_admin_fixture(%{must_change_password: false})
+
+    for id <- [nil, 0, -1, to_string(config.id)] do
+      assert {:error, :unsupported} =
+               call(%{config | id: id}, :sync_provider_runtime, %{user_id: admin.id}, true)
     end
   end
 

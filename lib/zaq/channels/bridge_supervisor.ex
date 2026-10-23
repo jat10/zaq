@@ -9,8 +9,6 @@ defmodule Zaq.Channels.BridgeSupervisor do
   On startup, loads all enabled retrieval and data source channel configs from
   the database and starts the corresponding runtime processes. Supports runtime
   start/stop of listeners when channel configs are enabled or disabled.
-  Start and stop share a node-local lock per runtime so teardown cannot miss an
-  in-flight startup or remove a replacement runtime's registration.
 
   Listener processes deliver incoming payloads to the bridge sink callback
   configured by the active bridge runtime.
@@ -103,14 +101,6 @@ defmodule Zaq.Channels.BridgeSupervisor do
 
   @doc "Stops a bridge runtime by bridge id."
   def stop_bridge_runtime(_config, bridge_id) do
-    :global.trans(
-      {{__MODULE__, bridge_id}, self()},
-      fn -> do_stop_bridge_runtime(bridge_id) end,
-      [node()]
-    )
-  end
-
-  defp do_stop_bridge_runtime(bridge_id) do
     case runtime_entry(bridge_id) do
       [{^bridge_id, runtime}] ->
         try do

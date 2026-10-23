@@ -263,7 +263,7 @@ defmodule ZaqWeb.Live.BO.Communication.LinkedDeviceUI do
   end
 
   defp request(provider, id, actor, :retry) do
-    case dispatch(provider, id, actor, :channel_retry_linked_device) do
+    case dispatch(provider, id, actor, :sync_provider_runtime) do
       :ok -> request(provider, id, actor, :status)
       error -> error
     end

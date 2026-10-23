@@ -50,18 +50,6 @@ defmodule Zaq.Channels.CommunicationBridge do
     end
   end
 
-  @doc "Discovers adapter authentication through the provider bridge."
-  @spec authentication_capability(atom() | String.t(), keyword()) :: term()
-  def authentication_capability(provider, opts \\ []) do
-    with {:ok, bridge} <- Bridge.resolve_bridge(provider, opts),
-         true <-
-           function_exported?(bridge, :authentication_capability, 1) || {:error, :unsupported} do
-      if function_exported?(bridge, :authentication_capability, 2),
-        do: bridge.authentication_capability(provider, opts),
-        else: bridge.authentication_capability(provider)
-    end
-  end
-
   import Zaq.Engine.Messages, only: [is_present_message_id: 1]
 
   # `{:ok, receipt}` carries channel-assigned threading pointers (the delivered

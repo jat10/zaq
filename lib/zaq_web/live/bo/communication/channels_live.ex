@@ -71,10 +71,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
      |> assign(:provider, provider)
      |> assign(:provider_label, label)
      |> assign(:authentication_flow, :default)
-     |> assign(
-       :linked_device,
-       authentication_capability(provider, socket.assigns.current_user) == :native
-     )
+     |> assign(:linked_device, linked_device_capability?(capabilities))
      |> assign(:linked_device_modal, nil)
      |> assign(:configs, configs)
      |> assign(:ingress_statuses, %{})
@@ -1800,10 +1797,15 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   defp ensure_global_base_url_for_oauth2(_), do: :ok
 
   defp capability_snapshot(provider) do
-    case request_capability_snapshot(provider, %{}) do
+    case request_capability_snapshot(provider, %{scope: :provider}) do
       {:ok, map} when is_map(map) -> map
       _ -> %{}
     end
+  end
+
+  defp linked_device_capability?(capabilities) do
+    get_in(capabilities, [:resolved, :authentication_flow]) == :linked_device or
+      get_in(capabilities, [:resolved, :connection_ui_on_enable]) == true
   end
 
   defp request_capability_snapshot(provider, params) do
@@ -1813,15 +1815,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
       )
 
     NodeRouter.dispatch(event).response
-  end
-
-  defp authentication_capability(provider, user) do
-    Event.new(%{provider: provider}, :channels,
-      actor: BOActor.build(user),
-      opts: [action: :channel_authentication_capability, confidential: true]
-    )
-    |> NodeRouter.dispatch()
-    |> Map.fetch!(:response)
   end
 
   defp ingress_statuses(configs, actor) when is_list(configs) do

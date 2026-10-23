@@ -129,15 +129,6 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   defp cleanup_saved_connection(_config, _adapter), do: {:error, :not_running}
 
-  @doc "Returns the configured adapter's optional authentication capability."
-  @spec authentication_capability(atom() | String.t(), keyword()) ::
-          :native | :unsupported | {:error, term()}
-  def authentication_capability(provider, opts \\ []) do
-    with {:ok, adapter} <- adapter_for(provider, opts) do
-      Adapter.capabilities(adapter).authenticate
-    end
-  end
-
   @doc "Delegates an authorized account authentication command to the configured adapter."
   @spec authenticate(atom() | String.t(), map(), term(), map(), keyword()) ::
           {:ok, map()} | {:error, term()}

@@ -91,20 +91,6 @@ defmodule Zaq.Channels.Api do
     do: %{event | response: {:error, :invalid_web_ingress}}
 
   def handle_event(
-        %Event{request: %{provider: provider}} = event,
-        :channel_connection_mode,
-        _context
-      ) do
-    mode =
-      case Bridge.provider_config(provider) do
-        %{ingress_mode: mode} -> mode
-        _ -> nil
-      end
-
-    %{event | response: {:ok, mode}}
-  end
-
-  def handle_event(
         %Event{
           request: %{channel_config_id: config_id, channel_id: channel_id, message_id: message_id}
         } = event,
@@ -348,6 +334,28 @@ defmodule Zaq.Channels.Api do
           ChannelConfig.to_runtime_config(before_config),
           ChannelConfig.to_runtime_config(after_config)
         )
+      end
+
+    %{event | response: response}
+  end
+
+  def handle_event(
+        %Event{request: %{provider: provider, channel_config_id: id}} = event,
+        :sync_provider_runtime,
+        _context
+      ) do
+    bridge_module = bridge_module(event)
+
+    response =
+      with :ok <- authorize_pairing_operator(event),
+           true <- is_integer(id) and id > 0,
+           %{ingress_mode: :linked_device} <- Bridge.provider_config(provider),
+           {:ok, config} <- bridge_module.fetch_channel_config(provider, id),
+           {:ok, bridge} <- resolve_bridge(bridge_module, provider) do
+        bridge.sync_provider_runtime(config)
+      else
+        {:error, _} = error -> error
+        _ -> {:error, :unsupported}
       end
 
     %{event | response: response}
@@ -937,19 +945,6 @@ defmodule Zaq.Channels.Api do
   end
 
   def handle_event(
-        %Event{request: %{provider: provider}} = event,
-        :channel_authentication_capability,
-        _context
-      ) do
-    response =
-      with :ok <- authorize_pairing_operator(event) do
-        communication_bridge_module(event).authentication_capability(provider, event.opts)
-      end
-
-    %{event | response: response}
-  end
-
-  def handle_event(
         %Event{request: %{provider: provider} = request} = event,
         :channel_ingress_status,
         _context
@@ -969,28 +964,6 @@ defmodule Zaq.Channels.Api do
     else
       {:error, reason} -> %{event | response: {:error, reason}}
     end
-  end
-
-  def handle_event(
-        %Event{request: %{provider: provider, channel_config_id: id}} = event,
-        :channel_retry_linked_device,
-        _context
-      ) do
-    bridge_module = bridge_module(event)
-
-    response =
-      with :ok <- authorize_pairing_operator(event),
-           true <- is_integer(id) and id > 0,
-           %{ingress_mode: :linked_device} <- Bridge.provider_config(provider),
-           {:ok, config} <- bridge_module.fetch_channel_config(provider, id),
-           {:ok, bridge} <- resolve_bridge(bridge_module, provider) do
-        bridge.sync_provider_runtime(config)
-      else
-        {:error, _} = error -> error
-        _ -> {:error, :unsupported}
-      end
-
-    %{event | response: response}
   end
 
   def handle_event(

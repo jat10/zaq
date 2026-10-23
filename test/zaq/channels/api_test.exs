@@ -1332,6 +1332,29 @@ defmodule Zaq.Channels.ApiTest do
     assert_received {:bridge_sync_provider_runtime, :mattermost}
   end
 
+  test "config-based runtime sync retains its confidential internal contract" do
+    config = %{id: 42, provider: "email:smtp", enabled: true}
+
+    event =
+      Event.new(%{config: config}, :channels,
+        opts: [
+          action: :sync_provider_runtime,
+          confidential: true,
+          runtime_module: StubCommunicationBridge
+        ]
+      )
+
+    assert Api.handle_event(event, :sync_provider_runtime, nil).response == :ok
+    assert_received {:bridge_sync_provider_runtime, ^config}
+
+    event = %{event | opts: Keyword.delete(event.opts, :confidential)}
+
+    assert Api.handle_event(event, :sync_provider_runtime, nil).response ==
+             {:error, :confidential_event_required}
+
+    refute_received {:bridge_sync_provider_runtime, _}
+  end
+
   describe "channel ingress runtime actions" do
     test "handles channel_ensure_ingress_subscription via runtime_module option" do
       event =
