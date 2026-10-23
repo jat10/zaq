@@ -24,7 +24,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   alias ZaqWeb.Live.BO.AI.BOActor
   alias ZaqWeb.Live.BO.Communication.AgentRoutingOptions
   alias ZaqWeb.Live.BO.Communication.ChannelConfigPersistence
-  alias ZaqWeb.Live.BO.Communication.ChannelEnablePolicy
   alias ZaqWeb.Live.BO.Communication.IngressStatusUI
   alias ZaqWeb.Live.BO.Communication.LinkedDeviceUI
   alias ZaqWeb.Live.BO.Communication.OAuthClaimState
@@ -624,16 +623,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     pending = socket.assigns.confirm_disable
     socket = assign(socket, :confirm_disable, nil)
 
-    case connector_command(socket, :connector_lifecycle, %{
-           operation: :context,
-           request: pending.request
-         }) do
-      {:ok, %{revision: revision}} when revision == pending.request.revision ->
-        toggle_active_config(socket, Repo.get!(ChannelConfig, pending.request.channel_config_id))
-
-      _ ->
-        {:noreply, put_flash(socket, :error, "This profile changed. Refresh and confirm again.")}
-    end
+    request = Map.put(pending.request, :enabled, false)
+    set_connector_enabled(socket, request, pending.name)
   end
 
   def handle_event(
@@ -1107,41 +1098,50 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   end
 
   defp toggle_active_config(socket, previous_config) do
-    desired = %{previous_config | enabled: !previous_config.enabled}
+    request = %{
+      channel_config_id: previous_config.id,
+      provider: previous_config.provider,
+      kind: previous_config.kind
+    }
 
-    sync_result =
-      if previous_config.enabled,
-        do:
-          sync_channel_runtime(
-            previous_config,
-            desired,
-            BOActor.build(socket.assigns.current_user)
-          ),
-        else: :ok
+    case connector_command(socket, :connector_lifecycle, %{operation: :context, request: request}) do
+      {:ok, %{archived?: false} = descriptor} ->
+        set_connector_enabled(
+          socket,
+          Map.put(descriptor, :enabled, !previous_config.enabled),
+          previous_config.name
+        )
 
-    cond do
-      match?({:error, {:disable_failed, _}}, sync_result) ->
-        {:noreply,
-         put_flash(socket, :error, "Could not disable this profile. Refresh and try again.")}
-
-      Repo.get!(ChannelConfig, previous_config.id) != previous_config ->
+      _ ->
         {:noreply, put_flash(socket, :error, "This profile changed. Refresh and confirm again.")}
+    end
+  end
 
-      true ->
-        config =
-          previous_config |> Ecto.Changeset.change(enabled: desired.enabled) |> Repo.update!()
-
-        sync_result =
-          if config.enabled, do: sync_channel_runtime(previous_config, config), else: sync_result
+  defp set_connector_enabled(socket, request, name) do
+    case connector_command(socket, :connector_lifecycle, %{
+           operation: :set_enabled,
+           request: request
+         }) do
+      {:ok, %{channel_config_id: id, enabled: enabled, runtime: sync_result}} ->
+        socket = refresh_connector_configs(socket)
+        config = Enum.find(socket.assigns.configs, &(&1.id == id))
 
         {:noreply,
          socket
-         |> refresh_connector_configs()
          |> maybe_put_runtime_sync_flash(
            sync_result,
-           "#{config.name} #{if config.enabled, do: "enabled", else: "disabled"}."
+           "#{name} #{if enabled, do: "enabled", else: "disabled"}."
          )
          |> maybe_open_enabled_connection(config, sync_result)}
+
+      {:error, :stale_connector} ->
+        {:noreply, put_flash(socket, :error, "This profile changed. Refresh and confirm again.")}
+
+      _ ->
+        verb = if request.enabled, do: "enable", else: "disable"
+
+        {:noreply,
+         put_flash(socket, :error, "Could not #{verb} this profile. Refresh and try again.")}
     end
   end
 
@@ -1149,12 +1149,16 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
 
   defp enable_authorized?(socket, config) do
     case Zaq.Accounts.BOActor.current_user(BOActor.build(socket.assigns.current_user)) do
-      {:ok, user} -> is_nil(ChannelEnablePolicy.disabled_reason(config, user))
+      {:ok, user} -> is_nil(Settings.enable_disabled_reason(config, user))
       _ -> false
     end
   end
 
-  defp maybe_open_enabled_connection(%{assigns: %{linked_device: true}} = socket, config, :ok) do
+  defp maybe_open_enabled_connection(
+         %{assigns: %{linked_device: true}} = socket,
+         %{enabled: true} = config,
+         :ok
+       ) do
     case request_capability_snapshot(config.provider, %{config_id: config.id}) do
       {:ok, %{resolved: %{connection_ui_on_enable: true}}} ->
         LinkedDeviceUI.open(socket, config, cancel_connection: true)

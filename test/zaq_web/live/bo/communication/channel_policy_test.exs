@@ -2,21 +2,19 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelEnablePolicyTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
-  alias ZaqWeb.Live.BO.Communication.ChannelEnablePolicy
+  alias Zaq.ConnectorConfig.Settings
 
   test "WhatsApp enable availability requires a super-admin without restricting disable" do
     for provider <- [:whatsapp, "whatsapp"] do
       for user <- [nil, %{}, %{role: %{name: "admin"}}, %{role: %{name: "staff"}}] do
-        assert ChannelEnablePolicy.disabled_reason(%{provider: provider, enabled: false}, user) ==
+        assert Settings.enable_disabled_reason(%{provider: provider, enabled: false}, user) ==
                  "Only super admins can enable a WhatsApp account."
 
-        assert is_nil(
-                 ChannelEnablePolicy.disabled_reason(%{provider: provider, enabled: true}, user)
-               )
+        assert is_nil(Settings.enable_disabled_reason(%{provider: provider, enabled: true}, user))
       end
 
       assert is_nil(
-               ChannelEnablePolicy.disabled_reason(
+               Settings.enable_disabled_reason(
                  %{provider: provider, enabled: false},
                  %{role: %{name: "super_admin"}}
                )
@@ -32,7 +30,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelEnablePolicyTest do
               member_of([nil, %{}, %{role: %{name: "staff"}}, %{role: %{name: "super_admin"}}])
           ) do
       assert is_nil(
-               ChannelEnablePolicy.disabled_reason(%{provider: provider, enabled: enabled}, user)
+               Settings.enable_disabled_reason(%{provider: provider, enabled: enabled}, user)
              )
     end
   end

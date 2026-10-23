@@ -14,6 +14,7 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   """
 
   alias Zaq.Accounts.BOActor
+  alias Zaq.ConnectorConfig.Settings
   alias Zaq.Engine.{ChannelConfig, DataSources}
   alias Zaq.Event
   alias Zaq.NodeRouter
@@ -60,7 +61,82 @@ defmodule Zaq.Engine.ConnectorLifecycle do
     end
   end
 
+  def execute(%{operation: :set_enabled, request: request}, actor, opts),
+    do: set_enabled(request, actor, opts)
+
   def execute(_, _, _), do: {:error, :invalid_request}
+
+  defp set_enabled(
+         %{
+           channel_config_id: id,
+           provider: provider,
+           kind: kind,
+           enabled: enabled,
+           revision: expected
+         },
+         actor,
+         opts
+       )
+       when is_boolean(enabled) and is_binary(expected) and is_binary(provider) and
+              is_binary(kind) do
+    with {:ok, user} <- BOActor.current_user(actor),
+         {:ok, id} <- cast_id(id),
+         %ChannelConfig{archived_at: nil} = config <- ChannelConfig.get(id),
+         :ok <- validate_scope(config, provider, kind),
+         :ok <- validate_revision(config, expected),
+         :ok <- authorize_enable(config, enabled, user) do
+      set_enabled_current(config, enabled, expected, actor, opts)
+    else
+      {:error, _} = error -> error
+      _ -> {:error, :connector_not_found}
+    end
+  end
+
+  defp set_enabled(_, _, _), do: {:error, :invalid_request}
+
+  defp authorize_enable(config, true, user) do
+    if is_nil(Settings.enable_disabled_reason(%{config | enabled: false}, user)),
+      do: :ok,
+      else: {:error, :unauthorized}
+  end
+
+  defp authorize_enable(_, false, _), do: :ok
+
+  defp set_enabled_current(config, true, expected, actor, opts) do
+    with {:ok, saved} <- persist_enabled(config.id, expected, true) do
+      {:ok, enabled_result(saved, sync_enabled_runtime(config, saved, actor, opts))}
+    end
+  end
+
+  defp set_enabled_current(config, false, expected, actor, opts) do
+    runtime = sync_enabled_runtime(config, %{config | enabled: false}, actor, opts)
+
+    case runtime do
+      {:error, {:disable_failed, _}} = error ->
+        error
+
+      _ ->
+        with {:ok, saved} <- persist_enabled(config.id, expected, false) do
+          {:ok, enabled_result(saved, runtime)}
+        end
+    end
+  end
+
+  defp enabled_result(config, runtime),
+    do: %{channel_config_id: config.id, enabled: config.enabled, runtime: runtime}
+
+  defp sync_enabled_runtime(before, after_config, actor, opts) do
+    action =
+      if before.kind == "data_source", do: :sync_data_source_runtime, else: :sync_channel_runtime
+
+    channels_call(
+      Keyword.get(opts, :router, NodeRouter),
+      action,
+      %{before_config: runtime_config(before), after_config: runtime_config(after_config)},
+      actor,
+      opts
+    )
+  end
 
   defp do_archive(request, actor, opts) do
     router = Keyword.get(opts, :router, NodeRouter)

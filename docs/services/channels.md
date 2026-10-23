@@ -306,7 +306,7 @@ BO connector removal archives rather than deletes the config: it disables
 runtime selection, retains historical lookup by ID and preserves the FK of
 PersonChannel identities. Archived configs are excluded from ordinary BO
 lists and provider-only upserts. Delete first tears down ingress, prepares adapter
-disablement, persists the disabled state, and successfully stops the runtime before
+disablement, stops the runtime, then persists the disabled state before
 archiving. Preparation failures leave the configuration enabled; runtime stop
 failures leave it disabled and unarchived so the BO can retry Delete.
 For data-source connectors, archiving first unwatches each active/error watch;
@@ -316,9 +316,10 @@ durable cleanup on the existing renewal worker. Only this cleanup path may use
 archived credentials to unwatch the exact matching connector; regular ingress
 and watch creation remain unavailable after archive.
 Engine `ConnectorLifecycle` owns archive descriptor/revision validation, watch ordering
-and configuration persistence. BO Disable uses the original `:sync_channel_runtime`
+and configuration persistence. BO Enable/Disable dispatches the existing Engine
+`:connector_lifecycle` command; Engine uses the original `:sync_channel_runtime`
 before/after configuration request. Channels checks the optional bridge
-`before_disable/3` hook before running the existing runtime synchronization. BO
+`before_disable/3` hook before running the existing runtime synchronization. Engine
 performs this call before writing disabled, keeping credentials available during
 logout. Save and enable continue to use the original runtime-sync contract.
 BO selects confirmation from the exact connector capability snapshot's
@@ -333,9 +334,10 @@ Archive retains its existing watch and webhook teardown followed by confidential
 pre-disable hook before stopping the runtime. Engine persists disabled afterward
 and refuses archival on runtime failure. Already-disabled archive retries skip
 logout and retry runtime shutdown. Archived rows reconcile runtime and watch cleanup.
-These Channels events perform no configuration persistence. There is no ID-based
-disable request, Engine prepare/persist RPC sequence, controller, stopping state or
-router coordination.
+These Channels events perform no configuration persistence. The shared Engine
+command owns enable/disable persistence; Channels does not perform an Engine
+prepare/persist callback sequence. There is no controller,
+stopping state or router coordination.
 The public result contains IDs and bounded outcomes, never credentials.
 
 ### Replicated email history contract (#768)
