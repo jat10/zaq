@@ -32,7 +32,9 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
                )
 
       config = Repo.get!(ChannelConfig, config.id)
-      assert {:ok, options} = JidoChatBridge.saved_connection_options(config, Adapter)
+      assert {:ok, {_state, [saved_spec]}} = JidoChatBridge.build_runtime_specs(config)
+      {Jido.Chat.WhatsApp.ConnectionWorker, :start_link, [saved_opts]} = saved_spec.start
+      options = Keyword.fetch!(saved_opts, :config)
       assert options.sync_history == history
       assert options.sync_full_history == full
 
@@ -70,7 +72,7 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
                )
 
       assert {:error, :invalid_history_options} =
-               JidoChatBridge.saved_connection_options(config, Adapter)
+               JidoChatBridge.build_runtime_specs(config)
     end
   end
 
@@ -78,16 +80,14 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
     assert {:error, :invalid_connector} = JidoChatBridge.connection_profile(%{id: nil})
 
     assert {:error, :invalid_connector} =
-             JidoChatBridge.saved_connection_options(%{id: "42"}, Adapter)
-
-    assert {:error, :unsupported} = JidoChatBridge.saved_connection_options(%{id: 42}, __MODULE__)
+             JidoChatBridge.connection_profile(%{id: "42"})
 
     config = connector()
-    assert {:ok, _} = JidoChatBridge.saved_connection_options(config, Adapter)
+    assert {:ok, {_state, [_listener]}} = JidoChatBridge.build_runtime_specs(config)
     Repo.update!(Ecto.Changeset.change(config, enabled: false))
 
     assert {:error, :connector_unavailable} =
-             JidoChatBridge.saved_connection_options(config, Adapter)
+             JidoChatBridge.build_runtime_specs(config)
   end
 
   property "different durable bindings yield distinct stable adapter profiles" do
@@ -145,7 +145,13 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
 
   test "a storage callback completes while the bridge State itself is handling work" do
     config = connector()
-    assert {:ok, options} = JidoChatBridge.saved_connection_options(config, Adapter)
+
+    assert {:ok, prepared} =
+             Jido.Chat.Adapter.prepare_connection(Adapter,
+               sink_mfa: JidoChatBridge.storage_sink(config)
+             )
+
+    options = Keyword.fetch!(prepared, :ingress)
     {Split, opts} = options.storage
     storage = Split.new(opts)
 

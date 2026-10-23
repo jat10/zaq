@@ -597,7 +597,13 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
         }
     }
 
-    assert {:ok, ingress} = JidoChatBridge.saved_connection_options(config, Adapter)
+    assert {:ok, prepared} =
+             Jido.Chat.Adapter.prepare_connection(Adapter,
+               sink_mfa: JidoChatBridge.storage_sink(config),
+               ingress: config.settings["jido_chat"]["ingress"]
+             )
+
+    ingress = Keyword.fetch!(prepared, :ingress)
     assert ingress.mode == :linked_device
     assert {:ok, ingress.profile} == JidoChatBridge.connection_profile(config)
 
