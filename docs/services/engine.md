@@ -96,7 +96,7 @@ normalization remains provider-local in Channels.
 Disable uses the original Channels runtime-sync before/after configuration contract.
 The existing runtime handlers perform optional adapter logout before teardown;
 Channels does not ask Engine to prepare or persist a separate disable command.
-BO runs disable synchronization while credentials remain enabled, then writes the
+Engine runs disable synchronization while credentials remain enabled, then writes the
 disabled state. Failed logout leaves enablement unchanged. Runtime failure after
 successful preparation is reported by the existing runtime-sync error handling.
 
@@ -114,15 +114,26 @@ Disable confirmation reads scoped revision context through confidential
 its existing Engine entry point directly. Database row locks remain confined to
 persistence transactions; NodeRouter does not coordinate these operations.
 
-BO enablement uses the shared connector toggle and Channels `:sync_channel_runtime`
-before/after request. The toggle checks the current BO user against the enable
-policy, validates provider/kind and archive state, and rejects a changed record
-before persistence. WhatsApp enablement requires a current super-admin. It saves
-`enabled: true` before runtime sync so saved-credential access is available during
-startup. Failed startup leaves the connector enabled with runtime-failure feedback;
-the pairing UI opens only after successful sync. Repeated runtime startup reuses
-the selected saved profile. The UI retains toggle semantics: clicking an enabled
-profile begins Disable, rather than repeating an explicit enable command.
+BO enable/disable uses the existing confidential `:connector_lifecycle` handler
+with its explicit trusted capability and `operation: :set_enabled`. The request
+contains connector ID, provider, kind, an explicit enabled boolean and the expected
+revision. `ConnectorLifecycle.execute/3` reloads the actor, validates scope, archive
+state and revision, and owns persistence and runtime synchronization. Enable rules
+are shared with BO presentation through `ConnectorConfig.Settings`; WhatsApp requires
+a current super-admin. Adapter disable preparation retains its own authorization.
+Disable confirmation passes the original confirmed revision to Engine.
+
+Enable persists before Channels runtime synchronization; disable runs adapter
+preparation and runtime shutdown before persistence. Preparation failure leaves
+state unchanged; other runtime failures are returned alongside persisted state.
+The existing Channels communication/data-source sync handlers remain authoritative.
+No row lock spans runtime calls, and this command does not serialize concurrent
+startup against cleanup. BO retains toggle presentation and opens pairing only
+after successful enable synchronization.
+
+Action reuse: extend the existing internal lifecycle command and its persistence
+helpers, reusing Channels runtime synchronization and adapter preparation. This
+adds no separate Action, agent-tool exposure or workflow step.
 
 ### Connector credential documents
 
@@ -1491,8 +1502,9 @@ constant as the page grows to its 50-row bound.
 `ConnectorLifecycle.context/3` produces an exactly scoped, revisioned descriptor in
 Engine. `archive/2,3` validates scope/revision, stops data-source watches, requests
 confidential supplied-config provider teardown, and runs the optional adapter
-disable hook. It locks/rechecks the row to persist disablement, requires successful
-Channels runtime shutdown, then locks/rechecks again before archiving. Hook failures
+disable hook. Channels attempts runtime shutdown before Engine locks/rechecks the
+row to persist disablement. Successful shutdown is required before Engine
+locks/rechecks again to archive. Hook failures
 leave enablement unchanged; shutdown failures leave the connector disabled and
 unarchived. Retrying a disabled connector skips the hook and retries shutdown.
 Late watch cleanup is reconciled afterward and can return an explicit pending

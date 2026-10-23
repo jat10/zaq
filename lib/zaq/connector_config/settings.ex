@@ -1,5 +1,15 @@
 defmodule Zaq.ConnectorConfig.Settings do
-  @moduledoc "Shared provider defaults, nested settings merging and connector projections."
+  @moduledoc "Shared provider defaults, enable restrictions, settings merging and connector projections."
+
+  @doc "Returns the enable restriction shared by Engine authorization and BO presentation."
+  @spec enable_disabled_reason(map(), map() | nil) :: String.t() | nil
+  def enable_disabled_reason(%{provider: provider, enabled: false}, user)
+      when provider in [:whatsapp, "whatsapp"] do
+    unless match?(%{role: %{name: "super_admin"}}, user),
+      do: "Only super admins can enable a WhatsApp account."
+  end
+
+  def enable_disabled_reason(_, _), do: nil
 
   @doc "Identifies saved credential bindings whose startup must be excluded during cleanup."
   @spec saved_binding?(term()) :: boolean()

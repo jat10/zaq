@@ -192,7 +192,7 @@ defmodule Zaq.Channels.Bridge do
     do:
       "#{Map.get(config, :provider) || Map.get(config, "provider")}_#{Map.get(config, :id) || Map.get(config, "id")}"
 
-  @doc "Routes runtime startup with lifecycle coordination and fresh connector eligibility."
+  @doc "Routes runtime startup through Channels, rechecking eligibility for saved credential bindings."
   @spec start_runtime(module(), runtime_target(), keyword()) :: :ok | {:error, term()}
   def start_runtime(bridge, target, opts) do
     ConnectorRuntime.start(target, {:start, bridge, opts})
