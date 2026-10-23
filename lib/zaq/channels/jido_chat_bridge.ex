@@ -1624,24 +1624,6 @@ defmodule Zaq.Channels.JidoChatBridge do
       else: {__MODULE__, :from_listener, [config]}
   end
 
-  @doc "Delegates saved connection preparation to the adapter through the trusted sink."
-  @spec saved_connection_options(map(), module()) :: {:ok, map()} | {:error, term()}
-  def saved_connection_options(%{id: id} = config, adapter) when is_integer(id) and id > 0 do
-    with true <-
-           (Code.ensure_loaded?(adapter) and function_exported?(adapter, :prepare_connection, 1)) ||
-             {:error, :unsupported},
-         {:ok, opts} <-
-           Adapter.prepare_connection(adapter,
-             sink_mfa: storage_sink(config),
-             ingress: normalized_ingress(config),
-             adapter_options: adapter_options(config.provider)
-           ) do
-      {:ok, Keyword.get(opts, :ingress, %{})}
-    end
-  end
-
-  def saved_connection_options(_, _), do: {:error, :invalid_connector}
-
   @doc "Asks the adapter for its stable profile without putting provider state in ZAQ."
   @spec connection_profile(map()) :: {:ok, term()} | {:error, term()}
   def connection_profile(%{id: id, provider: provider} = config) when is_integer(id) and id > 0 do

@@ -76,7 +76,13 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
     } do
       selected = connector(actor, "+15550005")
       other = connector(actor, "+15550006")
-      assert {:ok, options} = JidoChatBridge.saved_connection_options(selected, OfflineAdapter)
+
+      assert {:ok, prepared} =
+               Jido.Chat.Adapter.prepare_connection(OfflineAdapter,
+                 sink_mfa: JidoChatBridge.storage_sink(selected)
+               )
+
+      options = Keyword.fetch!(prepared, :ingress)
       scope = Amarula.Storage.scope(options.storage)
       assert :ok = Amarula.Storage.put(scope, options.profile, :session, "peer", "ratchet")
 
@@ -283,7 +289,12 @@ defmodule Zaq.Channels.LinkedDevice.RuntimeDisableIntegrationTest do
   end
 
   defp start_connector(config) do
-    assert {:ok, options} = JidoChatBridge.saved_connection_options(config, OfflineAdapter)
+    assert {:ok, prepared} =
+             Jido.Chat.Adapter.prepare_connection(OfflineAdapter,
+               sink_mfa: JidoChatBridge.storage_sink(config)
+             )
+
+    options = Keyword.fetch!(prepared, :ingress)
     assert :ok = JidoChatBridge.start_runtime(config)
     options
   end
