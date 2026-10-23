@@ -65,7 +65,6 @@ defmodule Zaq.NodeRouter do
   Dispatches an event to the node that owns `event.next_hop.destination`.
 
   Always returns a `%Zaq.Event{}` for both sync and async hop types.
-
   """
   @spec dispatch(Event.t()) :: Event.t()
   def dispatch(%Event{} = event), do: dispatch(event, %{})
@@ -294,23 +293,24 @@ defmodule Zaq.NodeRouter do
   end
 
   defp do_dispatch(%{hop_type: :sync} = dispatch_ctx) do
-    execute_dispatch(dispatch_ctx)
-  end
-
-  defp do_dispatch(%{hop_type: :async} = ctx) do
-    _ = async_start(ctx.runtime, fn -> execute_async(ctx) end)
-    ctx.event
-  end
-
-  defp execute_async(ctx) do
-    ctx |> execute_dispatch() |> log_async_failure(ctx)
-    :ok
-  end
-
-  defp execute_dispatch(dispatch_ctx) do
     dispatch_ctx
     |> do_dispatch_sync()
     |> continue_dispatch(dispatch_ctx.runtime)
+  end
+
+  defp do_dispatch(%{hop_type: :async} = dispatch_ctx) do
+    _ =
+      async_start(dispatch_ctx.runtime, fn ->
+        routed_event =
+          do_dispatch_sync(dispatch_ctx)
+          |> continue_dispatch(dispatch_ctx.runtime)
+
+        log_async_failure(routed_event, dispatch_ctx)
+
+        :ok
+      end)
+
+    dispatch_ctx.event
   end
 
   defp broadcast_event(%Event{} = event) do

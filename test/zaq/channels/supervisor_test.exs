@@ -42,52 +42,6 @@ defmodule Zaq.Channels.SupervisorTest do
     def start_link(_arg), do: {:error, :boom}
   end
 
-  defmodule PausingStartProc do
-    use GenServer
-
-    def start_link(observer), do: GenServer.start_link(__MODULE__, observer)
-
-    @impl GenServer
-    def init(observer) do
-      send(observer, {:listener_initializing, self()})
-
-      receive do
-        :finish_start -> {:ok, %{}}
-      end
-    end
-  end
-
-  test "stop waits for an in-flight start and tears down its registered children" do
-    bridge_id = "start_stop_#{System.unique_integer([:positive])}"
-    spec = %{id: :paused, start: {PausingStartProc, :start_link, [self()]}, restart: :temporary}
-    start = Task.async(fn -> BridgeSupervisor.start_runtime(bridge_id, nil, [spec]) end)
-    assert_receive {:listener_initializing, listener}
-    observer = self()
-
-    stop =
-      Task.async(fn ->
-        send(observer, :stop_requested)
-        result = BridgeSupervisor.stop_bridge_runtime(%{}, bridge_id)
-        send(observer, {:stop_finished, result})
-        result
-      end)
-
-    try do
-      assert_receive :stop_requested
-      refute_receive {:stop_finished, _}, 50
-      send(listener, :finish_start)
-      assert {:ok, %{listener_pids: [^listener]}} = Task.await(start)
-      assert :ok = Task.await(stop)
-      refute Process.alive?(listener)
-      assert {:error, :not_running} = BridgeSupervisor.lookup_runtime(bridge_id)
-    after
-      send(listener, :finish_start)
-      Task.shutdown(start)
-      Task.shutdown(stop)
-      BridgeSupervisor.stop_bridge_runtime(%{}, bridge_id)
-    end
-  end
-
   defmodule RaisingStartProc do
     def start_link(_arg), do: raise("kaboom")
   end

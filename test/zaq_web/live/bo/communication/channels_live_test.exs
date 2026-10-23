@@ -103,9 +103,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       end
     end
 
-    def authentication_capability(_provider),
-      do: fetch_state(:authentication_capability, :unsupported)
-
     def channel_ingress_status(config) do
       default =
         {:ok,
@@ -238,7 +235,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
   } do
     admin = super_admin_fixture(%{must_change_password: false})
     conn = init_test_session(conn, %{user_id: admin.id})
-    BridgeFake.put(:authentication_capability, :native)
 
     BridgeFake.put(
       :capability_snapshot,
@@ -253,19 +249,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     refute has_element?(view, "#config-form")
     assert Repo.aggregate(ChannelConfig, :count) == initial_count
     view |> element("#linked-device-pairing button", "Close") |> render_click()
-    refute has_element?(view, "#linked-device-pairing")
-  end
-
-  test "native authentication alone preserves the new connector form", %{conn: conn} do
-    admin = super_admin_fixture(%{must_change_password: false})
-    BridgeFake.put(:authentication_capability, :native)
-    BridgeFake.put(:capability_snapshot, {:ok, %{resolved: %{authentication_flow: :default}}})
-
-    {:ok, view, _} =
-      live(init_test_session(conn, %{user_id: admin.id}), ~p"/bo/channels/retrieval/mattermost")
-
-    view |> element("#new-config-button") |> render_click()
-    assert has_element?(view, "#config-form")
     refute has_element?(view, "#linked-device-pairing")
   end
 
@@ -307,7 +290,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     )
 
     BridgeFake.put(:capability_snapshot, {:ok, %{resolved: %{mode: "linked_device"}}})
-    BridgeFake.put(:authentication_capability, :native)
 
     BridgeFake.put(
       :channel_ingress_status,
@@ -464,8 +446,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
         :channels,
         Map.put(channels, :whatsapp, %{bridge: BridgeFake, ingress_mode: :linked_device})
       )
-
-      BridgeFake.put(:authentication_capability, :native)
 
       BridgeFake.put(
         :channel_ingress_status,
@@ -931,7 +911,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     )
 
     BridgeFake.put(:capability_snapshot, {:ok, %{resolved: %{mode: "linked_device"}}})
-    BridgeFake.put(:authentication_capability, :native)
 
     BridgeFake.put(
       :channel_ingress_status,

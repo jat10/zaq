@@ -4,7 +4,7 @@ defmodule Zaq.Agent.ServerManager do
 
   This module owns server process orchestration for configured agents, keyed by
   a caller-provided opaque `server_id`. Persisted history selection is supplied
-  separately as an explicit canonical transcript or legacy conversation binding.
+  separately as an explicit conversation binding.
 
   Key concerns handled here:
 
@@ -876,9 +876,6 @@ defmodule Zaq.Agent.ServerManager do
   end
 
   defp validate_history_binding(nil), do: {:ok, nil}
-
-  defp validate_history_binding(%{transcript_id: id}) when is_binary(id) and id != "",
-    do: {:ok, %{transcript_id: id}}
 
   defp validate_history_binding(%{conversation_id: id}) when is_binary(id) and id != "",
     do: {:ok, %{conversation_id: id}}

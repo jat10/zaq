@@ -214,11 +214,7 @@ defmodule Zaq.Agent.Executor do
              |> InputPrompt.render_message(opaque_alias_scope: server_id),
            _ <-
              Event.new(
-               %{
-                 provider: incoming.provider,
-                 channel_id: incoming.channel_id,
-                 channel_config_id: incoming.routing_context.channel_config_id
-               },
+               %{provider: incoming.provider, channel_id: incoming.channel_id},
                :channels,
                opts: [action: :send_typing],
                type: :async
@@ -539,17 +535,9 @@ defmodule Zaq.Agent.Executor do
   defp effective_execution_opts(opts, _incoming, _actor_result), do: opts
 
   defp history_binding(opts) do
-    case Keyword.get(opts, :execution_history) do
-      %{projection: %{kind: :canonical, transcript_id: transcript_id}} ->
-        # A canonical transcript can span several legacy conversation containers.
-        # Bind the runtime to the same authorized history identity as its scope.
-        %{transcript_id: transcript_id}
-
-      _ ->
-        case conversation_id(opts) do
-          nil -> nil
-          conversation_id -> %{conversation_id: conversation_id}
-        end
+    case conversation_id(opts) do
+      nil -> nil
+      conversation_id -> %{conversation_id: conversation_id}
     end
   end
 
