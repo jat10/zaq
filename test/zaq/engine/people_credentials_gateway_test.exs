@@ -1,5 +1,6 @@
 defmodule Zaq.Engine.PeopleCredentialsGatewayTest do
-  use Zaq.DataCase, async: true
+  # Clearing seeded Everyone grants conflicts with concurrent permission users.
+  use Zaq.DataCase, async: false
 
   alias Zaq.Accounts.{People, PeopleAuth, PeoplePermissionGrant, PeoplePermissions}
   alias Zaq.Engine.{Api, Connect, Events, PeopleAuthGateway}
@@ -17,7 +18,10 @@ defmodule Zaq.Engine.PeopleCredentialsGatewayTest do
       })
 
     {:ok, _} = PeoplePermissions.grant(:everyone, :access_profile)
-    {:ok, challenge} = PeopleAuth.issue_challenge(person, {127, 3, 1, 1})
+    # Own the rate-limit key instead of accumulating attempts across test runs.
+    ip_suffix = rem(System.unique_integer([:positive]), 16_777_216)
+    <<a, b, c>> = <<ip_suffix::24>>
+    {:ok, challenge} = PeopleAuth.issue_challenge(person, {127, a, b, c})
 
     {:ok, %{token: token, session: session}} =
       PeopleAuth.verify_challenge(challenge.challenge_id, challenge.code)

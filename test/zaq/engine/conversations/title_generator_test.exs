@@ -72,7 +72,7 @@ defmodule Zaq.Engine.Conversations.TitleGeneratorTest do
         {503, %{"error" => %{"message" => "Service unavailable", "type" => "server_error"}}}
       end
 
-      {child_spec, endpoint} = OpenAIStub.server(handler, self())
+      {child_spec, endpoint} = OpenAIStub.server(handler, self(), retry_after: 0)
       start_supervised!(child_spec)
 
       OpenAIStub.seed_llm_config(endpoint)
@@ -88,7 +88,7 @@ defmodule Zaq.Engine.Conversations.TitleGeneratorTest do
         {503, %{"error" => %{"message" => "Service unavailable", "type" => "server_error"}}}
       end
 
-      {child_spec, endpoint} = OpenAIStub.server(handler, self())
+      {child_spec, endpoint} = OpenAIStub.server(handler, self(), retry_after: 0)
       start_supervised!(child_spec)
 
       OpenAIStub.seed_llm_config(endpoint)

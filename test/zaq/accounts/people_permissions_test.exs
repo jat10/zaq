@@ -1,5 +1,6 @@
 defmodule Zaq.Accounts.PeoplePermissionsTest do
-  use Zaq.DataCase, async: true
+  # Clearing seeded Everyone grants conflicts with concurrent permission users.
+  use Zaq.DataCase, async: false
   use ExUnitProperties
 
   alias Zaq.Accounts.{People, PeoplePermissionGrant, PeoplePermissions, Person, Team}
