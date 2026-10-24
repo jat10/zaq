@@ -32,6 +32,16 @@ defmodule Zaq.Agent.NestedRunAgentIntegrationTest do
   alias Zaq.TestSupport.{CredentialMutationJob, MultiAgentOpenAIStub, OpenAIStub}
 
   setup do
+    previous_drain_timeout = Application.fetch_env(:zaq, :agent_server_drain_timeout_ms)
+    Application.put_env(:zaq, :agent_server_drain_timeout_ms, 20)
+
+    on_exit(fn ->
+      case previous_drain_timeout do
+        {:ok, timeout} -> Application.put_env(:zaq, :agent_server_drain_timeout_ms, timeout)
+        :error -> Application.delete_env(:zaq, :agent_server_drain_timeout_ms)
+      end
+    end)
+
     # Workflow lifecycle events (T1) dispatch through Zaq.NodeRouterMock in test;
     # the agent path uses the real router. Make the stub global so any process in
     # the chain sees it.

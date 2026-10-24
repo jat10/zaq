@@ -3,6 +3,7 @@ defmodule Zaq.Agent.Tools.RegistryModelCatalogTest do
   use ExUnit.Case, async: false
 
   alias Zaq.Agent.Tools.Registry
+  alias Zaq.TestSupport.ModelCatalogFixture
 
   test "model_tool_capability distinguishes unknown metadata" do
     assert Registry.model_tool_capability(nil, "gpt-4.1-mini") == :unknown
@@ -28,6 +29,15 @@ defmodule Zaq.Agent.Tools.RegistryModelCatalogTest do
   end
 
   test "model_supports_tools? handles map and nil capabilities with custom catalog" do
+    snapshot = LLMDB.Store.snapshot()
+    opts = LLMDB.Store.last_opts()
+
+    on_exit(fn ->
+      if snapshot, do: LLMDB.Store.put!(snapshot, opts), else: LLMDB.Store.clear!()
+    end)
+
+    ModelCatalogFixture.use_minimal_source!()
+
     {:ok, _snapshot} =
       LLMDB.load(
         custom: %{
@@ -40,10 +50,6 @@ defmodule Zaq.Agent.Tools.RegistryModelCatalogTest do
           ]
         }
       )
-
-    on_exit(fn ->
-      {:ok, _} = LLMDB.load()
-    end)
 
     assert Registry.model_supports_tools?("test_provider", "tools_map")
     assert Registry.model_tool_capability("test_provider", "tools_map") == :supported

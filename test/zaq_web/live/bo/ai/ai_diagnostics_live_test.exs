@@ -95,7 +95,9 @@ defmodule ZaqWeb.Live.BO.AI.AIDiagnosticsLiveTest do
     seed_retrieval_prompt()
 
     {child_spec, endpoint} =
-      OpenAIStub.server(fn _conn, _body -> {503, %{"error" => "down"}} end, self())
+      OpenAIStub.server(fn _conn, _body -> {503, %{"error" => "down"}} end, self(),
+        retry_after: 0
+      )
 
     start_supervised!(child_spec)
     OpenAIStub.seed_llm_config(endpoint)

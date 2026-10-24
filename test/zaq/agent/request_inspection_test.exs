@@ -10,6 +10,18 @@ defmodule Zaq.Agent.RequestInspectionTest do
 
   setup tags do
     if tags[:native] do
+      # Inspection and stale-runtime assertions need real shutdown, without
+      # waiting through the default grace period for completed request history.
+      previous = Application.fetch_env(:zaq, :agent_server_drain_timeout_ms)
+      Application.put_env(:zaq, :agent_server_drain_timeout_ms, 20)
+
+      on_exit(fn ->
+        case previous do
+          {:ok, timeout} -> Application.put_env(:zaq, :agent_server_drain_timeout_ms, timeout)
+          :error -> Application.delete_env(:zaq, :agent_server_drain_timeout_ms)
+        end
+      end)
+
       handler = fn _conn, body ->
         request = Jason.decode!(body)
         question = MultiAgentOpenAIStub.latest_user_message(request)

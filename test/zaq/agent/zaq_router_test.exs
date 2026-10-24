@@ -4,6 +4,7 @@ defmodule Zaq.Agent.ZAQRouterTest do
 
   alias Zaq.Agent.ProviderModels
   alias Zaq.Agent.ZAQRouter
+  alias Zaq.TestSupport.ModelCatalogFixture
 
   @catalog_metadata %{
     "openai/gpt-oss-120b" => {131_072, true},
@@ -22,8 +23,18 @@ defmodule Zaq.Agent.ZAQRouterTest do
     "openai/text-embedding-3-large" => {8192, false}
   }
 
-  setup do
-    on_exit(fn -> LLMDB.load() end)
+  setup tags do
+    snapshot = LLMDB.Store.snapshot()
+    opts = LLMDB.Store.last_opts()
+
+    on_exit(fn ->
+      if snapshot, do: LLMDB.Store.put!(snapshot, opts), else: LLMDB.Store.clear!()
+    end)
+
+    if tags[:reload_fixture] do
+      ModelCatalogFixture.use_minimal_source!()
+    end
+
     :ok
   end
 
@@ -41,6 +52,7 @@ defmodule Zaq.Agent.ZAQRouterTest do
       end
     end
 
+    @tag :reload_fixture
     test "exposes new model metadata through the agent model lookup" do
       assert {:ok, _snapshot} = LLMDB.load(ZAQRouter.llmdb_opts())
 
@@ -56,12 +68,17 @@ defmodule Zaq.Agent.ZAQRouterTest do
   end
 
   describe "reload/1" do
+    @describetag :reload_fixture
+
     property "reload keeps exactly the requested IDs and their known metadata" do
       check all(
               ids <- list_of(member_of(Map.keys(@catalog_metadata) ++ ["unknown-model"])),
               max_runs: 10
             ) do
         assert {:ok, _snapshot} = ZAQRouter.reload(ids)
+
+        assert {:ok, %LLMDB.Model{id: "gpt-4.1-mini", provider: :openai}} =
+                 LLMDB.model(:openai, "gpt-4.1-mini")
 
         models = LLMDB.models(:zaq_router)
         assert Enum.sort(Enum.map(models, & &1.id)) == Enum.sort(Enum.uniq(ids))
