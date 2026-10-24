@@ -23,6 +23,14 @@ defmodule Zaq.TestSupport.OpenAIStub do
     # ExUnit timeout. `Connection: close` prevents Finch from pooling it.
     conn = put_resp_header(conn, "connection", "close")
 
+    # Error-mapping fixtures can keep real HTTP retries without waiting for
+    # backoff. Leave retry timing unchanged unless the fixture opts in.
+    conn =
+      case opts[:retry_after] do
+        nil -> conn
+        seconds -> put_resp_header(conn, "retry-after", to_string(seconds))
+      end
+
     case opts[:handler].(conn, body) do
       %Plug.Conn{} = response ->
         response
@@ -42,14 +50,25 @@ defmodule Zaq.TestSupport.OpenAIStub do
     end
   end
 
-  def server(handler, test_pid) do
+  def server(handler, test_pid, opts \\ []) do
     port = free_port()
 
-    child_spec =
-      {Bandit,
-       plug: {__MODULE__, test_pid: test_pid, handler: handler}, scheme: :http, port: port}
+    {server_spec(handler, test_pid, port, opts), "http://127.0.0.1:#{port}/v1"}
+  end
 
-    {child_spec, "http://127.0.0.1:#{port}/v1"}
+  @doc "Starts a supervised fixture using the port actually bound by the OS."
+  def start!(handler, test_pid, opts \\ []) do
+    pid = ExUnit.Callbacks.start_supervised!(server_spec(handler, test_pid, 0, opts))
+    {:ok, {_address, port}} = ThousandIsland.listener_info(pid)
+    {pid, "http://127.0.0.1:#{port}/v1"}
+  end
+
+  defp server_spec(handler, test_pid, port, opts) do
+    {Bandit,
+     plug: {__MODULE__, test_pid: test_pid, handler: handler, retry_after: opts[:retry_after]},
+     scheme: :http,
+     ip: {127, 0, 0, 1},
+     port: port}
   end
 
   def llm_config(endpoint, overrides \\ []) do

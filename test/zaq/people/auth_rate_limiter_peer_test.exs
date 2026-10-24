@@ -8,52 +8,69 @@ defmodule Zaq.People.AuthRateLimiterPeerTest do
   test "actual Application startup gates the complete Channels subtree by role" do
     {_output, 0} = System.cmd("epmd", ["-daemon"])
 
-    for roles <- [[:channels], [:engine], [:channels, :engine]] do
-      {control, peer_node} = peer("roles")
-
-      assert :ok =
-               :peer.call(
-                 control,
-                 PeopleAuthPeer,
-                 :start_application,
-                 [Application.get_all_env(:zaq), roles, Application.get_all_env(:swoosh)],
-                 120_000
-               )
-
-      root = :peer.call(control, Supervisor, :which_children, [Zaq.Supervisor])
-      refute List.keymember?(root, Ingress, 0)
-      refute List.keymember?(root, Zaq.People.AuthRateLimiter, 0)
-
-      if :channels in roles do
-        assert {Zaq.Channels.Supervisor, _, :supervisor, _} =
-                 List.keyfind(root, Zaq.Channels.Supervisor, 0)
-
-        children = :peer.call(control, Supervisor, :which_children, [Zaq.Channels.Supervisor])
-
-        assert Enum.sort(Enum.map(children, &elem(&1, 0))) ==
-                 Enum.sort([Ingress, Zaq.Channels.BridgeSupervisor])
-
-        assert peer_node ==
-                 :peer.call(control, Zaq.NodeRouter, :find_node, [Zaq.Channels.Supervisor])
-      else
-        assert nil == :peer.call(control, Process, :whereis, [Zaq.Channels.Supervisor])
-        assert nil == :peer.call(control, Process, :whereis, [Zaq.Channels.BridgeSupervisor])
-        assert nil == :peer.call(control, Process, :whereis, [Ingress])
+    # Each role combination owns a separate BEAM node, registry and application
+    # configuration. Unique cookies also prevent automatic EPMD discovery from
+    # making one role's startup depend on another role's services.
+    peers =
+      for roles <- [[:channels], [:engine], [:channels, :engine]] do
+        {control, peer_node} = peer("roles", ~c"zaq_roles_#{Ecto.UUID.generate()}")
+        {roles, control, peer_node}
       end
 
-      if :engine in roles do
-        assert {Zaq.Engine.Supervisor, _, :supervisor, _} =
-                 List.keyfind(root, Zaq.Engine.Supervisor, 0)
+    config = Application.get_all_env(:zaq)
+    swoosh_config = Application.get_all_env(:swoosh)
 
-        children = :peer.call(control, Supervisor, :which_children, [Zaq.Engine.Supervisor])
-        assert {AuthRateLimiter, _, :supervisor, _} = List.keyfind(children, AuthRateLimiter, 0)
-      else
-        assert nil == :peer.call(control, Process, :whereis, [Zaq.Engine.Supervisor])
-        assert nil == :peer.call(control, Process, :whereis, [AuthRateLimiter])
-      end
+    peers
+    |> Task.async_stream(
+      fn {roles, control, peer_node} ->
+        assert :ok =
+                 :peer.call(
+                   control,
+                   PeopleAuthPeer,
+                   :start_application,
+                   [config, roles, swoosh_config],
+                   120_000
+                 )
 
-      :peer.stop(control)
-    end
+        assert [] == :peer.call(control, Node, :list, [])
+        root = :peer.call(control, Supervisor, :which_children, [Zaq.Supervisor])
+        refute List.keymember?(root, Ingress, 0)
+        refute List.keymember?(root, Zaq.People.AuthRateLimiter, 0)
+
+        if :channels in roles do
+          assert {Zaq.Channels.Supervisor, _, :supervisor, _} =
+                   List.keyfind(root, Zaq.Channels.Supervisor, 0)
+
+          children = :peer.call(control, Supervisor, :which_children, [Zaq.Channels.Supervisor])
+
+          assert Enum.sort(Enum.map(children, &elem(&1, 0))) ==
+                   Enum.sort([Ingress, Zaq.Channels.BridgeSupervisor])
+
+          assert peer_node ==
+                   :peer.call(control, Zaq.NodeRouter, :find_node, [Zaq.Channels.Supervisor])
+        else
+          assert nil == :peer.call(control, Process, :whereis, [Zaq.Channels.Supervisor])
+          assert nil == :peer.call(control, Process, :whereis, [Zaq.Channels.BridgeSupervisor])
+          assert nil == :peer.call(control, Process, :whereis, [Ingress])
+        end
+
+        if :engine in roles do
+          assert {Zaq.Engine.Supervisor, _, :supervisor, _} =
+                   List.keyfind(root, Zaq.Engine.Supervisor, 0)
+
+          children = :peer.call(control, Supervisor, :which_children, [Zaq.Engine.Supervisor])
+          assert {AuthRateLimiter, _, :supervisor, _} = List.keyfind(children, AuthRateLimiter, 0)
+        else
+          assert nil == :peer.call(control, Process, :whereis, [Zaq.Engine.Supervisor])
+          assert nil == :peer.call(control, Process, :whereis, [AuthRateLimiter])
+        end
+
+        :peer.stop(control)
+      end,
+      max_concurrency: 3,
+      timeout: 120_000
+    )
+    |> Enum.each(fn {:ok, :ok} -> :ok end)
   end
 
   test "official increment broadcasts converge between real ETS backends on two BEAM nodes" do
@@ -135,7 +152,7 @@ defmodule Zaq.People.AuthRateLimiterPeerTest do
              )
   end
 
-  defp peer(suffix) do
+  defp peer(suffix, cookie \\ ~c"zaq_people_auth_test") do
     name = String.to_atom("pr3_rate_#{suffix}_#{System.unique_integer([:positive])}")
     paths = Enum.flat_map(:code.get_path(), &[~c"-pa", &1])
 
@@ -143,7 +160,7 @@ defmodule Zaq.People.AuthRateLimiterPeerTest do
       :peer.start_link(%{
         name: name,
         connection: :standard_io,
-        args: [~c"+S", ~c"2", ~c"-setcookie", ~c"zaq_people_auth_test" | paths]
+        args: [~c"+S", ~c"2", ~c"-setcookie", cookie | paths]
       })
 
     Process.unlink(control)

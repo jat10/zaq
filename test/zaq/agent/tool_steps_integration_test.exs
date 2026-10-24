@@ -93,6 +93,12 @@ defmodule Zaq.Agent.ToolStepsIntegrationTest do
     assert_receive {:budget_probe_started, second_tool, "b"}, 5_000
     on_exit(fn -> send(second_tool, :release) end)
 
+    # Tool processes can start before their native events reach the consumer.
+    # Establish the recorded batch before injecting the worker exit whose
+    # settlement this test exercises.
+    assert_receive {:native_tool_event, :tool_started}, 5_000
+    assert_receive {:native_tool_event, :tool_started}, 5_000
+
     first_monitor = Process.monitor(first_tool)
     send(first_tool, :release)
     assert_receive {:DOWN, ^first_monitor, :process, ^first_tool, :normal}, 5_000

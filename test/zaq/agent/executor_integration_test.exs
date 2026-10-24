@@ -43,6 +43,22 @@ defmodule Zaq.Agent.ExecutorIntegrationTest do
 
   setup {Req.Test, :verify_on_exit!}
 
+  setup do
+    # These cases assert credential fencing and runtime replacement, not the
+    # default grace period. Retain real shutdown and its monitored completion.
+    previous = Application.fetch_env(:zaq, :agent_server_drain_timeout_ms)
+    Application.put_env(:zaq, :agent_server_drain_timeout_ms, 20)
+
+    on_exit(fn ->
+      case previous do
+        {:ok, timeout} -> Application.put_env(:zaq, :agent_server_drain_timeout_ms, timeout)
+        :error -> Application.delete_env(:zaq, :agent_server_drain_timeout_ms)
+      end
+    end)
+
+    :ok
+  end
+
   test "model input uses persisted message author and time instead of processing-time hints" do
     {configured, _credential, _endpoint} = credential_agent_fixture(self())
     on_exit(fn -> _ = ServerManager.stop_server(configured) end)

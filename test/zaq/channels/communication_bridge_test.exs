@@ -207,8 +207,9 @@ defmodule Zaq.Channels.CommunicationBridgeTest do
     def person_payload(_person), do: raise("unexpected person_payload call")
   end
 
-  setup do
-    original_channels = Application.get_env(:zaq, :channels)
+  # The wrapper is identical for every case and reads per-test process state.
+  # Keep it for this synchronous module instead of recompiling it 70 times.
+  setup_all do
     original_bridge_path = Path.expand("../../../lib/zaq/channels/bridge.ex", __DIR__)
     original_bridge_source = File.read!(original_bridge_path)
 
@@ -264,14 +265,7 @@ defmodule Zaq.Channels.CommunicationBridgeTest do
 
     Code.compiler_options(ignore_module_conflict: false)
 
-    Application.put_env(:zaq, :channels, %{
-      mattermost: %{bridge: StubBridge},
-      email: %{bridge: StubBridge}
-    })
-
     on_exit(fn ->
-      Process.delete(:bridge_fetch_channel_config_override)
-
       :code.purge(Zaq.Channels.Bridge)
       :code.delete(Zaq.Channels.Bridge)
       :code.purge(Zaq.Channels.BridgeBase)
@@ -280,7 +274,20 @@ defmodule Zaq.Channels.CommunicationBridgeTest do
       Code.compiler_options(ignore_module_conflict: true)
       Code.compile_file(original_bridge_path)
       Code.compiler_options(ignore_module_conflict: false)
+    end)
 
+    :ok
+  end
+
+  setup do
+    original_channels = Application.get_env(:zaq, :channels)
+
+    Application.put_env(:zaq, :channels, %{
+      mattermost: %{bridge: StubBridge},
+      email: %{bridge: StubBridge}
+    })
+
+    on_exit(fn ->
       if original_channels do
         Application.put_env(:zaq, :channels, original_channels)
       else

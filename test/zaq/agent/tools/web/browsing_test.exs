@@ -1,11 +1,11 @@
 defmodule Zaq.Agent.Tools.Web.BrowsingTest do
-  # async: false — mutates global env vars (AGENT_BROWSER_BIN,
-  # AGENT_BROWSER_ALLOWED_DOMAINS, AGENT_BROWSER_TIMEOUT_MS); parallel tests
-  # would collide on them.
-  use Zaq.DataCase, async: false
+  # This is the only async writer of AGENT_BROWSER_* variables. Budget readers
+  # and browser integration tests are synchronous and run after async tests.
+  use ExUnit.Case, async: true
 
   @moduletag capture_log: true
 
+  alias Ecto.Adapters.SQL.Sandbox
   alias Jido.Action.Schema
   alias Zaq.Agent.Tools.Web.Browsing
   alias Zaq.Contracts.Record
@@ -13,6 +13,11 @@ defmodule Zaq.Agent.Tools.Web.BrowsingTest do
   alias Zaq.System.Command
 
   setup do
+    # Browser policy reads run in the calling process; no background runtime or
+    # telemetry buffer needs access to this test's transaction.
+    owner = Sandbox.start_owner!(Zaq.Repo, shared: false)
+    on_exit(fn -> Sandbox.stop_owner(owner) end)
+
     assert {:ok, _} = Zaq.System.save_web_browsing_config(%{})
     prev_bin = System.get_env("AGENT_BROWSER_BIN")
     prev_domains = System.get_env("AGENT_BROWSER_ALLOWED_DOMAINS")
