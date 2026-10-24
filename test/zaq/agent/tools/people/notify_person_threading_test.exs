@@ -112,12 +112,18 @@ defmodule Zaq.Agent.Tools.People.NotifyPersonThreadingTest do
       key = one_of([string(:alphanumeric), member_of([:threading, :anchor, :provider])])
       scalar = one_of([string(:printable), integer(), float(), boolean(), constant(nil)])
 
+      # Repeated keys are valid generator input; map_of/3 can exhaust its
+      # uniqueness retries when the atom branch repeatedly selects the same keys.
+      metadata_map = fn value, max_length ->
+        list_of(tuple({key, value}), max_length: max_length) |> map(&Map.new/1)
+      end
+
       value =
         tree(scalar, fn child ->
-          one_of([list_of(child, max_length: 4), map_of(key, child, max_length: 4)])
+          one_of([list_of(child, max_length: 4), metadata_map.(child, 4)])
         end)
 
-      check all(metadata <- map_of(key, value, max_length: 5)) do
+      check all(metadata <- metadata_map.(value, 5)) do
         {:ok, receipt} = sent_result()
         assert {:ok, out} = run({:ok, %{receipt | thread_metadata: metadata}})
         assert out.thread_metadata === metadata
