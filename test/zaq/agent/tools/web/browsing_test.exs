@@ -47,7 +47,7 @@ defmodule Zaq.Agent.Tools.Web.BrowsingTest do
 
   defp argv({:ok, %{output: output}}), do: String.split(output, "\n", trim: true)
 
-  defp stub_screenshot_destination do
+  defp stub_screenshot_destination(before_capture \\ fn -> :ok end) do
     {:ok, folder} = Provenance.seal(%Record{id: "folder-1", kind: :folder, name: "example.org"})
 
     Mox.stub(Zaq.NodeRouterMock, :dispatch, fn %Zaq.Event{} = event ->
@@ -65,6 +65,7 @@ defmodule Zaq.Agent.Tools.Web.BrowsingTest do
           }
 
         :data_source_list_files ->
+          before_capture.()
           %{event | response: {:ok, %{records: [folder]}}}
 
         other ->
@@ -912,13 +913,22 @@ fi
 
     test "screenshot timeout is distinguished from a CLI failure" do
       fake_bin(~S(#!/bin/sh
-if [ "$1" = "get" ]; then echo 'https://example.org/'; else sleep 5; fi
+if [ "$1" = "get" ]; then echo 'https://example.org/'; else read -r line; fi
 ))
+
+      # Give URL discovery its normal budget, then time out only the capture.
+      # The capture blocks on stdin until Command closes the port on timeout.
+      System.delete_env("AGENT_BROWSER_TIMEOUT_MS")
+
+      context =
+        stub_screenshot_destination(fn ->
+          System.put_env("AGENT_BROWSER_TIMEOUT_MS", "50")
+        end)
 
       assert {:error, "Screenshot capture timed out"} =
                Browsing.run(
-                 %{command: "screenshot", timeout_ms: 800},
-                 stub_screenshot_destination()
+                 %{command: "screenshot"},
+                 context
                )
     end
 
