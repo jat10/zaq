@@ -6,21 +6,11 @@ defmodule Zaq.Agent.RequestInspectionTest do
   alias Zaq.Accounts.People
   alias Zaq.Agent.{Factory, RequestControl, ServerManager, StreamEvents}
   alias Zaq.Engine.Messages.Incoming
-  alias Zaq.TestSupport.{MultiAgentOpenAIStub, OpenAIStub}
+  alias Zaq.TestSupport.{AgentConfig, MultiAgentOpenAIStub, OpenAIStub}
 
   setup tags do
     if tags[:native] do
-      # Inspection and stale-runtime assertions need real shutdown, without
-      # waiting through the default grace period for completed request history.
-      previous = Application.fetch_env(:zaq, :agent_server_drain_timeout_ms)
-      Application.put_env(:zaq, :agent_server_drain_timeout_ms, 20)
-
-      on_exit(fn ->
-        case previous do
-          {:ok, timeout} -> Application.put_env(:zaq, :agent_server_drain_timeout_ms, timeout)
-          :error -> Application.delete_env(:zaq, :agent_server_drain_timeout_ms)
-        end
-      end)
+      Code.ensure_loaded!(AgentConfig)
 
       handler = fn _conn, body ->
         request = Jason.decode!(body)
@@ -59,7 +49,13 @@ defmodule Zaq.Agent.RequestInspectionTest do
         })
 
       scope = "native-inspection:#{Ecto.UUID.generate()}"
-      assert {:ok, server} = ServerManager.ensure_server(agent, scope, nil, actor: actor)
+
+      assert {:ok, server} =
+               ServerManager.ensure_server(agent, scope, nil,
+                 actor: actor,
+                 config: AgentConfig
+               )
+
       on_exit(fn -> ServerManager.stop_server(agent, scope) end)
       %{agent: agent, actor: actor, scope: scope, server: server, pid: GenServer.whereis(server)}
     else

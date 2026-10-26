@@ -588,6 +588,11 @@ without safe permission mutation support return `:unsupported`.
 ### Server Manager (`Zaq.Agent.ServerManager`)
 - Ensures server presence and reconciles tracked runtimes.
 - `ensure_server/4` requires `actor:` alongside configured agent, opaque server ID and optional `Jido.AI.Context`. Conversation-backed calls also provide `history_binding: %{conversation_id: id}`. Older arities return `{:error, :missing_execution_actor}`; they never create an anonymous runtime.
+- An explicit custom `config:` provider resolves `:agent_server_drain_timeout_ms`
+  through `Zaq.Config` when a runtime is created. The resolved timeout stays with
+  that incarnation through warm reuse and credential-triggered shutdown, and is
+  discarded when it is untracked. `Executor.run/2` forwards this option. Calls
+  without a custom provider retain the application-configured timeout at shutdown.
 - `Zaq.Identity.ExecutionActor` validates the shared contract: canonical `person.id`, or explicit `kind` (`bo_user`, `channel_subject`, `anonymous`, `system`) plus nonblank `subject`. JSON string-key actors normalize to the same identity. Conflicting/malformed declarations return `:invalid_execution_actor`, not a fallback identity. This validates identity shape, not authentication; only trusted origins may assert actors.
 - Executor passes one effective actor to runtime creation and request tool context. API rejects missing/invalid raw declarations before deriving permissions or invoking retrieval/Pipeline; permissive enrichment cannot discard conflicting aliases first.
 - Cold starts pass actor context to `Factory.runtime_config/2`, which synchronously asks

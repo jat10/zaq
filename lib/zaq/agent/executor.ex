@@ -160,6 +160,7 @@ defmodule Zaq.Agent.Executor do
   - `:person_id` — passed into the retrieval context for permission scoping
   - `:team_ids` — list of team IDs passed into the retrieval context
   - `:context` — a pre-built `Jido.AI.Context` used as the agent's cold-start context (e.g. `RunAgent`'s step turns); when present the server spawns with it and skips history loading. Only consumed on cold start
+  - `:config` — optional configuration provider for the runtime's cold-start drain timeout
   - `:event` — the dispatching `%Zaq.Event{}`; its validated actor binds the server lifecycle and is exposed to tools. Without an event actor, a trusted Incoming Person is required; missing identity never becomes anonymous implicitly
   - `:agent_module`, `:server_manager_module`, `:factory_module`, `:answering_module`, `:node_router` — injectable dependencies for testing
   """
@@ -498,6 +499,7 @@ defmodule Zaq.Agent.Executor do
 
   defp ensure_agent_server(server_manager_module, configured_agent, server_id, opts, actor) do
     server_manager_module.ensure_server(configured_agent, server_id, Keyword.get(opts, :context),
+      config: Keyword.get(opts, :config),
       actor: actor,
       execution_scope: Keyword.get(opts, :scope),
       canonical_execution: Keyword.get(opts, :canonical_execution, false),
