@@ -16,8 +16,11 @@ defmodule Zaq.Agent.ProviderModelsCatalogTest do
       if snapshot, do: LLMDB.Store.put!(snapshot, opts), else: LLMDB.Store.clear!()
     end)
 
-    ModelCatalogFixture.use_minimal_source!()
-    {:ok, _} = ZAQRouter.reload(["openai/gpt-oss-120b", "deepseek/deepseek-v4-pro"])
+    catalog_opts = ModelCatalogFixture.minimal_source_opts!()
+
+    {:ok, _} =
+      ZAQRouter.reload(["openai/gpt-oss-120b", "deepseek/deepseek-v4-pro"], catalog_opts)
+
     :ok
   end
 

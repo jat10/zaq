@@ -31,25 +31,31 @@ defmodule Zaq.Agent.Tools.RegistryModelCatalogTest do
   test "model_supports_tools? handles map and nil capabilities with custom catalog" do
     snapshot = LLMDB.Store.snapshot()
     opts = LLMDB.Store.last_opts()
+    source_before = Zaq.Config.get(:llm_db, :snapshot_source, :unset)
 
     on_exit(fn ->
       if snapshot, do: LLMDB.Store.put!(snapshot, opts), else: LLMDB.Store.clear!()
     end)
 
-    ModelCatalogFixture.use_minimal_source!()
+    catalog_opts = ModelCatalogFixture.minimal_source_opts!()
 
     {:ok, _snapshot} =
       LLMDB.load(
-        custom: %{
-          test_provider: [
-            name: "Test Provider",
-            models: %{
-              "tools_map" => %{capabilities: %{tools: %{enabled: true}}},
-              "tools_disabled" => %{capabilities: %{tools: %{enabled: false}}}
+        catalog_opts ++
+          [
+            custom: %{
+              test_provider: [
+                name: "Test Provider",
+                models: %{
+                  "tools_map" => %{capabilities: %{tools: %{enabled: true}}},
+                  "tools_disabled" => %{capabilities: %{tools: %{enabled: false}}}
+                }
+              ]
             }
           ]
-        }
       )
+
+    assert Zaq.Config.get(:llm_db, :snapshot_source, :unset) == source_before
 
     assert Registry.model_supports_tools?("test_provider", "tools_map")
     assert Registry.model_tool_capability("test_provider", "tools_map") == :supported

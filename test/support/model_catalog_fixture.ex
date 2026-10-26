@@ -1,28 +1,19 @@
 defmodule Zaq.TestSupport.ModelCatalogFixture do
   @moduledoc """
-  Selects a small valid base catalog for synchronous model-overlay tests.
+  Builds a small valid base catalog for synchronous model-overlay tests.
 
-  The real loader still parses and validates the snapshot. This changes the
-  global snapshot source, so callers must be synchronous and restore any catalog
-  they load. The source setting and temporary file are restored on exit.
+  The real loader still parses and validates the snapshot. The temporary file is
+  removed on exit; callers pass the returned options to the loader and restore
+  any shared catalog they load.
   """
 
   import ExUnit.Callbacks, only: [on_exit: 1]
 
-  def use_minimal_source! do
+  def minimal_source_opts! do
     {:ok, provider} = LLMDB.provider(:openai)
     {:ok, model} = LLMDB.model(:openai, "gpt-4.1-mini")
     path = Path.join(System.tmp_dir!(), "zaq-catalog-#{Ecto.UUID.generate()}.json")
-    previous = Application.fetch_env(:llm_db, :snapshot_source)
-
-    on_exit(fn ->
-      case previous do
-        {:ok, source} -> Application.put_env(:llm_db, :snapshot_source, source)
-        :error -> Application.delete_env(:llm_db, :snapshot_source)
-      end
-
-      File.rm(path)
-    end)
+    on_exit(fn -> File.rm(path) end)
 
     LLMDB.Snapshot.write!(
       path,
@@ -35,6 +26,6 @@ defmodule Zaq.TestSupport.ModelCatalogFixture do
       })
     )
 
-    Application.put_env(:llm_db, :snapshot_source, {:file, path})
+    [snapshot_source: {:file, path}]
   end
 end

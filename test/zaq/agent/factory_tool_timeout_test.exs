@@ -1,7 +1,5 @@
 defmodule Zaq.Agent.FactoryToolTimeoutTest do
-  # Browsing's budget reads AGENT_BROWSER_TIMEOUT_MS. Run after BrowsingTest
-  # restores that environment variable at the end of the async phase.
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
   use ExUnitProperties
 
   alias Jido.Agent.Strategy.State

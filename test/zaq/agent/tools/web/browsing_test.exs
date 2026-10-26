@@ -1,11 +1,11 @@
 defmodule Zaq.Agent.Tools.Web.BrowsingTest do
-  # This is the only async writer of AGENT_BROWSER_* variables. Budget readers
-  # and browser integration tests are synchronous and run after async tests.
-  use ExUnit.Case, async: true
+  # async: false — mutates global env vars (AGENT_BROWSER_BIN,
+  # AGENT_BROWSER_ALLOWED_DOMAINS, AGENT_BROWSER_TIMEOUT_MS); parallel tests
+  # would collide on them.
+  use Zaq.DataCase, async: false
 
   @moduletag capture_log: true
 
-  alias Ecto.Adapters.SQL.Sandbox
   alias Jido.Action.Schema
   alias Zaq.Agent.Tools.Web.Browsing
   alias Zaq.Contracts.Record
@@ -13,11 +13,6 @@ defmodule Zaq.Agent.Tools.Web.BrowsingTest do
   alias Zaq.System.Command
 
   setup do
-    # Browser policy reads run in the calling process; no background runtime or
-    # telemetry buffer needs access to this test's transaction.
-    owner = Sandbox.start_owner!(Zaq.Repo, shared: false)
-    on_exit(fn -> Sandbox.stop_owner(owner) end)
-
     assert {:ok, _} = Zaq.System.save_web_browsing_config(%{})
     prev_bin = System.get_env("AGENT_BROWSER_BIN")
     prev_domains = System.get_env("AGENT_BROWSER_ALLOWED_DOMAINS")
@@ -52,7 +47,7 @@ defmodule Zaq.Agent.Tools.Web.BrowsingTest do
 
   defp argv({:ok, %{output: output}}), do: String.split(output, "\n", trim: true)
 
-  defp stub_screenshot_destination(before_capture \\ fn -> :ok end) do
+  defp stub_screenshot_destination do
     {:ok, folder} = Provenance.seal(%Record{id: "folder-1", kind: :folder, name: "example.org"})
 
     Mox.stub(Zaq.NodeRouterMock, :dispatch, fn %Zaq.Event{} = event ->
@@ -70,7 +65,6 @@ defmodule Zaq.Agent.Tools.Web.BrowsingTest do
           }
 
         :data_source_list_files ->
-          before_capture.()
           %{event | response: {:ok, %{records: [folder]}}}
 
         other ->
@@ -918,22 +912,13 @@ fi
 
     test "screenshot timeout is distinguished from a CLI failure" do
       fake_bin(~S(#!/bin/sh
-if [ "$1" = "get" ]; then echo 'https://example.org/'; else read -r line; fi
+if [ "$1" = "get" ]; then echo 'https://example.org/'; else sleep 5; fi
 ))
-
-      # Give URL discovery its normal budget, then time out only the capture.
-      # The capture blocks on stdin until Command closes the port on timeout.
-      System.delete_env("AGENT_BROWSER_TIMEOUT_MS")
-
-      context =
-        stub_screenshot_destination(fn ->
-          System.put_env("AGENT_BROWSER_TIMEOUT_MS", "50")
-        end)
 
       assert {:error, "Screenshot capture timed out"} =
                Browsing.run(
-                 %{command: "screenshot"},
-                 context
+                 %{command: "screenshot", timeout_ms: 800},
+                 stub_screenshot_destination()
                )
     end
 

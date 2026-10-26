@@ -1,6 +1,5 @@
 defmodule Zaq.Engine.PeopleProfileGatewayTest do
-  # Clearing seeded Everyone grants conflicts with concurrent permission users.
-  use Zaq.DataCase, async: false
+  use Zaq.DataCase, async: true
   alias Zaq.Accounts.{People, PeopleAuth, PeoplePermissionGrant, PeoplePermissions, PersonSession}
   alias Zaq.Engine.{Api, Events, PeopleAuthGateway}
 
