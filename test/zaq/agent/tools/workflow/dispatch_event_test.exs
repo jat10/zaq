@@ -1,8 +1,6 @@
 defmodule Zaq.Agent.Tools.Workflow.DispatchEventTest do
   use ExUnit.Case, async: true
 
-  require Logger
-
   alias Zaq.Agent.Tools.Workflow.DispatchEvent
   alias Zaq.Event
 

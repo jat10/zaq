@@ -8,7 +8,6 @@ defmodule Zaq.AgentTest do
   alias Zaq.Agent.ConfiguredAgent
   alias Zaq.Agent.MCP
   alias Zaq.Agent.ProviderSpec
-  alias Zaq.Agent.ServerManager
   alias Zaq.Channels.RetrievalChannel
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.IncomingMessageRouting

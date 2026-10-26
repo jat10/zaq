@@ -58,14 +58,17 @@ defmodule Zaq.Engine.IncomingMessageRoutingTest do
       scope = Map.take(attrs, [:channel_config_id, :retrieval_channel_id])
 
       scope =
-        if scope == %{},
-          do: scope,
-          else:
+        case Map.fetch(scope, :retrieval_channel_id) do
+          :error ->
+            scope
+
+          {:ok, retrieval_channel_id} ->
             Map.put(
               scope,
               :channel_config_id,
-              Repo.get!(RetrievalChannel, Map.fetch!(attrs, :retrieval_channel_id)).channel_config_id
+              Repo.get!(RetrievalChannel, retrieval_channel_id).channel_config_id
             )
+        end
 
       {:ok, winner} =
         IncomingMessageRouting.upsert_rule(Map.put(scope, :person_id, survivor.id), %{

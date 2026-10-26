@@ -25,6 +25,7 @@ defmodule Zaq.MixProject do
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
       listeners: [Phoenix.CodeReloader],
       test_coverage: [tool: ExCoveralls],
+      test_ignore_filters: [~r"^test/repro/.*\.exs$"],
       docs: docs()
     ]
   end
