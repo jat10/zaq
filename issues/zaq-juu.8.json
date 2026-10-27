@@ -25,11 +25,15 @@
     {
       "text": "Independent Sol High pr-review verdict APPROVE, zero findings, full feature against365b3cb84 plus two final docs edits reviewed. Reviewed23files with7productionfiles424changedlines; Action reuse, trust/materialization, provider outcomes/no-resend, confirmations and real-provider concurrency paths verified. No test behavior changes. Started required coverage-upper handoff with Sol Medium; owner requires fresh mix coveralls.json timeout600000 before mix coverup. Final precommit not yet run.",
       "timestamp": "2026-10-27T17:08:48Z"
+    },
+    {
+      "text": "Coverage-upper first fresh mix coveralls.json run invalid: 5 environment failures from missing local .venv (Runner selected global python3; markitdown DOCX/XLSX/PPTX and opendataloader_pdf unavailable). Stopped only owned beam coverage PID after failures; SIGTERM returned 0 without completed ExUnit report, so report is rejected and mix coverup was not run. Full invalid-run log /tmp/zaq-juu-coverage-first-aborted.log. Read docs/dev-setup.md Python prerequisites; compatible sibling .venv has identical requirements and pip check passes. Reusing it read-only through ignored local .venv symlink; rerunning fresh coverage with required 600000ms timeout. No source or test edits.",
+      "timestamp": "2026-10-27T17:12:22Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.8] Complete docs review coverage handoff and final validation",
   "type": "task",
-  "updated_at": "2026-10-27T17:08:48Z"
+  "updated_at": "2026-10-27T17:12:22Z"
 }
