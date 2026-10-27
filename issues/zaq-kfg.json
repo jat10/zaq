@@ -10,11 +10,15 @@
     {
       "text": "Focused unchanged test verification on feature branch: mix test test/zaq/agent/tool_steps_integration_test.exs:37 --seed783897 passed1test in2.3s, exit0. Log /tmp/zaq-juu-ci-race-targeted.log. This does not constitute baseline execution reproduction and does not remove the independently traced scheduling race. No test edits.",
       "timestamp": "2026-10-27T18:09:45Z"
+    },
+    {
+      "text": "Fork native CI retry also failed the same worker-exit synchronization wait with seed914357 max_cases8:11707/11708 passed, 900.1s total. Log /tmp/zaq-juu-ci-native-retry-failed.log. No more blind full CI retries planned; proposed observed-running-state synchronization repair remains approval-gated.",
+      "timestamp": "2026-10-27T21:10:42Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kfg] Synchronize tool-step worker-exit test with observed running states",
   "type": "bug",
-  "updated_at": "2026-10-27T18:09:45Z"
+  "updated_at": "2026-10-27T21:10:42Z"
 }
