@@ -37,11 +37,15 @@
     {
       "text": "Fork CI complete except native Postgres: all three browser suites, real-provider delivery, ParadeDB, docs, static/security/title checks passed. Native11707/11708 checks passed; worker-exit test synchronization race traced in unchanged test/Agent code (not baseline execution reproduced). Followupzaq-kfg records exact evidence and proposed existing-test change requiring approval. Localcoverage also recorded unrelated generator debtzaq-6y2; fresh retry active. No existing tests edited.",
       "timestamp": "2026-10-27T18:06:57Z"
+    },
+    {
+      "text": "Coverage-upper final retry blocked: fresh mix coveralls.json launched via native Context Mode with configured600000ms child timeout and robust detached exit marker to avoid MCP300s RPC cap. Completion marker /tmp/zaq-juu-coverage-exit.json reports status:null, signal:SIGKILL, error:ETIMEDOUT (spawnSync mix ETIMEDOUT), finished_at2026-10-27T18:07:19.578Z; elapsed_ms2753408 is anomalous wall time (~45min, potentially host suspend), not successful execution. No failure headers in final log but no completed ExUnit summary/report, so no mix coverup run and no stale coverage used. Log /tmp/zaq-juu-coverage.log. Seven changed production files cannot receive fresh accepted coverage percentages/gap assessment until a successful bounded report exists. No source/test edits or assertion changes, no reduced thresholds/skips, no commits/push/closures, no final precommit. Root owns Mix after worker stopped. Prior independent failure reproduced with seed890648; existing generator debt zaq-6y2 tracks it. Further full retry not authorized in current handoff.",
+      "timestamp": "2026-10-27T18:08:09Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.8] Complete docs review coverage handoff and final validation",
   "type": "task",
-  "updated_at": "2026-10-27T18:06:57Z"
+  "updated_at": "2026-10-27T18:08:09Z"
 }
