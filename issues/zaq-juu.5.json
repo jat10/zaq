@@ -11,9 +11,15 @@
   "id": "zaq-juu.5",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Module-context / live Action reuse before implementation: DeliveryConfirmation is Channels-to-Engine orchestration/projection only, public record/3 entry. Api.deliver_outgoing invokes one bridge send, normalizes result then record; confirmed results build fixed Engine record_delivery_confirmation Event, preserve receipt and allowlisted canonical metadata IDs; error/unconfirmed passthrough. Engine.Api delegates History.Delivery.capture: optional history association, no provider operation. HistoryIngress.record_confirmation_transaction serializes identity, fingerprints content/receipt scope and reuses matching canonical message; HistoryDeliveryWorker max_attempts10/unique job retries ID-only association and never sends. Source bytes remain source-owned, prepared in-memory buffers remain scoped to bridge consumer; confirmation event should retain no attachment Records/handles/bytes/paths. Module state: no persistent state; source provider owns accepted upload/post, Engine owns confirmation/history rows and association jobs. Risk: confirmed send followed by recording outage must remain confirmed to avoid encouragement of duplicate sends. Existing zaq-9th exception/exit tests already cover unchanged fallback branches and are reused verbatim, unrelated issue stays open. Existing .3 tests already prove real adapter upload/post failures, bare/Req timeout no false confirmation, status/callback errors/exits no second upload/send, missing provider ID uncertainty. Existing .4 tests prove no send after preparation failure and SMTP error no confirmed receipt. No duplicate scenarios planned. New tests before production: property strips arbitrary Record attachment collection while preserving original Outgoing, receipt/routing/body and existing ID allowlist; unconfirmed/error result never dispatches Engine; real default Mattermost HTTP + API recording-error integration demonstrates one upload/post per caller submission and no automatic resend, repeating the same Event intentionally results in another send. Action discovery from .2/.3 unchanged: reuse Materialization/provider clients and existing record/3/history capture operation, extend local projection only. No new Action, receipt module, lifecycle/retry/dedup state or tool exposure. Preliminary retry audit: bridge/API/NodeRouter execute one send per delivery request, Agent schedules a single Channels return hop; notification dispatcher falls back to next configured channel only on error (current notification Outgoing has empty attachments); inbound Jido dedupe is distinct from outgoing transport; Engine association idempotency is not outbound dedupe. Existing transport retries will remain untouched and audited separately. Applicable policy files unchanged since .3/.4; Serena activation succeeded but overview stalled \u003e30s, cancelled and bounded fallback used.",
+      "timestamp": "2026-10-27T13:14:01Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.5] Preserve confirmation safety and delivery lifecycle",
   "type": "task",
-  "updated_at": "2026-10-27T13:10:30Z"
+  "updated_at": "2026-10-27T13:14:01Z"
 }
