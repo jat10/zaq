@@ -27,11 +27,15 @@
     {
       "text": "Real SMTP milestone: mix test test/zaq/channels/email_file_delivery_integration_test.exs --include integration --max-cases2 with ZAQ_FILE_DELIVERY_SERVICES=/tmp/zaq-juu7-runtime.json passed3 tests (selected signed file, empty control, two concurrent SMTP journeys),1.7s. Actual Mailpitv1.32.0 SMTP accepted via gen_smtp; websocket new-message event used for synchronization; raw MIME downloaded and Mail parser decoded exact non-UTF8 bytes/name/MIME, Message-ID/In-Reply-To, sender/to/cc and receipt. Source datasource/ACL/materialization/NodeRouter path was real. Owned file cleanup isolation passed and only each accepted Mailpit message deleted. New fixture corrections: SMTP url/token required nonnull metadata fields, and port follows existing string settings contract; no production defect/change. Existing focused regressions passed171 total (6 properties,165 tests),45.5s. Logs /tmp/zaq-juu-7-smtp-real.log and /tmp/zaq-juu-7-regressions.log. Parent PG16/Mailpit started privately; Mattermost image still pending Docker finalization. Compose pins PG/Mailpit supplied RepoDigests, MM placeholder not final; full real-provider suite and actual disposable script run still required before completion/commit.",
       "timestamp": "2026-10-27T15:03:27Z"
+    },
+    {
+      "text": "Concurrency proof strengthened after initial SMTP pass: each task reports monotonic start immediately before actual NodeRouter send and timestamp when its real confirmed receipt returns; test asserts max(send starts)\u003cmin(acceptance returns), independently of subsequent readback barrier. Thus concurrent send-call intervals themselves overlap; acceptance/readback barrier additionally keeps both owned resources live before cleanup. Real SMTP module re-ran green3 tests in1.3s with this stronger assertion. Shared helper/new modules self-review finds no Application/System env setters, global Mox, sleeps, fake servers or Req.Test. Full source/helper changes still test-only, no production changes. Current remaining blocker is real Mattermost image provisioning; parent owns Docker investigation, no duplicate pulls or user-resource changes by this agent. Required MM/mixed run, pinned MM digest and end-to-end provisioning-script execution remain outstanding; issue not complete/uncommitted.",
+      "timestamp": "2026-10-27T15:11:31Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.7] Implement both real-provider delivery E2Es and async isolation",
   "type": "task",
-  "updated_at": "2026-10-27T15:03:27Z"
+  "updated_at": "2026-10-27T15:11:31Z"
 }
