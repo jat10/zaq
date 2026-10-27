@@ -41,11 +41,15 @@
     {
       "text": "Coverage-upper final retry blocked: fresh mix coveralls.json launched via native Context Mode with configured600000ms child timeout and robust detached exit marker to avoid MCP300s RPC cap. Completion marker /tmp/zaq-juu-coverage-exit.json reports status:null, signal:SIGKILL, error:ETIMEDOUT (spawnSync mix ETIMEDOUT), finished_at2026-10-27T18:07:19.578Z; elapsed_ms2753408 is anomalous wall time (~45min, potentially host suspend), not successful execution. No failure headers in final log but no completed ExUnit summary/report, so no mix coverup run and no stale coverage used. Log /tmp/zaq-juu-coverage.log. Seven changed production files cannot receive fresh accepted coverage percentages/gap assessment until a successful bounded report exists. No source/test edits or assertion changes, no reduced thresholds/skips, no commits/push/closures, no final precommit. Root owns Mix after worker stopped. Prior independent failure reproduced with seed890648; existing generator debt zaq-6y2 tracks it. Further full retry not authorized in current handoff.",
       "timestamp": "2026-10-27T18:08:09Z"
+    },
+    {
+      "text": "Coverage handoff stopped without accepted report; latest600000ms-configured attempt timed out with no completed summary. Requested explicit user exception for one20-minute fresh run because native CI suite took910s; current approval pending. Final precommit and human final approval not requested. Documentation edits remain uncommitted while issue incomplete. ForkPR6 body updated with actual checks, retry and followup evidence. Existing-test fixes remain unapproved/unmodified.",
+      "timestamp": "2026-10-27T18:08:58Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.8] Complete docs review coverage handoff and final validation",
   "type": "task",
-  "updated_at": "2026-10-27T18:08:09Z"
+  "updated_at": "2026-10-27T18:08:58Z"
 }
