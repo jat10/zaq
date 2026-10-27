@@ -23,11 +23,15 @@
     {
       "text": "Implementation progress: authored both requested modules with7 real-provider scenarios plus shared test-only ChannelFileDelivery helper, uniquely scoped disposable Compose/bootstrap script and dedicated CI job. No production changes. Helper uses actual datasource get_file Events for two physical files per journey, signed lazy Records/current person grants, real NodeRouter/Materialization/provider clients; only selected Record travels. Recipient Mattermost token downloads file from final post; actual Mailpit websocket new-message acceptance precedes raw MIME decode/readback. Private DataCase owners, task PID Sandbox allowances before release, both external receipts must exist before readback/cleanup release; exact-byte checks and successive owned-root cleanup verify no crossed resources. No env mutation, Mox, provider/dispatch mocks, source/shared defaults or fixed journey sleeps. Only bounded sleep is external bootstrap readiness. All7 tests compile and are excluded under normal tag selection; not counted as real-provider execution. mix q passes after intentional cleanup reduction result asserted, shell syntax/Python AST/docker compose config/diff checks pass. Parent external provisioning still pulling Mattermost/Postgres images, Mailpit image available; Docker stargz finalization slow. Live receipt runs remain mandatory and no commit/completion yet. Compose image placeholders will be pinned to reviewed RepoDigests once resolved. Existing browser E2E docs and zaq-o9d simulated fixtures reviewed; no Agent/LLM/IMAP claim or ServerManager dependency.",
       "timestamp": "2026-10-27T14:58:56Z"
+    },
+    {
+      "text": "Real SMTP milestone: mix test test/zaq/channels/email_file_delivery_integration_test.exs --include integration --max-cases2 with ZAQ_FILE_DELIVERY_SERVICES=/tmp/zaq-juu7-runtime.json passed3 tests (selected signed file, empty control, two concurrent SMTP journeys),1.7s. Actual Mailpitv1.32.0 SMTP accepted via gen_smtp; websocket new-message event used for synchronization; raw MIME downloaded and Mail parser decoded exact non-UTF8 bytes/name/MIME, Message-ID/In-Reply-To, sender/to/cc and receipt. Source datasource/ACL/materialization/NodeRouter path was real. Owned file cleanup isolation passed and only each accepted Mailpit message deleted. New fixture corrections: SMTP url/token required nonnull metadata fields, and port follows existing string settings contract; no production defect/change. Existing focused regressions passed171 total (6 properties,165 tests),45.5s. Logs /tmp/zaq-juu-7-smtp-real.log and /tmp/zaq-juu-7-regressions.log. Parent PG16/Mailpit started privately; Mattermost image still pending Docker finalization. Compose pins PG/Mailpit supplied RepoDigests, MM placeholder not final; full real-provider suite and actual disposable script run still required before completion/commit.",
+      "timestamp": "2026-10-27T15:03:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.7] Implement both real-provider delivery E2Es and async isolation",
   "type": "task",
-  "updated_at": "2026-10-27T14:58:56Z"
+  "updated_at": "2026-10-27T15:03:27Z"
 }
