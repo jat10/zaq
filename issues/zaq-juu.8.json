@@ -33,11 +33,15 @@
     {
       "text": "Fresh second coverage run uses repaired ignored local .venv, with no Python conversion failures. Native Context Mode was invoked timeout600000 but MCP host returned timeout after300s while owned beam94802 continued running. This run subsequently reports unrelated property failure at test/zaq/agent/tools/people/notify_person_threading_test.exs:111 (NotifyPersonThreadingTest output schema opaque metadata): StreamData.TooManyDuplicatesError for metadata keys [:provider,:threading,:anchor], ExUnit seed890648. No generator/test behavior edits authorized or performed. Run/report invalid; mix coverup not run. Root notified; awaiting final execution/timeout status before handoff.",
       "timestamp": "2026-10-27T17:20:04Z"
+    },
+    {
+      "text": "Fork CI complete except native Postgres: all three browser suites, real-provider delivery, ParadeDB, docs, static/security/title checks passed. Native11707/11708 checks passed; worker-exit test synchronization race traced in unchanged test/Agent code (not baseline execution reproduced). Followupzaq-kfg records exact evidence and proposed existing-test change requiring approval. Localcoverage also recorded unrelated generator debtzaq-6y2; fresh retry active. No existing tests edited.",
+      "timestamp": "2026-10-27T18:06:57Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.8] Complete docs review coverage handoff and final validation",
   "type": "task",
-  "updated_at": "2026-10-27T17:20:04Z"
+  "updated_at": "2026-10-27T18:06:57Z"
 }
