@@ -11,9 +11,15 @@
   "id": "zaq-juu.7",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Implementation progress through .4 complete/pushed; .5 in progress and .6 human feature approval remains required before E2E authoring. Docker Desktop installed but daemon stopped when checked; parent launched existing Docker app to prepare future disposable-provider test prerequisite, without installing software or modifying host settings. Production changed-line audit through .4 is 418 additions+deletions across six planned files, below \u003c1500 target; DeliveryConfirmation seventh file remains .5.",
+      "timestamp": "2026-10-27T13:11:17Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-juu.7] Implement both real-provider delivery E2Es and async isolation",
   "type": "task",
-  "updated_at": "2026-10-27T11:53:41Z"
+  "updated_at": "2026-10-27T13:11:17Z"
 }
