@@ -15,11 +15,15 @@
     {
       "text": "Implementation progress through .4 complete/pushed; .5 in progress and .6 human feature approval remains required before E2E authoring. Docker Desktop installed but daemon stopped when checked; parent launched existing Docker app to prepare future disposable-provider test prerequisite, without installing software or modifying host settings. Production changed-line audit through .4 is 418 additions+deletions across six planned files, below \u003c1500 target; DeliveryConfirmation seventh file remains .5.",
       "timestamp": "2026-10-27T13:11:17Z"
+    },
+    {
+      "text": "Pre-authoring isolation audit (test-isolation-audit skill): new modules, baseline0 tests; existing Agent disk suite is synchronous due ServerManager startup DB reads, but this Channels-only boundary never reaches it. Existing MattermostHistoryFixture is a simulated HTTP server, unsuitable real receipt; DiskConfigFixture.get_or_create! upserts shared default, unsuitable parallel fixture. Proposed resources: persisted People/config/grants owned per DataCase private Sandbox; filesystem namespace/unique volume per journey under configured storage base, cleanup only own root; actual Mattermost sender/recipient/team/private channel per journey with owned IDs; unique Mailpit recipient/CC/from/message IDs, websocket connection per journey and deletion only own accepted message. Production config/adapter registry are shared immutable reads, never mutated; no global Mox/ETS/names/env setters/default connectors. Datasource get_file and outgoing Event use real NodeRouter with explicit config IDs and trusted actor. Dependencies resolved per Event (identity/config), per persisted connector (provider credentials), per call (source handler), direct production Jido/Mailer clients. Test setup creates sources and grants, datasource API returns two lazy signed Records; selected one goes through actual materialization/provider; recipient readback compares exact bytes/name/MIME, thread/audience/receipt; source bytes remain intact before owned fixture cleanup. Tasks start behind an explicit message gate after SQL Sandbox.allow(Repo,self(),pid). Both actual external acceptance receipts must be observed while both journeys remain live before readback/cleanup is released, proving overlapping resource lifetimes without fake transport, production observation hook or sleep. No shared Sandbox mode; DB access local same BEAM through real role routing. Readiness: ready for focused async experiment; external provider provisioning pending disposable containers/images. Action reuse: reuse datasource/permission APIs, Channels Events/NodeRouter/Materialization/Jido/Mailer; prior module-context maps remain valid. New provider bootstrap/readback helpers are test-only fixture administration against actual servers, no product Action or alternate upload path. No production edits planned. Human approval .6 recorded and closed by parent authorizes these exact two real-provider E2E modules. Infrastructure owned by parent in parallel; no user containers touched.",
+      "timestamp": "2026-10-27T14:54:21Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.7] Implement both real-provider delivery E2Es and async isolation",
   "type": "task",
-  "updated_at": "2026-10-27T14:48:11Z"
+  "updated_at": "2026-10-27T14:54:21Z"
 }
