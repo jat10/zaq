@@ -25,11 +25,15 @@
     {
       "text": "Reviewed and integrated the exact two-file implementation onto feat/channel-files, left uncommitted. mix q passed in isolated worktree (hook verification, docs/compile, Credo; no issues). Integrated branch pure suite passed: MIX_ENV=test mix run --no-start -e ExUnit.start plus outgoing_test.exs and incoming_identifier_property_test.exs: 10 passed (3 properties, 7 tests); log /tmp/zaq-juu-1-branch-pure-green.log. git diff --check passed. Existing behavioral assertions unchanged; no unrelated files integrated. Normal mix test remains blocked by Postgres.app connection approval requested from user; no commit, push or issue closure until required isolated test gate passes. Dependent zaq-juu.2 remains blocked. Coverage handoff/final precommit are later gates, not run prematurely.",
       "timestamp": "2026-10-27T12:17:08Z"
+    },
+    {
+      "text": "Database blocker cleared on retry without changing Postgres.app permissions/configuration: fresh psql SELECT 1 succeeded and normal mix test outgoing_test.exs plus incoming_identifier_property_test.exs passed (10 cases: 3 properties, 7 tests). Root feat/channel-files mix q passed, hooks.verify 8 events, Credo no issues; git diff --check passed. Prior log proves earlier Postgres.app trust-authentication dialog process timeout, but visible popup was not established. Proceeding with authorized commit/push then issue closure after remote hash verification.",
+      "timestamp": "2026-10-27T12:30:00Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.1] Add Outgoing attachment contract",
   "type": "task",
-  "updated_at": "2026-10-27T12:17:08Z"
+  "updated_at": "2026-10-27T12:30:00Z"
 }
