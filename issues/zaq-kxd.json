@@ -1,0 +1,22 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-o9d.4"
+  ],
+  "created": "2026-10-21T10:00:43Z",
+  "description": "## Reproducer and affected execution path\nDiscovered while implementing zaq-o9d.4, a test-only Telegram driver in epic zaq-o9d.\nFile: test/zaq/channels/integration/providers/telegram_test.exs, test \"mention-required policy admits an actual native group mention\".\nNative webhook: supergroup chat -100123, sender 456, text \"@zaq Mention question\", entities [%{\"type\" =\u003e \"mention\", \"offset\" =\u003e 0, \"length\" =\u003e 4}]. Saved connector settings set bot_name \"zaq\", bot_user_id \"999\", room_reply_policy \"mention_required\". The real Jido.Chat.Telegram.Adapter, JidoChatBridge/State, CommunicationBridge, NodeRouter, Engine and local LLM endpoint are used; no internal modules are mocked.\n\n## Expected and observed\nExpected: a valid native bot mention is admitted for the configured conversation-enabled agent and produces the normal provider reply/confirmed shared transcript.\nObserved: webhook is acknowledged, the message is captured as passive history, and no ExecutionRecord/LLM request/final reply is created.\nThe same driver successfully exercises direct messages and group mentions with default reply policy. No runtime sleeps or synthetic normalized mention flag is used.\n\n## Source-backed diagnosis\ndeps/jido_chat_telegram/lib/jido/chat/telegram/adapter.ex transform_message/1 constructs Jido.Chat.Incoming without deriving was_mentioned/mentions from the native message; Incoming defaults was_mentioned to false.\ndeps/jido_chat/lib/jido/chat/handler_dispatch.ex mentioned?/2 recognizes \"@zaq\" text and invokes the mention handler.\nlib/zaq/channels/jido_chat_bridge.ex handle_mention_event/3 forwards the unchanged Incoming. handle_message_event/4's mention_required gate then rejects it because incoming.was_mentioned remains false.\nNormalization/admission ownership needs a deliberate fix; do not modify a fake to synthesize the missing production evidence.\n\n## Validation evidence\nmix test test/zaq/channels/integration test/zaq/channels/telegram_history_delivery_test.exs test/zaq/channels/telegram_markdown_delivery_test.exs: 38 tests + 1 property, 1 failure, solely this new policy reproducer. Existing Telegram tests and new default direct/shared paths pass. The reproducer now fails on missing prepared execution immediately after synchronous ingress rather than waiting for an LLM timeout.\n\n## Authorization and scope\nThis is a recorded blocker, not authorization to change production. The user explicitly restricted epic zaq-o9d to test/** plus the named Mix-task/skill tooling exceptions. Application modules, dependency source/pins/config are outside that scope.\nA production fix needs explicit user authorization as separate scoped work. Keep the reproducer and do not skip it, weaken it, unregister Telegram, inject was_mentioned into the fake native payload, or patch production under the test-infrastructure ticket. Preserve identity/permission defaults.\nRead AGENTS.md, docs/testing-approach.md, docs/services/channels.md and docs/agent-tools.md before diagnosis/fix. Cross-provider regression validation is required after an authorized correction.",
+  "id": "zaq-kxd",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Final validation snapshot: canonical mix q passes. Combined current integration + existing Mattermost and Telegram delivery/history regressions run 75 tests + 2 properties, with exactly the two new Telegram reproducer failures (zaq-kxd and zaq-imv). Existing tests pass. This bug blocks zaq-o9d.4. No application or dependency files were changed; a fix requires separate explicit user authorization.",
+      "timestamp": "2026-10-21T10:07:21Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-kxd] Telegram mention_required drops native group bot mentions before agent admission",
+  "type": "bug",
+  "updated_at": "2026-10-21T10:07:21Z"
+}

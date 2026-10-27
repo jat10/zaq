@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-0l7.2"
+  ],
+  "blocks": [
+    "zaq-0l7.4"
+  ],
+  "closed_at": "2026-10-11T11:52:16Z",
+  "created": "2026-10-11T09:54:39Z",
+  "description": "Files:\n- lib/zaq/channels/jido_chat_bridge.ex\n- lib/zaq/channels/bridge_supervisor.ex\n- lib/zaq/channels/supervisor.ex\n- lib/zaq/channels/connector_runtime.ex\n- reviewed upstream worker fix or documented local runtime owner\n\nFunctional specifications:\nRecognize linked_device listener mode. Start shared Amarula infrastructure under current static supervisor and accounts under supported runtime APIs. Stop actual account connection or safely adopt and rebind its sink. Handle crashes/kill, partial startup rollback and all bootstrap/restart paths; terminate callback alone is insufficient. Disable A without affecting B. Keep credentials on disable; forgetting device is a separate explicit operation. Do not leave final fixes as edits in deps. Load paired state from the custom credential-backed storage adapter; connection status requires successful authentication, not merely presence of stored state.\nArchitecture refinement: JidoChatBridge delegates to provider-neutral lifecycle contract. Provider implementation owns Amarula start/stop/adoption/rebind. Common lifecycle must not depend on Amarula-specific process or QR payload shapes.\nUser requirement: disable channel through existing channel lifecycle, preserving other profiles. Restart must clear runtime/in-memory state and restore session from persisted storage without new QR. Include full application/BEAM process restart validation rather than relying only on a worker restart; external persistent store retained.\n\nTests before implementation:\n- Start A/B then stop/restart A while B works\n- No already_running or stale sink after worker crash/kill\n- Partial startup cleanup\n- Idempotent stop\n- Application restart and duplicate start\n- Exercise shared contract with a minimal fake second provider; keep WhatsApp-specific expectations in provider contract tests\n\nBranches validated:\n- start\n- stop\n- restart\n- crash\n- kill\n- partial failure\n- bootstrap\n- two accounts\n\nDocumentation:\n- docs/services/channels.md\n- runtime ownership module docs\n\nAction reuse assessment:\nExtend JidoChatBridge, BridgeSupervisor and ConnectorRuntime start/stop boundaries; local process ownership, no agent Action. Input resolved connector, output actual lifecycle outcome/error. Reuse explicit runtime Events and preserve credentials. Inspect and reuse existing device-connection behavior before adding shared modules; document any missing contract as a prerequisite. No duplicate provider-specific credential store or pairing framework.\n\nValidation:\nFollow docs/WORKFLOW_AGENT.md validation lifecycle; tests before implementation, focused checks per issue, final gate before approval. No live account connection or send without scoped authorization.\n\nMocking:\nExternal Amarula transport only; use real internal boundaries and isolated DB/process/storage fixtures; inject config and clock without global mutation.\n\nPolicy:\nRecheck module responsibilities, docs/services/channels.md, Action reuse, system-config and testing guidance before coding. BO calls use explicit NodeRouter Events; nil actor never grants permission.",
+  "id": "zaq-0l7.3",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Completed/pushed 01015912b. Shared owner+adapter decoder runtime, provider infrastructure registry, rest-for-one recovery, safe Amarula adoption after untrappable owner kill, decoder reattachment and normal-stop cleanup. Existing bridge API starts/disables runtime; error startup rolls back owner. Verified real upstream Jido listener with fake external connection: independent profiles, kill/restart, duplicate-owner rejection and failed decoder cleanup. mix q passed; supervisor/shared bridge/config suite 228 tests+1 property and final five lifecycle tests passed. Global ownership covers connected nodes; network partitions across clusters sharing credentials are explicitly not fenced and documented. Historical sync remains off through shared config.",
+      "timestamp": "2026-10-11T11:52:15Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.3] Implement shared linked-device lifecycle with WhatsApp provider operations",
+  "type": "task",
+  "updated_at": "2026-10-11T11:52:16Z"
+}

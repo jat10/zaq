@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-05T12:45:51Z",
+  "description": "Package-first milestone 1 is implemented in sibling web_widget. Scope: add local dependency, configure real runtime builder/PubSub and a deny-by-default identity verifier, verify enable/update/disable/re-enable and hooks using actual package. Action reuse: reuse Channels CommunicationBridge toggle/config and WebBridge runtime lifecycle plus shared config-bound ingress; no new business operation, agent tool or routing/persistence flow. Identity fallback is local-only adapter configuration and rejects every proof until a production verifier is installed. Preserve NodeRouter role dispatch; test with real package runtime and isolated database/fixtures. Historical tickets zaq-kra and zaq-dzr describe the older map contract; this task targets shared v1 revision 09386d926. Working-tree changes only, no commit/push or browser E2E in this runtime installation task.",
+  "id": "zaq-xnb",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[widget-wiring] Install package builder and verify channel lifecycle",
+  "type": "task",
+  "updated_at": "2026-10-05T12:45:51Z"
+}

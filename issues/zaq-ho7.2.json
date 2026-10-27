@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-ho7.1"
+  ],
+  "blocks": [
+    "zaq-ho7.3"
+  ],
+  "closed_at": "2026-10-20T13:18:10Z",
+  "created": "2026-10-20T10:56:18Z",
+  "description": "Current revision (user approved: \"better implement this\"): initial defaults are defined by provider clauses in the existing Zaq.ConnectorConfig.Settings.defaults/1, not application configuration. Remove the config block and configuration injection from pure settings helpers. Saved values still win; selective preservation and runtime fallback remain. Replace obsolete custom-config fixture coverage with module-owned defaults coverage; retain override/idempotence/removal assertions. This supersedes any configuration-entry requirements below. No new module, migration, adapter callback or MFA.\n\nImplemented channel_settings_defaults config and Settings.defaults/merge/preserve. Engine create and confirmed-link/upsert insertion share defaults. Generic preservation retains only saved keys covered by each provider defaults template, avoiding accidental retention of unrelated deleted settings. Transport flags are adapter-validated. Dedicated WhatsAppSettings removed. Tests cover custom Telegram config with no provider branch, atom/string provider lookup, explicit values, retries and unchanged other providers.\n\nThe authoritative final ownership and delivery scope is in zaq-ho7. Historical dedicated-module/backfill requirements are superseded.\n\nRequired policies: AGENTS.md; docs/agent-tools.md; docs/WORKFLOW_AGENT.md;\ndocs/exec-plans/PLAN_STRATEGY.md; docs/action-reuse.md; docs/testing-approach.md;\ndocs/services/channels.md. Read sibling AGENTS.md before sibling changes, Engine\nguide before persistence work, and documentation hygiene before updating docs.\nRead system-config guidance if touching encrypted fields (which should be avoided).\nPreserve existing assertions. Obtain explicit approval before changing existing test\nbehavior; add focused tests first. No UI feature/E2E work is required by this refactor.\nCommit, push, publishing dependency revisions, and merge require separate authorization.\n",
+  "id": "zaq-ho7.2",
+  "labels": [],
+  "parent": "zaq-ho7",
+  "comments": [
+    {
+      "text": "Implemented canonical ChannelConfig policy default/validation and pure Settings projection. Preserves explicit valid policy on replacement-style settings edits; other settings keep historical replacement semantics. Existing malformed non-WhatsApp jido_chat payloads remain accepted by existing contract; runtime reader handles them conservatively. Missing policy is default for other providers; WhatsApp gets mention_required; invalid explicit policy rejects. No encryption code changed. New property proves unrelated JSON preservation. mix q passes and 65 tests + 2 properties across policy/ChannelConfig/confirmation/settings pass. All pre-existing assertions preserved. No Actions or new dispatch paths.",
+      "timestamp": "2026-10-20T11:21:29Z"
+    },
+    {
+      "text": "Engine ChannelConfig.create/2 now applies WhatsAppSettings defaults before changeset/Repo insert; existing upsert insert and LinkedDeviceConfirmation use it. Shared changeset validates flags and preserves only saved history choices on replacement edits; direct changesets remain validation-only like widget. Defaults are deeply merged only along configured keys, explicit booleans preserved; null containers treated absent, explicit null/nonboolean flag rejected. Existing BO WhatsApp New flow enters authorized LinkedDeviceUI/confirmation rather than manual credential form; legacy generic BO persistence remains untouched. No new route/Action/tool or secret changes. mix q passes; 70 tests + 3 properties pass across settings, policy, schema, confirmation and projections. Existing tests unchanged. Logs /tmp/zaq-ho7-rework-zaq-{quality,settings-tests}.log.",
+      "timestamp": "2026-10-20T13:18:09Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ho7.2] Persist shared provider defaults without dedicated settings modules",
+  "type": "task",
+  "updated_at": "2026-10-20T14:41:36Z"
+}

@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-ijp.2"
+  ],
+  "closed_at": "2026-10-24T15:38:32Z",
+  "created": "2026-10-24T15:33:48Z",
+  "description": "Action reuse: not applicable; test fixtures and scheduling only, no product operation edits. Preserve all scenarios, assertions, property runs, failure paths, and production modules. User authorized test-only runtime changes and validation, plus commit/push. Reuse test/support fixture controls and explicit production opts. No new mocks of internal code. No E2E authoring needed; no production coverage changes. Update existing test/runtime-report.txt after reading documentation policy. Inspect existing timing artifacts and slow test ownership. No edits before isolation evidence; retain baseline 265.0s suite.",
+  "id": "zaq-ijp.1",
+  "labels": [],
+  "parent": "zaq-ijp",
+  "comments": [
+    {
+      "text": "Baseline source is committed at 16f65cd5f with prior plain mix test 265.0s, 11649 cases. Fresh profiled baseline underway. Serial critical path spans global Req/LLMDB/Application/OS config and shared Sandbox consumers. Existing test/support/bin/test-partitions already isolates BEAMs and databases but incorrectly captures status after negated wait, masking failures. Prefer existing process-isolation seam over unsafe async conversion; preserve all tests. Resource audit: BEAM globals owned per child, database names include MIX_TEST_PARTITION, temporary filesystem must be partition-scoped, compiled artifacts shared read-only after one compile. Product Action reuse not applicable.",
+      "timestamp": "2026-10-24T15:38:31Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ijp.1] Profile remaining serial test costs",
+  "type": "task",
+  "updated_at": "2026-10-24T15:38:32Z"
+}

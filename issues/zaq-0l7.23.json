@@ -1,0 +1,22 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-13T10:43:20Z",
+  "created": "2026-10-13T10:40:08Z",
+  "description": "User requests exact restoration of lib/zaq/channels/bridge_supervisor.ex from refactor/webbridge 1ad46a514, then relevant tests to identify WhatsApp requirements without further fixes. Action reuse: local-only existing runtime lifecycle, restored implementation retains public interfaces; no new Actions or tool exposure. Run mix q and targeted supervisor/WebBridge/linked-device/consumer tests; investigate failures and missing restart-monitor coverage. Preserve session-logging.patch and all other source files.",
+  "id": "zaq-0l7.23",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Completed requested baseline restoration. lib/zaq/channels/bridge_supervisor.ex exactly matches refactor/webbridge 1ad46a514 (git diff --exit-code verified after mix q). All other tracked files unchanged; session-logging.patch preserved. mix q passed. Main focused run: 248 tests + 8 properties, 3 failures: WhatsAppFullFlow direct/group QR rendering and LinkedDevice.Restart initial pairing. Supervisor/WebBridge/adapter runtime/storage/onboarding/Engine confirmation/BO tests otherwise passed. Smaller diagnostic run: 27 tests, 3 failures (temporary replacement-monitor probe, Restart pairing, group QR); direct QR passed on this rerun, demonstrating startup timing sensitivity. Cause: restored supervisor publishes public runtime only after all listener starts; initial linked-device lifecycle can arrive first; Channels.Api channel_ingress_lifecycle lookup_state_pid fails and returns unauthorized; adapter dispatcher ignores sink result, losing connecting/QR event. Probe confirmed initial lookup not_running during listener start despite live state. Second probe: after listener crash replacement PID correctly registered by private child index, but State listener_monitors empty, so replacement death not observed by state. Proposed WhatsApp integration work: readiness-aware ordered lifecycle delivery/buffering or bounded retry for transient runtime absence (without relaxing authorization), and monitor each replacement lifecycle/connection generation in linked-device bridge/state ownership. Keep generic WebBridge supervisor unchanged. Existing RAM/Mnesia-only recovery limitation remains separate. Temporary probe removed. No further fixes or full precommit attempted: this task is diagnostic restoration and focused failures are intentional evidence, not a merge-ready claim. Logs /tmp/zaq-restored-bridge-q.log, /tmp/zaq-restored-bridge-test.log, /tmp/zaq-restored-bridge-probes.log.",
+      "timestamp": "2026-10-13T10:43:19Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Restore WebBridge supervisor baseline and diagnose WhatsApp compatibility",
+  "type": "task",
+  "updated_at": "2026-10-13T10:43:20Z"
+}

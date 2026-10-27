@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-09-26T22:03:46Z",
+  "description": "Update the existing user-requested plan document with repeatable baseline scope, production query preparation, PR 795 reuse candidates, stage metrics and comparison contracts. Documentation only; no benchmark implementation. Action reuse: not applicable to this edit because no executable operation changes; proposed implementation must complete per-operation discovery before execution.",
+  "id": "zaq-1am",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Update LiveRAG benchmark proposal for retrieval strategy comparisons",
+  "type": "task",
+  "updated_at": "2026-09-26T22:03:46Z"
+}

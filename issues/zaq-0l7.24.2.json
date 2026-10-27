@@ -1,0 +1,27 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-0l7.24.1"
+  ],
+  "blocks": [
+    "zaq-0l7.24.3"
+  ],
+  "closed_at": "2026-10-13T15:04:17Z",
+  "close_reason": "Implemented and validated in local working trees. Package: 144 tests + 2 properties, 0 failures, live excluded; mix quality including Dialyzer/Doctor passed. ZAQ: mix q and 62 focused integration tests passed; final mix precommit: 48 doctests, 255 properties, 10911 tests, 0 failures (1 skipped, 122 excluded). Parent retains review/coverage and release handoff; no commit or publication performed.",
+  "created": "2026-10-13T14:09:21Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nOwners: new package Storage.Mnesia and cohesive internal helpers, implementing Amarula profile-scoped callbacks plus explicit seed/readiness support from the approved contract. Extract transactional get/put/delete/clear/list and atomic seed-once behavior from ZAQ SessionStorage without ZAQ IDs, NodeRouter, Connect or database dependencies. Scope must distinguish host credential generations and profiles. Preserve configurable limits with ZAQ-compatible values, empty/missing vs unavailable errors, seed tombstones after clear, all-or-nothing oversized seed, and safe serialization responsibilities. Clear never affects another scope; do not dynamically create unbounded atoms.\n\nTests to add before implementation:\nAdd package integration/property tests before implementation for arbitrary keys/values supported by the contract, cross-scope isolation, concurrent writes and accurate capacity accounting, boundary sizes, missing entry vs error, atomic seed rollback, late seed after writes/deletion/clear, enumeration, and unavailable tables. Port behavioral coverage from ZAQ session_storage_test, adapting assertions to package contract.\n\nBranches/paths validated:\nNew/existing entries, overwrites/deletes, capacity exhaustion, invalid scope/namespace/value, repeated seeding, cleared scope, transaction abort.\n\nMocking plan:\nUse real internal storage, transactions, supervision and host boundaries. Inject fake WhatsApp network transport only at external provider boundary; isolated BEAMs for VM-wide Mnesia state. Configuration resolved at public boundaries; ZAQ runtime config uses Zaq.Config per policy.\n\nDocumentations to update for both code and docs/ related content:\nPackage backend module docs and callback contract; keep ZAQ docs unchanged until migration.\n\nAction reuse assessment:\nExtend Amarula.Storage callback interface and reuse existing SessionStorage algorithms by moving ownership. Local-only storage primitive; code callers only. No authorization inside generic backend: host wrapper must authorize before calls. Return sanitized typed errors for GuardedStorage.\n\nValidation and E2E:\nFollow docs/WORKFLOW_AGENT.md and docs/testing-approach.md; package follows its own quality gate. No new UI or user journey: no new E2E authoring required. Implementation must preserve existing assertions and include property tests for isolation/idempotence/capacity invariants.\n\nweb_widget-influenced refinement (user-authorized plan update):\nConfiguration separation: backend callbacks consume an already configured/ready package runtime and never initialize the infrastructure as a side effect. Keep generic scope/namespace operations independent of ZAQ. The host wrapper decides which namespaces reach Mnesia; pairing credentials must not be rerouted by a package default. Add tests for missing/unready infrastructure and generation replacement. Durable storage routing remains ZAQ-owned.\n\nExpanded upstream extraction scope (supersedes earlier references to retaining ZAQ Storage/Session): package owns temporary storage, pairing lifecycle, generic namespace routing/serialization and confirmation/handoff. ZAQ keeps only thin authorization/encrypted-persistence/connector callbacks in existing responsibility-compatible facades. All four modules under lib/zaq/channels/linked_device/ must be deleted; no equivalent state machine relocated elsewhere. Preserve this step's existing backend, lifecycle, rollout and validation requirements. New prerequisite issues cover the additional package and host API work.",
+  "id": "zaq-0l7.24.2",
+  "labels": [],
+  "parent": "zaq-0l7.24",
+  "comments": [
+    {
+      "text": "Implemented package Mnesia backend, bounded transactions, generation-bound handles and seed tombstones. Ported two property suites and backend tests; 2 properties/14 tests pass including isolated Mnesia stop/start recovery.",
+      "timestamp": "2026-10-13T14:50:51Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.2] Extract a reusable bounded Mnesia storage backend",
+  "type": "task",
+  "updated_at": "2026-10-13T15:04:17Z"
+}

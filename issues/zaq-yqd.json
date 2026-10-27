@@ -1,0 +1,17 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-m8g"
+  ],
+  "blocks": [],
+  "closed_at": "2026-09-18T23:22:49Z",
+  "created": "2026-09-18T22:36:16Z",
+  "description": "Functional specifications/files: no new implementation scope; review diff and any focused test/doc corrections only. Tests to add before implementation: none beyond prior steps; preserve regression matrix/property tests. Validate according to docs/WORKFLOW_AGENT.md Phase 4 and Phase 6: issue-level mix q plus isolated record_source_test, record_source_sync_test, temporary_materialization_store_test and artifact_type_test; run existing ingestion E2E as mandated for ingestion changes. No new browser journey is needed: public materialize/2 path/bytes tests directly prove this bug; no human UX gate required for existing E2E execution. Record failures/environment blockers; do not weaken assertions. Dedicated coverage-upper handoff only after implementation issues and PR review approval, then final mix precommit before final human approval, per owner lifecycle. No commits/push/PR messages authorized by this planning request. Branches: artifact/source precedence, decoding errors, row/text regression, cleanup and sync consumers. Mocking: no new seams. Documentation: verify contract docs/code links and record validation/coverage evidence in Beadwork; quality score ingestion note claiming PDF/DOCX unsupported is stale relative to live converters and is unrelated cleanup, do not widen this fix. Action reuse assessment: extend Zaq.Ingestion.RecordSource staging policy; local-only pure MIME helper. Inspected RecordSource.materialize/2 -\u003e store_download/2 -\u003e TemporaryMaterializationStore.write_original/3, Materialization.materialize/4, Agent.Tools.DataSource.DownloadDocument Action, workflow steps, and all MIME/extension references under lib/zaq. DownloadDocument redeems content and does not own ingestion filenames; DiskBridge MIME.from_path/1 infers MIME in the opposite direction. No existing ZAQ MIME-to-extension abstraction found. Reuse installed MIME 2.0.7 mapping. Inputs are original/downloaded Record metadata; output is a safe extension. Preserve signed-handle authorization, actor context, download errors, bytes, original record/provenance, temporary-root lifecycle and row/plain-text .md paths. No new Action, tool, workflow surface, runtime configuration or external dependency seam. Verify through materialize/2 and pure helper tests.",
+  "id": "zaq-yqd",
+  "labels": [],
+  "priority": 2,
+  "status": "closed",
+  "title": "[#568] Validate regression fix and prepare review handoff",
+  "type": "task",
+  "updated_at": "2026-09-18T23:22:49Z"
+}

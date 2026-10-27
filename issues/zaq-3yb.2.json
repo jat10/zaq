@@ -1,0 +1,27 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-3yb.1"
+  ],
+  "blocks": [],
+  "created": "2026-10-15T15:42:46Z",
+  "description": "Extend existing CommunicationMedia authorization fallback for a different transport author with a valid Person. Dispatch confidential authorize_shared_attachment to Engine at both hydration and redemption; preserve uploader provenance, author shortcut and explicit trusted bypass. Dependency on Engine authorization. Reuse DownloadDocument and Materialization flow unchanged. Validate immutable group/private/MIME regressions, scope denial properties, mix q and final precommit. Internal authorization helper only; no new Action or exposed agent tool. No E2E needed: backend authorization covered through real canonical integration and tool execution.",
+  "id": "zaq-3yb.2",
+  "labels": [],
+  "parent": "zaq-3yb",
+  "comments": [
+    {
+      "text": "Integrated CommunicationMedia hydration and redemption through confidential Engine authorization events. Author matching and explicit bypass retain existing behavior. Actual uploader provenance and requester identity remain intact. New tests cover revoked grants, outsider access, confidential/valid persisted actors, string connector IDs, and generated source/connector substitutions. Immutable group/private/MIME regression files remain unchanged. mix q and focused 10-property/145-test suite pass. Starting final precommit.",
+      "timestamp": "2026-10-15T15:48:25Z"
+    },
+    {
+      "text": "Final integration validation complete: mix precommit exit 0, 201 properties, 9968 tests, zero failures; mix q clean. Group/private/MIME tests unchanged and green. Implementation remains uncommitted with parent for review; child lifecycle remains dependency-blocked until prerequisite landing.",
+      "timestamp": "2026-10-15T15:57:47Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-3yb.2] Use shared transcript authorization for communication media",
+  "type": "task",
+  "updated_at": "2026-10-15T15:57:47Z"
+}

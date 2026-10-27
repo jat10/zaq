@@ -1,0 +1,27 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-973.2"
+  ],
+  "created": "2026-10-20T10:03:38Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nOwn this in ../jido_chat/lib/jido/chat/adapter.ex and new Jido.Chat.Authentication.Request / Jido.Chat.Storage.Request modules; update capability/type helpers only if needed. Read @moduledoc first. Define exact request/response shapes from existing WhatsApp implementations; preserve request IDs/version, redaction, validation, absence/error distinctions and the single sink invocation. Declare optional prepare_connection/provider_child_specs/connection_identity/logout contracts and core wrappers with legacy defaults; do not add a new host MFA, dispatcher registry or runtime. Document shared lifecycle metadata without adding another event route. Resolve the schematic identity signature to a tagged result consistently across wrappers/consumers.\n\nTests to add before implementation:\nExtend contract coverage alongside test/jido/chat/authentication_test.exs and adapter conformance tests; add focused shared-request tests. Fake non-WhatsApp and legacy adapters must prove operation/result/owner/opaque handle/options propagation, unchanged sink arity, unsupported defaults, malformed version/op rejection, redacted inspection, callback failure normalization and capability coherence. Add bounded properties that invalid requests never invoke sinks and non-nil scope does not widen authorization. Existing expectation changes need approval.\n\nBranches/paths validated:\nSupported/unsupported callbacks; missing/contradictory declaration where applicable; valid/invalid envelopes; nil owner; preserve absent value vs storage failure. Core helpers do not introduce task supervision or authorization decisions.\n\nMocking plan:\nUse small local conformance adapters and observer sinks at the adapter boundary, no global Application mutations; real core validation/delegation. Timeout/retry orchestration stays in its existing package owner.\n\nDocumentations to update for both code and docs/ related content:\nExDoc/types and guides/authentication.md: one sink for persist/start/storage, opaque data, ownership, result/error semantics, lifecycle fields, compatibility defaults. Do not edit generated CHANGELOG.\n\nAction reuse assessment:\nEXTEND existing Jido.Chat.Adapter.authenticate/listener contract and reuse the existing WhatsApp request semantics as source evidence; LOCAL-ONLY shared typed protocol/delegation, not new host business operations. Consumers are adapter packages and authorized host code, not agent tools/workflows. Inputs/outputs and permission ownership are defined in epic; verify through conformance tests. No new ZAQ Action.\n\nRequired policy and epic constraints:\nRead this epic before starting. Read each affected repository's AGENTS.md. In ZAQ read docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md and applicable docs/conventions.md; before documentation edits read docs/documentation.md. Run bw prime and verify live source/Git/dependency state. Use Serena for source relationships and Context Mode for large output. Follow docs/WORKFLOW_AGENT.md#phase-4--validate and its final validation/coverage lifecycle rather than treating this ticket as an alternative policy. No existing test behavior change is approved by this plan. No new feature E2E is planned: this is a behavior-preserving boundary refactor with no UI change. Reassess that decision if scope expands.",
+  "id": "zaq-973.1",
+  "labels": [],
+  "parent": "zaq-973",
+  "comments": [
+    {
+      "text": "Implemented core-owned Authentication.Request and Storage.Request; pure synchronous dispatch, no new runtime; optional provider_child_specs/prepare_connection/connection_identity/connection_options/logout wrappers. Core full suite: 251 tests pass; core mix q passes. Added host_contract_test covering non-WhatsApp and legacy defaults, sink arity, redaction, sanitized failures and absence semantics. Updated authentication guide and lifecycle contract. API signatures resolved in parent implementation note.",
+      "timestamp": "2026-10-20T10:21:12Z"
+    },
+    {
+      "text": "Core contracts and docs complete; full core tests (251) and mix q pass. Final prepare_connection callback returns ingress map; wrapper preserves legacy keyword options.",
+      "timestamp": "2026-10-20T10:26:55Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-973.1] Define shared Jido sink requests and optional adapter contracts",
+  "type": "task",
+  "updated_at": "2026-10-20T10:26:56Z"
+}

@@ -1,0 +1,24 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-09-27T08:38:37Z",
+  "description": "Reproduction-only tests for direct PDF/DOCX/PPTX/XLSX sibling Markdown collision, normal provider control, failed-chunk retry materialization leak, and PDF image exception cleanup. Action reuse: not applicable — tests add no executable operation. Leave genuine regression failures visible and make no production changes.",
+  "id": "zaq-3cq",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Tests added on 37490b138: direct PDF/DOCX/PPTX/XLSX collision assertions, provider PDF+Markdown control, retry_job/worker materialization leak assertion, PDF image success/error/exception controls. mix q and test-module compilation pass. Isolated mix test is blocked before ExUnit by local PostgreSQL timeout during ecto.create; no defect assertion executed. No production edits. Genuine binary fixtures and @real_python setup are absent on this main checkout.",
+      "timestamp": "2026-09-27T08:55:46Z"
+    },
+    {
+      "text": "Database became reachable. Re-ran mix test test/zaq/ingestion/document_processor_test.exs test/zaq/ingestion/ingest_worker_test.exs test/zaq/ingestion/python/pipeline_test.exs at 37490b138: 158 tests, 6 failures, 1 skipped, 9 excluded. Four direct collision tests fail with {false,false} (generated path equals sibling and original bytes changed). Retry test fails with downloaded=true and one materialization root. PDF exception test fails because images_dir still exists. Provider control and PDF success/returned-error controls pass. No production code changed; test-only investigation complete.",
+      "timestamp": "2026-09-27T09:40:55Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[#782] Reproduce conversion collision and cleanup paths on main",
+  "type": "task",
+  "updated_at": "2026-09-27T09:40:55Z"
+}

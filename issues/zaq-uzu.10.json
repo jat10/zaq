@@ -1,0 +1,17 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-uzu.9"
+  ],
+  "blocks": [],
+  "created": "2026-09-25T09:05:42Z",
+  "description": "Verify the parent invariant-to-proof matrix and complete final mix precommit before\n    final human approval. Git mutations require authorization. Land #781 before #568; do not reopen\n    historical #568 tasks.",
+  "id": "zaq-uzu.10",
+  "labels": [],
+  "parent": "zaq-uzu",
+  "priority": 2,
+  "status": "open",
+  "title": "[#781] Final validation and landing handoff",
+  "type": "task",
+  "updated_at": "2026-09-25T09:05:45Z"
+}

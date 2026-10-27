@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-15p.1"
+  ],
+  "blocks": [
+    "zaq-15p.3"
+  ],
+  "closed_at": "2026-10-13T14:06:12Z",
+  "created": "2026-10-13T13:56:42Z",
+  "description": "Own LinkedDevice diagnostics collector and optional adapter diagnostic sink. Reuse Amarula.Telemetry events; extend existing adapter listener callback boundary for receipt/message observation only, preserve original forwarding/results/attempt fences. Tests first for optional callback failures, stale attempts, decrypt/retry counters, offline/group flags, server acceptance vs recipient receipt and unknown status rejection. No new Action: internal observation is not a composable domain operation. Local adapter source override and exported patch required until upstream published. Document missing per-message correlation in existing retry/decrypt telemetry; no inference of retry causality. Verify adapter tests and ZAQ observer tests.",
+  "id": "zaq-15p.2",
+  "labels": [],
+  "parent": "zaq-15p",
+  "comments": [
+    {
+      "text": "Implemented passive telemetry attachment before storage startup, optional adapter diagnostic callback observing current attempt only, safe receipt/decrypt selection and connector scoping. ZAQ targeted tests: 1 property +14 tests pass. Adapter current-attempt/failure-isolation tests: 13 pass. mix q passes. Adapter change remains in ../jido_chat_whatsapp and will be exported as reproducible patch; dev/test override added, release pin unchanged.",
+      "timestamp": "2026-10-13T14:06:11Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-15p] Observe WhatsApp transport lifecycle and recovery",
+  "type": "task",
+  "updated_at": "2026-10-13T14:06:12Z"
+}

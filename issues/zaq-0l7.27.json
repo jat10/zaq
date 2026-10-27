@@ -1,0 +1,48 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-0l7.7"
+  ],
+  "closed_at": "2026-10-16T15:59:56Z",
+  "created": "2026-10-16T15:23:46Z",
+  "description": "User-requested follow-up to zaq-r4n. Implementation authorized by the user; progress and validation recorded in comments.\n\nProblem\nWhatsApp Disable now logs out the selected profile. Enable restarts its runtime but does not automatically open the existing-profile QR/status modal. The user should be guided to scan a fresh QR when relinking is required.\n\nScope and acceptance\n- Add an adapter-specific enable policy/function, with normal behavior as the default; keep ChannelConnectorCard provider-agnostic.\n- After successfully enabling WhatsApp, automatically open the existing selected configuration's linked-device connection modal.\n- Reuse the saved configuration ID, binding and profile. Do not create a new connector or invoke provisional new-profile onboarding.\n- Display connecting, QR challenge, expired/retry, connected and error states using existing library/UI lifecycle support. Do not force QR pairing if a valid saved session connects directly.\n- Retrying targets the same profile. Closing the modal follows existing saved-profile semantics and does not delete configuration or cancel another profile.\n- Keep other adapters' Enable behavior unchanged. Preserve the WhatsApp Disable confirmation/logout behavior from zaq-r4n.\n- Report enable/start failures accurately; do not present a QR or connected state for the wrong configuration.\n\nAction reuse assessment (verified during implementation; see comments)\nEvidence: ChannelsLive.toggle_active_config starts the enabled configuration runtime; LinkedDeviceUI.open opens status for an existing configuration; channel_ingress_status and channel_retry_linked_device support saved-profile status/retry. jido_chat_whatsapp ConnectionWorker handles QR connection updates and emits qr_available for ordinary saved-profile workers.\nDecision: reuse existing enable/runtime, status/retry operations and existing linked-device modal. Adapter-specific post-enable presentation is local-only UI policy; it is not an independent domain Action. Do not add a second login implementation or expose agent tools.\nContract: authenticated actor plus selected persisted configuration; apply adapter policy after successful enable, preserve profile isolation, surface failures, avoid duplicate startup on repeated clicks. BO cross-service calls continue through NodeRouter.dispatch/1 with Zaq.Event; CommunicationBridge/JidoChatBridge and the package own runtime/QR lifecycle.\nBefore coding, inspect current Action/domain API ownership and authorization. If discovery shows a missing essential operation, create its prerequisite Action issue before consumer implementation.\n\nValidation and gates\n- Focused policy/LiveView tests: WhatsApp enable opens the selected existing profile; other adapters remain unchanged; no duplicate config; connected session; QR expiry/retry; startup failure; repeated clicks; multi-profile isolation.\n- Obtain explicit approval before changing existing test behavior; previous approval covered the Disable confirmation scenario only.\n- Run mix q and isolated tests; final mix precommit per docs/WORKFLOW_AGENT.md.\n- Reuse zaq-0l7.7 human UX approval and zaq-0l7.8 consolidated E2E. Add enable-after-logout QR relinking to their review/scenarios; new feature E2E authoring waits for explicit UX approval.\n\nRead AGENTS.md, docs/agent-tools.md, docs/action-reuse.md, docs/services/channels.md, DESIGN.md, docs/bo-components.md and docs/testing-approach.md before affected work.",
+  "id": "zaq-0l7.27",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Implementation authorized by user: start implementing. Action reuse discovery verified current ChannelsLive.toggle_active_config -\u003e existing sync_channel_runtime NodeRouter Event, plus LinkedDeviceUI.open -\u003e confidential channel_ingress_status and channel_retry_linked_device with authenticated actor. Decision: reuse domain operations and saved-profile modal; new local-only ChannelEnablePolicy selects post-enable presentation. Open only on successful runtime sync, enabled WhatsApp config and existing authorized native authentication capability. No new domain operation, Action or agent tool. Existing tests can remain intact; add policy/property and LiveView integration scenarios. Preserve unrelated working-tree changes and prior zaq-r4n implementation. New feature browser E2E remains gated by zaq-0l7.7.",
+      "timestamp": "2026-10-16T15:26:20Z"
+    },
+    {
+      "text": "Enable policy and LiveView wiring implemented. Saved-profile LinkedDeviceUI opens only for enabled WhatsApp after :ok runtime sync and authorized native-auth capability. Existing QR/connected/expiry/retry UI reused; no markup, bridge, library or shared-card changes. Startup failures preserve accurate runtime error feedback without opening QR. New tests verify logout -\u003e enable -\u003e QR with same config, connected-without-QR, expiry/retry profile targeting, error/unexpected startup results, default adapter presentation, no unprivileged QR, closing/repeated toggle without duplicate start, and default policy property. Existing tests/fixtures/fakes unchanged. Focused checks passed: 100 tests + 2 properties, zero failures. mix q passed; final precommit next. No live-account scan performed.",
+      "timestamp": "2026-10-16T15:29:15Z"
+    },
+    {
+      "text": "Full precommit first run encountered two unrelated HTTP fixture startup errors (:eaddrinuse): TitleGeneratorTest test/zaq/engine/conversations/title_generator_test.exs:8 (port 56086) and HistoryStrategyFullFlowTest test/zaq/channels/history_strategy_full_flow_test.exs:720/setup:147 (port 56145). Both use unchanged OpenAIStub.server/2, which reserves then releases an ephemeral port before Bandit starts. No listeners remained on those ports when inspected. Original run still completing; will retry affected tests and final gate after completion. No existing test behavior will be changed to mask these failures.",
+      "timestamp": "2026-10-16T15:37:18Z"
+    },
+    {
+      "text": "First final gate completed with only two unrelated OpenAIStub :eaddrinuse startup failures (no enable/disable test failures). Isolated rerun of the affected locations passed: 6 tests, zero failures (58 excluded). No fixture or assertion changes made. Running mix precommit again against unchanged final code; first run log /tmp/zaq-enable-precommit.log, isolated retry /tmp/zaq-enable-fixture-retry.log, final retry /tmp/zaq-enable-precommit-retry.log.",
+      "timestamp": "2026-10-16T15:39:50Z"
+    },
+    {
+      "text": "Second precommit failed only on unrelated BrowsingTest screenshot timeout at test/zaq/agent/tools/web/browsing_test.exs:913: preliminary get-url command exceeded its 800ms budget, returning url timed out before the screenshot step. OpenAIStub port collisions did not recur. WhatsApp focused checks remain green; existing tests unchanged. Will verify isolated browser case and rerun final gate with bounded Erlang scheduler concurrency to reduce machine contention.",
+      "timestamp": "2026-10-16T15:49:30Z"
+    },
+    {
+      "text": "BrowsingTest timeout reproduces in isolation with default scheduler count, but passes unchanged with ERL_FLAGS=+S 4:4 (1 test, zero failures). This points to host/BEAM scheduling contention rather than enable-flow behavior; no browser source, fixture, assertion or timeout changed. Running final mix precommit with the same bounded scheduler setting. Logs: /tmp/zaq-enable-browser-bounded-retry.log and /tmp/zaq-enable-precommit-bounded.log.",
+      "timestamp": "2026-10-16T15:50:54Z"
+    },
+    {
+      "text": "Implementation and immediate validation complete in working tree. Final gate passed: ERL_FLAGS=+S 4:4 mix precommit, exit 0; 17 doctests, 201 properties, 10072 tests, zero failures (1 existing skipped, 117 excluded), 512.2s. mix q passed and focused enable/disable regression checks passed 100 tests + 2 properties. git diff --check clean. Earlier unrelated fixture socket and command-timeout failures and exact retries are recorded above; bounded-scheduler run retained all assertions/timeouts. No existing test expectations changed. No live QR scan, commits or pushes. Shared card and other adapter behavior preserved; unrelated working-tree changes preserved. Human UX gate zaq-0l7.7 and consolidated E2E zaq-0l7.8 remain open; post-review coverage remains at its workflow phase. Logs: /tmp/zaq-enable-quality.log, /tmp/zaq-enable-tests.log, /tmp/zaq-enable-precommit-bounded.log.",
+      "timestamp": "2026-10-16T15:59:54Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.27] Open existing WhatsApp profile QR modal on Enable",
+  "type": "task",
+  "updated_at": "2026-10-16T15:59:56Z"
+}

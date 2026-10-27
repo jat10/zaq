@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-20T06:19:31Z",
+  "description": "PR 847 file organization only: consolidated 12 files into 5 (7 fewer). WhatsApp support 2 to 1, linked-device support 3 to 1, Channels connector lifecycle 2 to 1, credential document tests 3 to 1, channel policy tests 2 to 1. Preserved every module body, name, setup, async setting and assertion. Verified exact concatenation against HEAD and no hard-coded references to removed files. Action reuse: not applicable — no executable operation changes. No new invariants or E2E behavior; coverage expansion not applicable. mix q passed; 9 affected files passed: 104 tests and 6 properties, zero failures. Final precommit completed: 48 doctests, 282 properties, 11384 tests, 1 failure, 1 skipped (125 excluded). Failure in unchanged whatsapp_thread_history_test.exs:304, assertion at line 373: model input missing stored World Cup reply target. Reproduces in isolated rerun. Final validation blocked; no assertion changed. Changes remain uncommitted.",
+  "id": "zaq-lhz",
+  "labels": [],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Consolidate related PR 847 test files without behavior changes",
+  "type": "task",
+  "updated_at": "2026-10-20T06:32:00Z"
+}

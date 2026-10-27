@@ -1,0 +1,20 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T21:42:10Z",
+  "description": "PR843 finding 1 in docs/exec-plans/report/pr_findings.md. User approved restoring temporary policy for websocket/gateway/polling listeners while preserving linked-device adapter recovery. Extend existing listener_specs/3 policy selection only; no new supervisor, Action or tool. Action reuse: local-only child specification policy in JidoChatBridge, existing BridgeSupervisor execution unchanged. Add regression using actual Mattermost child spec with controlled failing start and healthy sibling; verify explicit restart recovery and linked-device spec preservation. Keep existing test semantics. Run mix q, new tests, shared bridge and supervision suites. No commit/push. Full per-connector restart-budget isolation remains outside this mitigation.",
+  "id": "zaq-4ph",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implemented approved mitigation in JidoChatBridge.listener_specs/3: websocket/gateway/polling specs use temporary restart; linked-device specs unchanged. New isolated OTP regression uses real Mattermost-produced spec with controlled terminal failures, healthy sibling, repeated attempts and explicit recovery; linked-device spec test plus existing supervision suite preserve WhatsApp recovery. No existing test expectations modified. Validation: 208 tests passed across listener_restart_policy, jido_chat_bridge and supervision; mix q passed; git diff --check clean. Updated channel service docs and finding resolution. Full precommit not run at this issue-level stage. No commit/push. Does not claim full linked-device restart-budget isolation or live credential rotation.",
+      "timestamp": "2026-10-15T21:43:52Z"
+    }
+  ],
+  "priority": 1,
+  "status": "in_progress",
+  "title": "[zaq-4ph] Restore temporary restart policy for existing Jido listeners",
+  "type": "bug",
+  "updated_at": "2026-10-15T21:43:52Z"
+}

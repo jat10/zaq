@@ -1,0 +1,39 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-0l7.24.12.3"
+  ],
+  "blocks": [],
+  "created": "2026-10-14T21:29:23Z",
+  "description": "Functional spec/files: pin compatible shared Jido.Chat/WhatsApp package versions once authorized; remove transitional callback mode only after consumers migrate. Verify saved account restart, new pairing, logout/clear, failed save retry, saved/runtime_pending, Mnesia loss, multi-account recovery, and old stored credentials without migration. Explicit rollback and deployment order: shared contract, WhatsApp compatibility, host consumer, old callback removal later.\nTests before implementation/finalization: package contract suites, real ZAQ listener-to-Engine storage regressions, unchanged BO pairing/restart/full-flow tests, fault injection for concurrent sends/storage/state calls, timeouts and stale generations. No duplicate writes or lost authorization during compatibility. Reuse existing E2E; if new UX introduced, create approval/E2E issues before authoring. Run issue-level quality/focused tests and owner final gates; post-review coverage handoff per workflow.\nAction reuse: no new executable operation; validate shared existing operations across repositories. Mocking only WhatsApp network; real host persistence. Docs: package contracts, existing service ownership sections, release/rollback notes in issue/PR. Commits/pushes/releases remain separately authorized. Do not claim application gate green after timeout or unrelated failure.",
+  "id": "zaq-0l7.24.12.4",
+  "labels": [],
+  "parent": "zaq-0l7.24.12",
+  "comments": [
+    {
+      "text": "Validation owner: both repositories. Verify compatible dependency wiring and report source revisions/local edits. Read parent epic Agent execution handoff before starting. Preserve existing reaction-normalization work.",
+      "timestamp": "2026-10-14T21:31:11Z"
+    },
+    {
+      "text": "Compatibility/rollout: upstream WhatsApp base is 099e7c9 plus this working-tree patch (including prior reaction fix). Shared jido_chat changes unnecessary. Required package APIs: Storage.Request, Adapter.prepare_connection/1, connection_profile/1, storage_runtime_spec/1; PairingSession sink callback support. Legacy document_mfa remains compatible, sink wins without dual writes. Local package edits mirrored into ZAQ deps for dev/test compilation; no pins, commits, pushes, or publication performed. Publish compatible package first, then update ZAQ Git dependency revision and deploy host. Stop saved/provisional listeners for rollout/rollback; preserve encrypted DB and keys. Roll back host before downgrading package. No SQL/document encoding/profile migration; RAM sessions may need reestablishment. Coverage handoff is post-review and remains pending. Final mix precommit running at /tmp/zaq-session-storage-precommit.log; it has exposed baseline identity fixture/schema failures outside this migration.",
+      "timestamp": "2026-10-14T21:59:03Z"
+    },
+    {
+      "text": "Final source checks: mix q passed; all affected bridge/supervision/linked-device/credential-document/reaction suites passed 344 tests + 7 properties. Package suite passed 169 tests + 7 properties and mix quality exit 0. Full precommit ExUnit completed in 394.4s: 48 doctests, 258 properties, 10966 tests, 4 failures, 1 skipped (122 excluded). Tool RPC response timed out at 300s but process log contains completed summary at /tmp/zaq-session-storage-precommit.log. Four blockers reproduced independently (4 selected tests, all fail): connector_person_discovery_test:166 missing DB person_identity_id constraint; identity_resolver_test:17 stale connector-local Person expectation; identity_resolver_test:110 and history_ingress_test:137 ambiguous default-email fixture. Accounts/People/identity schema and these assertions are unchanged by this epic; related ongoing identity work zaq-emb.27.10. Final trusted storage callback captures only id/provider; regression verifies no channel-token/settings capture. No weakened assertions or unrelated Accounts fixes. Final-validation step remains OPEN pending these gate blockers, review/coverage, and authorized package publication + ZAQ pin update. No commit/push/release or live listener restart.",
+      "timestamp": "2026-10-14T22:10:42Z"
+    },
+    {
+      "text": "User authorized direct local dependency wiring. mix.exs now uses {:jido_chat_whatsapp, path: \"../jido_chat_whatsapp\", override: true}; mix deps.unlock removed its Git lock entry. Recompiled dev/test environments successfully (21 files each). mix deps reports sibling path and ok. The local source checkout is now authoritative; mirroring into deps is no longer needed. No publication/push performed.",
+      "timestamp": "2026-10-15T06:11:02Z"
+    },
+    {
+      "text": "User landed upstream fixes and requested GitHub dependency. Restored github jat10/jido_chat_whatsapp branch feat/whatsapp-adapter-lifecycle-and-message-contracts. mix deps.get locked 6271c394495c7f5a79f1eb5840830bb7bd9fe94c (canonicalize sender IDs and add host storage requests). Dev/test dependency compilation completed. Preserved former edited dependency checkout in temporary backup before fresh fetch; sibling source untouched. Mattermost remains local. Upstream publication/pin prerequisite is now satisfied; existing full-gate identity/email/schema blockers remain.",
+      "timestamp": "2026-10-15T06:24:13Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-0l7.24.12.4] Validate compatibility and prepare coordinated package rollout",
+  "type": "task",
+  "updated_at": "2026-10-15T06:24:13Z"
+}

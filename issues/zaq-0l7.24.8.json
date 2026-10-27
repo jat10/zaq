@@ -1,0 +1,27 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-0l7.24.3"
+  ],
+  "blocks": [
+    "zaq-0l7.24.9"
+  ],
+  "closed_at": "2026-10-13T15:04:18Z",
+  "close_reason": "Implemented and validated in local working trees. Package: 144 tests + 2 properties, 0 failures, live excluded; mix quality including Dialyzer/Doctor passed. ZAQ: mix q and 62 focused integration tests passed; final mix precommit: 48 doctests, 255 properties, 10911 tests, 0 failures (1 skipped, 122 excluded). Parent retains review/coverage and release handoff; no commit or publication performed.",
+  "created": "2026-10-13T14:28:31Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nPackage owns a reusable temporary storage backend extracted from linked_device/temporary_storage.ex: profile-scoped callbacks, configurable limits, freeze/discard, secret-redacted status and cleanup. No ZAQ modules or persistence; frozen snapshots reject writes and discard prevents reuse.\n\nTests to add before implementation:\nBefore code: round-trip/isolation properties; concurrent writes versus freeze; invalid profile; per-record/aggregate limits with atomic failure; frozen/discarded calls; owner death; format_status contains no secrets.\n\nBranches/paths validated:\nMutable, frozen, discarded, unavailable, wrong profile, capacity rejection.\n\nMocking plan:\nReal internal collaborators; inject external transport/host-callback edges only. Isolated BEAMs for global Mnesia. Explicit config/clock/dependency options.\n\nDocumentations to update for both code and docs/ related content:\nPackage temporary storage module docs and docs/adapter_contracts.md.\n\nAction reuse assessment:\nMove existing TemporaryStorage mechanics upstream; local-only storage API for package pairing sessions, no Action/tool exposure.\n\nValidation and E2E:\nRead owning AGENTS.md and ZAQ workflow, action-reuse, testing, system-config and documentation policies as applicable. Use real internal state/process/DB boundaries; mock only external WhatsApp transport or package host-callback boundary in upstream standalone tests. Isolate global Mnesia tests in separate BEAMs. Runtime dependency seams use explicit public options. Preserve current UI journeys; run relevant existing tests, no new feature E2E authoring unless scope changes and the required UX approval is recorded. Follow post-review coverage and final validation gates; no automatic commit/push/publication.",
+  "id": "zaq-0l7.24.8",
+  "labels": [],
+  "parent": "zaq-0l7.24",
+  "comments": [
+    {
+      "text": "Temporary backend moved upstream with configurable memory bound, immutable frozen snapshots and redacted process status. Migrated property tests pass.",
+      "timestamp": "2026-10-13T14:50:52Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.8] Extract bounded temporary pairing storage upstream",
+  "type": "task",
+  "updated_at": "2026-10-13T15:04:18Z"
+}

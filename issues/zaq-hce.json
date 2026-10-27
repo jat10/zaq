@@ -1,0 +1,36 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-20T08:54:20Z",
+  "description": "User correction: the parallel host callback API was rejected and all implementation changes were reverted. Earlier completion comments and validation results refer to that discarded implementation; they do not establish completion of this revised scope. ZAQ and sibling adapter working trees are clean.\nGoal: remove concrete WhatsApp request handling from the generic ZAQ bridge while preserving the existing ecosystem sink_mfa contract. First audit the existing shared authentication API in ../jido_chat and current request delivery. Identify the smallest behavior-preserving boundary change; do not assume adapter API changes are necessary. No replacement callback API or speculative request framework.\nReuse existing persistence, credential storage and activation operations through NodeRouter/Event. Preserve actor/provider/binding authorization, public ingress rejection, confidentiality, deadlines, sanitized errors, commit-before-activation and synchronous handling outside serialized bridge State.\nDefinition of done: justified minimal decoupling, unchanged adapter contract and tests, reproducible dependency wiring and required checks.\nMandatory constraints: Preserve sink_mfa option, MFA invocation shape, request/result shapes and existing jido_chat_* adapter behavior. Do not replace sink_mfa with persist_mfa, activate_mfa or storage_mfa. Do not introduce compatibility modules solely to support a replacement API. No test, fixture, assertion, helper or test configuration changes. No Mnesia policy or persistence changes. No commit/push without authorization.\nRead inherited ZAQ AGENTS.md and docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md, and docs/conventions.md before affected work. Read each sibling repository's AGENTS.md. Before documentation edits read docs/documentation.md. Use Serena for source understanding and Context Mode for large output; run bw prime. Recheck live Git state and preserve unrelated work.\nTests to add before implementation: none, explicitly prohibited by user. Run existing tests; no new E2E authoring or UI changes. Mocking plan: no test/mock changes; retain existing external-edge fixtures. Coverage improvements requiring test changes are outside authorization; record gaps rather than modifying tests.",
+  "id": "zaq-hce",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implementation local validation is in progress. Added zaq-hce.5 for authorized publication and dependency pinning after validation. Extended linear dependency sequence: zaq-hce.1 -\u003e .2 -\u003e .3 -\u003e .4 -\u003e .5. No commit/push authorization is inferred from implementation request.",
+      "timestamp": "2026-10-20T09:07:42Z"
+    },
+    {
+      "text": "Local callback implementation complete, tests unchanged. Final green validation is blocked by pre-existing reply-target failure zaq-v0p, proven on HEAD. Dependency graph additionally has zaq-v0p -\u003e zaq-hce.4. No commit/push performed; publication/pinning remains zaq-hce.5.",
+      "timestamp": "2026-10-20T09:19:04Z"
+    },
+    {
+      "text": "Rolled back all rejected callback redesign changes in ZAQ and ../jido_chat_whatsapp. Restored original sink_mfa behavior; no tests changed. Reopened implementation tasks and rewrote scope to preserve the ecosystem contract. Decoupling remains unfinished.",
+      "timestamp": "2026-10-20T09:30:35Z"
+    },
+    {
+      "text": "Implementation seam: additive core HostRequest.kind/1 protocol; opt-in classification on existing WhatsApp request structs; same sink_mfa delivery and request shapes. Core is now an affected repository, so release follow-up must include core if publication is authorized.",
+      "timestamp": "2026-10-20T09:34:11Z"
+    },
+    {
+      "text": "Cancelled at explicit user request. All implementation and documentation changes reverted in ZAQ, ../jido_chat and ../jido_chat_whatsapp; temporary dependency projects removed and validation stopped. Closed as cancelled, not delivered.",
+      "timestamp": "2026-10-20T09:45:17Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Decouple bridge request handling while preserving sink_mfa",
+  "type": "epic",
+  "updated_at": "2026-10-20T09:45:18Z"
+}

@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-qzr.1"
+  ],
+  "blocks": [
+    "zaq-qzr.3"
+  ],
+  "closed_at": "2026-09-17T18:46:34Z",
+  "created": "2026-09-17T17:46:43Z",
+  "description": "\n**Goal:** Stop at a control result before graph mutation or another runnable executes.\n\n**Files/modules affected:** `workflow_run_agent.ex`, `workflow_run_agent_test.exs`, `dag_builder_test.exs`; use the outcome classifier from step 1.\n\n**Exact behavioral change:** Seed the initial root fact using Runic's root invocation without calling `react/3` (which already executes a generation). Loop over `prepare_for_dispatch/1`, retaining its returned workflow. Execute prepared runnables sequentially, inspect each executed runnable's result Fact, and apply only normal completed/failed/skipped results through `apply_runnable/2`. On verified pending control, return a suspended driver outcome immediately: do not apply its events or deferred hooks, do not execute remaining prepared siblings, and do not prepare another generation. Keep the current sequential fork ordering; do not introduce asynchronous fan-out. Preserve pause checks before dispatch, watcher cleanup on all exits, map-limit error reporting, and persisted-status finalization.\n\nFor an ordinary StepRunner ActionNode, inspect `Runnable.result.value.extra[:workflow_control]` for `%PendingApproval{}`: ActionNode packages the successful triple as `%{result: %{}, extra: metadata}`. For the trusted composite fork Step, inspect its result Fact's value for the extracted `%PendingApproval{}` internal carrier. These are two explicit transport positions, not a recursive search of arbitrary action output. Verify the runnable origin and control association. Consume/discard a verified pending runnable without applying it; neither carrier is a downstream fact or persisted business result.\n\n**Dependency:** After the typed success-metadata contract; before HITL emits it. Use controlled test producers first. Driver must support both ActionNode and composite Runic Step result carriers.\n\n**Tests required before implementation:** Both ordinary ActionNode metadata and composite-fork internal carriers are intercepted; similar domain results are not. Pending has no FactProduced/ActivationConsumed/MapReduceTracked effects applied; no downstream or later sibling effects; normal root propagation, joins, edge pruning, skipped/deferred preparation, empty graph, map limit, pause and watcher termination remain correct. Compare graph/result outcomes with the current driver for non-pending workflows, including multiple generations.\n\n**Migration/regression risks:** Incorrect initial seeding silently skips the first generation. Reimplementing Runic graph reducers loses coordination semantics. Deferred apply hooks must not execute for pending; execute-phase hooks have already run, so audit these separately. Scheduling order must remain deterministic, especially fork body/post-process ordering.\n\n**Action reuse/docs:** Reuse public Runic APIs and existing WorkflowRunAgent lifecycle. No Jido/Runic fork is presently justified. Update driver moduledoc and the execution-flow section of `docs/services/workflows.md` with step 3.\n\n\n\nExecution notes: Source specification transferred verbatim from docs/exec-plans/active/issue-706-implementation-plan.md. Recheck Action reuse against live source before starting. Mocking plan: keep internal boundaries real; mock only external APIs. Branches/paths validated: success, failure and regression paths enumerated above. Backend only; no new feature browser E2E. Preserve deployment grouping: 1; 2–4 atomic; 5; 6–8. User authorized implementation; architecture review must be recorded for driver. Issue-level validation follows docs/WORKFLOW_AGENT.md.",
+  "id": "zaq-qzr.2",
+  "labels": [],
+  "parent": "zaq-qzr",
+  "comments": [
+    {
+      "text": "Live reuse recheck: Runic prepare_for_dispatch retains skip/defer reducers; execute_runnable invokes only the current runnable; apply_runnable applies events/hooks. ActionNode wraps success metadata in Fact.value.extra. MapNodeBuilder creates the only trusted composite fork closures. Driver remains within WorkflowRunAgent and keeps public APIs, sequential ordering and persisted finalization. Tests will cover ordinary execution parity and pending transport; producer integration is delivered atomically with steps 3–4.",
+      "timestamp": "2026-09-17T18:36:06Z"
+    },
+    {
+      "text": "Sequential root/prepare/execute/inspect/apply driver validated with ordinary and map suspension tests; watcher cleanup and interrupted crash handling preserved. mix q and 758 workflow tests / 14 properties pass. No result apply occurs on trusted pending carrier.",
+      "timestamp": "2026-09-17T18:46:34Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[#706] 2. Add a sequential Runic execute/inspect/apply driver",
+  "type": "task",
+  "updated_at": "2026-09-17T18:46:34Z"
+}

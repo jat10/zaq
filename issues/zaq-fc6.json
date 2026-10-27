@@ -1,0 +1,20 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-06T18:18:19Z",
+  "description": "Use named build context to copy local library source and prebuilt assets before dependency resolution. Keep frontend tooling owned by web_widget. Add artifact checks and local build instructions. Action reuse: not applicable, Docker packaging only. Docker daemon is currently unavailable.",
+  "id": "zaq-fc6",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implemented Docker named context web_widget with selective Mix/lib/priv copies and build/release asset checks. Documented commands in docs/dev-setup.md. Rebuilt frontend successfully; mix q passed; shell checks accept complete assets and reject missing assets. Full docker build attempted but blocked because Docker daemon is stopped. Image validation remains pending.",
+      "timestamp": "2026-10-06T18:20:04Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "Support local web_widget dependency in Docker build",
+  "type": "task",
+  "updated_at": "2026-10-06T18:20:04Z"
+}

@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-16T11:27:07Z",
+  "description": "Add a removable info log in JidoChatBridge.handle_from_listener/3 for WhatsApp chat messages. Log the Incoming struct, including raw adapter payload. Action reuse assessment: local-only instrumentation in existing listener handler; no new business operation or Action. Preserve routing and existing tests. Verify with mix q and targeted bridge tests.",
+  "id": "zaq-iuh",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Added temporary WhatsApp-only info log at handle_from_listener/3, including Incoming.raw. mix q passed; targeted bridge/lifecycle suite passed (192 tests). Full mix precommit running, log at /tmp/zaq-whatsapp-log-precommit.log. No existing tests changed by this task. Remove marked TEMP block after manual WhatsApp verification.",
+      "timestamp": "2026-10-16T11:29:06Z"
+    },
+    {
+      "text": "Missing-log diagnosis: live WhatsApp sink invokes from_listener/3 -\u003e State -\u003e Chat.process_message; the previously instrumented handle_from_listener/3 is bypassed. Moved TEMP log to from_listener/3 before runtime lookup, restricted to WhatsApp message payloads (excluding lifecycle event envelopes and private pairing/storage requests). mix q passed; 215 bridge/state/lifecycle tests passed. Live server code reload/restart and a real WhatsApp message remain manual verification.",
+      "timestamp": "2026-10-16T11:33:08Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Temporary WhatsApp incoming payload log",
+  "type": "task",
+  "updated_at": "2026-10-16T11:33:08Z"
+}

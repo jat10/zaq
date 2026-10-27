@@ -1,0 +1,24 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-19T08:18:32Z",
+  "description": "Copy release.yml into widget-dev-image.yml with push and release-please target branch feat/web-wiring-deploy. Action reuse assessment: not applicable to ZAQ runtime Actions; CI configuration copies the explicitly requested existing release pipeline. Verify parity except branch settings and run available validation. No remote execution or Git publication.",
+  "id": "zaq-434",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implementation complete: widget-dev-image.yml mirrors release.yml except push branch and explicit release-please target-branch are feat/web-wiring-deploy. Diff parity verified; mix q passed. No application code or tests changed; application coverage/E2E not applicable. Final mix precommit running.",
+      "timestamp": "2026-10-19T08:20:08Z"
+    },
+    {
+      "text": "Stopped mix precommit at user request. mix q, YAML parsing, workflow parity comparison, and git diff --check passed. Workflow changes remain in working tree.",
+      "timestamp": "2026-10-19T08:23:28Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "Match widget development workflow to release workflow on feature branch",
+  "type": "task",
+  "updated_at": "2026-10-19T08:23:28Z"
+}

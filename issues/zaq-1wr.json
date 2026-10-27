@@ -1,0 +1,25 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-26T12:29:16Z",
+  "created": "2026-10-26T12:21:17Z",
+  "description": "Read-only diagnosis of five test modules. Trace ownership, compare base and PR, run temporary controlled overlap probes and focused tests, report per-module verdict. No production or existing assertion changes. Action reuse assessment: not applicable; no product operation changes.",
+  "id": "zaq-1wr",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Baseline: current five sync modules pass 39 cases in 2.9s. Original base async modules pass 39 cases in 2.0s at seed 42/cases 8. Deterministic probes prove browser read instability (90000 vs 30060), public PubSub cross-talk, and Everyone lock contention without visibility leakage (2 committed grants remain visible). Artificial 200ms lock timeout is diagnostic only, not a reproduced default-timeout failure. Production/config/DataCase unchanged between merge-base and HEAD.",
+      "timestamp": "2026-10-26T12:24:16Z"
+    },
+    {
+      "text": "Completed report /tmp/zaq-873-audit/report.html and probe/log artifacts. All original async modules plus neighbors pass 95 cases at seeds 1/42/8675309, max_cases 8/24; base browser comparison passes 95. Controlled probes repeat 11 times: real Factory environment race, original ConfidentialEvent assertion failure under unrelated public event, DB visibility isolation with lock contention only. Recommend retain async permission modules; fix browser writer scheduling instead of Factory reader; keep global-silence scenario sync as written. No repo code/test edits. No whole-suite safety claim.",
+      "timestamp": "2026-10-26T12:29:15Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Audit PR 873 async-to-sync review changes",
+  "type": "task",
+  "updated_at": "2026-10-26T12:29:16Z"
+}

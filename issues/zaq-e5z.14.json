@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-21T14:54:38Z",
+  "description": "Latest review comment 3. Action reuse assessment: reuse Accounts.BOActor.current_super_admin/1 at six PairLinkedDevice, ConfirmLinkedDevice, Channels.API and JidoChatBridge feature boundaries. It wraps current_user and exact role validation; retain confidentiality, runtime flags, actor ownership, request shape and error mapping. No Action or tool exposure change. Verify existing pairing authorization, status, confirmation and disable tests and mix q. Independent of polling fix and distributed coordination blocker.",
+  "id": "zaq-e5z.14",
+  "labels": [],
+  "parent": "zaq-e5z",
+  "priority": 2,
+  "status": "open",
+  "title": "PR #847 reuse current super-admin validation",
+  "type": "task",
+  "updated_at": "2026-10-21T14:54:38Z"
+}

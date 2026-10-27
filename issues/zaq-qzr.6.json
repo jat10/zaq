@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-qzr.5"
+  ],
+  "blocks": [
+    "zaq-qzr.7"
+  ],
+  "closed_at": "2026-09-17T23:36:31Z",
+  "created": "2026-09-17T17:46:50Z",
+  "description": "\n**Goal:** Resolve P3 policy decisions before changing mechanism ownership.\n\n**Files/modules affected:** `step_runner.ex`, `dag_builder.ex`, `map_node_builder.ex`; their tests. Use a small pure policy helper within the existing owner unless size justifies a dedicated local-only module.\n\n**Exact behavioral change:** Define explicit options for every execution boundary in scope. Outer StepRunner: `[timeout: 0, max_retries: 0, backoff: 0]`; supply the same options when the map composite invokes StepRunner through Jido in step 7. Keep Runic scheduler retries/timeouts disabled. Inner actual action: explicit `timeout: timeout_ms || 0`, `max_retries: 2` for map retry (three total attempts), otherwise zero, and `backoff: 0` to preserve current immediate retry cadence. Choose telemetry mode explicitly as well; outer silent/inner full avoids duplicated action-attempt spans while ZAQ retains workflow logs.\n\nUse Jido's retryability classification; do not recreate blanket retries or a second policy loop. Pending is success; deterministic validation/Condition rejection is non-retryable; transient normalized failures may retry. Timeout is per attempt in the installed implementation when there is no incoming deadline. Untimed execution remains explicit timeout zero and runs inline through Jido; supervised isolation/cleanup for positive budgets is owned solely by Jido. Do not promise every zero-timeout action gets a separate process.\n\nOuter context must not carry `:__jido_deadline_ms__`: zero does not neutralize an inherited deadline. Current ActionNode wrapper context is empty; assert this invariant. Reject an unexpected inherited wrapper deadline at the ZAQ boundary rather than silently dropping a caller's budget. If a future workflow-wide deadline is needed, treat it as an explicit separately designed policy, not an implicit Jido default.\n\n**Dependency:** After result and Condition semantics; before step 7. Do not remove existing enforcement until the replacement ships. Policy tests should exercise inner Jido directly to prove counts and cleanup.\n\n**Tests required before implementation:** Exact option maps; zero/positive/invalid timeout values; 1 versus up-to-3 actual attempts; non-retryable failures run once; timeout retry budget; no inherited wrapper deadline; explicit settings resist changed Jido application defaults. Supervised child crash, kill/cleanup, and propagation of test DB ownership and tracing. Use synchronized counters/messages, not sleep-based attempt assertions.\n\n**Migration/regression risks:** Error normalization changes retry eligibility, and raised errors may now retry under the retry strategy. Side-effecting actions need existing idempotency protection; timeout cannot roll back external effects. A positive default timeout would be a new product policy and is not part of this plan.\n\n**Action reuse/docs:** ZAQ chooses values, Jido enforces them. No retry/timeout Action, task supervisor, or tool is added. Document policy and deliberate retryability changes in the owner module/service guide.\n\n\n\nExecution notes: Source specification transferred verbatim from docs/exec-plans/active/issue-706-implementation-plan.md. Recheck Action reuse against live source before starting. Mocking plan: keep internal boundaries real; mock only external APIs. Branches/paths validated: success, failure and regression paths enumerated above. Backend only; no new feature browser E2E. Preserve deployment grouping: 1; 2–4 atomic; 5; 6–8. User authorized implementation; architecture review must be recorded for driver. Issue-level validation follows docs/WORKFLOW_AGENT.md.",
+  "id": "zaq-qzr.6",
+  "labels": [],
+  "parent": "zaq-qzr",
+  "comments": [
+    {
+      "text": "Reuse assessment: Jido.Exec already owns retries, normalization, child supervision and timeout enforcement. ExecutionPolicy is a pure local-only helper selecting values for StepRunner and DagBuilder/MapNodeBuilder consumers; no new executable Action or agent tool. Outer zero timeout/retries/backoff and silent telemetry; inner per-attempt timeout, retry=2 only for map retry, backoff=0/full telemetry. Reject inherited wrapper deadline. Tests prove exact options, transient/non-retryable counts and timeout child cleanup using messages/monitors. Do not remove old enforcement before step 7.",
+      "timestamp": "2026-09-17T21:37:12Z"
+    },
+    {
+      "text": "ExecutionPolicy implemented; mix q passed and all 5 focused policy tests passed, including three attempts, deterministic nonretryable failures and timeout child cleanup. Reuse: Jido.Exec owns enforcement; policy only selects explicit options. Implementation remains uncommitted; review and final coverage gates pending.",
+      "timestamp": "2026-09-17T23:36:31Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[#706] 6. Make ZAQ execution policy explicit",
+  "type": "task",
+  "updated_at": "2026-09-17T23:36:31Z"
+}

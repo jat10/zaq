@@ -1,0 +1,19 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-juu.4"
+  ],
+  "blocks": [
+    "zaq-juu.6"
+  ],
+  "created": "2026-10-27T11:53:28Z",
+  "description": "Parent plan: https://chatgpt.com/space/page_0d26b92b5bc8819181fab088efc0283c\n\n## Functional specifications covered with associated files to edit/add\nlib/zaq/channels/delivery_confirmation.ex plus focused existing bridge/API assertions. Clear attachments on confirmation copy, retain metadata ID allowlist and transport receipt. Audit caller retry/duplicate behavior and document existing semantics without adding deduplication.\n\n## Tests to add before implementation\nReuse zaq-9th tests rather than duplicating rescue/exit coverage. Add confirmation Event exclusion of Records/handles/bytes/paths, message IDs retained, confirmed delivery survives recording error/exception, status/callback failures cause no resend, acceptance then timeout has no false confirmed receipt.\n\n## Branches/paths validated\nPreparation failure sends nothing; upload/post failure; confirmed delivery then bookkeeping failure; uncertain interruption. Repeated caller submission documented, not conflated with intentional resend. Temp cleanup only owns prepared resources.\n\n## Mocking plan\nSupported per-call router option for Engine recording edge and adapter boundary failures; no global mutable state.\n\n## Documentations to update for both code and docs/ related content\nKeep affected module docs accurate. Coordinate the final docs/services/channels.md update and update this issue with evidence/decisions; follow documentation hygiene.\n\n## Action reuse assessment\nExtend existing DeliveryConfirmation projection; reuse receipt and error contract. No new receipt module, retry system or lifecycle state machine.\n\n## Constraints and validation\nRead parent settled decisions and applicable repository service, tool-routing, Action reuse and testing policies before implementation. Preserve current test behavior. Follow authoritative validation lifecycle; feature E2E authoring waits for final review task, but focused tests are immediate. Agent selection and #875 acquisition budgets are outside scope. No global configuration mutation.\n",
+  "id": "zaq-juu.5",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-juu.5] Preserve confirmation safety and delivery lifecycle",
+  "type": "task",
+  "updated_at": "2026-10-27T11:53:39Z"
+}

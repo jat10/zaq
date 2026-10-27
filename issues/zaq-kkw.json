@@ -1,0 +1,20 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-06T19:28:41Z",
+  "description": "Replace sibling path dependency with jat10/web_widget feat/add-ons; resolve lock, align Docker setup and refresh sharing patch. Action reuse: not applicable — dependency source configuration only, no domain operation changes.",
+  "id": "zaq-kkw",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Updated mix.exs and lock to jat10/web_widget feat/add-ons at 2a90ebeae39ecc62351e41e382fb49a76f97b7d1. Docker now builds widget assets from fetched dependencies in a Node stage; dev setup and shareable patch updated. Validation: mix deps.get, mix q, widget npm ci/build, production session tests (2 passed), git diff --check and patch application check passed. mix precommit reached test execution but exceeded the 60-second tool timeout; full precommit and Docker image build remain unverified.",
+      "timestamp": "2026-10-06T19:31:47Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "Point web_widget to feat/add-ons Git dependency",
+  "type": "task",
+  "updated_at": "2026-10-06T19:31:47Z"
+}

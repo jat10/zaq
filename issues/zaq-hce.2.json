@@ -1,0 +1,46 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-hce.1"
+  ],
+  "blocks": [
+    "zaq-hce.3"
+  ],
+  "closed_at": "2026-10-20T09:02:18Z",
+  "created": "2026-10-20T08:54:24Z",
+  "description": "User correction: the parallel host callback API was rejected and all implementation changes were reverted. Earlier completion comments and validation results refer to that discarded implementation; they do not establish completion of this revised scope. ZAQ and sibling adapter working trees are clean.\nProceed only from the corrected audit. Keep sink_mfa and its request delivery, lifecycle, timeout and result semantics intact. If no adapter change is needed, record that outcome. Do not introduce parallel callback options or compatibility helpers for a replacement contract.\nMandatory constraints: Preserve sink_mfa option, MFA invocation shape, request/result shapes and existing jido_chat_* adapter behavior. Do not replace sink_mfa with persist_mfa, activate_mfa or storage_mfa. Do not introduce compatibility modules solely to support a replacement API. No test, fixture, assertion, helper or test configuration changes. No Mnesia policy or persistence changes. No commit/push without authorization.\nRead inherited ZAQ AGENTS.md and docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md, and docs/conventions.md before affected work. Read each sibling repository's AGENTS.md. Before documentation edits read docs/documentation.md. Use Serena for source understanding and Context Mode for large output; run bw prime. Recheck live Git state and preserve unrelated work.\nTests to add before implementation: none, explicitly prohibited by user. Run existing tests; no new E2E authoring or UI changes. Mocking plan: no test/mock changes; retain existing external-edge fixtures. Coverage improvements requiring test changes are outside authorization; record gaps rather than modifying tests.",
+  "id": "zaq-hce.2",
+  "labels": [],
+  "parent": "zaq-hce",
+  "comments": [
+    {
+      "text": "Adapter unchanged suite passed: 12 properties, 196 tests, 0 failures (13 live exclusions). HostCallbacks now selects explicit persist_mfa/activate_mfa/storage_mfa, preserves legacy fallback only when absent, validates complete pairing callback sets, bounds storage to 7 seconds and reuses pairing deadlines. Storage.Split and saved connection preparation carry callbacks without altering Mnesia. Tests and helpers unchanged. Continuing integration and final quality validation before closing implementation.",
+      "timestamp": "2026-10-20T09:01:05Z"
+    },
+    {
+      "text": "Adapter quality passed (format, warnings-as-errors compilation, Credo, Dialyzer, Doctor). Source behavior complete; legacy compatibility suite passed unchanged. Integration will additionally exercise explicit callbacks. No core code changes required. Docs updated to show callback options and legacy support.",
+      "timestamp": "2026-10-20T09:02:17Z"
+    },
+    {
+      "text": "Implementation: only two defimpl blocks added to the existing Pairing.Request and Storage.Request modules. Their structs, call functions, result sanitization, tasks and deadlines are byte-for-byte unchanged. Core adds HostRequest.kind/1 with Any -\u003e nil fallback; no existing adapter callbacks are changed.",
+      "timestamp": "2026-10-20T09:37:53Z"
+    },
+    {
+      "text": "Validation: unchanged WhatsApp suite passed: 12 properties, 196 tests, 0 failures, 13 live tests excluded. Byte comparison against HEAD confirms entire original Pairing.Request and Storage.Request implementations remain unchanged; only defimpl blocks appended. Initial quality failed on cached dependency PLT missing new protocol; refreshing with MIX_ENV=test mix dialyzer --force-check --plt before rerunning quality.",
+      "timestamp": "2026-10-20T09:39:42Z"
+    },
+    {
+      "text": "Quality rerun passed after refreshing the local dependency PLT with --force-check. Format, warnings-as-errors compile, Credo, Dialyzer (0 errors), Doctor all green. No source workaround or suppression added.",
+      "timestamp": "2026-10-20T09:40:25Z"
+    },
+    {
+      "text": "Cancelled at explicit user request. All implementation and documentation changes reverted in ZAQ, ../jido_chat and ../jido_chat_whatsapp; temporary dependency projects removed and validation stopped. Closed as cancelled, not delivered.",
+      "timestamp": "2026-10-20T09:45:10Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Apply only necessary adapter changes preserving sink_mfa",
+  "type": "task",
+  "updated_at": "2026-10-20T09:45:11Z"
+}

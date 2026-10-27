@@ -1,0 +1,42 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-iie.1"
+  ],
+  "blocks": [
+    "zaq-0l7.7"
+  ],
+  "closed_at": "2026-10-16T17:06:56Z",
+  "created": "2026-10-16T16:32:07Z",
+  "description": "Extend ConnectorLifecycle.archive to prepare adapter disable, persist disabled state, require successful runtime stop, then archive with revalidated revision; reuse existing helpers and preserve watch teardown ordering/idempotent retries. Existing ArchiveChannelConnector Action and BO callers use same implementation. Update shared delete copy and approved archive failure/order tests; add selected-profile lifecycle, failure, concurrent-edit and already-disabled retry coverage. User approved archive failure expectation changes in this conversation. Follow parent policy and validations; implementation precedes existing UX gate zaq-0l7.7 and consolidated E2E zaq-0l7.8.",
+  "id": "zaq-iie.2",
+  "labels": [],
+  "parent": "zaq-iie",
+  "comments": [
+    {
+      "text": "Implemented shared archive ordering and typed BO failure refresh, preserving existing ArchiveChannelConnector Action and NodeRouter boundaries. User explicitly approved existing archive failure expectation changes. Added adapter-wide ordering property, runtime retry/concurrent-edit coverage, LiveView failure/profile scenarios, and real WhatsApp package archive integration. Updated service docs. No new Action or agent tool required.",
+      "timestamp": "2026-10-16T16:44:09Z"
+    },
+    {
+      "text": "Validation: mix q passed; focused lifecycle/Action, optional-hook/logout, real-package, shared LiveView and web-widget suites passed (127 tests, 2 properties, 0 failures). Property fixtures represent persisted adapters including widget without relying on global setup. Self-review confirms runtime stop occurs after persisted disable and before revision-checked archive, no row lock spans external callbacks, historical rows/identity FKs preserved. Final precommit running with ERL_FLAGS=+S4:4 as previously validated for this host.",
+      "timestamp": "2026-10-16T16:44:34Z"
+    },
+    {
+      "text": "Broader precommit identified equivalent approved archive webhook expectation. Updated it to require disabled/unarchived state on shutdown failure and archival after retry. Disabled retries skip already-completed ingress teardown as well as logout, preserving the existing one-webhook-deletion invariant. Runtime shutdown remains required.",
+      "timestamp": "2026-10-16T16:47:09Z"
+    },
+    {
+      "text": "First broad precommit completed: 17 doctests, 201 properties, 10081 tests; 7 failures confined to equivalent archive persistence/webhook scenarios. Updated approved runtime-failure expectations and supplied new no-op preparation callback in existing injected communication stub. Added disabled ingress retry skip to preserve one-time webhook deletion. Rerunning quality/focused checks before final precommit.",
+      "timestamp": "2026-10-16T16:54:40Z"
+    },
+    {
+      "text": "Final validation passed: mix q exit 0; focused 139 tests and 3 properties, zero failures. Final mix precommit exit 0: 17 doctests, 201 properties, 10081 tests, zero failures, 1 skipped and 117 excluded (499.6 seconds). Logs /tmp/zaq-delete-quality-final.log, /tmp/zaq-delete-focused-final.log, /tmp/zaq-delete-precommit-final.log. No commit/push performed. Existing UX approval zaq-0l7.7 and consolidated E2E zaq-0l7.8 remain pending; numerical coverage phase awaits PR review approval.",
+      "timestamp": "2026-10-16T17:06:55Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-iie] Disable and stop connectors before archive across adapter delete flows",
+  "type": "task",
+  "updated_at": "2026-10-16T17:06:56Z"
+}

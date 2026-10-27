@@ -1,0 +1,35 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-ojt.4"
+  ],
+  "blocks": [],
+  "created": "2026-10-22T14:40:39Z",
+  "description": "Functional specifications / files: review complete diff against main, confirm one shared disable implementation, optional logout ownership in Channels, existing archive/enable behavior preserved, and no residual dedicated-route consumers or tests. Check all intended changes are within disable refactor scope.\nTests to add before implementation: review coverage inventory from prior task; add only missing behavior cases justified by review. No new E2E journey is planned for unchanged UX; reassess if implementation changes UX.\nBranches/paths validated: success, unsupported callback, logout/storage error, absent listener, stale identity/revision, post-logout persistence error, runtime-stop retry, archive and non-WhatsApp/webhook regressions. Validate real WhatsApp Disable/Delete when available and explicitly distinguish offline emitted unlink from remote confirmation.\nMocking plan: reuse established external transport seams; coverage must not replace production branches with mocked successful host calls.\nDocumentation: final service contract consistency and Beadwork validation evidence. Follow authoritative docs/WORKFLOW_AGENT.md validation timing; post-review coverage-upper handoff and final mix precommit before final approval/merge. No commit, push or merge without authorization.\nAction reuse assessment: verify the recorded extend/reuse decisions and absence of duplicate operations/tool exposure. Review any coverage-phase changes before merge.\n\nRequired policies: docs/agent-tools.md, docs/action-reuse.md, docs/testing-approach.md, docs/WORKFLOW_AGENT.md, docs/services/channels.md and docs/services/engine.md. Read docs/services/system-config.md before touching credential boundaries. Recheck live main/branch and existing callers before implementation. Dependencies are sequential to avoid parallel overlapping lifecycle edits.",
+  "id": "zaq-ojt.5",
+  "labels": [],
+  "parent": "zaq-ojt",
+  "comments": [
+    {
+      "text": "Final implementation review completed: dedicated disable Action/logout/prepare handlers and callers removed; one shared ID-scoped sync operation serves confirmed BO disable and Delete. Preserved main listener stop path and webhook archive leaf. Added failure-closed capability discovery and reject enabled:true on shared disable request to preserve enable authorization. mix q passed and 366 focused checks passed (3 properties, 363 tests), including real GuardedStorage/profile cleanup, callback/load/exit errors, delayed preparation, stale revision, runtime retry, archive and enable/BO regression checks. Supervisor remains identical to main. Implementation children 1-4 complete. External PR review approval, post-review coverage-upper and final precommit remain pending per workflow; no final approval requested and no Git mutations authorized. Live phone-side unlink not exercised by offline tests.",
+      "timestamp": "2026-10-22T15:03:00Z"
+    },
+    {
+      "text": "Adversarial review: request changes. Proven medium-severity shared retry defect at ConnectorRuntime.reconcile_transition/3 (lines 55-59): initial webhook disable persists disabled and returns pending ingress_teardown_failed; repeat ID-scoped disable calls only stop_runtime and reports synced although webhook deletion remains failed. Temporary real-route integration probe in JidoChatBridgeTest used existing webhook adapter stub returning delete_failed; first call correctly returned pending, second unexpectedly returned synced/already_disabled. Log: /tmp/zaq-ojt-review-probe.log. Probe removed; no production changes. Main stop-only leaf is intentional for archive (which already tears down webhook ingress); new general disable retry reuses it outside that prerequisite, exposing false-success behavior. Existing tests check initial ingress failure and repeated logout skip separately, missing combined retry state. Suggested fix: repeated disable must reconcile outstanding ingress cleanup without repeating destructive logout; archive should retain its separate already-completed-ingress handling. Review invariants: exact config/actor/revision, logout before credential disable, persistence before stop, pending after post-persistence failure, archive refuses pending stop. Inspected BO -\u003e Channels -\u003e Engine persistence -\u003e bridge stop/ingress and archive finalization. Fresh focused suite 366 passed (3 properties, 363 tests), log /tmp/zaq-ojt-review-focused.log. Missing remote phone unlink acknowledgement remains an external dependency limitation, not proven by offline cleanup. Previous ordering regression covered; overall review cannot approve with retry defect. Coverage/final precommit still pending.",
+      "timestamp": "2026-10-22T15:27:09Z"
+    },
+    {
+      "text": "User authorized fixing the proven retry defect. Action reuse: reuse CommunicationBridge/DataSourceBridge.sync_config_runtime existing true-to-false reconciliation for every standalone disable attempt; extend ConnectorRuntime orchestration only. Preserve archive stop-only leaf because archive has already performed ingress teardown. Preparation still uses actual canonical enabled state so logout is not repeated. Add real shared-route webhook failure/retry/recovery test without changing existing test expectations.",
+      "timestamp": "2026-10-22T18:53:30Z"
+    },
+    {
+      "text": "Fixed review finding at user request: standalone repeated disable now reuses full true-to-false sync reconciliation, retrying ingress cleanup and runtime stop; actual enabled state still gates preparation, so logout is not repeated. Archive retains stop-only reconciliation after its explicit ingress teardown. Added permanent real-route regression covering first failure, repeated failure remaining pending, and successful recovery; verified red before fix. Fresh focused suite: 367 passed (3 properties, 364 tests). mix q passed. Logs: /tmp/zaq-ojt-retry-red.log, /tmp/zaq-ojt-retry-focused.log, /tmp/zaq-ojt-retry-q.log. Updated service docs. No existing test behavior changed. Review finding resolved; external review/post-review coverage/final precommit still pending.",
+      "timestamp": "2026-10-22T18:55:38Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-ojt.5] Review shared disable refactor and complete validation and coverage handoff",
+  "type": "task",
+  "updated_at": "2026-10-22T18:55:38Z"
+}

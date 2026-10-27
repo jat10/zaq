@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-f9w.3"
+  ],
+  "blocks": [
+    "zaq-f9w.5"
+  ],
+  "closed_at": "2026-09-29T15:24:39Z",
+  "created": "2026-09-29T14:30:47Z",
+  "description": "Extract shared DocumentProcessor persistence; extend Embedding.Client snapshot/retry/redaction options. Prove production parity, configured zaq_router routing, dimension and half-vector validation.",
+  "id": "zaq-f9w.4",
+  "labels": [],
+  "parent": "zaq-f9w",
+  "comments": [
+    {
+      "text": "Action reuse recheck: DocumentProcessor.store_chunk_with_metadata/3 owns embedding then private vector validation, language/search config/metadata and Repo.insert; Embedding.Client.embed/2 owns OpenAI-compatible HTTP with persisted System config. SearchKnowledgeBase Action is retrieval only; no agent Action owns offline corpus chunk writes. Decision: extract shared Ingestion chunk persistence owner and retain DocumentProcessor as production consumer; extend Embedding.Client with explicit snapshot, bounded retry and redacted errors while preserving default calls. Benchmark runner will consume both through local APIs, no agent tool/workflow exposure. Inputs: prepared chunk, document/index, embedding vector/dimension; output inserted Chunk or error; auth from .3 snapshot. Verify production parity, dynamic repo destination, zaq_router endpoint/auth, bad dimension/zero halfvec, error redaction and retry bounds.",
+      "timestamp": "2026-09-29T15:13:41Z"
+    },
+    {
+      "text": "Extracted ChunkPersistence from DocumentProcessor: one owner for dimension/half-vector validation, zero-after-half conversion, language/search configuration, metadata, changeset insert and inventory invalidation; production now delegates, with public metadata compatibility preserved. Embedding.Client now accepts explicit resolved config and optional redacted errors/bounded 429 retries (default production path preserved). Configuration.embedding_client_config supplies canonical API-key/no-auth snapshot and rejects unsupported modes; zaq_router endpoint/key path tested. Validation: mix q passed; isolated selected 154 tests + 5 properties passed, including full DocumentProcessor suite, direct persistence tests, Client retry/redaction and configuration tests. No new Action/tool exposure. Uncommitted per user.",
+      "timestamp": "2026-09-29T15:24:33Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-f9w.4] Reuse embedding persistence",
+  "type": "task",
+  "updated_at": "2026-09-29T15:24:39Z"
+}

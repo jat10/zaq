@@ -1,0 +1,19 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-uzu.7"
+  ],
+  "blocks": [
+    "zaq-uzu.9"
+  ],
+  "created": "2026-09-25T09:05:41Z",
+  "description": "Complete documentation and required-check enforcement portions of approved S6 in\n    parent zaq-uzu. Record external configuration blockers. mix setup remains the complete developer\n    bootstrap.",
+  "id": "zaq-uzu.8",
+  "labels": [],
+  "parent": "zaq-uzu",
+  "priority": 2,
+  "status": "open",
+  "title": "[#781] S6b: Document setup and verify required check",
+  "type": "task",
+  "updated_at": "2026-09-25T09:05:45Z"
+}

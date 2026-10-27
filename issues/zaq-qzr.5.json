@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-qzr.4"
+  ],
+  "blocks": [
+    "zaq-qzr.6"
+  ],
+  "closed_at": "2026-09-17T21:37:12Z",
+  "created": "2026-09-17T17:46:49Z",
+  "description": "\n**Goal:** Resolve P2 through ordinary Jido validation without preserving bypass-only input behavior.\n\n**Files/modules affected:** `lib/zaq/agent/tools/workflow/condition.ex`; `test/zaq/agent/tools/workflow/condition_test.exs`; `condition_trigger_failure_test.exs`, `multi_condition_routing_test.exs` and authoring fixtures/seed definitions found by targeted Condition-reference audit.\n\n**Exact behavioral change:** Keep `input` required and remove the absent-input root-map fallback. Supported input is an explicit map or a reference string that resolves to a map; an unresolved or non-map reference returns a deliberate non-retryable validation/domain error, never an accidental invalid success output. Normalize only documented string/atom keys and the finite `\"halt\"`/`\"continue\"` values in the action's pre-validation hook; reject unknown enum values rather than defaulting them to halt. Preserve the default only when on_fail is omitted. Do not introduce general key atomization or StepRunner-side validation. Preserve halt versus continue result shapes and existing edge routing. Make deterministic halt failures explicitly non-retryable while retaining their readable message.\n\nUpdate owned trigger-first definitions to supply explicit input (a suitable mapping or explicit cascade reference). Audit persisted workflow definitions before rollout; report affected definitions rather than silently rewriting active run snapshots.\n\n**Dependency:** Must precede the inner Jido switch. It can be reviewed independently from HITL, but uses step 1's failure policy.\n\n**Tests required before implementation:** Invoke `Jido.Exec.run/4` directly without manually validating first: missing input, explicit maps, valid/missing/non-map references, atom and JSON key/value forms, omitted/default/invalid on_fail, conflicting aliases, output validation, halt/continue routing and date operators. Property tests for normalization idempotency and rejection outside the finite enum. Update the trigger integration to assert its intended business failure with valid input, and add a separate missing-input validation failure.\n\n**Migration/regression risks:** Previously accepted omitted-input definitions intentionally stop working until corrected. Inventory and repair them before enabling step 7; do not add a legacy bypass. JSON support is an explicit normalized contract, not permissive acceptance of arbitrary old inputs. Preserve unknown domain fields as Jido permits.\n\n**Action reuse/docs:** Extend Condition; reuse FactLookup and EdgeCondition. Keep ConditionNotMet/EdgeStep pruning distinct from Condition halt errors. Update Condition moduledoc/schema docs and relevant workflow authoring guidance.\n\n\n\nExecution notes: Source specification transferred verbatim from docs/exec-plans/active/issue-706-implementation-plan.md. Recheck Action reuse against live source before starting. Mocking plan: keep internal boundaries real; mock only external APIs. Branches/paths validated: success, failure and regression paths enumerated above. Backend only; no new feature browser E2E. Preserve deployment grouping: 1; 2–4 atomic; 5; 6–8. User authorized implementation; architecture review must be recorded for driver. Issue-level validation follows docs/WORKFLOW_AGENT.md.",
+  "id": "zaq-qzr.5",
+  "labels": [],
+  "parent": "zaq-qzr",
+  "comments": [
+    {
+      "text": "Reuse recheck: extend existing Condition action, keeping FactLookup and EdgeCondition as shared evaluation owners. Normalize only input/conditions/on_fail aliases and finite enum values through Jido pre-validation hook. Invalid/missing/non-map references are non-retryable validation failures; deterministic halt uses structured non-retryable execution error. No new Action or tool exposure. Agent harness policy read; no LLM/credential/lifecycle changes. Tests migrate to real Jido calls, preserve existing business-message assertions, and add explicit normalized error/property cases. Audit owned Condition definitions before step 7.",
+      "timestamp": "2026-09-17T18:47:21Z"
+    },
+    {
+      "text": "Condition alignment complete. mix q passed; focused Condition/trigger/edge suites: 114 tests + 2 properties passed. Full workflow run identified only two owned fixture definitions relying on root fallback; corrected explicit input mappings and reran their tests. Shared fixture inventory: identify_leads check_active/check_email_state receive input via Batch delivery; send_leads check_last_message_date has explicit build_history.metadata. JSON map schemas explicitly accept arbitrary keys rather than atomizing them. Persisted deployed definition/snapshot audit remains a rollout prerequisite in step 8; no production data rewritten.",
+      "timestamp": "2026-09-17T21:37:12Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[#706] 5. Align Condition's declared and executed contract",
+  "type": "task",
+  "updated_at": "2026-09-17T21:37:12Z"
+}

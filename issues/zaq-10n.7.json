@@ -1,0 +1,35 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-10n.10",
+    "zaq-10n.11",
+    "zaq-10n.6",
+    "zaq-10n.8",
+    "zaq-10n.9"
+  ],
+  "blocks": [],
+  "created": "2026-10-14T12:42:25Z",
+  "description": "Functional specifications/files: review the coordinated adapter/ZAQ changes and recorded contract and regression evidence, then perform coverage-upper handoff after implementation and PR review approval. Record exceptions/follow-ups and resolve them before final approval. No application implementation added by this tracking step.\nTests to add before implementation: none independently; coverage-phase tests must target meaningful remaining branches and obey testing guidance. Repeat checks only as required by changes or unresolved failures.\nBranches/paths validated: accepted contract, provider-neutral People/orchestration, adapter normalization and unchanged authorization/ownership behavior.\nMocking plan: inherit established isolated fixtures; no new global seams.\nDocumentations: validation/coverage evidence and linked follow-ups in Beadwork and eventual PR; no duplicate policy files.\nAction reuse assessment: not applicable; final review and validation only. Recheck operation decisions from implementation children.\nFollow docs/WORKFLOW_AGENT.md phases 4-6 for timing of issue checks, post-review coverage and final precommit gate. Request final human approval only after the final gate passes. This epic does not authorize commits/pushes/merges. Keep epic open until all acceptance and validation work is complete.\nPolicies: read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md and applicable module/service guidance before implementation. For sibling changes read ../jido_chat_whatsapp/AGENTS.md. Follow the authoritative validation lifecycle; preserve existing assertions. No commits, pushes or merges are authorized by this plan.\nMocking plan: keep internal modules and database boundaries real; isolate external transport at its existing contract, with connection-scoped offline fixtures. Avoid global configuration mutation.\nE2E: no new UI or user journey; unit, property and thin integration tests provide the required coverage. Reassess if scope changes.\n",
+  "id": "zaq-10n.7",
+  "labels": [],
+  "parent": "zaq-10n",
+  "comments": [
+    {
+      "text": "Implementation is reviewable in the existing ZAQ checkout and sibling ../jido_chat_whatsapp. ZAQ mix q passed; focused discovery suites passed; adapter mix quality and full default non-live suite passed. Final mix precommit is running via captured log after Context Mode transport timed out while its original process continued. Coverage-upper remains a post-review gate under WORKFLOW_AGENT.md; no review approval or commit/push is recorded.",
+      "timestamp": "2026-10-14T13:10:10Z"
+    },
+    {
+      "text": "Final gate result: mix precommit did not pass. Context Mode call timed out after 300s while Mix continued. Re-ran with captured log and stopped at the required 15-minute limit. Log recorded 64 test failures, largely Mattermost shared-history and history strategy integration cases. Representative test/zaq/channels/mattermost_shared_history_integration_test.exs:1582 reproduced alone: two variants failed waiting 5s for history_execution_completed. Root cause not established after two attempts. Per WORKFLOW_AGENT.md escalation, final human approval is not requested. Focused identity tests and mix q remain green. Existing mix.exs/mix.lock local path overrides were already dirty and were preserved.",
+      "timestamp": "2026-10-14T13:25:01Z"
+    },
+    {
+      "text": "User explicitly stopped automated validation and will run the gate and report results. Final in-flight mix precommit was terminated at their request. Do not restart validation until instructed or results are supplied. Latest focused full-flow tests and mix q passed; final gate remains unconfirmed. All changes remain uncommitted in the current checkout.",
+      "timestamp": "2026-10-14T14:05:29Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-10n.7] Complete review, coverage handoff and final validation",
+  "type": "task",
+  "updated_at": "2026-10-14T14:05:29Z"
+}

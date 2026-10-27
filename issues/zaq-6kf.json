@@ -1,0 +1,20 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-05T15:32:54Z",
+  "description": "Local configuration only: select connector_key verification with test-widget issuer and zaq-web-widget audience for the sibling smoke harness. Action reuse assessment: not applicable; uses existing package verifier, no ZAQ operation or source changes. Preserve existing authorized working-tree changes.",
+  "id": "zaq-6kf",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Configured existing connector_key verifier for test-widget issuer and zaq-web-widget audience. mix deps.get and mix q passed. No ZAQ application source changed by this task. Local ZAQ server is stopped; real-agent smoke requires operator BO key in sibling test-widget/.env and server startup.",
+      "timestamp": "2026-10-05T15:39:43Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "Configure local widget JWT verification",
+  "type": "task",
+  "updated_at": "2026-10-05T15:39:43Z"
+}

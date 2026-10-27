@@ -1,0 +1,23 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-0l7.8"
+  ],
+  "blocks": [],
+  "created": "2026-10-11T09:54:48Z",
+  "description": "Files:\n\n\nFunctional specifications:\nReview lifecycle, connector isolation, sync, permissions and Action reuse; fix findings. After PR review approval run coverage-upper handoff, review resulting changes before merge. Commit/push/merge still require authorization.\n\nTests before implementation:\n- Fresh coverage-guided failure-path tests\n\nBranches validated:\n- review findings\n- lifecycle failures\n- isolation\n- replay\n\nDocumentation:\n- Beadwork/PR coverage evidence and exceptions\n\nAction reuse assessment:\nNot applicable to review/coverage-only work; verify no duplicated operations or boundary bypass.\n\nValidation:\nFollow docs/WORKFLOW_AGENT.md validation lifecycle; tests before implementation, focused checks per issue, final gate before approval. No live account connection or send without scoped authorization.\n\nMocking:\nExternal Amarula transport only; use real internal boundaries and isolated DB/process/storage fixtures; inject config and clock without global mutation.\n\nPolicy:\nRecheck module responsibilities, docs/services/channels.md, Action reuse, system-config and testing guidance before coding. BO calls use explicit NodeRouter Events; nil actor never grants permission.",
+  "id": "zaq-0l7.9",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Pre-final adversarial review: account/config isolation, storage confidentiality, replay and generic pairing states traced. Two proven new integration defects recorded as .10 (LID mentions; connection.ex own_address uses me.id while privacy mentions use me.lid) and .11 (Connection.update_creds ignores Storage.put error, allowing non-durable state). Base has no WhatsApp path. Existing tests missed alternate own identity and final write caller continuation. No E2E approval yet; complete final review/coverage after approved E2E.",
+      "timestamp": "2026-10-11T12:24:27Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-0l7.9] Review and post-review coverage handoff",
+  "type": "task",
+  "updated_at": "2026-10-11T12:24:27Z"
+}

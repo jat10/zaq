@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-f9w.6"
+  ],
+  "blocks": [
+    "zaq-f9w.8"
+  ],
+  "closed_at": "2026-09-29T16:13:14Z",
+  "created": "2026-09-29T14:30:49Z",
+  "description": "Artifacts module validates completeness/vectors; exports secret-free corpus.dump, sources, mappings, manifest/checksums. Restore into empty disposable isolated database; compare hashes, indexes, sequences.",
+  "id": "zaq-f9w.7",
+  "labels": [],
+  "parent": "zaq-f9w",
+  "comments": [
+    {
+      "text": "Action reuse recheck: existing db.copy Mix task uses pg_dump/pg_restore for whole-database duplication, but exports schema, configuration and other production tables. Dataset loader owns pinned source validation; Checkpoint owns completion state. Decision: local-only Artifacts assembly using PostgreSQL pg_dump/pg_restore restricted to corpus tables, with independent source-file checksums and restore reconciliation. No new Action or agent tool because this is an operator artifact lifecycle, not a BO/Agent operation. Inputs: isolated corpus DB, verified Dataset, output directory, empty restore target; outputs: dump plus secret-free manifest, checksums and verification report. Test incomplete refusal, altered files, nonempty restore, schema/index/sequence and row hashes.",
+      "timestamp": "2026-09-29T15:59:27Z"
+    },
+    {
+      "text": "Implemented CorpusIntegrity reconciliation of complete run, source IDs/content hashes, expected chunk identities, nonzero correct-dimension vectors, and restorable row/index/sequence fingerprints. Artifacts export writes only documents/chunks via pg_dump plus verified sources/checksums/secret-free manifest; restore refuses nonempty targets and uses pg_restore single transaction, then compares all fingerprints. CLI export/verify and README added. Real disposable databases: stubbed sample export and restore passed, pg_restore TOC contained only documents/chunks plus their indexes/sequences, altered source checksum and nonempty target refused, altered index/sequence manifest fingerprints refused. Focused 13-test runner/checkpoint/integrity run and mix q pass. No full corpus ingest or commit/push.",
+      "timestamp": "2026-09-29T16:13:09Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-f9w.7] Export and verify restoration",
+  "type": "task",
+  "updated_at": "2026-09-29T16:13:14Z"
+}

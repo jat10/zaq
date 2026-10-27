@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-f9w.5"
+  ],
+  "blocks": [
+    "zaq-f9w.7"
+  ],
+  "closed_at": "2026-09-29T15:59:08Z",
+  "created": "2026-09-29T14:30:48Z",
+  "description": "Ordinary benchmark Runner; thin Mix CLI. ingest 10 deterministically selects unfinished documents. Preserve embeddings, pacing, budgets and deadlines. Add inspect/retry and complete status reporting.",
+  "id": "zaq-f9w.6",
+  "labels": [],
+  "parent": "zaq-f9w",
+  "comments": [
+    {
+      "text": "Action reuse recheck: existing DocumentProcessor/DocumentChunker own Markdown chunk shape, Embedding.Client owns provider routing/retry, and Checkpoint owns fenced corpus writes. The runner will orchestrate these local APIs with bounded selection and explicit command inputs; no Action or agent tool is needed because this is an offline operator-only benchmark, not an actor-facing BO or Agent operation. Contract: pinned Dataset + source Configuration + isolated Database -\u003e limited corpus progress; side effects only corpus checkpoints/chunks, never automatic full-run.",
+      "timestamp": "2026-09-29T15:42:12Z"
+    },
+    {
+      "text": "Implemented process-scoped chunk limits, bounded one-request-at-a-time resumable Runner, deterministic source-ID selection, fixed failure codes, inspect and explicit retry, minimal corpus bootstrap, and mix liverag.corpus CLI. A fresh disposable PostgreSQL corpus database with vector extension was bootstrapped, resumed, rejected a wrong dimension, and completed a stubbed one-document run; CLI inspect succeeded. 114 focused tests passed across runner/checkpoint/chunker/chunk; mix q passed. The existing source test DB dimension was restored to 1536 after diagnosing static EctoSQL routing; bootstrap now passes the corpus pool explicitly to shared Chunk.create_table. No full upstream corpus ingestion was started and no commit/push was made.",
+      "timestamp": "2026-09-29T15:59:03Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-f9w.6] Implement bounded resumable runner",
+  "type": "task",
+  "updated_at": "2026-09-29T15:59:08Z"
+}

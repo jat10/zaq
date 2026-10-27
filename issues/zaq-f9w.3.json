@@ -1,0 +1,34 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-f9w.2"
+  ],
+  "blocks": [
+    "zaq-f9w.4"
+  ],
+  "closed_at": "2026-09-29T15:11:51Z",
+  "created": "2026-09-29T14:30:46Z",
+  "description": "Configuration/Database modules: separate source/corpus pools; local confidential System/Engine/Connect resolution preserving authorization. Reject OAuth under lock. Test nonmutation, targeting, secrets, fingerprints.",
+  "id": "zaq-f9w.3",
+  "labels": [],
+  "parent": "zaq-f9w",
+  "comments": [
+    {
+      "text": "Action reuse assessment: System.get_embedding_config/0 parses persisted embedding keys but also resolves auth through NodeRouter; calling it from a standalone source pool can trigger OAuth refresh before refusal and leave the local DB boundary. Reuse its parsing via a new secret-free System snapshot API. Reuse AIRuntimeCredentials.resolve/3 and Connect.CredentialResolver selection/authorization; extend resolver with a default-off OAuth refusal checked after locking the canonical configuration, before grant preparation, and propagate only for benchmark calls. No new Action/tool: this is privileged local benchmark configuration, not agent/workflow exposure. Inputs: distinct source/corpus DB connections, trusted system actor, persisted embedding credential; output: ephemeral snapshot plus secret-free fingerprint; errors: missing config, OAuth, invalid auth, pool/target mismatch. Tests: source nonmutation, target isolation, refusal under lock, malformed actor, secret-free inspect/manifest, fingerprint changes.",
+      "timestamp": "2026-09-29T14:58:32Z"
+    },
+    {
+      "text": "Module-context evidence (System/Connect): System owns persisted embedding-key parsing; AIRuntimeCredentials owns secret-free provider projection plus confidential result; CredentialResolver owns trusted actor validation, canonical slot/authorization and locked grant selection; Repo owns DB state. Flow: standalone Configuration.load -\u003e process-local source Repo -\u003e System snapshot -\u003e AIRuntimeCredentials -\u003e Connect resolver -\u003e locked configuration/grant -\u003e ephemeral credential; no BO/event transport involved. Source mutations occur only in OAuth refresh, now rejected under the canonical lock before refresh for this caller. Invariant: nil actor is not permission; only explicit validated system actor selects org. Risk: get_embedding_config/0 performs implicit NodeRouter auth resolution and could refresh OAuth, so benchmark uses the new secret-free snapshot. Test map: System snapshot test, Connect OAuth refusal test, 4 configuration tests, 3 Database tests, 211-test/4-property shared owning suite. Unknown: positive distinct physical database open/restore is deferred to zaq-f9w.7/.8; same-DB alias and pool routing are already tested.",
+      "timestamp": "2026-09-29T15:09:30Z"
+    },
+    {
+      "text": "Implemented Database.open/2 with distinct anonymous Repo pools, same-target rejection, process-local source/corpus routing and cleanup; Configuration.load/2 uses System.get_embedding_config_snapshot/0 and AIRuntimeCredentials with reject_oauth:true, returns Inspect-redacted ephemeral authentication plus SHA-256 fingerprint over non-secret corpus/model/provider/selected-owner identity. Canonical Connect locks and actor validation remain intact; added inactive-Person negative test to preserve no-leak ordering. Secret changes alone intentionally do not change vector-contract fingerprint (grant identity/model/endpoint changes do). Source pool performs no writes; it must permit canonical row locks. Validation: mix q passed, 212 selected tests plus 4 properties passed including integration pool tests; no full-corpus run. Physical distinct-DB restore exercise is covered by later zaq-f9w.7/.8. Uncommitted per user.",
+      "timestamp": "2026-09-29T15:11:48Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-f9w.3] Load standalone persisted configuration",
+  "type": "task",
+  "updated_at": "2026-09-29T15:11:51Z"
+}

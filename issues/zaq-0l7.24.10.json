@@ -1,0 +1,27 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-0l7.24.9"
+  ],
+  "blocks": [
+    "zaq-0l7.24.11"
+  ],
+  "closed_at": "2026-10-13T15:04:20Z",
+  "close_reason": "Implemented and validated in local working trees. Package: 144 tests + 2 properties, 0 failures, live excluded; mix quality including Dialyzer/Doctor passed. ZAQ: mix q and 62 focused integration tests passed; final mix precommit: 48 doctests, 255 properties, 10911 tests, 0 failures (1 skipped, 122 excluded). Parent retains review/coverage and release handoff; no commit or publication performed.",
+  "created": "2026-10-13T14:28:35Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nPackage owns generic namespace routing, compatible serialization, snapshot selection and confirmation sequencing currently in ZAQ Storage/Session. Host selects namespace policy and supplies typed trusted authorization, durable persistence, connector-confirmation and runtime-start callbacks with opaque context. Authorization runs before each protected operation, including RAM read/write/seed/clear. Stop protocol writes before freezing; persist durable snapshot with stable attempt id; retry failures from frozen state. After successful host save, seed RAM once then start saved runtime. Report saved/runtime_pending after seed/start failure. Preserve identity-presented guard, idempotent confirm and clear-both-stores behavior; no late snapshot resurrection. Handle uncertain persistence outcomes with the same attempt id. Raw secrets only cross trusted internal callbacks, never public status/logs/errors. Retain existing encrypted encoding or explicit compatible codec.\n\nTests to add before implementation:\nBefore code: real package composition with fake host boundary callbacks; authorization ordering for RAM/durable operations; revoked/wrong profile; callback exceptions/timeouts/invalid returns; persistence failure and lost-success-response retry; duplicate confirm; expiry/cancel during save; identity changed; post-save seed/start failure; clear partial failure; stale snapshot; secret-redaction and isolation properties.\n\nBranches/paths validated:\nDurable/volatile; allowed/denied; mutable/frozen/saved; save failed/committed/uncertain; seed retry; runtime_pending; stale generation.\n\nMocking plan:\nReal internal collaborators; inject external transport/host-callback edges only. Isolated BEAMs for global Mnesia. Explicit config/clock/dependency options.\n\nDocumentations to update for both code and docs/ related content:\nPackage storage composition and typed callback contracts, confirmation sequence and generic-host examples.\n\nAction reuse assessment:\nReuse Amarula callbacks, GuardedStorage, Mnesia seed-once and upstream temporary/session primitives. Local-only generic orchestration; existing host ConfirmLinkedDevice Action still owns the database transaction and permissions.\n\nValidation and E2E:\nRead owning AGENTS.md and ZAQ workflow, action-reuse, testing, system-config and documentation policies as applicable. Use real internal state/process/DB boundaries; mock only external WhatsApp transport or package host-callback boundary in upstream standalone tests. Isolate global Mnesia tests in separate BEAMs. Runtime dependency seams use explicit public options. Preserve current UI journeys; run relevant existing tests, no new feature E2E authoring unless scope changes and the required UX approval is recorded. Follow post-review coverage and final validation gates; no automatic commit/push/publication.",
+  "id": "zaq-0l7.24.10",
+  "labels": [],
+  "parent": "zaq-0l7.24",
+  "comments": [
+    {
+      "text": "Composite routing/encoding and confirmation save/seed/start handoff moved upstream. Fixed callback task EXIT incorrectly expiring saved receipt; standalone and host regression tests pass.",
+      "timestamp": "2026-10-13T14:50:54Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.10] Add upstream composite storage and confirmation handoff",
+  "type": "task",
+  "updated_at": "2026-10-13T15:04:20Z"
+}

@@ -1,0 +1,31 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-qzr.7"
+  ],
+  "blocks": [],
+  "created": "2026-09-17T17:46:50Z",
+  "description": "\n**Goal:** Demonstrate the combined guarantees before enabling the migration in deployed runs.\n\n**Files/modules affected:** Existing workflow/approval/map/Condition suites, `test/zaq/agent/tools/general/base64_test.exs`, a focused workflow execution-boundary integration suite if existing files become unwieldy, and the workflow service guide. Update only actual affected fixtures found during the audit.\n\n**Exact behavioral change:** No additional production mechanism. Exercise real DAG preparation, execution, persistence, approval and replay together. Inventory invalid stored Condition definitions and action modules before rollout. Preserve immutable active snapshots: repair authorable definitions for future runs, and drain or explicitly manage already-running incompatible snapshots. Deploy the HITL producer/consumer/replay set together; never mix old/new workers executing the same active run. Rollback requires draining new suspended executions or retaining their compatible readers.\n\n**Dependency:** Final acceptance after step 7; earlier steps still require their own focused tests before completion. Integration is not deferred until the end as a substitute for unit protection.\n\n**Tests required before implementation:** Ordinary/linear/branching/composed/map workflows with complete, failed, skipped, waiting and incomplete outcomes; map empty/limit/all-failed/mixed/retry/HITL cases; approval/rejection after process exit and DB reload; pause versus waiting; repeated resume; no repeated side effects for terminal steps; output/cascade/fork consistency. Bounded generated DAG/replay cases prove that a pending result is never applied and no later runnable executes in that pass. Preserve existing Engine API authorization tests. This is backend behavior work: no new browser feature E2E is proposed; existing relevant approval UI regressions may run unchanged.\n\n**Migration/regression risks:** Database state from old versions, mixed workers, snapshot incompatibility, and tests accidentally calling run/2 or pre-validating inputs can mask failures. All migration regressions must exercise the real executor boundary. No tests were executed during this planning task; source inspection is not runtime proof.\n\n**Action reuse/docs:** No new operation. Follow `docs/WORKFLOW_AGENT.md` validation lifecycle: issue-level `mix q` and isolated tests; post-review coverage-upper handoff; final `mix precommit` after required work before final approval. Documentation changes accompany their owning PR, not a delayed clean-up PR. Internal boundaries stay real in tests; mock only external APIs and use injected runtime dependencies.\n\n\n\nExecution notes: Source specification transferred verbatim from docs/exec-plans/active/issue-706-implementation-plan.md. Recheck Action reuse against live source before starting. Mocking plan: keep internal boundaries real; mock only external APIs. Branches/paths validated: success, failure and regression paths enumerated above. Backend only; no new feature browser E2E. Preserve deployment grouping: 1; 2–4 atomic; 5; 6–8. User authorized implementation; architecture review must be recorded for driver. Issue-level validation follows docs/WORKFLOW_AGENT.md.",
+  "id": "zaq-qzr.8",
+  "labels": [],
+  "parent": "zaq-qzr",
+  "comments": [
+    {
+      "text": "Reuse: no new runtime operation; integration uses real preparation/driver/Jido/persistence/approval boundaries. Broader workflow+Condition+Base64 suite passed 851 tests/16 properties. Adding bounded generated sibling/replay checks across process exit and DB reload. Rollout audit is read-only and local; production inventory/drain/mixed-worker controls remain deployment prerequisites, not silent DB rewrites.",
+      "timestamp": "2026-09-17T23:47:52Z"
+    },
+    {
+      "text": "Read-only stored-definition audit blocked: configured development database zaq_fix_bug_706 does not exist (PostgreSQL invalid_catalog_name). Did not create an empty database or claim it represented deployed state. Runtime integration uses the isolated test database. Actual deployment inventory, active snapshot drain and worker rollout remain required external prerequisites.",
+      "timestamp": "2026-09-17T23:50:26Z"
+    },
+    {
+      "text": "Integration implementation complete: bounded generated DAGs prove suspension before downstream/sibling work, process exit, DB reload and exactly-once terminal replay; integration+Engine API authorization suite passed 78 tests/1 property. Final issue mix q passed. Source inventory: 40 authorable production modules, 0 malformed schemas. Three repository workflow JSON fixtures audited; two Condition nodes without static input are supplied by Batch, existing referenced date Condition remains valid. No forbidden direct calls, duplicate retries, Task timeouts or old HITL signals remain in migrated boundaries. Stored target inventory remains blocked by absent development DB; leave issue open for this deployment prerequisite. Post-review coverage and final mix precommit remain pending under WORKFLOW_AGENT phases 5-6; no application commit/push/PR authorized.",
+      "timestamp": "2026-09-17T23:52:52Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[#706] 8. Verify cross-boundary regressions and stage rollout",
+  "type": "task",
+  "updated_at": "2026-09-17T23:52:52Z"
+}

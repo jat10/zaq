@@ -1,0 +1,38 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-ijp.2"
+  ],
+  "blocks": [
+    "zaq-ijp.4"
+  ],
+  "closed_at": "2026-10-24T16:20:27Z",
+  "created": "2026-10-24T15:33:52Z",
+  "description": "Action reuse: not applicable; test fixtures and scheduling only, no product operation edits. Preserve all scenarios, assertions, property runs, failure paths, and production modules. User authorized test-only runtime changes and validation, plus commit/push. Reuse test/support fixture controls and explicit production opts. No new mocks of internal code. No E2E authoring needed; no production coverage changes. Update existing test/runtime-report.txt after reading documentation policy. Audit readers and writers before enabling async, preserve sandbox ownership and process cleanup. Stress relevant shared boundaries; keep true global tests serial.",
+  "id": "zaq-ijp.3",
+  "labels": [],
+  "parent": "zaq-ijp",
+  "comments": [
+    {
+      "text": "Six workers with two schedulers failed at app startup (four-connection pools); six workers with four schedulers passed all 11653 cases in 125.856s. Same first partition remains async critical path (89.5s). Two widget startup fixtures invoke nested mix run without --no-compile, redundantly checking/compiling the shared project while other partitions execute. Investigate that fixture-only startup overhead, preserving real separate VM boot and all assertions.",
+      "timestamp": "2026-10-24T15:50:37Z"
+    },
+    {
+      "text": "Compiler-only profiling identifies a concrete bottleneck: Zaq.Channels.ApiTest type checking alone takes 41.204 seconds (group pass 41.475s); 282 other modules finished earlier. No tests run in this diagnostic. Preserve every source test/assertion and isolate costly inference in temporary compiler probes before minimal test helper refactor. Prior nested-mix hypothesis does not explain the first partition; no widget fixture edits made.",
+      "timestamp": "2026-10-24T15:57:31Z"
+    },
+    {
+      "text": "Proven minimal compiler fix in temporary copies: equivalent Map.fetch access still 36.970s; a private pass-through helper for Api.handle_event/3 reduces full 113-test module type checking to 31ms (all bodies/assertions retained). It calls the real dispatcher with identical arguments and returns the exact result. Apply only that helper and call-site substitution, then normalize helper calls in AST comparison against HEAD to prove no assertion/scenario changes. Validate all 113 API tests plus runner tests, then repeat full partition benchmark. No production edits or test-only behavior added to product.",
+      "timestamp": "2026-10-24T16:04:41Z"
+    },
+    {
+      "text": "Optimized full suite passed under two minutes: 114.143s wall, all 11653 cases, 1 existing skip, 155 existing exclusions, seed 92814. Full source AST equality after expanding only the new private helper proves the 113 original API cases/assertions unchanged. Focused API + runner check: 117 passed in 1.5s. mix q passed. Keeping scope under test/; user preference question pending about whether literal mix test should invoke partitions via a mix.exs alias change. Add @external_resource for runner stale-test tracking, then another seed and final precommit.",
+      "timestamp": "2026-10-24T16:12:03Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ijp.3] Measure and validate isolated process partition concurrency",
+  "type": "task",
+  "updated_at": "2026-10-24T16:20:27Z"
+}

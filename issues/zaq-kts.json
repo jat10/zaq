@@ -1,0 +1,28 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-20T15:17:23Z",
+  "description": "Review PR #847 commit evolution and current channel contracts; author a developer/coding-agent guide with architecture boundaries, implementation sequence and reusable acceptance checklist derived from the supplied WhatsApp checklist; link from documentation navigation. Action reuse: not applicable — documentation only, no executable operation changes.",
+  "id": "zaq-kts",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Drafted docs/guides/communication-channel-integration.md and linked it from docs/README.md and docs/services/channels.md. Evidence: PR #847 has 37 commits at 225cee7335cf81d0b83c2266329d0137a350d95b; reviewed predecessor #843 ownership comments, current shared adapter/identity/settings contracts and relevant regression scenarios. Captured the supplied uploader-only media observation separately from current transcript authorization. Checked 113 local links/anchors with zero errors; git diff --check and mix q pass. No application code or tests changed; coverage not applicable. Final mix precommit running. No commit/push requested.",
+      "timestamp": "2026-10-20T15:22:39Z"
+    },
+    {
+      "text": "User explicitly waived mix precommit for this Markdown-only task. Stopped the still-running precommit process; do not rerun it. Guide and navigation edits are complete. Local links/anchors and git diff whitespace checks passed; mix q passed. Added and verified the webhook ingress reference. No implementation tests, commits or pushes were added.",
+      "timestamp": "2026-10-20T15:29:51Z"
+    },
+    {
+      "text": "Applied feedback to keep the guide general: removed PR/commit provenance and review links, reframed historical rework as common coupling pitfalls, and removed supplied-checklist attribution from provider examples. No Mix commands or application tests run for this prose edit.",
+      "timestamp": "2026-10-20T15:32:19Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Write reusable communication channel integration guide",
+  "type": "task",
+  "updated_at": "2026-10-20T15:32:19Z"
+}

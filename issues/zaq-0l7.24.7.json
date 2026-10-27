@@ -1,0 +1,23 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-13T15:04:22Z",
+  "close_reason": "Implemented and validated in local working trees. Package: 144 tests + 2 properties, 0 failures, live excluded; mix quality including Dialyzer/Doctor passed. ZAQ: mix q and 62 focused integration tests passed; final mix precommit: 48 doctests, 255 properties, 10911 tests, 0 failures (1 skipped, 122 excluded). Parent retains review/coverage and release handoff; no commit or publication performed.",
+  "created": "2026-10-13T14:18:29Z",
+  "description": "User explicitly requests switching jido_chat_whatsapp to path ../jido_chat_whatsapp before implementation so sibling changes take effect. Change only mix.exs dependency declaration; preserve sibling edits and session-logging.patch. Action reuse: not applicable, local dependency configuration only. Verify Mix resolves the intended source and compile the dependency; run applicable quality validation. This local path must be replaced with a published revision before production handoff under zaq-0l7.24.5. No Mnesia implementation in this task.",
+  "id": "zaq-0l7.24.7",
+  "labels": [],
+  "parent": "zaq-0l7.24",
+  "comments": [
+    {
+      "text": "Changed mix.exs to {:jido_chat_whatsapp, path: \"../jido_chat_whatsapp\"}. mix deps confirms sibling checkout with status ok; mix deps.compile jido_chat_whatsapp and mix q both passed. No application behavior tests added for this dependency-source-only change. Only mix.exs differs in tracked working tree; no sibling files edited. No Mnesia implementation started. Final cross-repository validation and production pin restoration remain in parent plan.",
+      "timestamp": "2026-10-13T14:19:25Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.7] Use sibling WhatsApp checkout for local development",
+  "type": "task",
+  "updated_at": "2026-10-13T15:04:22Z"
+}

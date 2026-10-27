@@ -1,0 +1,32 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T12:41:53Z",
+  "description": "Discovered during zaq-df1/zaq-vl9 final precommit (seed 59818): unchanged WorkflowDetailLiveTest timestamp assertion failed. DateFormatTest runs async:true while TimezoneTestHelpers.stub_system_timezone/1 mutates Application env :zaq,:system_timezone_fun; the BO Timezone helper reads that global and caches its value per render process. Concurrent readers can observe another test's GMT offset; teardown restoration cannot protect overlap. Action reuse: not applicable, test scheduler isolation only; no executable production operation changes. Smallest repair: run DateFormatTest async:false, matching TimezoneTest. Preserve every existing test assertion, fixture, and scenario. This is a mechanical isolation repair under docs/testing-approach.md, not a change to expected behavior. Validate date/time and workflow-details tests, then rerun final precommit. Do not change product code or weaken timestamp assertions.",
+  "id": "zaq-krc",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Audit expanded: DateFormatTest, DesignSystem.TableTest and PeopleLiveTest all run async:true and call TimezoneTestHelpers, which mutates global Application env; PeopleLiveTest also installs GMT+03:00. They cannot safely overlap other timezone readers/writers. Full-suite seed 59818 failed WorkflowDetailLiveTest timestamp; isolated four-module run with same seed passed 195 tests (7.8s), confirming intermittence rather than a deterministic workflow/image regression. Repair all three writers by changing async scheduling only; no assertions, fixtures or scenarios change. Retain existing test expectations exactly. This is the permitted mechanical isolation repair, not a behavior change.",
+      "timestamp": "2026-10-15T12:44:36Z"
+    },
+    {
+      "text": "Mechanical repair implemented: DateFormatTest, DesignSystem.TableTest and PeopleLiveTest now async:false with a comment explaining global timezone configuration. Every existing assertion/fixture/scenario retained. Validation: mix q passed; 205 affected date/time, table, People UI and workflow-detail tests passed with seed 59818 (2.0s async, 7.9s sync). Final precommit rerun in progress. No production/UI implementation changed for this repair.",
+      "timestamp": "2026-10-15T12:46:41Z"
+    },
+    {
+      "text": "Final validation PASSED against final changes: mix q; expanded image/agent suite (6 doctests, 10 properties, 256 tests, zero failures); affected timezone/UI suite (205 tests, zero failures, seed 59818); mix precommit (497.6s, 17 doctests, 198 properties, 9963 tests, zero failures, one existing skip, 117 excluded). Precommit's MCP transport timed out at 300s, but the background process completed normally; exit status 0 verified in /tmp/zaq-image-precommit-final.status and summary in /tmp/zaq-image-precommit-final.log. Initial timezone interference repaired under zaq-krc by scheduling only; assertions/fixtures unchanged. Implementation and local validation are ready for review. No commits/pushes performed. Issues remain open for review/coverage/landing under repository workflow.",
+      "timestamp": "2026-10-15T12:55:50Z"
+    },
+    {
+      "text": "User requested discarding this implementation to restart from a clean baseline. All associated uncommitted code, documentation and test changes were removed. Working tree is clean at 4281f333c. Previous validation results describe the discarded implementation, not the current code. Investigation findings remain; implementation is no longer present.",
+      "timestamp": "2026-10-15T14:54:31Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-krc] Serialize tests that mutate global timezone configuration",
+  "type": "bug",
+  "updated_at": "2026-10-15T14:54:31Z"
+}

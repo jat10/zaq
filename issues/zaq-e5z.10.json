@@ -1,0 +1,40 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-e5z.1",
+    "zaq-e5z.8",
+    "zaq-e5z.9"
+  ],
+  "blocks": [
+    "zaq-0l7.7"
+  ],
+  "closed_at": "2026-10-21T11:39:02Z",
+  "created": "2026-10-21T09:43:02Z",
+  "description": "Execution boundary: planning approved; this issue does not authorize commits, pushes, merges, upstream publication, GitHub comments, live WhatsApp access, or real messages. Revalidate current source/Git state before implementation. Preserve unrelated work, including the already-edited docs/architecture.md. Track this work in the ZAQ Beadwork store even when files belong to the sibling package; do not initialize another store.\nRead AGENTS.md in the affected repository. For ZAQ read docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the domain policies listed below. Read module documentation before editing. Source navigation uses Serena with bounded fallback if unavailable. Record test results honestly; plan approval is not completed-feature UX approval. Follow repository validation owners; no assertion weakening or unrelated refactors. Existing test changes outside the specifically approved contracts need human approval.\n\nRequired domain policies: docs/documentation.md; docs/WORKFLOW_AGENT.md validation lifecycle; docs/e2e-testing.md for existing E2E execution.\n\nFunctional specifications covered with associated files to edit/add:\nReview the complete final diff for points 2–5 in both repositories. Verify no changes to jido_chat or Amarula, no concrete WhatsApp storage calls from ZAQ, no new agent/tool exposure, normalized phone/name flow, super-admin enable restrictions, and cleanup exclusion/failure ordering. Ensure the final installed package SHA has required changes and all relevant paths use shared operations.\nPreserve and review the local docs/architecture.md point-6 correction; it is already edited, not a fresh implementation task. Point 1 PR description was updated previously with reuse assessment; prepare an accurate follow-up text replacing pending wording only when actual code is complete. Updating GitHub requires separately authorized action; do not post comments/resolve threads/request review automatically.\nUpdate authoritative docs/services/channels.md, engine.md and system-config.md and package docs for actual contracts; fix obsolete 'missing listener prevents disable' and local-path dependency statements. Do not expand issue #22 product scope or claim its separate acceptance clarification resolved.\nCollect focused package/ZAQ results and existing E2E execution evidence; record exact revisions and any failures. Prepare a concrete UX review checklist for reused zaq-0l7.7. Existing-test approvals remain narrowly those in zaq-e5z.1 and zaq-e5z.8; retain other assertions.\n\nTests to add before implementation:\nRerun only affected integrated suites justified by cross-repository changes; verify real dispatch -\u003e storage callbacks and no missing-listener activation regression. Existing E2E execution per workflow; no new E2E authoring until reused UX gate. Check doc links and diff hygiene. Do not claim tests green from historical PR body.\n\nBranches/paths validated:\nComplete pairing/name/phone persistence, failed-start disable/archive, super-admin enable/relink, cross-account isolation, polling consumers, package pin and unrelated-adapter compatibility.\n\nMocking plan:\nReal internal boundaries; offline WhatsApp network and external model edge as needed. No live device/account/message without explicit authorization.\n\nDocumentations to update for both code and docs/ related content:\nOwner documentation and issue validation evidence; prepare review-response/PR-body draft in issue, not an unauthorized external post. Preserve point-6 local edit and approved point-1 assessment.\n\nAction reuse assessment:\nAction reuse: not applicable to audit/documentation itself; verify assessments in implementation issues, especially new enable Action prerequisite, package extension choice, canonical Connect persistence and local timer reuse. Do not implement hidden new operations while integrating.",
+  "id": "zaq-e5z.10",
+  "labels": [],
+  "parent": "zaq-e5z",
+  "comments": [
+    {
+      "text": "Integration evidence: ZAQ mix q passes; focused combined Engine/Channels/BO/polling suites pass 234 tests + 4 properties. Preserved existing connector_sync_runtime stop-only rejection when no lifecycle requester is present; enable reconciliation requires the Engine lifecycle context. Added in-lock demotion regression and kept other provider enable behavior unchanged. Reviewed new helper ownership, no agent exposure, generic adapter extension use, no jido_chat/Amarula source edits. mix.lock exactly pins committed/published c6edbf6ca248ff1ec5f8b650b3c72a382d196a3e. Existing full Playwright npm run test executing; consolidated new E2E remains pending actual UX approval.",
+      "timestamp": "2026-10-21T11:30:44Z"
+    },
+    {
+      "text": "Final immediate validation: mix q passed after integration fixes; main affected suites 234 tests + 4 properties passed, archive/webhook/workflow regression subset 27 tests + 3 properties passed. Documentation local links exist; git diff --check clean. Existing full npm run test exceeded native Context Mode 300-second response deadline while subprocess continued. Interrupted only that owned Playwright runner with SIGINT to collect honest partial results and shut down test server, rather than leaving an orphan run. This is not a browser pass or a production failure. No new feature E2E authored; actual UX gate remains open.",
+      "timestamp": "2026-10-21T11:34:08Z"
+    },
+    {
+      "text": "PR description follow-up draft (local only; do not post without authorization):\nImplemented PR #847 points 2–5: Engine consumes normalized linked-device account records without WhatsApp identity parsing; optional configured-adapter cleanup_connection clears existing saved storage when activation left no listener; connector exclusion spans preparation/cleanup/persistence/stop and rejects stale starts; WhatsApp enable uses a confidential, current-super-admin Engine Action; pairing/device-sign-in share observation timers with independent domain state. Point 6 supervisor documentation correction retained. mix.lock pins package c6edbf6ca248ff1ec5f8b650b3c72a382d196a3e. jido_chat and Amarula unchanged.\nValidation so far: mix q, 261 isolated tests + 7 properties pass; package quality and 216 tests + 13 properties passed before pinning the exact commit. Full existing Playwright execution interrupted after native tool response timeout; do not label it passed. Focused existing browser checks executing. Completed UX approval, consolidated new E2E, actual review/coverage and final precommit remain tracked prerequisites. No ZAQ commit or GitHub modification performed.",
+      "timestamp": "2026-10-21T11:35:37Z"
+    },
+    {
+      "text": "Final existing-browser evidence: npm run test -- specs/channels.spec.js specs/system_config.spec.js completed with 128 passed (Chromium/WebKit), 64 failed to launch because the required Firefox executable firefox-1509 is missing. No production assertion failure is claimed from those launch errors. Full 556-test suite was interrupted after native Context response timeout; not a full pass. Do not change expectations/skip projects to mask this; Firefox installation/rerun and full browser validation remain pending. Test server shut down and generated Storybook inventory restored. mix q, 261 ExUnit tests + 7 properties pass. Documentation links and diff whitespace checks pass. Implementation/integration audit is complete; completed-UX approval, consolidated E2E, review, post-review coverage and final precommit remain open.",
+      "timestamp": "2026-10-21T11:39:00Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-e5z.10] PR #847: reconcile approved fixes with docs and integrated regression evidence",
+  "type": "task",
+  "updated_at": "2026-10-21T11:39:02Z"
+}

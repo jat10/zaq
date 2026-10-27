@@ -1,0 +1,63 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-mvw.2"
+  ],
+  "blocks": [],
+  "created": "2026-10-22T10:47:34Z",
+  "description": "Functional specification and candidate files:\n- Remove tests introduced specifically for removed NodeRouter coordination, receiver holds, coordination timeout/ownership propagation and AsyncHandoff.\n- Audit test/zaq/node_router_coordination_test.exs, test/support/node_router_coordination.ex, test/support/node_router_coordination_peer.ex and test/zaq/channels/connector_lifecycle_lock_test.exs.\n- Audit coordination-specific cases/imports/helpers embedded in test/zaq/node_router_test.exs, test/zaq/node_router_contract_test.exs, test/zaq/channels/connector_runtime_test.exs and test/zaq/channels/linked_device/connector_disable_test.exs. Determine actual users before deleting any shared helper.\n- Preserve ordinary NodeRouter sync/async/local/remote tests and permission/error contracts. Preserve the connector_stopping_contract regression.\n- Replace useful domain assertions from deleted coordination tests with connector-owned stopping coverage from task 1: no startup during cleanup, stale-state rejection, independent connectors and cleanup completion despite caller death. Do not leave production behavior untested simply because its old mechanism disappeared.\n- Remove now-unused support registrations/configuration; final source/test reference audit finds no dependency on removed modules.\n\nTests to add before implementation: inventory each removed test as coordination-only or retained domain/ordinary routing behavior. Ensure necessary replacement domain tests exist before deleting their old protection.\n\nBranches/paths validated: no coordination helper references, ordinary asynchronous dispatch still works, connector stopping regression passes, failed activation cleanup works, cleanup failure is disabled/retryable, unrelated routing and connector tests remain green.\n\nMocking plan: retain only fixtures needed by ordinary router contracts and adapter-boundary offline lifecycle tests; do not introduce replacement router-coordination mocks.\n\nDocumentation: remove test-support comments and references that promise deleted coordination semantics; document the final validation outcome in this issue and the eventual PR.\n\nAction reuse assessment: not applicable to production operations; test/support removal only. Verify the prerequisite implementations continue reusing existing domain operations.\n\nApproval record: user explicitly said \"we will remove it and remove it's test\" and requested \"All the tests that were created for noderouter coordinate\" in this epic. This authorizes removal of coordination-specific tests, not weakening unrelated assertions. Additional existing-test behavioral changes remain subject to the testing handbook gate.\n\nValidation: run focused ordinary NodeRouter and connector suites plus mix q; finish with the authoritative review, coverage handoff and mix precommit gates in docs/WORKFLOW_AGENT.md. Do not mark complete merely because tests were deleted.",
+  "id": "zaq-mvw.3",
+  "labels": [],
+  "parent": "zaq-mvw",
+  "comments": [
+    {
+      "text": "Removed dedicated router coordination/lock suites and their 3 support helpers. Replaced embedded coordination cases with connector-owned stopping, fresh startup, cleanup retry, archive ordering and caller-death tests. Expanded implementation to stop a bound listener even if live logout fails. Updated existing LiveView failure handling to show persisted disabled state and retain the confirmation for an explicit cleanup retry; test contract changes were approved in this conversation. Action reuse: existing enable/disable/archive operations and presentation are extended; no new Action/tool or browser journey. Focused combined suites passed 120 tests/properties, and BO/lifecycle follow-up passed 101 tests. Final broader validation pending.",
+      "timestamp": "2026-10-22T11:12:39Z"
+    },
+    {
+      "text": "User explicitly approved the additional supervision-tree assertion update in this conversation: [limiter, BridgeSupervisor] becomes [limiter, ConnectorController, BridgeSupervisor]. Broad Channels/related suite passed 1992 of 1994 checks (49 properties); remaining failures were this expected tree change and a 10-second readiness timing test being checked in isolation. No readiness assertions or timeouts changed.",
+      "timestamp": "2026-10-22T11:17:19Z"
+    },
+    {
+      "text": "Self-review found that an inner Engine RPC failure can outlive its Channels cleanup callback even with an outer controller worker. Added controller-local cleanup receiver monitoring so :stopping survives until the actual callback completes, including after command failure; no NodeRouter scopes or generic coordination were reintroduced. New regression reproduced missing receiver tracking and now passes, together with controller/lifecycle suites (25 tests/properties). Controller-only async test IDs use an isolated range to avoid collisions with DB fixture IDs. Earlier precommit attempts were stopped after findings; they are not reported as passes. Re-running final checks on the corrected tree.",
+      "timestamp": "2026-10-22T11:34:32Z"
+    },
+    {
+      "text": "Added and passed a real supervision regression proving controller death kills both the command worker and an independently executing cleanup receiver. Cleanup receivers are linked to the controller and unlinked on completion, so normal callback completion does not retain unrelated process links. Targeted crash/controller/linked-device suite: 37 passed (1 property); mix q passes. Default precommit encountered PostgreSQL 40P01 deadlocks in existing People/OAuth shared permission-table setup, outside this epic. Re-running the unchanged gate/assertions with --max-cases 1 and the same 900-second execution limit to separate shared-state interference from regressions.",
+      "timestamp": "2026-10-22T11:40:23Z"
+    },
+    {
+      "text": "Sequential precommit completed in 637 seconds: 10530/10533 checks passed (17 doctests, 220 properties), with only three remaining integration failures. Fixed all three without weakening webhook/revision assertions: optional ingress teardown retains its original pre-persistence order; saved-session cleanup still follows persisted disablement; already-disabled archive retries skip already-deleted webhooks. Applied the previously approved three-child Channels supervisor expectation to the peer-node assertion and added a negative Controller role-gating assertion. Targeted webhook/persistence/linked-device/peer suite now passes all 44 checks (2 properties), and mix q passes. Final sequential precommit rerun follows; review and post-review coverage remain outstanding.",
+      "timestamp": "2026-10-22T11:53:27Z"
+    },
+    {
+      "text": "Persisted lifecycle implementation final local validation PASSED: mix q; 182 focused checks plus 39 runtime/supervision checks after the final lock fix; mix precommit --max-cases 1 exited 0 in 670.1s, reporting 10,535 passed (17 doctests, 220 properties, 10,298 tests), 1 skipped, 147 excluded. Serialized execution avoids previously observed unrelated shared-table deadlocks; no assertions were weakened. ConnectorController and its supervision/test changes are removed. lifecycle_state migration included. Changes remain uncommitted. Implementation .1/.2 complete; .3/epic remain open for review and post-review coverage handoff per workflow.",
+      "timestamp": "2026-10-22T12:54:12Z"
+    },
+    {
+      "text": "User requested lib/zaq/channels/supervisor.ex identical to main. Restored that file from local main; verified git diff --exit-code main -- lib/zaq/channels/supervisor.ex succeeds. Only moduledoc wording and formatting differed; runtime behavior unchanged. Action reuse: not applicable, exact textual restoration. No application tests rerun for this non-behavioral change.",
+      "timestamp": "2026-10-22T12:55:06Z"
+    },
+    {
+      "text": "User reports BO Delete archives WhatsApp config while device remains linked; Disable unlinks successfully. User explicitly requests strengthening the existing archive test to assert logout before runtime stop/archive, and leaving any reproduced regression failing. Test-only scope; do not fix production. Action reuse: not applicable to production operations; exercise existing archive event, real adapter logout and Amarula offline frame sink rather than a mocked successful logout. Existing test assertions remain intact.",
+      "timestamp": "2026-10-22T13:06:39Z"
+    },
+    {
+      "text": "Archive test now asserts real logout before listener stop/archive and emitted remove-companion-device. All prior assertions retained. mix q passes; entire file: 20 passed. Production unchanged. Live failure not reproduced. User supplied storage_failed log from wipe_credentials; companion removed is logged without remote acknowledgement, while storage failure propagates as logout_failed. Further live failure diagnosis remains open.",
+      "timestamp": "2026-10-22T13:12:28Z"
+    },
+    {
+      "text": "Continued authorized test-only investigation. OfflineTransport now uses production GuardedStorage wrapper. Added real-storage rejection cases for Disable and Archive by changing saved binding after listener startup: Engine returns invalid_binding, GuardedStorage maps it to storage_failed, both commands return errors and preserve disabled/stopping/unarchived config. This is controlled failure-path coverage, not proof of live root cause. mix q passes; 22 checks pass. User confirms restarted and migrated, unsure whether log originated from Disable or Delete. No production changes. Live disappearing connector remains unreproduced; need operation-specific logs/BO result. Action reuse: test-only existing lifecycle events/storage boundaries; no new operations.",
+      "timestamp": "2026-10-22T13:21:38Z"
+    },
+    {
+      "text": "Validated revised scope after reverting item 1: mix q passed; 360 focused checks passed (4 properties, 356 tests) covering NodeRouter, runtime, bridge, credential documents, lifecycle, disable and BO. git diff --check passed. Channels supervisor remains identical to main. Coordination/AsyncHandoff modules and dedicated helpers/tests remain deleted. No lifecycle stopping schema or restart guards remain. Full precommit not rerun for this scope revision.",
+      "timestamp": "2026-10-22T14:11:28Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-mvw.3] Remove NodeRouter coordination tests and helpers; validate retained contracts",
+  "type": "task",
+  "updated_at": "2026-10-22T14:11:28Z"
+}

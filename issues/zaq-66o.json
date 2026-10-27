@@ -1,0 +1,32 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-09-26T08:46:42Z",
+  "description": "User requested a failing regression test only. Add a public RecordSource.materialize/2 test using the genuine DOCX fixture, extensionless source Budget, downloaded Budget.docx, and application/x-zaq-unknown. Assert intact bytes and .docx staging; confirm current .bin assertion failure. Leave production unchanged. Action reuse assessment: not applicable; test-only coverage of existing materialization, using existing NodeRouterMock and fixture. No new operations or E2E scope.",
+  "id": "zaq-66o",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Added genuine DOCX fixture regression at RecordSource.materialize/2. Focused run: 1 test, 1 failure (51 excluded), expected .docx but got .bin; intact-byte assertion passed. RED deliberately retained per user request; production unchanged. Existing table case still records .bin behavior for an unknown MIME with source Report.docx and will require reconciliation when implementing the fix. No final precommit or merge approval requested for this intentionally failing checkpoint.",
+      "timestamp": "2026-09-26T08:47:41Z"
+    },
+    {
+      "text": "User now authorizes fixing the regression. Action reuse assessment: extend existing private RecordSource.extension_for/2 using ArtifactType canonical_extension/1 and filename safety APIs. Unknown/unmapped downloaded MIME cannot establish a conflict with a safe downloaded suffix; preserve that suffix. Known MIME conflicts still use canonical mapping; original-name fallback remains limited to nonspecific MIME. No new Action or public operation. Update regression matrix and document contract; verify focused tests, mix q, existing E2E and final precommit.",
+      "timestamp": "2026-09-26T08:48:10Z"
+    },
+    {
+      "text": "GREEN: RecordSource now preserves safe downloaded suffixes when MIME has no explicit mapping. Existing expectations updated to the corrected contract; added missing/unsafe-name cases preserving .bin and denying stale-source fallback. Focused suite passed: 60 tests, 3 properties. mix q and git diff --check passed. Existing E2E blocked before Playwright by AI credential migration preflight row 596 missing_auth/no_explicit_authentication. Final precommit running. No new Action, no UI changes, no commit or push.",
+      "timestamp": "2026-09-26T08:50:39Z"
+    },
+    {
+      "text": "Final precommit log completed with 17 doctests, 131 properties, 8647 tests, 0 failures, 1 skipped (79 excluded), duration 493.1s. Context Mode requested 900000ms but tool connection timed out at 300s; subprocess continued and final summary was retrieved from /tmp/zaq-66o-precommit.log. E2E remains blocked by pre-existing credential migration preflight. No commit/push or final merge approval requested.",
+      "timestamp": "2026-09-26T08:59:41Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[#568] RED: preserve downloaded DOCX suffix with unknown MIME",
+  "type": "task",
+  "updated_at": "2026-09-26T08:59:41Z"
+}

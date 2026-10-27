@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-0l7.24.12.2"
+  ],
+  "blocks": [
+    "zaq-0l7.24.12.4"
+  ],
+  "closed_at": "2026-10-14T21:57:31Z",
+  "created": "2026-10-14T21:29:21Z",
+  "description": "Functional spec/files: JidoChatBridge.from_listener adds a typed private host-request branch before listener_state/State/Jido.Chat dispatch. Thin host handler reuses NodeRouter confidential credential_document Action with trusted connector context and exact binding validation. Move prepare/profile/runtime machinery upstream; host retains configuration policy and existing auth persist/start Actions. Replace authenticate document callback and saved-runtime reconstruction consumers; delete SessionStorage only once all references/tests migrate. No generic arbitrary module invocation.\nTests before code: real Engine/Connect/DB integration for enabled/disabled/archived/revoked credentials, mismatched connector/provider/profile, forged webhook/control envelope, missing context and nil identity, bootstrap before State exists, send-triggered storage callback while State busy (deadlock regression), concurrent durable updates, RAM access authorization, lifecycle/source fencing unchanged. Preserve existing session_storage_test, linked_device/storage_test, credential_documents/concurrency coverage by relocating appropriate assertions; do not weaken them.\nAction reuse: reuse credential_document Action through Jido.Exec-owned Engine API/NodeRouter, PairLinkedDevice and ConfirmLinkedDevice for existing authorized flows. Host-only bridge handler returns sanitized result after transaction commit; stores no protocol state. No new Action/tool/workflow exposure; nil actor is not authority, runtime capability explicit and private.\nMocking: external WhatsApp only; real internal authorization/transactions/processes. Docs: services/channels, engine and system-config ownership links. Keep topology/deployment policy host-owned. No credential migration.",
+  "id": "zaq-0l7.24.12.3",
+  "labels": [],
+  "parent": "zaq-0l7.24.12",
+  "comments": [
+    {
+      "text": "Implementation owner: ZAQ. Early trusted sink routing, exact Engine authorization and SessionStorage removal. Read parent epic Agent execution handoff before starting. Preserve existing reaction-normalization work.",
+      "timestamp": "2026-10-14T21:31:10Z"
+    },
+    {
+      "text": "Implemented early private sink routing outside State, migrated saved startup/profile/provider runtime and authentication callbacks, deleted SessionStorage, migrated all affected host tests and docs. Engine expected_provider prevents cross-provider storage via provider-scoped pairing callback. Public chat ingress rejects private request structs. New real-State reentrancy regression passes. mix q passed; expanded suites 76 tests + 4 properties, 0 failures. No production People changes. Existing reaction fix preserved.",
+      "timestamp": "2026-10-14T21:57:30Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.12.3] Route trusted ZAQ storage requests and remove SessionStorage",
+  "type": "task",
+  "updated_at": "2026-10-14T21:57:31Z"
+}

@@ -1,0 +1,29 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-10n.2"
+  ],
+  "blocks": [
+    "zaq-10n.4"
+  ],
+  "created": "2026-10-14T12:42:18Z",
+  "description": "Functional specifications/files: lib/zaq/channels/jido_chat_bridge.ex, channels/api.ex, channels/identity_scope.ex and lib/zaq/people/{resolver,identity_resolver}.ex. Translate adapter evidence at the integration boundary; remove WhatsApp-specific cleanup and completed-profile bypass from shared orchestration. Use the approved generic refresh contract and retain late enrichment. Keep provider authority in Channels. Consume the sibling change through the repository dependency convention without overwriting local mix edits.\nTests to add before implementation: bridge and IdentityResolver tests for identical generic behavior across providers, completed profiles with late enrichment, fetch failure/unsupported fallback, malformed evidence and selected connector scope.\nBranches/paths validated: existing-person shortcut, enrichment path, missing/new person, fetch failure, scope change and audience/author resolution. Never move the platform conditional to another generic People helper.\nDocumentations: existing Channels profile contract and affected module docs.\nAction reuse assessment: extend Channels :fetch_profile and JidoChatBridge.fetch_profile/2; reuse NodeRouter.dispatch with domain events. Existing callback result/error shapes remain compatible or are deliberately adapted. Read-only external profile lookup; People remains write owner. No new Action: existing domain operation covers profile retrieval. No new agent/workflow interface. Verify real bridge/resolver consumer integration.\nPolicies: read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md and applicable module/service guidance before implementation. For sibling changes read ../jido_chat_whatsapp/AGENTS.md. Follow the authoritative validation lifecycle; preserve existing assertions. No commits, pushes or merges are authorized by this plan.\nMocking plan: keep internal modules and database boundaries real; isolate external transport at its existing contract, with connection-scoped offline fixtures. Avoid global configuration mutation.\nE2E: no new UI or user journey; unit, property and thin integration tests provide the required coverage. Reassess if scope changes.\n\nImplementation constraint confirmed with user: add no new ZAQ modules. Extend existing module responsibilities and existing canonical maps/callbacks. Do not introduce a discovery policy module, profile evidence module, wrapper Action, or provider-specific helper under People. Keep the contract minimal and document it in existing owners. If implementation evidence makes this constraint impossible, explain the concrete conflict before changing the agreed scope.\n\nAdapter alignment evidence: inspected installed deps/jido_chat_mattermost, jido_chat_telegram and jido_chat_discord. Mattermost Adapter.get_user/2 builds display_name from first/last name with username fallback and returns a map. Telegram incoming messages expose external_user_id, username and first-name display_name. Discord incoming messages expose external_user_id, username and global_name/username display_name. Telegram/Discord adapters do not implement get_user/2 in these versions. Shared Jido.Chat.Adapter accepts UserInfo or map and optional profile lookup. Preserve this existing canonical Incoming plus optional profile lookup pattern; do not require all adapters to implement a new evidence/provenance/refresh protocol. Any ZAQ ownership/replacement semantics must remain minimal internal rules and preserve these existing callers. Retain unsupported-profile fallback. Verify these three providers as compatibility cases.\n\nCross-repository dependency: consume the actual implementation from ../jido_chat_whatsapp completed in zaq-10n.2. Inspect current mix.exs/mix.lock and existing local path overrides before editing. Preserve user edits; verify which adapter source is compiled for tests. Do not modify deps copies. Do not invent an unpublished commit hash or claim a Git dependency contains uncommitted sibling edits. Record local validation dependency wiring and any eventual published-revision handoff separately; publishing requires explicit authorization.\n",
+  "id": "zaq-10n.3",
+  "labels": [],
+  "parent": "zaq-10n",
+  "comments": [
+    {
+      "text": "Implemented in existing IdentityResolver: optional Channels profile phone is mapped to profile_phone, keeping unsupported/failure fallback; removed WhatsApp-specific completed-profile branch. Existing Resolver generic fallback carries dm_channel_id; removed WhatsApp-specific name/phone inference. Current mix.exs/mix.lock local sibling dependency edits predated task and were preserved.",
+      "timestamp": "2026-10-14T13:09:14Z"
+    },
+    {
+      "text": "JidoChatBridge.fetch_profile/2 already returns a generic phone field from UserInfo metadata, so no bridge source edit or shared Jido schema change was needed. This reuses the existing Channels :fetch_profile event and adapter callback.",
+      "timestamp": "2026-10-14T13:09:29Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-10n.3] Translate adapter profiles into generic discovery and refresh evidence",
+  "type": "task",
+  "updated_at": "2026-10-14T13:09:29Z"
+}

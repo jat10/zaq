@@ -1,0 +1,22 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-o9d.7"
+  ],
+  "created": "2026-10-21T11:20:09Z",
+  "description": "Discovered while implementing zaq-o9d. Reproducer: mix test test/zaq/channels/integration/transcript_test.exs --only scenario:thread_history. Native Telegram webhook carries integer message_thread_id; real adapter normalizes external_thread_id to string. JidoChatBridge creates Chat.Thread with that string; Chat.Thread.with_thread_opts forwards it as thread_id; Telegram.SendOptions.payload_opts passes it unchanged as message_thread_id. Real ExGram rejects before any provider HTTP call: Optional parameter types do not match, message_thread_id expected integer but got string. Parent/thread input and authorized model context exist, private agent answer is persisted, but no confirmed public answer placement. Preserve the executable failing test. Diagnosis/fix requires separate application or dependency authorization; current scope allows test infrastructure only. This bug blocks thread acceptance and final review, not independent generator/skill implementation.",
+  "id": "zaq-gr2",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Final combined validation reproduces the thread-id type failure alongside only the two previously tracked Telegram defects: 181 tests, 4 properties, 3 failures. No provider HTTP request can be made for this final Telegram topic send because ExGram rejects the string parameter. Parent/thread context and agent execution are real. The test remains enabled by default in transcript_test.exs; no production changes made.",
+      "timestamp": "2026-10-21T11:33:12Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-gr2] Telegram thread delivery passes string message_thread_id to ExGram integer parameter",
+  "type": "bug",
+  "updated_at": "2026-10-21T11:33:12Z"
+}

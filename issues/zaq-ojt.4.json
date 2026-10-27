@@ -1,0 +1,25 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-ojt.3"
+  ],
+  "blocks": [
+    "zaq-ojt.5"
+  ],
+  "created": "2026-10-22T14:40:37Z",
+  "description": "Functional specifications / files: audit test/zaq/engine/disable_channel_connector_test.exs, test/zaq/channels/linked_device/connector_disable_test.exs, test/zaq/engine/connector_lifecycle_test.exs, test/zaq_web/live/bo/communication/channels_live_test.exs and related support fakes. Delete suites/cases/helpers whose only purpose is the removed dedicated Action/event/WhatsApp route. Move meaningful contracts to the shared-flow tests from preceding tasks, then remove dead fixtures/imports. Do not delete whole mixed suites containing valid archive, credential or profile behavior.\nTests to add before implementation: map each removed assertion to replacement coverage or explain why the removed entry point no longer exists. Required retained coverage: auth, exact profile, confirmation cancellation, logout-before-disable/stop, error propagation, Delete, callback absence, missing runtime, webhook behavior, repeat operations.\nBranches/paths validated: no references to removed handlers/helpers; shared tests cover successful and failing real lifecycle calls. User explicitly requested these related test removals; do not treat that as approval to weaken unrelated contracts.\nMocking plan: reuse existing offline transport and fixtures; remove mocks that assert only the obsolete route. No mocks of shared internal domain logic.\nDocumentation: record deletion/replacement matrix in this issue and update test contract references in service docs.\nAction reuse assessment: not applicable to new production operations; test consolidation verifies that all consumers use the shared implementation. Follow issue validation lifecycle, including focused tests and mix q.\n\nRequired policies: docs/agent-tools.md, docs/action-reuse.md, docs/testing-approach.md, docs/WORKFLOW_AGENT.md, docs/services/channels.md and docs/services/engine.md. Read docs/services/system-config.md before touching credential boundaries. Recheck live main/branch and existing callers before implementation. Dependencies are sequential to avoid parallel overlapping lifecycle edits.",
+  "id": "zaq-ojt.4",
+  "labels": [],
+  "parent": "zaq-ojt",
+  "comments": [
+    {
+      "text": "Removed dedicated Engine DisableChannelConnector suite and explicit ConnectorLogout suite/API-only prepare event test. Preserved meaningful callback behavior in connector_preparation_test.exs; migrated real storage/profile/archive tests to linked_device/connector_transition_integration_test.exs; added connector_transition_test.exs for shared operation. Retained LiveView cancel/stale/auth/profile/QR assertions and archive property/failure/retry coverage through real Engine transitions. mix q passed; 364 focused checks passed (3 properties, 361 tests).",
+      "timestamp": "2026-10-22T14:59:38Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ojt.4] Remove duplicate-disable tests and retain shared-path regression coverage",
+  "type": "task",
+  "updated_at": "2026-10-22T14:59:39Z"
+}

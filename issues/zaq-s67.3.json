@@ -1,0 +1,34 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-s67.2"
+  ],
+  "blocks": [
+    "zaq-s67.4"
+  ],
+  "closed_at": "2026-10-19T15:41:24Z",
+  "created": "2026-10-19T15:06:29Z",
+  "description": "Integrate the sibling adapter result into ZAQ dependency configuration/lock while retaining the existing shared Jido fork capabilities. Local test override may be temporary, no absolute sibling path committed. Final lock update requires a real available adapter revision; commits/pushes remain separately authorized, report dependency publication blocker rather than claiming completion.\nReuse JidoChatBridge existing external_thread_id -\u003e Incoming.thread_id mapping, Engine history strategies/admission and ExecutionHistory projection. Validate ingress and outgoing connector scoping, mention gating, conversation/runtime scope and delivery receipts with nonnil WhatsApp thread ID. Do not add WhatsApp branches to Executor, Pipeline, InputPrompt or Engine policy. Existing Direct ignores thread partitions; Shared creates child transcript with parent and seeks root in parent. An immediate target stored only in another child may not appear in parent; explicitly test and document existing behavior without cross-transcript fallback. No provider fetch, quote text fallback or backfill.\nIntegration tests should cover A captured in room then B replies A -\u003e root content appears via authorized history exactly once; absent/deleted A -\u003e available history only/no lookup; denied or wrong connector/room/account -\u003e no leakage; duplicate ingress idempotency; A-\u003eB-\u003eC immediate target scopes; nonreply and existing Mattermost/Telegram thread behavior; DM Direct history; shared root attachments via existing materialization; cold-start and warm history refresh; active follow-up/queue via RequestControl; selected agent and default pipeline. Use real Engine/History/Executor paths with only transport/LLM boundaries controlled, existing fixtures and property tests for scope isolation/idempotency. Reuse accounts.fetch_history only as existing explicit tool, not new auto-fetch. Update channel/engine docs to describe actual thread mapping and missing-root limitations.\nAction reuse: existing TranscriptHistory.capture/list, ExecutionHistory projection, Conversations admission, HistoryLoader and Executor/Factory. No new Action or tool; permission reads and writes stay in Engine and NodeRouter boundaries. Run mix q and isolated relevant suites.\nPolicies: read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md and the applicable Channels/Engine/Agent service sections before implementation; sibling adapter has its own AGENTS.md. Read module docs before edits. No commit/push authorization. Preserve unrelated branch changes.\n",
+  "id": "zaq-s67.3",
+  "labels": [],
+  "parent": "zaq-s67",
+  "comments": [
+    {
+      "text": "New WhatsAppThreadHistoryTest passes: 8 tests. Real Adapter -\u003e JidoChatBridge -\u003e HistoryIngress -\u003e Conversations -\u003e authorized history -\u003e HistoryLoader/Executor/Factory chain validated, including root exactly once, absent originals, cross-room/connector isolation, actual provider membership revocation, Direct DM scope, duplicate capture, nested immediate-target behavior, parent attachment handles, cold/warm same runtime with persisted answer and HistorySync completion. Initial runtime expectation was corrected to include real finalization; standalone Executor correctly retires unconfirmed sessions. Existing typed boundaries reused, no new Engine/agent provider branches or fetches. Local dependency source is linked at deps/jido_chat_whatsapp/lib to sibling; original lib preserved outside repo; same locked Git metadata retained. Publication/pin remains a separate post-review dependency step under no-commit/no-push instruction.",
+      "timestamp": "2026-10-19T15:35:53Z"
+    },
+    {
+      "text": "Publication/pin portion is explicitly tracked in zaq-s67.5, deferred until Jad authorizes commits/publishing. Local source integration is implemented and tested; no permanent path override or fake lock revision. Original dependency lib backup: /var/folders/hj/209gt2z12d1c2cf48t_2dc080000gn/T/zaq-s67-dependency-y1vce4ru/original-lib.",
+      "timestamp": "2026-10-19T15:41:08Z"
+    },
+    {
+      "text": "Final isolated ZAQ regression set PASSED: mix q; 683 tests, 10 properties and 6 doctests, 0 failures, including both bridges, execution/history, steering, linked-device contracts and new end-to-end WhatsApp tests. Documentation updated for immediate-target grouping, Direct/Shared behavior, no missing-root fetch and outbound quoting distinction. Publication pin is tracked separately in zaq-s67.5 under the no-commit/no-push constraint.",
+      "timestamp": "2026-10-19T15:41:23Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-s67.3] Integrate WhatsApp thread history and cover agent execution",
+  "type": "task",
+  "updated_at": "2026-10-19T15:41:24Z"
+}

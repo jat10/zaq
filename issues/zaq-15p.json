@@ -1,0 +1,20 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-13T13:55:36Z",
+  "description": "Extend secret-free JSONL diagnostics to cover boot/storage/transport/agent/send/receipt boundaries without changing protocol decisions. Controlled restart scenarios plus optional live WhatsApp verification; live connector/targets/restart authorization requested. No UI changes; protocol integration tests apply, browser E2E not applicable. Dependencies form linear stages: primitives -\u003e adapter observation -\u003e correlation -\u003e validation/docs. Existing Amarula telemetry lacks message IDs for decrypt failures/retry counters; preserve explicit uncertainty rather than infer causality.",
+  "id": "zaq-15p",
+  "labels": [],
+  "comments": [
+    {
+      "text": "User clarified this is disposable diagnostic code, not a product implementation. Stopped feature/report/test expansion; removed report tooling and new test-harness changes. Retained temporary privacy-filtered logging hooks. Live dev server started with local adapter override; connector 13 reached connected after new empty RAM table, 2.50 seconds after listener attempt, no QR observed. No live messaging recovery proven yet. Further work is log analysis and coordinated observations only.",
+      "timestamp": "2026-10-13T14:17:49Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[recovery-diagnostics] WhatsApp restart recovery evidence",
+  "type": "epic",
+  "updated_at": "2026-10-13T14:17:49Z"
+}

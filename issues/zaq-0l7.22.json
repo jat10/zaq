@@ -1,0 +1,27 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-13T15:04:26Z",
+  "close_reason": "Resolved by package-owned Mnesia generation reconciliation in zaq-0l7.24.3, not the reverted local fix. Isolated stop/start test verifies fresh RAM, stale handle rejection, no disk; managed-listener invalidation preserves unrelated listeners. Host role/startup integration and full precommit pass.",
+  "created": "2026-10-13T10:36:33Z",
+  "description": "Extend existing SessionStorage lifecycle to detect Mnesia generation loss and use supervised recovery after Mnesia is ready. Local-only Action assessment: OTP/table lifecycle belongs to SessionStorage and existing rest_for_one parent, no user operation or tool exposure. Isolated subprocess regression for Mnesia stop/start, fail-closed downtime, fresh table, dependent bridge restart, preserved limiter and repeated recovery. Preserve RAM-only/no-disk semantics and provider ownership; no architecture redesign. Update owner documentation, run issue checks and final precommit.",
+  "id": "zaq-0l7.22",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "User requested reverting this fix attempt before implementation. No session-store code changes were made.",
+      "timestamp": "2026-10-13T10:38:13Z"
+    },
+    {
+      "text": "New user-requested storage-ownership plan zaq-0l7.24 covers this defect through package-owned lifecycle in zaq-0l7.24.3. No local fix was started or authorized here; preserve prior revert request. Keep this issue open until package recovery and ZAQ integration regression evidence demonstrate resolution.",
+      "timestamp": "2026-10-13T14:09:36Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Recover linked-device session store after Mnesia restart",
+  "type": "bug",
+  "updated_at": "2026-10-13T15:04:26Z"
+}

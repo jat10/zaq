@@ -1,0 +1,31 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-uzu.9"
+  ],
+  "created": "2026-09-25T09:05:38Z",
+  "description": "Execute approved S1 in parent zaq-uzu. Ownership: crawler-ingest. Include incomplete-\n    lock failure verification and Linux amd64/arm64 installation. Upstream prerequisite must merge\n    before S2.",
+  "id": "zaq-uzu.1",
+  "labels": [],
+  "parent": "zaq-uzu",
+  "comments": [
+    {
+      "text": "S1 implementation prepared in isolated clone /private/tmp/zaq-781-crawler-ingest; review patch /private/tmp/zaq-781-s1.patch applies cleanly to sibling crawler-ingest checkout. Preserved committed requirements.txt; generated universal CPython 3.13 lock with uv 0.10.9. Updated setup, Python pin, README and Linux amd64/arm64 CI. Added lock and incomplete-lock checks. Local CPython 3.13 clean install plus pip check passed; removing urllib3 failed pip check and left it absent; 224 upstream tests passed; both Linux wheel-only dry runs resolved. Actual Linux installs and upstream merge remain pending. Action reuse: local-only build-time dependency setup, no runtime Action or agent tool. Keep S2 blocked until upstream commit merges.",
+      "timestamp": "2026-09-25T09:26:08Z"
+    },
+    {
+      "text": "Applied /private/tmp/zaq-781-s1.patch to crawler-ingest at da93482f after git apply --check passed. Reviewed diff; git diff --check passed. Preserved local uncommitted requirements.txt pin opendataloader-pdf==2.5.11 and pre-existing untracked files; lock retains committed pin 2.5.0 and was not regenerated. Python 3.13 bash setup.sh passed; venv pip check passed. Full pytest tests/ run: 225 passed, 1 failed only in test_direct_requirements_are_pinned_in_lock due local 2.5.11 versus lock 2.5.0. In a temporary copy using committed requirements.txt, both lock tests passed. Incomplete-lock verifier passed: omitting urllib3 caused pip check failure and urllib3 stayed absent. Linux amd64 and arm64 CI installation jobs still need to run after S1 is committed/pushed; neither architecture has run in this checkout. No commit or push performed. Keep S2 blocked until S1 merges.",
+      "timestamp": "2026-09-25T09:34:17Z"
+    },
+    {
+      "text": "PR https://github.com/www-zaq-ai/crawler-ingest/pull/6 at c726f63 is open and mergeable. GitHub Tests workflow passed on ubuntu-24.04 amd64 and ubuntu-24.04-arm arm64, completing the required Linux clean-install CI proof. S1 remains in progress until merge; S2 dependency stays blocked.",
+      "timestamp": "2026-09-25T09:52:14Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[#781] S1: Commit crawler-owned transitive dependency lock",
+  "type": "task",
+  "updated_at": "2026-09-25T09:55:25Z"
+}

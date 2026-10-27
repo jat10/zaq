@@ -1,0 +1,22 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-13T09:24:36Z",
+  "created": "2026-10-13T09:17:17Z",
+  "description": "Add local development JSONL diagnostics under log/ for VM/table lifecycle, session read misses/hits, writes, seeding, cleanup and storage errors. Action reuse assessment: local-only protocol diagnostics. Existing Engine.Telemetry persists allowlisted dashboard metrics, not file diagnostics; Logger has no existing JSONL sink (searched lib/config/test support). Reuse current storage callbacks; do not introduce Actions or expose logs as tools. Contract: allowlisted counts/status and connector ID only, no credentials, keys, profile names, message payloads or raw errors; best-effort bounded local append, no storage outcome changes. Verify JSONL, redaction, rotation, IO failures and real Mnesia operation logs. No browser behavior changes; E2E not applicable.",
+  "id": "zaq-0l7.18",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Implemented dev-enabled log/whatsapp_sessions.jsonl with allowlisted storage diagnostics, VM identity, created/reused table events, RAM hit/miss/writes/clear, durable namespace operations and applied/skipped seed decisions. Local serialized append outside transactions, 5 MiB rotation plus one backup, safe IO failure handling, Git ignore and service docs. No session payloads, keys, profile names or raw errors. Validation: mix q passed; targeted SessionLog, SessionStorage, Storage and onboarding suites passed (26 tests, 2 properties). Two independent external Erlang VMs proved append across VM changes and fresh table/miss events; owner restart proved table reuse. Initial Credo nesting fixed with private seed-result helper; test launcher argument mistake corrected. Diff check passed. Existing full PR review/E2E/coverage workflow remains separate; no commit or push requested.",
+      "timestamp": "2026-10-13T09:24:36Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Add secret-free JSONL diagnostics for linked-device session storage",
+  "type": "task",
+  "updated_at": "2026-10-13T09:24:36Z"
+}

@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-qzr.3"
+  ],
+  "blocks": [
+    "zaq-qzr.5"
+  ],
+  "closed_at": "2026-09-17T18:46:35Z",
+  "created": "2026-09-17T17:46:47Z",
+  "description": "\n**Goal:** Resume suspended DAGs through ZAQ's existing authorized lifecycle without repeating prior work.\n\n**Files/modules affected:** `lib/zaq/engine/workflows.ex`, `step_runner.ex`, `map_node_builder.ex`; `step_approval_test.exs`, `steps/map_node_test.exs`, `workflow_run_agent_test.exs`, and existing Engine API approval authorization tests.\n\n**Exact behavioral change:** Preserve approve → completed approval StepRun → paused run → resume/rebuild from immutable snapshot, and reject → failed with no resume. Normalize cached completion replay using the current incoming fork index/cascade and effective step name, including approval results loaded from JSONB. Include `failed_fatal` in terminal retrieval and replay it as the appropriate isolated failure sentinel rather than invoking the action again. Associate waiting reconstruction with the exact suffixed/composed step name and token. Keep Engine.Api authorization and NodeRouter event entry points unchanged.\n\n**Dependency:** Follows successful suspension, precedes broad execution migration. Its replay corrections are necessary once maps can stop between items.\n\n**Tests required before implementation:** Approval after reloading the run/rebuilding its DAG; downstream receives decision data and correct index/cascade; earlier completed and failed_fatal steps execute zero additional times; pending approval is not recreated. Multiple HITLs reached over successive resumes, rejection, duplicate/stale decisions, unauthorized approval and nil identity without explicit permission bypass. Bounded property tests for stable fork naming and replay idempotency across item positions.\n\n**Migration/regression risks:** Cached JSON keys differ from in-memory keys. `failed_fatal` must remain excluded from whole-run failure while still counted by MapCollect. Waiting replay reconstructs typed success metadata from approval records; approved replay emits only decision data, never `PendingApproval` control. Retain existing authorization semantics; no direct approval invocation from BO.\n\n**Action reuse/docs:** Reuse approve_step/reject_step/resume_run and cursor APIs. No alternative resume engine or durable Runic graph store. Document replay and terminal-row meaning in the workflow service guide.\n\n\n\nExecution notes: Source specification transferred verbatim from docs/exec-plans/active/issue-706-implementation-plan.md. Recheck Action reuse against live source before starting. Mocking plan: keep internal boundaries real; mock only external APIs. Branches/paths validated: success, failure and regression paths enumerated above. Backend only; no new feature browser E2E. Preserve deployment grouping: 1; 2–4 atomic; 5; 6–8. User authorized implementation; architecture review must be recorded for driver. Issue-level validation follows docs/WORKFLOW_AGENT.md.",
+  "id": "zaq-qzr.4",
+  "labels": [],
+  "parent": "zaq-qzr",
+  "comments": [
+    {
+      "text": "Replay restores incoming cascade and map index and reuses failed_fatal sentinels. Approval/rejection transactions lock and revalidate current records and run association; stale/mismatched decisions rejected. Snapshot reload map tests prove no repeated cursor rows or completed effects. All workflow tests and mix q pass; rollout and broader property verification remain in step 8.",
+      "timestamp": "2026-09-17T18:46:35Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[#706] 4. Preserve approval replay, fork identity and completed work",
+  "type": "task",
+  "updated_at": "2026-09-17T18:46:35Z"
+}

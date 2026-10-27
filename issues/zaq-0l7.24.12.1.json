@@ -1,0 +1,32 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-0l7.24.12.2"
+  ],
+  "closed_at": "2026-10-14T21:35:54Z",
+  "created": "2026-10-14T21:29:18Z",
+  "description": "Functional spec/files: inspect shared Jido.Chat adapter/authentication contract and define a versioned private host request type accepted by sink_mfa(payload, opts), response union, operation allowlist, immutable host context, request identity and deadlines. Separate bootstrap bind from bound document CRUD; preserve current opaque binding/profile derivation and runtime policy. Audit whether shared core needs extension; do not represent secret-bearing storage as public ActionEvent.\nTests before code: contract tests for absent records, successful committed writes, malformed/unknown requests, callback exceptions/timeouts, redacted inspect/logging, spoofed message/webhook storage requests, bootstrap without registered State. Branches: startup, restored connection, pairing document handoff, normal runtime, unsupported capability.\nAction reuse: extend Jido.Chat adapter callback contract and existing package sink invocation; reuse Engine credential_document operations unchanged; internal RPC contract is local-only, not a new Action/tool. Inputs include op, opaque binding and encoded records; outputs preserve current union. Only trusted constructor grants host context, never incoming chat data. No data mutation in contract design.\nMocking: upstream host boundary only; use actual envelopes and serializers. Documentation: shared adapter docs, WhatsApp adapter_contracts, ZAQ services/channels and engine owners. Deliver approved protocol and ownership contract before implementation.",
+  "id": "zaq-0l7.24.12.1",
+  "labels": [],
+  "parent": "zaq-0l7.24.12",
+  "comments": [
+    {
+      "text": "Audit contract in both repositories; shared core only if required. Read parent epic Agent execution handoff before starting. Preserve existing reaction-normalization work.",
+      "timestamp": "2026-10-14T21:31:09Z"
+    },
+    {
+      "text": "Contract decision: package-private Storage.Request struct (redacted Inspect, version/id, opaque binding and existing document request). Synchronous sink RPC bounded at 7 seconds; Engine keeps 5s transaction/6s RPC. No shared Jido.Chat API or public ActionEvent extension required. Host runtime sink gets a captured reference on a separate arity; public chat ingress rejects storage structs. Existing Split document_mfa remains compatibility mode, sink wins without dual writes. Approved implementation scope comes from user start implementing.",
+      "timestamp": "2026-10-14T21:33:41Z"
+    },
+    {
+      "text": "Implemented private request contract with redacted Inspect and sanitized failures. Package contract/compatibility targeted tests passed: 1 property, 16 tests. Source compatibility retained via optional document_mfa. Contract is provider-private, so shared core does not change.",
+      "timestamp": "2026-10-14T21:35:53Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.12.1] Specify synchronous private storage requests",
+  "type": "task",
+  "updated_at": "2026-10-14T21:35:54Z"
+}

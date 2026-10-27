@@ -1,0 +1,38 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-s67.1"
+  ],
+  "blocks": [
+    "zaq-s67.3"
+  ],
+  "closed_at": "2026-10-19T15:25:47Z",
+  "created": "2026-10-19T15:06:27Z",
+  "description": "Work in ../jido_chat_whatsapp using its existing branch and AGENTS.md; do not edit vendored deps in ZAQ. Message.incoming_attrs/1 owns mapping from Amarula quoted.id to external_thread_id and channel_meta.external_thread_id. Nonreply nil. Validate malformed/blank target inputs consistently with shared identifier contract; never use a target from a conflicting supplied room. Preserve external_room_id and delivery_external_room_id. Remove inline reply_context production/helpers and associated dead quote-text extraction only where unused; stop producing external_reply_to_id if now redundant. Preserve Amarula raw/native outbound quoted support and transport data required by it.\nAdapter.parse_event message envelope thread key must reflect room + external_thread_id consistently with Jido Incoming/ChannelMeta; preserve room-only identifiers for nonreplies, lifecycle/profile and reaction correlation behavior. Review Message.thread_id helper and Adapter callers rather than changing all identifiers blindly. No recursive chain lookup; B-\u003eA gets A, C-\u003eB gets B.\nKnown outbound boundary: Jido Chat.Thread.post passes :thread_id; current WhatsApp SendOptions consumes :quoted and Amarula lightweight quoting requires {message_id, participant}. Do not fabricate participant from group room ID. This task changes inbound history grouping, preserves existing outbound quoted API; new automatic provider quote replies are a separate requirement if desired. Test Thread.post with thread_id still delivers to correct chat/connector and explicit quoted options remain intact.\nTests: test/jido/chat/whatsapp/{message,normalization_contract,adapter,history_contract,preview_integration,markdown_delivery}_test.exs as relevant. Add nil/valid/malformed targets, atom/string and Amarula payloads, quoted text not promoted to canonical context, groups/DMs, event key consistency, same target in different rooms, explicit chain example and properties for deterministic normalization/nonreply stability. Preserve identity/mentions/media/reactions. Run focused tests, mix test (non-live), mix quality, mix coveralls.\nAction reuse: extend existing Message/Adapter normalization, reuse Jido Incoming and Thread fields; pure mapping and existing transport boundary, no new Action/state/network fetch.\nPolicies: read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md and the applicable Channels/Engine/Agent service sections before implementation; sibling adapter has its own AGENTS.md. Read module docs before edits. No commit/push authorization. Preserve unrelated branch changes.\n",
+  "id": "zaq-s67.2",
+  "labels": [],
+  "parent": "zaq-s67",
+  "comments": [
+    {
+      "text": "Adapter mapping and tests implemented. Reply quoted.id now populates incoming/channel metadata thread fields and chat-scoped message envelope key; inline context fields and text extraction removed. Native outgoing quoted options retained. No recursive root resolution or provider fetch. Full package validation running. ZAQ dependency checkout is locally symlinked to sibling (same baseline Git SHA), original checkout preserved under /tmp-equivalent; no source dependency pin fabricated and no mix.exs path override. New adapter revision can only be pinned after reviewed commit/publication, which remains outside current no-commit/no-push authorization.",
+      "timestamp": "2026-10-19T15:25:31Z"
+    },
+    {
+      "text": "Full adapter non-live suite PASSED: 195 tests, 12 properties, 0 failures (13 live tests excluded). mix quality PASSED including format check, compile warnings-as-errors, Credo, Dialyzer and Doctor. Existing optional-live nil environment comparison warnings are unrelated. Final fresh coverage is tracked in zaq-s67.4. No commits/pushes.",
+      "timestamp": "2026-10-19T15:25:46Z"
+    },
+    {
+      "text": "Coverage exposed two pre-existing test harness crashes: mnesia_contract_test:103 and managed_storage_test:108 call List.to_string(:code.which(module)), but cover returns :cover_compiled. Mechanical repair uses Application.app_dir(:jido_chat_whatsapp, \"ebin\") for the same child-node beam path. Scenarios/assertions unchanged; no test behavior change or weakening. Full adapter coverage will be rerun after this setup-only repair.",
+      "timestamp": "2026-10-19T15:31:30Z"
+    },
+    {
+      "text": "Final adapter validation PASSED: mix quality and fresh mix coveralls --max-cases 1 --seed 316192: 196 tests, 12 properties, 0 failures, 13 live excluded. Default-concurrency ordinary suite passed previously; one instrumented high-concurrency run hit unchanged 100ms IdentityLifecycleTest deadline, resolved by coverage runner concurrency without changing assertions. Full package coverage 84.9% (package threshold 80%); Message 91.0%, Adapter 87.1%. Fresh coverdata confirms all added/modified executable production lines covered: Message 9/9, Adapter 1/1. Other missed lines predate this migration. Mechanical child-node path discovery fixes preserve test behavior.",
+      "timestamp": "2026-10-19T15:40:25Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-s67.2] Map WhatsApp reply targets to shared thread fields in sibling adapter",
+  "type": "task",
+  "updated_at": "2026-10-19T15:40:25Z"
+}

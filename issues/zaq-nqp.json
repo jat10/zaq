@@ -1,0 +1,21 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-16T17:18:51Z",
+  "created": "2026-10-16T17:17:35Z",
+  "description": "Prepare a Disable-only Git index and a follow-on Delete patch, preserving Enable/QR and unrelated working-tree changes. Action reuse assessment: not applicable; Git staging only, no executable operation changes. Verify patch boundaries, index integrity and unchanged working files; no commit or push authorized.",
+  "id": "zaq-nqp",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Staged only Disable across 17 files by constructing a temporary Git index from HEAD and selecting feature-specific hunks. Prepared follow-on Delete patch and manifest under /var/folders/hj/209gt2z12d1c2cf48t_2dc080000gn/T/zaq-staging-dq0vpfrw/. Patch checks pass; working-file SHA-256 hashes unchanged. Enable/QR and unrelated edits remain unstaged. No commit/push. This is staging-only; application validation from implementation remains recorded in zaq-iie.",
+      "timestamp": "2026-10-16T17:18:51Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-nqp] Separate Disable and Delete changes for staging",
+  "type": "task",
+  "updated_at": "2026-10-16T17:18:51Z"
+}

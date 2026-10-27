@@ -1,0 +1,25 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-ojt.1"
+  ],
+  "blocks": [
+    "zaq-ojt.3"
+  ],
+  "created": "2026-10-22T14:40:34Z",
+  "description": "Functional specifications / files: consolidate Engine/Channels orchestration in lib/zaq/engine/connector_lifecycle.ex, existing role APIs and connector runtime sync. Reuse main archive/watch/persistence logic. Contract: authorized current connector -\u003e Channels logout preparation while DB enabled -\u003e validate revision and persist disabled -\u003e runtime stop. Archive only after required disable/stop succeeds. Do not hold DB row locks across adapter callbacks or RPC. Preserve data-source watch and webhook behavior and expose post-persistence stop failure. Do not introduce a separate provider route, stopping schema or controller.\nTests to add before implementation: integration checks for DB enabled at callback time, logout failure leaving enabled/unarchived, success disabling then stopping, revision/persistence failure after logout, runtime-stop failure and retry, Delete using same path, already-disabled and absent-runtime behavior, unauthorized/stale/wrong-profile requests. Review restart/concurrent-call behavior explicitly; do not claim distributed exclusion that the design does not provide.\nBranches/paths validated: normal disable, no logout capability, failed logout, persistence conflict, stop failure, repeat disable, archive and existing data-source/webhook paths.\nMocking plan: real Engine and Channels events, database and supervisor; fake external transport only.\nDocumentation: docs/services/engine.md and channels.md state ordering and honest partial-failure semantics.\nAction reuse assessment: extend main ConnectorLifecycle archive and existing persistence/runtime domain operations. Engine owns DB mutation, Channels adapter behavior. Reuse validated Action execution where consumers still require it; do not duplicate domain implementation. Explicit trusted actors retained, nil actor never grants access. Check tools/workflows and non-BO callers before obsolete command removal.\n\nRequired policies: docs/agent-tools.md, docs/action-reuse.md, docs/testing-approach.md, docs/WORKFLOW_AGENT.md, docs/services/channels.md and docs/services/engine.md. Read docs/services/system-config.md before touching credential boundaries. Recheck live main/branch and existing callers before implementation. Dependencies are sequential to avoid parallel overlapping lifecycle edits.",
+  "id": "zaq-ojt.2",
+  "labels": [],
+  "parent": "zaq-ojt",
+  "comments": [
+    {
+      "text": "Shared sync_channel_runtime accepts an ID-scoped disable request. Channels obtains canonical config/revision, prepares adapter, sends generic Engine persistence command, then runs normal runtime sync. Delete uses same transition with existing runtime-stop leaf after one webhook teardown. Returned persisted revision is revalidated before archive. Generic disable request only permits enabled:false, preserving separate existing enable authorization behavior and scope. No stopping schema/controller/router coordination.",
+      "timestamp": "2026-10-22T14:59:33Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ojt.2] Integrate shared disable ordering with Engine persistence and archive",
+  "type": "task",
+  "updated_at": "2026-10-22T14:59:34Z"
+}

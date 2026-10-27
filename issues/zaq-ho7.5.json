@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-ho7.4"
+  ],
+  "blocks": [
+    "zaq-ho7.6"
+  ],
+  "closed_at": "2026-10-20T13:26:32Z",
+  "created": "2026-10-20T10:56:23Z",
+  "description": "Current revision (user approved: \"better implement this\"): initial defaults are defined by provider clauses in the existing Zaq.ConnectorConfig.Settings.defaults/1, not application configuration. Remove the config block and configuration injection from pure settings helpers. Saved values still win; selective preservation and runtime fallback remain. Replace obsolete custom-config fixture coverage with module-owned defaults coverage; retain override/idempotence/removal assertions. This supersedes any configuration-entry requirements below. No new module, migration, adapter callback or MFA.\n\nFinal simplified implementation passes mix q and 414 tests + 12 properties across bridge/linked-device/delivery/schema/settings/confirmation/rating/history suites. Logs /tmp/zaq-ho7-defaults-final-quality.log and /tmp/zaq-ho7-defaults-regression.log. Both repositories pass git diff --check; no stale dedicated-module/backfill references remain in lib/test/docs/config. Documentation now describes shared config, generic saved-option preservation, adapter validation and runtime fallback without migrations. No UI/core/sibling source changes in this simplification; sibling previous quality and 200 tests + 12 properties still apply. Publication/pinning and review/coverage/final precommit remain .6.\n\nThe authoritative final ownership and delivery scope is in zaq-ho7. Historical dedicated-module/backfill requirements are superseded.\n\nRequired policies: AGENTS.md; docs/agent-tools.md; docs/WORKFLOW_AGENT.md;\ndocs/exec-plans/PLAN_STRATEGY.md; docs/action-reuse.md; docs/testing-approach.md;\ndocs/services/channels.md. Read sibling AGENTS.md before sibling changes, Engine\nguide before persistence work, and documentation hygiene before updating docs.\nRead system-config guidance if touching encrypted fields (which should be avoided).\nPreserve existing assertions. Obtain explicit approval before changing existing test\nbehavior; add focused tests first. No UI feature/E2E work is required by this refactor.\nCommit, push, publishing dependency revisions, and merge require separate authorization.\n",
+  "id": "zaq-ho7.5",
+  "labels": [],
+  "parent": "zaq-ho7",
+  "comments": [
+    {
+      "text": "Source implementation complete. Final ZAQ mix q passes (/tmp/zaq-ho7-final-quality.log). Combined bridge/linked-device/delivery/ChannelConfig/confirmation/scoped-rating/history/settings/migration suites pass 407 tests + 12 properties (/tmp/zaq-ho7-bridge-focused.log); subsequent additional confirmation-retry and broadened malformed-root migration cases pass in 9 tests + 2 properties (/tmp/zaq-ho7-final-additions.log). WhatsApp package mix q and whole default suite pass 199 tests + 12 properties (13 live excluded). Documentation updated at Channels/Engine/SystemConfig and sibling adapter contract owners, including migration locking/malformed-data repair/non-destructive rollback and rollout order. No UI feature or E2E changes. Exact test authorization preserved: only prior approved regression removal remains in baseline, no new assertion removal/weakening; shared adapter fixture moved the identical policy into saved connector settings. Action reuse verified: no new operation/MFA/Action/tool, existing canonical persistence and admission paths extended. git diff --check passes in both repositories. ZAQ manifests/lock unchanged; integration validation uses an ignored local copy of the modified sibling adapter. Publication/pinning of this NEW adapter revision still pending before reproducible clean-checkout shipping. No commit/push authorized or performed. Final review/coverage/precommit belongs to zaq-ho7.6.",
+      "timestamp": "2026-10-20T11:31:04Z"
+    },
+    {
+      "text": "Corrected reimplementation validated. Final ZAQ mix q passes; combined bridge/linked-device/delivery/schema/policy/history-settings/confirmation/scoped-rating/thread-history/projection/two-migration suite passes 418 tests + 14 properties, zero failures (/tmp/zaq-ho7-rework-combined-tests.log). Package mix q and whole non-live suite pass 200 tests + 12 properties, 13 live excluded. Both git diff --check pass. Updated Channels/Engine/SystemConfig and sibling adapter contracts, including direct-listener versus prepared fallback differences. Final source review confirms creation defaults are outside changeset, authenticated profile/storage protection remains, sole sink and minimal registry retained, no UI/core changes. No new existing-test expectation change beyond the explicitly approved connection-defaults correction; added tests cover JSON atom-key aliases to prevent boolean validation bypass. BO WhatsApp New handler at channels_live.ex dispatches to LinkedDeviceUI; confirmed insert and upsert now share ChannelConfig.create. Existing generic BO persistence not changed. No E2E needed: backend ownership correction, no UI journey change. All implementation work in steps 1-5 is complete; final approval/coverage/precommit and dependency delivery remain step 6.",
+      "timestamp": "2026-10-20T13:26:31Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ho7.5] Validate shared defaults and document migration-free delivery",
+  "type": "task",
+  "updated_at": "2026-10-20T14:41:38Z"
+}

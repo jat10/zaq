@@ -1,0 +1,17 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-14T12:45:24Z",
+  "close_reason": "Cancelled: user confirmed this is not production code; no old-record handling is required.",
+  "created": "2026-10-14T12:42:22Z",
+  "description": "Cancelled by user scope correction: the integration has not shipped to production, so historical profile repair, data migration and legacy compatibility are unnecessary. No implementation was performed. Ordinary delayed enrichment and preservation of user edits remain covered by zaq-10n.4 and zaq-10n.6. Action reuse assessment: not applicable; cancelled planning scope.",
+  "id": "zaq-10n.5",
+  "labels": [],
+  "parent": "zaq-10n",
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-10n.5] Preserve legacy profile repair outside generic discovery",
+  "type": "task",
+  "updated_at": "2026-10-14T12:45:24Z"
+}

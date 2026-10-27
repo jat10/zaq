@@ -1,0 +1,23 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-10n.7"
+  ],
+  "created": "2026-10-14T13:46:12Z",
+  "description": "Full validation reproduced two 100ms assert_receive timeouts in WhatsAppLifecycleIngressTest. Audit: tests async true; each test owns supervised State/worker/relay and sink observer; profile includes unique integer; no global writes. State reads shared adapter config; no competing Channels async tests write those keys. Trace: relay event -\u003e worker -\u003e per-worker lifecycle dispatcher -\u003e synchronous State call -\u003e observer. Existing isolation uses explicit sink MFA and unique profiles. Preserve acknowledgment only after state update and exact source/profile/attempt assertions. Smallest problem is a 100ms scheduling deadline across multiple processes under 24-case suite load, not shared fixture ownership. Async readiness: retain current async configuration. Action reuse: not applicable, only test synchronization limits change; no new production operations. Verify focused lifecycle suite and full gate.",
+  "id": "zaq-10n.10",
+  "labels": [],
+  "parent": "zaq-10n",
+  "comments": [
+    {
+      "text": "Applied explicit 1-second waits to transport readiness and lifecycle delivery acknowledgments. No production changes, no state/identity assertion changes, no async setting changes. Full gate had already loaded this test module before the edit, so these two failures are expected in the in-flight run; final gate must be repeated against the edited file.",
+      "timestamp": "2026-10-14T13:49:07Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-10n.10] Stabilize lifecycle test acknowledgments under suite load",
+  "type": "bug",
+  "updated_at": "2026-10-14T13:49:07Z"
+}

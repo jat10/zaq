@@ -1,0 +1,40 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-hce.2"
+  ],
+  "closed_at": "2026-10-20T08:56:33Z",
+  "created": "2026-10-20T08:54:22Z",
+  "description": "User correction: the parallel host callback API was rejected and all implementation changes were reverted. Earlier completion comments and validation results refer to that discarded implementation; they do not establish completion of this revised scope. ZAQ and sibling adapter working trees are clean.\nInspect core shared authentication changes and both repositories. Record exact sink_mfa invocation, request/result shapes, ownership, trust checks and unchanged test obligations. Identify whether decoupling can be local to ZAQ before proposing any sibling change. Record a concrete minimal approach in Beadwork; no new callback API.\nMandatory constraints: Preserve sink_mfa option, MFA invocation shape, request/result shapes and existing jido_chat_* adapter behavior. Do not replace sink_mfa with persist_mfa, activate_mfa or storage_mfa. Do not introduce compatibility modules solely to support a replacement API. No test, fixture, assertion, helper or test configuration changes. No Mnesia policy or persistence changes. No commit/push without authorization.\nRead inherited ZAQ AGENTS.md and docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md, and docs/conventions.md before affected work. Read each sibling repository's AGENTS.md. Before documentation edits read docs/documentation.md. Use Serena for source understanding and Context Mode for large output; run bw prime. Recheck live Git state and preserve unrelated work.\nTests to add before implementation: none, explicitly prohibited by user. Run existing tests; no new E2E authoring or UI changes. Mocking plan: no test/mock changes; retain existing external-edge fixtures. Coverage improvements requiring test changes are outside authorization; record gaps rather than modifying tests.",
+  "id": "zaq-hce.1",
+  "labels": [],
+  "parent": "zaq-hce",
+  "comments": [
+    {
+      "text": "Audit: core f154f07 already owns authentication API and guide. PairingSession owns deadline/frozen snapshot/idempotent saved receipt; Storage.Split owns encoding, namespace routing and Mnesia generation. ZAQ Actions own encrypted writes and provider/binding checks. Existing tests assert legacy sink MFA shape and send private structs directly; preserve legacy adapter fallback and isolate host legacy translation in JidoChatBridge.LegacyRequests, while production uses persist_mfa/activate_mfa/storage_mfa. Introduce host callback module for authorization and existing Action dispatch, not new business operations. New opts selected per session/storage context; no globals. No Mnesia/storage ownership changes. Roll back if credentials or callbacks enter public routing, deadline/ordering changes, or unchanged tests require weakened behavior. E2E not newly needed: internal wiring refactor, no UI changes. Existing test suites cover pairing failures/timeouts/retries, saved connection/public ingress, runtime lifecycle and storage isolation; new callback-only paths have a coverage gap under explicit no-test-edit constraint.",
+      "timestamp": "2026-10-20T08:56:32Z"
+    },
+    {
+      "text": "Corrected audit: preserve existing Pairing.Request and Storage.Request structs, call/3 functions, sink_mfa options and apply arguments verbatim. Existing tests assert those contracts and reference/version rejection. Minimal shared seam: Jido.Chat.HostRequest protocol with kind/1, opt-in implementations on those two existing structs, Any fallback nil for ordinary payloads. Generic bridge uses kind rather than concrete structs; authorization and existing operation helpers remain unchanged. This is classification only, not request delivery, authorization, lifecycle or a replacement callback API. Core addition justified because it owns shared adapter contracts and classification must work before resolving config/provider (including rejection at public ingress). No new callback options or compatibility paths.\nAction reuse assessment: local-only classification, no new operation. Reuse persist_authentication/3 -\u003e Engine confirm_linked_device, start_authentication/3 -\u003e existing runtime activation, dispatch_storage -\u003e Engine credential_document via NodeRouter/Event unchanged. Existing actor/provider/binding checks, deadlines, confidential flags and commit order retained.\nTests unchanged: existing request/session suites, core authentication suite, ZAQ saved_connection and runtime_contracts and bridge tests. Add no tests per user instruction. Validate protocol fallback and unchanged wire values through existing integrated tests and bounded runtime checks. Roll back if sink shape, payload/result, lifecycle semantics or unchanged tests require behavior changes. No UI/E2E feature changes.",
+      "timestamp": "2026-10-20T09:34:09Z"
+    },
+    {
+      "text": "Audit complete: existing private structs and sink invocation remain unchanged; opt-in core protocol classification is the minimal shared seam. No business logic, state ownership or callback transport changes.",
+      "timestamp": "2026-10-20T09:37:51Z"
+    },
+    {
+      "text": "Validation: core mix q passed (format, compile, Credo, Dialyzer, Doctor); unchanged core suite 246 tests, 0 failures. Protocol addition does not modify any existing core callback or runtime module.",
+      "timestamp": "2026-10-20T09:39:41Z"
+    },
+    {
+      "text": "Cancelled at explicit user request. All implementation and documentation changes reverted in ZAQ, ../jido_chat and ../jido_chat_whatsapp; temporary dependency projects removed and validation stopped. Closed as cancelled, not delivered.",
+      "timestamp": "2026-10-20T09:45:07Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Audit decoupling within the existing sink_mfa contract",
+  "type": "task",
+  "updated_at": "2026-10-20T09:45:09Z"
+}

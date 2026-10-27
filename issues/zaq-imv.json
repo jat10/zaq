@@ -1,0 +1,22 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-o9d.4"
+  ],
+  "created": "2026-10-21T10:04:30Z",
+  "description": "## Reproducer\nDiscovered while implementing test-only provider integration issue zaq-o9d.4.\nNew test: test/zaq/channels/integration/providers/telegram_test.exs, \"chat-local message ids remain independent across direct and shared chats\".\nIn one saved Telegram connector/runtime, emit native private-chat message_id 42 in chat 123 and wait for the actual agent reply/Engine confirmation. Then emit native supergroup message_id 42 in chat -100123 with \"@zaq Shared input\" and a correct mention entity under default reply policy.\n\n## Expected / actual\nExpected: the second chat has an independent canonical transcript/input/execution and receives its own reply, since Telegram message IDs are chat-local.\nActual: the first direct exchange succeeds; the second update is acknowledged but discarded before creating its scoped shared transcript. Distinct-ID direct/shared scenarios pass with the same driver/fixtures. No internal routing/history/agent module is mocked.\n\n## Source-backed diagnosis\ndeps/jido_chat/lib/jido/chat/handler_dispatch.ex process_message/6 checks duplicate?/2 before handler routing. dedupe_key/2 returns {adapter_name, to_string(external_message_id)} and omits the native room/chat coordinate. The single Chat state is owned per ZAQ connector, so unrelated Telegram chats collide before Engine's source-scope protections run.\nFix ownership is the shared Jido.Chat adapter/event dedupe contract; preserve existing replay behavior while respecting provider-local message namespaces.\n\n## Scope and handling\nRecorded as a blocker only. User-authorized epic zaq-o9d permits test/** and the named Mix task/repository skill, with production/application/dependency changes explicitly prohibited.\nDo not patch deps, update mix.lock, prefix native fake Telegram IDs to mask the collision, skip/unregister the driver, or weaken the new test. Any production/dependency fix requires separate explicit user authorization.\nRead AGENTS.md, docs/testing-approach.md, docs/services/channels.md, docs/services/engine.md (source-scope identity), and docs/agent-tools.md. Existing-test behavior changes require their own approval.\nRequired regression validation for an authorized correction: identical ID replay in one chat still dedupes; same IDs in different Telegram chats/configs remain distinct; all registered adapter regressions pass.\n\n## Validation evidence\nThe Telegram provider file currently reports 5 tests, 2 failures: this chat-local-ID reproducer and the separately tracked mention_required bug. Direct/shared default flows and native API error tests pass. This failure is immediate after synchronous webhook processing, not a timing-based negative assertion.\nAction reuse: not applicable to new executable operations; this ticket records a diagnosis/reproducer.",
+  "id": "zaq-imv",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Final validation snapshot: canonical mix q passes. Combined current integration + existing Mattermost and Telegram delivery/history regressions run 75 tests + 2 properties, with exactly the two new Telegram reproducer failures (zaq-kxd and zaq-imv). Existing tests pass. This bug blocks zaq-o9d.4. No application or dependency files were changed; a fix requires separate explicit user authorization.",
+      "timestamp": "2026-10-21T10:07:22Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-imv] Telegram chat-local message IDs collide in connector-wide Jido.Chat dedupe",
+  "type": "bug",
+  "updated_at": "2026-10-21T10:07:22Z"
+}

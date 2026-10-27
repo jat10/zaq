@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-0l7.13.2"
+  ],
+  "closed_at": "2026-10-13T08:11:48Z",
+  "created": "2026-10-13T08:06:32Z",
+  "description": "User explicitly approved RAM-only Mnesia on 2026-10-13 after discussion of restart message-decryption risk. No disk state, checkpoints or replication. Preserve existing unrelated BO worktree edits. No Git mutations authorized.\nPolicies: docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md, docs/services/channels.md, docs/services/system-config.md, docs/services/engine.md; docs/documentation.md before docs edits.\nArchitecture: Channels owns profile-scoped Mnesia ram_copies table; only session and sender_key namespaces are volatile. Pairing creds and other protocol records remain encrypted through Engine. Keep per-call confidential Engine binding validation for RAM access. User approves loss on node/Mnesia restart; listener restart retains RAM state. No new UI; no new E2E required.\nOwn lib/zaq/channels/linked_device/session_storage.ex, Channels supervisor, mix.exs and Mnesia config. Mnesia local_content ram_copies only, schema_location ram; bootstrap before bridge loader. Scoped by connector/credential/profile, synchronous transactions, bounded values/profile capacity, idempotent seed once and complete scoped cleanup. No disk fallback or schema creation. Tests first: actual ram table configuration; round trips and namespace/profile isolation property; concurrent writes; failed write atomicity and capacity; listener-process independence; missing table fail closed. Reset testing in separate BEAM process to avoid shared VM corruption. Action reuse: local-only protocol infrastructure behind existing storage callbacks, not agent/workflow operation; existing TemporaryStorage remains provisional pairing owner.",
+  "id": "zaq-0l7.13.1",
+  "labels": [],
+  "parent": "zaq-0l7.13",
+  "comments": [
+    {
+      "text": "Implemented node-local Mnesia ram_copies with RAM schema, scoped transactions and bounded records, idempotent seed and cleanup. mix q passed; RAM store tests: 5 tests and 1 property passed, including isolated BEAM restart/no-disk test. No commits authorized.",
+      "timestamp": "2026-10-13T08:11:47Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.13.1] Implement bounded RAM-only linked-device session store",
+  "type": "task",
+  "updated_at": "2026-10-13T08:11:48Z"
+}

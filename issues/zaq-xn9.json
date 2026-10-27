@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-01T22:57:54Z",
+  "description": "Observed while validating zaq-owg, with no changes to ChatLive or MCP code: ChatLiveTest at test/zaq_web/live/bo/communication/chat_live_test.exs:2313 fails assert_mcp_tool_called/0 at line 3392, expecting tools/call. Broad run: 128 tests, 1 failure; isolated test also fails. Broad logs show MCP initialization tools/list transport timeout 50ms and client_not_ready before expected call. Investigate deterministic MCP bootstrap/timeout ownership; do not weaken assertions. Baseline reproduction still needed.",
+  "id": "zaq-xn9",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Investigate BO chat MCP timeout regression test failure",
+  "type": "bug",
+  "updated_at": "2026-10-01T22:57:54Z"
+}

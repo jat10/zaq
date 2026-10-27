@@ -1,0 +1,29 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-ojt.2"
+  ],
+  "blocks": [
+    "zaq-ojt.4"
+  ],
+  "created": "2026-10-22T14:40:35Z",
+  "description": "Functional specifications / files: lib/zaq_web/live/bo/communication/channels_live.ex, channel_disable_policy.ex, Engine DisableChannelConnector/ConnectorCommand consumers, Engine/Channels API handlers and bridge logout wrappers. Confirmation invokes the shared disable operation. BO displays capability-derived destructive-disable information and results; it does not resolve adapter modules or hardcode WhatsApp logout. Audit and remove dedicated disable Action, :connector_logout and helpers only when replaced and unused. Preserve shared enable/archive functions, user authorization, selected config and revision context.\nTests to add before implementation: LiveView shared-toggle confirmation/cancel, successful disable, logout failure, stale confirmation, selected-profile Delete, unauthorized direct event, and non-logout adapter normal disable. Assert the shared path receives both confirmation and Delete requests.\nBranches/paths validated: confirm/cancel, success/error, refresh/retry, current actor restrictions and alternate providers. Existing visible behavior should remain unchanged.\nMocking plan: existing adapter/provider fake at external boundary; retain real NodeRouter and Engine execution. No direct BO calls across service roles.\nDocumentation: update module docs, relevant service sections and finding #5 disposition in root review artifact if present. Read DESIGN.md and docs/bo-components.md before affected UI work.\nAction reuse assessment: reuse main toggle/runtime/status/flash infrastructure and new shared disable implementation. Retain PR confirmation UI only as presentation. Remove duplicate dispatch wrappers after reference audit; do not remove unrelated enable Action merely because it was introduced in this PR.\n\nRequired policies: docs/agent-tools.md, docs/action-reuse.md, docs/testing-approach.md, docs/WORKFLOW_AGENT.md, docs/services/channels.md and docs/services/engine.md. Read docs/services/system-config.md before touching credential boundaries. Recheck live main/branch and existing callers before implementation. Dependencies are sequential to avoid parallel overlapping lifecycle edits.",
+  "id": "zaq-ojt.3",
+  "labels": [],
+  "parent": "zaq-ojt",
+  "comments": [
+    {
+      "text": "User explicitly approved updating existing enable-after-logout assertions to observe shared disable sync then enable sync (async reply). Preserve all profile/QR/settings/auth assertions. Related obsolete disable route suite removed; preparation and archive behavior coverage migrated to shared route tests. Two-phase internal Engine canonical-read/persist commands carry no adapter knowledge.",
+      "timestamp": "2026-10-22T14:53:09Z"
+    },
+    {
+      "text": "BO confirmed disable and ordinary disable both invoke the same sync event. Confirmation is selected from exact-connector Channels logout_on_disable capability; provider label remains presentation copy. Removed DisableChannelConnector Action, disable_channel_connector/connector_logout/connector_prepare_disable handlers, ConnectorLifecycle.disable and redundant public logout wrappers. Existing enable behavior retained. Shared-sync test expectation changes explicitly approved by user.",
+      "timestamp": "2026-10-22T14:59:36Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ojt.3] Route BO confirmation through shared disable and remove duplicate entry points",
+  "type": "task",
+  "updated_at": "2026-10-22T14:59:37Z"
+}

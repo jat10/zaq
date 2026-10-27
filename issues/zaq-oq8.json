@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-09-26T07:32:53Z",
+  "description": "Focused PR #773 cleanup. Action reuse assessment: local-only extension of existing ArtifactType normalization; MIME.known_types/0 and MIME.extensions/1 own mappings, ArtifactType owns external filename safety, RecordSource owns representation precedence. Contract: explicit MIME input returns registered extension or nil; external filename suffix is lowercased and path/whitespace unsafe suffixes rejected; no actor or side effects. Consumer: RecordSource; no agent/workflow exposure. Verify hyphenated registered mapping, unsafe filenames, DOCX/PDF/PPTX/XLSX, focused tests, mix q, mix precommit, skeptical review.",
+  "id": "zaq-oq8",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implementation and focused tests complete. ArtifactType trusts MIME-registered suffixes, validates external filename suffixes including path separators, and retains exact known MIME guard. Focused tests: 56 tests/3 properties pass; mix q passes. E2E bootstrap blocked by existing AI credential migration preflight row 596 missing explicit authentication. First mix precommit: 8649 tests/133 properties/17 doctests, one unrelated telemetry DB ownership failure; isolated telemetry test passed; rerunning precommit. Review pending.",
+      "timestamp": "2026-09-26T07:52:10Z"
+    },
+    {
+      "text": "Final state: mix precommit retry exits 0 (format, Credo, compile; no stale tests on retry). Initial full stale suite had 8649 tests/133 properties/17 doctests with one unrelated LLMPerformanceFailureTest DB ownership failure; isolated rerun passed. Skeptical review temporary end-to-end probe proved PR regression outside this cleanup: extensionless source Budget + genuine DOCX bytes downloaded as Budget.docx with unknown specific MIME stages .bin and loses readable DOCX text; base branch would stage .docx. Probe removed. RecordSource unchanged per requested scope. E2E remains blocked in bootstrap by existing AI credential migration preflight row 596 missing auth.",
+      "timestamp": "2026-09-26T07:55:09Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[#568] Trust registered MIME extensions in ArtifactType",
+  "type": "task",
+  "updated_at": "2026-09-26T07:55:09Z"
+}

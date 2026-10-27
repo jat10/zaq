@@ -1,0 +1,27 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-3yb.2"
+  ],
+  "created": "2026-10-15T15:42:35Z",
+  "description": "Extend TranscriptHistory authorized reads with a local-only attachment authorization predicate exposed through confidential Engine API event. Reuse TranscriptHistory.list, Permissions.can?, SourceIdentity and ExecutionActor. Exact canonical provider/config/channel/message/author and stored attachment locator required; shared strategy only; persisted Person required. No Action/tool exposure: this is internal authorization of an existing materialization operation, not an independently executable product operation. Test valid shared access plus revoked/missing/mismatched scope and private denial.",
+  "id": "zaq-3yb.1",
+  "labels": [],
+  "parent": "zaq-3yb",
+  "comments": [
+    {
+      "text": "Implemented Engine-local exact source authorization and confidential role event. Reuses TranscriptHistory.list to enforce persisted Person, current permission and canonical scope. Exact canonical message ID and full stored locator checked; connector numeric strings normalized. NodeRouter role boundary retained. Focused authorization run passed 2 properties, 6 tests including group and private regressions; quality check identified local readability/complexity findings now being corrected. Existing test behavior untouched.",
+      "timestamp": "2026-10-15T15:46:43Z"
+    },
+    {
+      "text": "Engine authorization implementation validated: mix q passes; surrounding history/materialization suite passes (10 properties, 145 tests, 0 failures). Canonical message identity is checked before comparing the stored full locator, and the existing authorized list path rechecks scope and current read grants. No existing behavioral tests changed. Locally ready for integration/review; left uncommitted pending user authorization.",
+      "timestamp": "2026-10-15T15:48:24Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-3yb.1] Implement shared attachment source authorization in Engine",
+  "type": "task",
+  "updated_at": "2026-10-15T15:48:24Z"
+}

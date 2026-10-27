@@ -1,0 +1,22 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-13T10:33:52Z",
+  "created": "2026-10-13T10:29:36Z",
+  "description": "Read-only review of e3fdfc501 against refactor/webbridge 1ad46a514. Trace ownership, bootstrap, options forwarding, replacement tracking, teardown and failure isolation; run focused checks and temporary probes where useful; report regressions separately from pre-existing defects. Action reuse assessment: not applicable, no executable operation changes.",
+  "id": "zaq-0l7.20",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Review complete at e3fdfc501 vs refactor/webbridge 1ad46a514 and original WhatsApp 2347e2869. Ownership/contract map: static Channels owns ETS and limiter/store/dynamic-supervisor ordering; BridgeSupervisor owns provider bootstrap, dynamic children, registry and replacement index; WebBridge owns adapter resolution/options; adapter owns transport recovery. Confirmed unchanged WebBridge bootstrap-before-connectors, parent opts forwarding, shared infrastructure/connector ownership, rollback and replacement tracking. 124 focused tests + 4 properties passed (supervision, supervisor, bridge_runtime_restart, web_bridge, web contracts, linked_device runtime/restart). Temporary standalone probes compiled exact supervisor source with only DB/provider bootstrap stubbed. P2 integration regression at bridge_supervisor.ex:104-111: start takes runtime-ID lock; stop does not. Stop takes public row then blocks terminating first of two listeners; concurrent start publishes replacement row and queues child; old stop finishes and unconditional delete_runtime_entry deletes replacement public/private tracking. Observed stop :ok, start {:ok,...}, lookup {:error,:not_running}, 1 live unregistered child. Same barrier probe passes on WebBridge (start already_running, zero live children) and original WhatsApp (replacement remains registered). This combines original WhatsApp early take with WebBridge final cleanup; recommend common per-runtime lifecycle serialization plus generation-aware cleanup. Probe control: stop during automatic listener restart preserves unrelated sibling and dynamic supervisor on all three versions; suspicion disproved. Separate existing WhatsApp limitation: exact SessionStorage code unchanged from original WhatsApp; worker only creates table in init. Isolated real Mnesia stop/start leaves worker alive and writes storage_unavailable; explicit worker restart restores writes. This is Mnesia-only restart, not full VM boot or worker crash. Broader failure scope: rest_for_one intentionally replaces WebBridge one_for_one, so session-store worker and limiter failures also rebuild widgets/other bridges, covered by focused tests. No production edits or retained test edits. No real browser/live WhatsApp transport acceptance performed. Request changes for teardown regression; review output only, fixes not authorized in this task.",
+      "timestamp": "2026-10-13T10:33:51Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Investigate Channels supervision alignment after WebBridge rebase",
+  "type": "task",
+  "updated_at": "2026-10-13T10:33:52Z"
+}

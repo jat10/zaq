@@ -1,0 +1,25 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-430"
+  ],
+  "blocks": [
+    "zaq-m8g"
+  ],
+  "closed_at": "2026-09-18T23:22:49Z",
+  "created": "2026-09-18T22:36:16Z",
+  "description": "Functional specifications/files: add Zaq.Ingestion.ArtifactType in lib/zaq/ingestion/artifact_type.ex and test/zaq/ingestion/artifact_type_test.exs. Do not add lib/zaq/mime.ex or a global MIME utility. Explicitly declare already-installed :mime ~\u003e 2.0 in mix.exs while retaining locked 2.0.7 resolution.\n\nOwnership evidence: RecordSource owns canonical Record -\u003e ingestion-input staging; adjacent ExternalSource owns stable identifiers/provenance, ContentSource owns UI filter state, and TemporaryMaterializationStore owns temporary file IO. Zaq.Materialization and its Handle/Registry/Handler modules own signed-handle redemption and dispatch contracts. None owns MIME-to-suffix mapping. Root MapUtils and utils exist for generic concerns, but no existing shared MIME abstraction or cross-domain consumer justifies a new global contract. ArtifactType follows the existing ingestion sibling-module structure.\n\nName around artifact type: MIME is the input metadata; the downloaded artifact format is the concern. MaterializedRepresentation would imply broader record/encoding/lifecycle ownership. Keep the new moduledoc explicitly limited to MIME-to-extension mapping and compatibility.\n\nProposed pure API only: canonical_extension(mime_type) -\u003e safe lowercase dot-prefixed extension | nil; compatible_extension?(mime_type, extension) -\u003e boolean. Use MIME.extensions/1 as the single ordered mapping source; first safe extension is canonical and compatibility checks all safe mapped aliases. Normalize MIME case/parameters and extension case internally. Reject unsafe extensions; return nil/false for missing or unmapped input. The MIME library maps application/octet-stream to .bin, but RecordSource handles nonspecific MIME before mapping, so this does not suppress source fallback. No Record arguments, filename parsing, nonspecific?/1 API, fallback .bin policy, IO, sniffing, format conversion, configuration or Action exposure.\n\nTests to add before implementation: exact DOCX/XLSX/PPTX/PDF mapping, a multi-extension MIME demonstrating canonical versus compatible alias, case/parameters, unknown/nil/blank MIME, incompatible/unsafe extensions. Add bounded StreamData property: any returned canonical extension is normalized/path-safe and compatible with its MIME. Test helper RED before implementation, then GREEN; keep initial regression evidence in zaq-430 as real behavioral assertion failures, not missing-module compilation errors.\n\nBranches/paths validated: canonical mapping, compatible noncanonical alias, mismatch, unknown/missing MIME and unsafe extension rejection. Mocking plan: none, real MIME mapping with no global config mutation. Documentation: narrow ArtifactType moduledoc and specs; ingestion precedence documentation belongs to zaq-m8g.\n\nAction reuse assessment: extend Zaq.Ingestion.RecordSource staging policy; local-only pure MIME helper. Inspected RecordSource.materialize/2 -\u003e store_download/2 -\u003e TemporaryMaterializationStore.write_original/3, Materialization.materialize/4, Agent.Tools.DataSource.DownloadDocument Action, workflow steps, and all MIME/extension references under lib/zaq. DownloadDocument redeems content and does not own ingestion filenames; DiskBridge MIME.from_path/1 infers MIME in the opposite direction. No existing ZAQ MIME-to-extension abstraction found. Reuse installed MIME 2.0.7 mapping. Inputs are original/downloaded Record metadata; output is a safe extension. Preserve signed-handle authorization, actor context, download errors, bytes, original record/provenance, temporary-root lifecycle and row/plain-text .md paths. No new Action, tool, workflow surface, runtime configuration or external dependency seam. Verify through materialize/2 and pure helper tests.",
+  "id": "zaq-fx0",
+  "labels": [],
+  "comments": [
+    {
+      "text": "MIME architecture audit (2026-09-19): keep #568 helper at Zaq.Ingestion.ArtifactType. MIME metadata is cross-cutting across Channels, Storage, Web previews, Agent media, Engine artifacts, and Materialization, but each currently owns a distinct concern: provider/attachment normalization, extension-based detection, textual/binary transport, safe response allowlists, preview routing, or signed metadata. Existing reverse mappings are MIME.from_path in DiskBridge, Storage, and BO FilePreviewData; FileController has a separate small extension map. No established ZAQ-wide MIME abstraction or shared compatibility contract exists. Do not broaden #568. Consider a separate follow-up to consolidate extension↔MIME policy only if product requirements justify aligning upload/preview/download behavior.",
+      "timestamp": "2026-09-18T22:46:28Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[#568] TDD: add ingestion ArtifactType MIME extension helper",
+  "type": "task",
+  "updated_at": "2026-09-18T23:22:49Z"
+}

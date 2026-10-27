@@ -1,0 +1,21 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-16T17:06:58Z",
+  "created": "2026-10-16T16:31:49Z",
+  "description": "Make the shared Delete/archive command disable the selected connector and successfully stop its runtime before archival for every adapter. Preserve historical rows and PersonChannel references. Reuse existing confirmation; WhatsApp logout uses the configured package callback, other adapters default to ordinary disable. A failed logout leaves enablement unchanged; a failed shutdown leaves a disabled, unarchived connector for retry. Already disabled/archived retries must not repeat logout or restart runtimes. Keep exact ID/provider/kind/revision validation, actor permissions and watch/ingress teardown ordering.\n\nAction reuse assessment: extend Engine.ConnectorLifecycle.archive/3 and reuse persist_disable, sync_runtime, revision checks and archive persistence; existing ArchiveChannelConnector Action and BO :archive_channel_connector consumers share this implementation. Add an optional provider-neutral before_disable callback routed by CommunicationBridge to JidoChatBridge; Jido reuses logout/2 only when trusted logout_mfa exists and preserves current super-admin authorization. Internal Channels prepare-disable leaf uses NodeRouter Event and supplied config; no new independently composable Action or agent tool. Default bridges need no custom hook. Stop watches/ingress before credentials or runtime are removed; do not hold a DB row lock across external logout. Recheck the disabled revision before archival to reject concurrent edits/re-enable.\n\nApproval: user explicitly approved updating existing archive/runtime-failure test expectations and equivalent scenarios so failed shutdown prevents archival. Preserve unrelated assertions.\n\nValidation: focused lifecycle ordering/failure/retry/property tests, optional hook/default/permission tests, BO delete regression tests across supported adapter pages, mix q and final mix precommit (use ERL_FLAGS='+S 4:4' due previously verified host scheduling contention). New feature browser E2E remains under existing zaq-0l7.7 UX gate and zaq-0l7.8 consolidated journeys.\n\nPolicies: AGENTS.md, docs/WORKFLOW_AGENT.md, docs/agent-tools.md, docs/action-reuse.md, docs/services/channels.md, docs/services/engine.md, docs/services/system-config.md, docs/testing-approach.md, DESIGN.md, docs/bo-components.md. No commit/push requested.",
+  "id": "zaq-iie",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implementation and required local validation complete. Shared Delete disables/stops before archive across adapters; optional Jido hook logs out WhatsApp. Shutdown failure retains disabled/unarchived row; retries skip logout/ingress teardown and require successful stop. User-approved archive expectations updated. Broader precommit passed 10081 tests plus 201 properties/17 doctests. UX and E2E follow-up remains tracked separately in zaq-0l7.7 and zaq-0l7.8.",
+      "timestamp": "2026-10-16T17:06:57Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-iie] Disable adapter connectors before deleting them",
+  "type": "task",
+  "updated_at": "2026-10-16T17:06:58Z"
+}

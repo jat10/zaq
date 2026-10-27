@@ -1,0 +1,48 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-09-27T21:00:05Z",
+  "description": "Use the existing test/support/bin/test-partitions local runner. Fix partition failure propagation and verify both partitions run against separate MIX_TEST_PARTITION databases with full test selection. Measure wall time against the recorded unpartitioned local baseline, document any isolation failures. Action reuse: not applicable — this is developer test orchestration, not a ZAQ runtime operation or agent/workflow Action.",
+  "id": "zaq-l9d",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Existing runner used Mix file partitioning and per-partition DB names, but swallowed nonzero child exits because `if ! wait` captured the negated status. Fixed exit reporting, positive input validation, and added a serial test compile preflight. Stubbed shell check passes success/failure/invalid cases. Full two-partition seed 12345 run passed in 172.1s; one-partition same-checkout comparison is running. Action reuse not applicable: local developer test orchestration only.",
+      "timestamp": "2026-09-27T21:04:53Z"
+    },
+    {
+      "text": "Comparable full-suite seed 12345 passing runs on this checkout: TEST_PARTITIONS=1 wall 280.5s (ExUnit 273.1s, 48 doctests, 178 properties, 9,741 tests, 0 failures, 1 skipped, 87 excluded); TEST_PARTITIONS=2 initial wall 172.1s, both processes reported pass. Difference 108.4s / 38.6% wall. Final-script two-partition repeat and quality gates pending.",
+      "timestamp": "2026-09-27T21:09:52Z"
+    },
+    {
+      "text": "Isolation audit: baseline one process seed 12345 passed 48 doctests/178 properties/9741 tests in 280.5s; final two-process repeat passed identical totals, 0 failures, 1 skip, 87 exclusions in 168.3s (112.2s/40.0% faster). Representative DB test setup uses Zaq.Repo sandbox inside its BEAM; Mix assigns its file to one partition and config/test.exs appends partition to DB name before Repo starts. Shared resources: BEAM global config/ETS/Mox/registries are process-local; databases are zaq_test_fix_test_provider_models_isolation1 and ...2; _build is shared but precompiled serially; ordinary test server disabled, fixed E2E port not active; repo filesystem/Python dependencies remain shared. Resolution scope: DB name at boot, VM globals per child, test setup per ExUnit owner. Seam: built-in Mix --partitions and existing MIX_TEST_PARTITION config. Invariants: unchanged file selection, assertions, skipped/excluded counts, real Python/property tests, child failure propagates. Smallest ownership issue fixed: runner incorrectly negated wait status. Ready for local two-process use, with normal suite flakiness still possible; no async modes or production code changed. Action reuse not applicable: developer-only orchestration outside runtime Actions.",
+      "timestamp": "2026-09-27T21:13:47Z"
+    },
+    {
+      "text": "Final validation: bash -n and stubbed runner success/failure/invalid input checks passed; final two-partition full suite seed 12345 passed in 168.3s, shards 33 doctests/79 properties/4348 tests and 15 doctests/99 properties/5393 tests, total identical to one-process full run (48/178/9741, 0 failures, 1 skipped, 87 excluded). mix q passed; mix precommit passed (48/178/9741, 0 failures). git diff --check clean. Existing untracked docs/reports left untouched. Coverage/E2E not applicable to local runner/docs change. No commit or PR requested; leave issue open pending authorized landing.",
+      "timestamp": "2026-09-27T21:17:58Z"
+    },
+    {
+      "text": "User follow-up changes delivery: replace shell entry point with `mix test.fast`, retain two isolated Mix OS processes and per-partition DBs, buffer child output, print one final result after all children complete, and verify complete run through Context Mode with explicit timeout. Existing uncommitted runner/docs edits are from this same issue and will be superseded. Action reuse remains not applicable: local developer test orchestration.",
+      "timestamp": "2026-09-28T07:22:17Z"
+    },
+    {
+      "text": "Follow-up complete in working tree: new Mix.Tasks.Test.Fast replaces shell script; `mix test.fast --seed 12345` runs two child Mix OS processes concurrently, waits for both, prints final aggregate status, and propagates failure. Intentional `--help` invalid-option probe returned final 2/2 failed nonzero after both children, verifying failure exit. Full command through Context Mode timeout=900000 completed exit 0 in 167.5s (Mix result 166.3s), shard totals 48 doctests/178 properties/9741 tests, zero failures, 1 skip, 87 exclusions. Context Mode did not time out. mix q passed; mix precommit passed; git diff --check clean. Old test/support/bin/test-partitions removed; docs/dev-setup.md now names mix test.fast. Existing untracked report untouched. No commit/push/PR requested.",
+      "timestamp": "2026-09-28T07:28:34Z"
+    },
+    {
+      "text": "User requested live green ExUnit dots. Changed Mix.Tasks.Test.Fast child System.cmd into IO.stream() with --color; output now streams during tests while task still waits for all children and emits final result. Focused test path exposed Mix no-matching-file error on empty partition; explicit test paths now use one process and focused 4-test run passed with live dots. Full direct PTY run showed live green dots but failed due PostgreSQL too_many_connections while user concurrently ran suite (user confirmed concurrent run). Retried alone via Context Mode timeout=900000: exit 0 in 172.2s, Mix 171.0s, two partitions totaling 48 doctests/178 properties/9741 tests, zero failures, 1 skip, 87 excluded, zero connection errors; Context Mode did not time out. Final mix q, mix precommit and git diff --check passed. New untracked :memory:.ses appeared during test runs; preserved without deletion.",
+      "timestamp": "2026-09-28T07:47:02Z"
+    },
+    {
+      "text": "Follow-up reference audit for deleting test/support/bin/test-partitions: searched all tracked files with git grep and current repository files including hidden configuration with rg --hidden, excluding .git/deps/_build/doc artifacts. No remaining references to the shell path or basename, and no other matching partition runner files. Current references to test.fast/TEST_PARTITIONS/TEST_MAX_CASES are only docs/dev-setup.md and lib/mix/tasks/test.fast.ex. Earlier pre-deletion search covered likely docs, README, test/support, .github and mix.exs but was not full-repository; this audit completes it. No edits required.",
+      "timestamp": "2026-09-28T07:54:03Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Make local two-process test partitions reliable",
+  "type": "task",
+  "updated_at": "2026-09-28T07:54:03Z"
+}

@@ -1,0 +1,31 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-6zd.1"
+  ],
+  "blocks": [],
+  "created": "2026-10-15T11:25:06Z",
+  "description": "Extend InputPrompt shared formatting and its Executor/RequestControl consumers; include quote in retrieval input. Preserve original content for admission. Tests before implementation: current bridge-to-model quote without captured original, attribution, missing text and malformed context, ordinary input unchanged. Action reuse: extend existing InputPrompt and Pipeline/Executor projection; no new tool or lookup, current inline data only, no scope-derived authority. E2E unnecessary: pure message projection proven by focused integration/unit/property tests; no UI change. Update service docs. Run isolated tests, mix q, final mix precommit; coverage phase follows review approval.",
+  "id": "zaq-6zd.2",
+  "labels": [],
+  "parent": "zaq-6zd",
+  "comments": [
+    {
+      "text": "Discovery extension: HistoryIngress owns persisted history_context; TranscriptHistory.projected_messages owns permission-filtered projection; HistoryLoader owns model conversion. Extend those existing paths to persist/project only normalized inline reply_context. Existing authorization/Person checks stay authoritative; no original-message fetch. Add capture -\u003e authorized projection -\u003e HistoryLoader regression before implementation. Existing test assertions unchanged. Step 1 implemented/validated but dependency remains open until landing per workflow; proceeding within user-authorized overall issue.",
+      "timestamp": "2026-10-15T11:29:24Z"
+    },
+    {
+      "text": "Implementation complete including current, retrieval, steering and persisted authorized-history quote projections. Added new tests only, all affected tests passed (6 doctests, 6 properties, 358 tests). Final mix q and git diff --check pass. mix precommit started with requested 900000ms execution timeout; MCP transport disconnected after 300s but OS process remains active. Monitoring /tmp/zaq-6zd-precommit.log rather than launching overlapping validation. Post-review coverage/landing still pending; existing reaction changes untouched.",
+      "timestamp": "2026-10-15T11:43:18Z"
+    },
+    {
+      "text": "Final precommit PASSED: 17 doctests, 201 properties, 9969 tests, 0 failures (497.6s); mix q passes. Current quotes, retrieval, steering and authorized persisted-history projection are covered. Ready for review and post-review coverage/landing; no Git mutations authorized.",
+      "timestamp": "2026-10-15T11:45:06Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-6zd] Project quoted replies into agent input and validate",
+  "type": "task",
+  "updated_at": "2026-10-15T11:45:06Z"
+}

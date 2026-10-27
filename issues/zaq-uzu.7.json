@@ -1,0 +1,19 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-uzu.6"
+  ],
+  "blocks": [
+    "zaq-uzu.8"
+  ],
+  "created": "2026-09-25T09:05:41Z",
+  "description": "Implement workflow/cache portions of approved S6 in parent zaq-uzu. Dedicated python-\n    ingestion.yml; cold/warm verification. No cached venv/source. Leave elixir-ci.yml unchanged.",
+  "id": "zaq-uzu.7",
+  "labels": [],
+  "parent": "zaq-uzu",
+  "priority": 2,
+  "status": "open",
+  "title": "[#781] S6a: Add dedicated Python CI workflow",
+  "type": "task",
+  "updated_at": "2026-09-25T09:05:44Z"
+}

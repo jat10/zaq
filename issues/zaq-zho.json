@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-0l7.4"
+  ],
+  "blocks": [
+    "zaq-0l7.5"
+  ],
+  "closed_at": "2026-10-11T12:05:02Z",
+  "created": "2026-10-10T13:36:22Z",
+  "description": "Files:\n- existing JidoChatBridge admission boundary\n- existing Engine history/routing and replay owners, to verify before coding\n\nFunctional specifications:\nUpdate existing zaq-zho, do not duplicate it. Enforce sync_history=false and sync_full_history=false at every initial/reconnect connection. No initial import-enable control. Unexpected history_sync batches must not persist or trigger agent replies. Verify and extend persistent connector+peer+message scoped deduplication, preserving accepted-message retry safety. Offline queued messages are separate from history sync: establish upstream origin metadata and obtain a deliberate catchup policy before finalizing that path; do not infer history solely from arrival time or silently drop legitimate queued messages. Respect configured chat/routing scope.\n\nTests before implementation:\n- No historical download/import/reply on pairing or reconnect\n- Unexpected history batch filtered\n- Duplicates within/across accounts and rooms\n- Replay after restart\n- Mixed queued/live batches\n- Selected/unselected chats\n- Property tests for admission identity\n\nBranches validated:\n- first pairing\n- reconnect\n- offline catchup\n- duplicate\n- retry\n- uncertain origin\n- disabled connector\n\nDocumentation:\n- docs/services/channels.md\n- operator history/catchup explanation\n- record final catchup decision in zaq-zho\n\nAction reuse assessment:\nReuse Amarula sync flags, current Channels sink and Engine capture/routing/replay operations. Inspect existing dedupe ownership before extending, no parallel store by default. Trusted event in, admitted message or filtered reason out; side effects only after admission. No new agent Action.\n\nValidation:\nFollow docs/WORKFLOW_AGENT.md validation lifecycle; tests before implementation, focused checks per issue, final gate before approval. No live account connection or send without scoped authorization.\n\nMocking:\nExternal Amarula transport only; use real internal boundaries and isolated DB/process/storage fixtures; inject config and clock without global mutation.\n\nPolicy:\nRecheck module responsibilities, docs/services/channels.md, Action reuse, system-config and testing guidance before coding. BO calls use explicit NodeRouter Events; nil actor never grants permission.",
+  "id": "zaq-zho",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "History sync false flags already enforced in shared Config on all starts; provider policy now drops unexpected history_sync before decoder. Reused persistent Engine source identity/admission instead of parallel dedupe. Added DB replay test across fresh callers, rooms and accounts, real decoder filter test preserves ordinary queued message. Catchup default: process ordinary queued events normally, dedupe persistently. Amarula emits same messages_upsert shape for queued/live and adapter drops arrival provenance; no reliable separate capture-only policy without upstream changes. User asked asynchronously; no contrary reply received. mix q and 60 tests/4 properties pass.",
+      "timestamp": "2026-10-11T12:04:40Z"
+    }
+  ],
+  "priority": 1,
+  "status": "closed",
+  "title": "[zaq-zho] Disable history sync and control reconnect admission",
+  "type": "task",
+  "updated_at": "2026-10-11T12:05:02Z"
+}

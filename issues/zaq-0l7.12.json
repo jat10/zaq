@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-11T18:56:02Z",
+  "created": "2026-10-11T18:53:03Z",
+  "description": "User requested a failing regression test only before fixing. Capture a WhatsApp direct message through real canonical history APIs, then assert admission succeeds and preserves the canonical message. Current Conversation channel_type allowlist omits whatsapp. Action reuse: not applicable — test-only change; reuse Conversations.capture_canonical_message/3 and admit_incoming/1 with real DB, no production operation changes. Leave regression red and report the observed error.",
+  "id": "zaq-0l7.12",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Regression added at test/zaq/engine/conversations/canonical_history_capture_test.exs:103. Real canonical WhatsApp direct-message capture succeeds; real admit_incoming fails at assertion with Ecto channel_type inclusion error for whatsapp. Isolated run: 1 test, 1 failure, exit 2. Log /tmp/zaq-whatsapp-admission-red.log. User requested red phase only: no production fix, issue stays open and test remains in working tree.",
+      "timestamp": "2026-10-11T18:54:03Z"
+    },
+    {
+      "text": "User now authorizes the fix. Action reuse assessment: extend existing Conversation.changeset/2 provider inclusion contract to accept whatsapp; retain Conversations.admit_incoming/1, canonical capture, authorization and execution lifecycle unchanged. No new Action or agent-tool exposure. Verify previously red real-DB regression and full canonical history suite, plus mix q. Existing uncommitted regression is the authorized preceding red-phase work.",
+      "timestamp": "2026-10-11T18:54:30Z"
+    },
+    {
+      "text": "Fixed with Conversation channel_type allowlist extension. Previously red regression now passes unchanged: 1 test, 0 failures. Full canonical history suite: 32 tests and 1 property, 0 failures. mix q and commit hooks passed. Commit 49bf37d46 pushed to origin/feat/whatsapp-integration.",
+      "timestamp": "2026-10-11T18:56:01Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Reproduce WhatsApp history-to-agent admission failure",
+  "type": "bug",
+  "updated_at": "2026-10-11T18:56:02Z"
+}

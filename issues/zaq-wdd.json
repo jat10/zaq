@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-15T09:10:23Z",
+  "created": "2026-10-15T09:10:10Z",
+  "description": "Set mix.exs jido_chat_whatsapp dependency to ../jido_chat_whatsapp as requested. Action reuse: not applicable — dependency source configuration only; no executable operation changes. Preserve existing working-tree changes. Verify local Mix dependency resolution.",
+  "id": "zaq-wdd",
+  "labels": [],
+  "priority": 2,
+  "status": "closed",
+  "title": "Use local jido_chat_whatsapp checkout",
+  "type": "task",
+  "updated_at": "2026-10-15T09:10:23Z"
+}

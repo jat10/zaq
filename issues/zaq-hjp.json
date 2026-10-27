@@ -1,0 +1,23 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-meb"
+  ],
+  "closed_at": "2026-10-11T11:27:55Z",
+  "created": "2026-10-10T13:44:20Z",
+  "description": "Compatibility prerequisite discovered while installing current WhatsApp adapter (zaq-meb). Zoi 0.18.11 removes Types.Default and stores defaults on schema metadata. Remove the obsolete wrapper-specific match; existing schema-type traversal already handles defaulted values. Reuse assessment: local-only compatibility correction inside existing OpaqueAliases schema traversal, no Action or authorization changes. Existing DefaultUnionAction and alias round-trip tests cover behavior; run them and existing property tests, then mix q. Preserve scoped opaque-handle authorization and all existing assertions.",
+  "id": "zaq-hjp",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Verified after fast-forward to ba8bae982: required OpaqueAliases compatibility is already included upstream (last modifying commit ce00c72a8); no duplicate patch or empty commit needed. Current mix q passed; focused suite including opaque_aliases and shared bridge/Telegram regression tests passed: 239 tests, 3 properties, zero failures. User authorized per-issue commit and push; prerequisite has no remaining local source diff.",
+      "timestamp": "2026-10-11T10:03:59Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-hjp] Adapt opaque aliases to required Zoi 0.18.11 dependency",
+  "type": "task",
+  "updated_at": "2026-10-11T11:27:55Z"
+}

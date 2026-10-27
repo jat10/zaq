@@ -1,0 +1,32 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-22T10:47:28Z",
+  "description": "User-requested follow-up for PR #847. Implement connector-owned teardown state and remove generic NodeRouter coordination, including Coordination and AsyncHandoff modules and the tests introduced specifically for that machinery.\n\nAgreed contract: enabled is desired state; each connector owns a stopping phase that excludes startup and concurrent enable throughout teardown. Engine persists enabled: false before adapter cleanup. Stop/remove the supervised listener, clean the saved binding even without a listener, and finish archive only after successful cleanup. Cleanup errors leave disablement durable and cleanup retryable. NodeRouter remains service/event transport rather than lifecycle owner. No generic router lock replacement.\n\nPrior work: zaq-e5z (PR #847 remediation), zaq-nuz (closed wrapper-removal work that retained coordination internally). This epic supersedes that retained coordination design, not those historical records.\n\nExisting red specification: test/zaq/channels/linked_device/connector_disable_test.exs, tag connector_stopping_contract. Verified failing at \"disable must persist before adapter cleanup begins\"; the 11 existing tests in that file and mix q passed. The stopping assertions after that failure remain unverified until implementation.\n\nDelivery: three dependent tasks: implement fix -\u003e remove production coordination machinery -\u003e remove its dedicated tests/helpers and complete validation. No implementation, commit, push or PR is authorized by this issue-creation turn alone.\n\nApproval record: user explicitly requested removal of NodeRouter coordination and its tests earlier in this conversation, and now requested this epic and its three tasks. Preserve unrelated test contracts. Track any additional existing-test behavioral changes under docs/testing-approach.md.\n\nAction reuse: extend ConnectorLifecycle/ConnectorRuntime and existing EnableChannelConnector/DisableChannelConnector Actions; retain adapter logout/cleanup_connection and BridgeSupervisor termination. No new agent tool or standalone Action is needed for internal stopping-state management.\n\nValidation follows docs/WORKFLOW_AGENT.md and docs/testing-approach.md: focused integration tests and mix q during implementation; post-review coverage handoff and final mix precommit before final approval. No new browser journey is planned for this internal lifecycle change; reassess if UI changes become necessary.\n\nDependency graph (linear DAG):\n```mermaid\ngraph LR\n  A[\"zaq-mvw.1: implement stopping\"] --\u003e B[\"zaq-mvw.2: remove production coordination\"]\n  B --\u003e C[\"zaq-mvw.3: remove dedicated tests and validate\"]\n```\n",
+  "id": "zaq-mvw",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Persisted lifecycle implementation final local validation PASSED: mix q; 182 focused checks plus 39 runtime/supervision checks after the final lock fix; mix precommit --max-cases 1 exited 0 in 670.1s, reporting 10,535 passed (17 doctests, 220 properties, 10,298 tests), 1 skipped, 147 excluded. Serialized execution avoids previously observed unrelated shared-table deadlocks; no assertions were weakened. ConnectorController and its supervision/test changes are removed. lifecycle_state migration included. Changes remain uncommitted. Implementation .1/.2 complete; .3/epic remain open for review and post-review coverage handoff per workflow.",
+      "timestamp": "2026-10-22T12:54:13Z"
+    },
+    {
+      "text": "User explicitly requested reverting item 1 (lifecycle fix) while retaining items 2 and 3 (NodeRouter Coordination/AsyncHandoff removal and their tests). Restoring pre-epic lifecycle behavior and assertions, removing stopping schema/guards/cleanup exception and new diagnostics tests. Preserving removal of coordination callers/modules/tests and unrelated documentation edits. Rolled back exact latest lifecycle migration in local dev and test databases before removing it. Action reuse: restore existing domain operations; no new Actions or runtime mechanism.",
+      "timestamp": "2026-10-22T14:10:07Z"
+    },
+    {
+      "text": "Added requested root review artifact WHATSAPP_ADAPTER_BOUNDARY_FINDINGS.md: five provider-branch findings with inspected test evidence, inferred rationale, reuse candidates and implementation cautions. Explicitly records that native authentication alone must not broaden existing enable UI behavior; no production or test changes. Action reuse assessment: documentation only, existing candidates documented, no executable operations added.",
+      "timestamp": "2026-10-22T14:23:52Z"
+    },
+    {
+      "text": "Updated WHATSAPP_ADAPTER_BOUNDARY_FINDINGS.md with per-finding provenance tables verified against local main a2a1a1e9e. Distinguished main generic toggle/runtime sync/archive from PR-added enable/disable commands, pairing UI, auth projection and adapter_authentication option. Main ConnectorLifecycle module is explicitly retained; only added operations are consolidation candidates. Documentation only; no code/test changes.",
+      "timestamp": "2026-10-22T14:30:41Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-mvw] Replace NodeRouter coordination with connector-owned stopping lifecycle",
+  "type": "epic",
+  "updated_at": "2026-10-22T14:30:41Z"
+}

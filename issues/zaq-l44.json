@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-18T15:45:06Z",
+  "description": "Add intentionally failing transport-boundary regression using the shared MessageFormatter and real WhatsApp adapter. Preserve existing tests and production code. Research current official WhatsApp syntax and agent rendering approaches. Action reuse assessment: not applicable to operation changes; tests reuse MessageFormatter.format_outgoing/1 and WhatsApp Adapter send/edit operations, replacing only external transport. No new Actions or agent tools. E2E unnecessary: deterministic adapter contract reproduces missing conversion. Expected red test explicitly requested by user; do not fix it in this task.",
+  "id": "zaq-l44",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Confirmed source path: Channels.Api calls MessageFormatter.format_outgoing/1; unset provider format defaults to :markdown; JidoChatBridge relays canonical format. Telegram adapter maps markdown to rich messages. WhatsApp Adapter.send_message/3 and edit_message/4 send unchanged text; SendOptions has no format field. Added two real-adapter transport-boundary tests for bold/italic/strike and code preservation. Focused run: 38 tests, exactly 2 intended failures (new WhatsApp send/edit), 36 existing formatter/Telegram tests pass. mix q passes. Research: OpenClaw docs/concepts/markdown-formatting describes shared IR, native channel rendering, rendered-size chunking and WhatsApp tables to bullets; Hermes official WhatsApp guide describes automatic bold/strike/heading/link conversion. Recommend adapter-owned deterministic Markdown renderer, preserve canonical ZAQ contract. docs/services/channels.md formatting section has stale default/error handling claims relative to current implementation; left unchanged.",
+      "timestamp": "2026-10-18T15:47:02Z"
+    },
+    {
+      "text": "Final validation: mix precommit was invoked with timeout 900000 but Context Mode MCP call itself timed out after 300 seconds, so no final-gate result is available. mix q passed; isolated run proved exactly two intended formatting failures out of 38 tests. No final approval requested; no commits or production changes.",
+      "timestamp": "2026-10-18T15:51:22Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Reproduce missing WhatsApp outbound Markdown rendering and assess renderer options",
+  "type": "task",
+  "updated_at": "2026-10-18T15:51:22Z"
+}

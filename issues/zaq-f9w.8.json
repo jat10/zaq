@@ -1,0 +1,35 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-f9w.7"
+  ],
+  "blocks": [],
+  "created": "2026-09-29T14:30:50Z",
+  "description": "Small automated end-to-end sample with stubbed provider and real database/export/restore. Run required checks; document limitations and live-smoke prerequisites. No live ingestion.",
+  "id": "zaq-f9w.8",
+  "labels": [],
+  "parent": "zaq-f9w",
+  "comments": [
+    {
+      "text": "Action reuse not applicable: this issue adds a validation fixture and readiness report, not a new runtime operation. Existing Dataset/Runner/Artifacts/Bootstrap APIs are exercised unchanged. The sample is an integration test with a stub embedding provider and two disposable PostgreSQL databases; no BO route or new browser user journey exists, so new feature E2E authoring is unnecessary. Existing ingestion/system-config E2E execution remains required by workflow.",
+      "timestamp": "2026-09-29T16:13:49Z"
+    },
+    {
+      "text": "Automated integration sample added (test/bench/liverag_smoke_test.exs): fresh source/restore PostgreSQL DBs with vector extension, two synthetic pinned documents, one-at-a-time stub embedding, completed run, secret-free export, exact restore fingerprint, nonempty target refusal and tampered source checksum refusal. Explicit run: 1 test, 0 failures; mix q passes. Existing BO E2E attempted after npm ci; asset/DB bootstrap succeeded, but Playwright Chromium launch was blocked by macOS sandbox MachPortRendezvousServer permission denied (1100) before browser assertions. Browser-capable environment must rerun E2E. No live provider call, full corpus ingestion, or commit/push.",
+      "timestamp": "2026-09-29T16:27:35Z"
+    },
+    {
+      "text": "Final local validation: mix q passes; focused Dataset/ChunkPersistence/Checkpoint/Runner tests pass; Python extractor 8 tests passed; isolated two-document PostgreSQL smoke test passes with concurrent lock contention, export/restore, nonempty-target and checksum refusal. mix precommit passes with 48 doctests, 184 properties, 9,885 tests, 0 failures, 1 skipped (103 excluded); a final no-stale rerun also passed. Temporary validation databases were removed. Existing E2E remains outstanding: npm bootstrap succeeded, but Playwright Chromium launch fails before assertions with macOS MachPortRendezvousServer permission denied (1100) in this sandbox. Needs browser-capable environment for ingestion/system-config journeys before final approval. No commit/push or live ingestion.",
+      "timestamp": "2026-09-29T16:54:14Z"
+    },
+    {
+      "text": "Superseding prior Python extractor validation note: user requested Elixir-only extraction. Removed the new Python extractor, requirements, and Python tests; mix liverag.corpus extract now uses Explorer and preserves the exact three JSONL SHA-256 digests from the earlier extraction. Focused extractor/dataset tests 7/7, mix q and final mix precommit passed: 48 doctests, 184 properties, 9,891 tests, 0 failures, 1 skipped (103 excluded). Existing browser E2E remains blocked by Chromium MachPortRendezvousServer permission 1100 in this sandbox; no live ingestion or commit/push.",
+      "timestamp": "2026-09-29T20:18:02Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-f9w.8] Validate and report smoke readiness",
+  "type": "task",
+  "updated_at": "2026-09-29T20:18:02Z"
+}

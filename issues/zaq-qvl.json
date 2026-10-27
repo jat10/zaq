@@ -1,0 +1,52 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-14T20:41:54Z",
+  "description": "User requests a failing regression only. Action reuse: exercise existing Conversations.rate_message_by_source/2, People.add_channel/1 and canonical capture API. Test two native WhatsApp IDs explicitly owned by the same active person: PN on one connector, LID on the target connector. This uses canonical identity ownership rather than treating profile phone enrichment as authorization. LID control must succeed; known PN reaction on target connector should resolve to same person and rating but currently fails unresolved_actor because lookup only checks exact per-connector channel_identifier. No new Action or production code. Scope proves lookup limitation, not actual Android incident. Run isolated red test; do not force green or run final green suite for user-requested failing artifact.",
+  "id": "zaq-qvl",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Added test/zaq/engine/whatsapp_reaction_identity_test.exs. Ran mix test on that file: 1 test, 1 failure at line 72. Setup and LID control passed; PN assertion expected {:ok, updated}, got {:error, :unresolved_actor}. Both native identities explicitly owned by the same person; target connector has LID link, other connector has PN link. Left failing as explicitly requested; no production edits. This proves exact connector lookup limitation, not which identifier the reported Android event actually supplied.",
+      "timestamp": "2026-10-14T20:44:31Z"
+    },
+    {
+      "text": "User now authorizes fixing regression. Extend existing People.match_by_channel/3 with WhatsApp-only fallback through PersonIdentities.lookup/2, requiring a valid current-scope WhatsApp link for the resolved person on the requested connector. Exact matches retain priority and scope rejection. Never match profile phone enrichment, infer identity from nil, or broaden other providers. Add negative and property coverage, run focused tests, mix q and precommit. No new Action or tool.",
+      "timestamp": "2026-10-14T20:47:02Z"
+    },
+    {
+      "text": "Implemented WhatsApp-only registered identity fallback in People.match_by_channel/3. Requires canonical incoming identity ownership plus a current same-person WhatsApp link on target connector; exact matches retain priority. Added failing-regression fix, property covering target-link requirement/stale links, and negative cases for profile-only phones, different owners, inactive raters. mix q passed. Focused suites: 4 properties, 106 tests, 0 failures. Final mix precommit running. No commit/push authorized.",
+      "timestamp": "2026-10-14T20:48:36Z"
+    },
+    {
+      "text": "User rejected shared People fallback as wrong ownership. Reverted production and service-doc changes and restored original failing reproduction. Prior mix q and focused tests passed, but precommit timed out at 900 seconds with failures in identity_resolver/history_ingress; no clean final gate. Continue diagnosis at WhatsApp adapter identity normalization; exact People connector lookup remains unchanged.",
+      "timestamp": "2026-10-14T21:06:58Z"
+    },
+    {
+      "text": "Implement at sibling jido_chat_whatsapp checkout (same 099e7c9 revision as dependency). Reuse Amarula.Contacts.lid_for_pn/2 via optional transport canonical_user_id/2; normalize sender before listener emits all message/reaction types. No People fallback or profile-phone inference. Missing/unavailable mapping preserves original native ID. Replace rejected Engine-only regression with listener-boundary regression and real Amarula mapping-store tests. Mirror tested package edits into local dependency without commit/push or lock changes.",
+      "timestamp": "2026-10-14T21:08:18Z"
+    },
+    {
+      "text": "Adapter regression verified red against original ConnectionWorker: expected canonical sender 987654@lid, observed 15550001111@s.whatsapp.net. Restored fix immediately. Initial focused suite passed 20 tests; added mapping idempotency/device property and running full adapter suite plus quality. Removed rejected shared-People Engine regression; production ZAQ People/docs unchanged. Durable changes reside in sibling jido_chat_whatsapp checkout.",
+      "timestamp": "2026-10-14T21:10:06Z"
+    },
+    {
+      "text": "Completed adapter-boundary implementation in sibling jido_chat_whatsapp and mirrored same six files into ZAQ local dependency checkout. Listener normalizes sender via optional Transport.canonical_user_id/2 backed by connection-scoped Amarula.Contacts.lid_for_pn/2. No host identity fallback. Baseline regression failed; fixed adapter suite: 6 properties, 166 tests, 0 failures (13 live excluded). mix quality passed including Dialyzer/Doctor. ZAQ dev/test dependency compilation passed; scoped_channel_rating_test: 1 property, 2 tests, 0 failures. Full ZAQ precommit previously failed/timed out and has not been claimed green. No commit/push/lock update. Existing running server needs restart to load updated dependency; fresh checkout needs upstream commit/pin before durable delivery.",
+      "timestamp": "2026-10-14T21:11:28Z"
+    },
+    {
+      "text": "User requests test committed to ZAQ working tree. Add integration in existing scoped_channel_rating_test using real WhatsApp ConnectionWorker, Amarula offline receive/mapping store, adapter normalization, JidoChatBridge rating handler, Engine persistence and history projection. Only offline transport startup is substituted; do not stub canonical normalization. Preserve failing-on-original-dependency proof. Reuse existing Router and scoped rating fixture APIs.",
+      "timestamp": "2026-10-14T21:22:37Z"
+    },
+    {
+      "text": "ZAQ regression added at test/zaq/engine/scoped_channel_rating_test.exs:53 with test/support/whatsapp_offline_transport.ex. Uses real Amarula offline receive + mapping store, real ConnectionWorker and Adapter, bridge rating handler, Engine persistence and ChannelHistoryAdmin projection. Person only registered by LID; explicit phone lookup remains not_found. Both PN and LID reactions produce one positive rating. Verified same ZAQ test against original dependency worker: fails expected LID vs actual PN; restored fixed worker and rebuilt test dependency. Final mix q passed; scoped suite 1 property, 3 tests, 0 failures; git diff --check passed. No commits or pushes.",
+      "timestamp": "2026-10-14T21:26:02Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Reproduce WhatsApp reaction actor lookup across LID and phone identifiers",
+  "type": "bug",
+  "updated_at": "2026-10-14T21:26:02Z"
+}

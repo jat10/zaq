@@ -1,0 +1,40 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-mvw.2"
+  ],
+  "closed_at": "2026-10-22T12:43:39Z",
+  "created": "2026-10-22T10:47:31Z",
+  "description": "Functional specification and ownership:\n- Extend lib/zaq/engine/connector_lifecycle.ex, lib/zaq/channels/connector_runtime.ex, lib/zaq/channels/jido_chat_bridge.ex and the runtime owner under BridgeSupervisor as needed. Engine owns persistence/authorization; Engine persists channel_configs.lifecycle_state (idle/stopping); Channels enforces eligibility at the existing runtime boundary; the adapter owns protocol/session cleanup.\n- Use the existing BridgeSupervisor runtime boundary for cleanup and finalization, without a new controller process. Establish persisted :stopping before adapter teardown side effects and exclude every startup/enable path, including stale snapshots, explicit retries and bootstrap. Persist enabled: false in Engine before cleanup begins, outside any database lock spanning service callbacks.\n- While stopping, startup and enable return {:error, :stopping}, matching the new regression specification. An unrelated connector can still start. Revalidate configuration after waiting/claiming ownership; ordinary supervision must not recreate an explicitly terminated child.\n- Logout when a listener exists, explicitly terminate/remove it, then perform idempotent saved-binding cleanup. Missing listener must still allow controlled cleanup. Archive only after cleanup succeeds.\n- Cleanup failure/timeout leaves the connector disabled, unarchived and retryable. Repeated disable must retry pending cleanup rather than skip it because enabled is false. Permit only the authorized exact-binding cleanup on a disabled connector; preserve ordinary disabled-connector storage access denial.\n- Ensure the persisted stopping state survives Engine caller death and application restart until an explicit retry finishes cleanup. Enforce a single runtime owner; do not add generic distributed NodeRouter locking or claim partition fencing.\n\nTests to add before implementation:\n- Make the existing connector_stopping_contract regression pass without weakening its assertions.\n- Add failed startup -\u003e disable/archive, cleanup failure -\u003e disabled/pending -\u003e successful retry, repeated cleanup, archive ordering, stale startup, concurrent enable/start, caller death and independent-connector cases.\n- Use a bounded property test for repeated lifecycle commands if the implementation introduces a state-transition invariant.\n\nBranches/paths validated: listener present/absent, cleanup success/failure/uncertain timeout, stopped/restarted child, enabled/disabled/archived records, stale revisions, missing/non-admin actors, local and remote Channels ownership.\n\nMocking plan: reuse existing offline WhatsApp transport and a deterministic message barrier at the adapter cleanup boundary; keep routing, Engine persistence and supervision real. No sleeps or production-only test hooks.\n\nDocumentation: update module docs and the current owners of connector lifecycle/session guidance (docs/services/engine.md, docs/services/channels.md and docs/guides/whatsapp-integration.md if present); read docs/documentation.md first.\n\nAction reuse assessment: reuse confidential enable/disable/archive events and existing Actions. Extend ConnectorLifecycle for durable state, ConnectorRuntime/BridgeSupervisor for connector-local execution ownership, and adapter logout/cleanup_connection for cleanup. This is internal lifecycle machinery, not a new standalone Action or agent tool. Keep current super-admin, exact scope, revision, confidential event and NodeRouter service boundaries. Verify through real public commands.\n\nExisting-test gate: logout-before-persistence, logout-failure-preserves-enablement, and already-disabled-skips-logout assertions conflict with the new contract. They were identified in the conversation; obtain explicit approval for changing these non-coordination assertions before editing them. Removal approval for coordination tests is already recorded and is narrower.\n\nValidation: focused lifecycle integration suite and mix q. No new browser E2E unless implementation changes the user journey.",
+  "id": "zaq-mvw.1",
+  "labels": [],
+  "parent": "zaq-mvw",
+  "comments": [
+    {
+      "text": "User approved existing lifecycle test changes in this conversation: persist disabled before logout, remain disabled on cleanup failure, and retry cleanup for already-disabled connectors. Coordination-test removal was previously authorized. Implementation will preserve unrelated workspace edits.",
+      "timestamp": "2026-10-22T10:53:26Z"
+    },
+    {
+      "text": "Implemented Channels ConnectorController starting/stopping ownership with linked command workers, early disabled persistence, idempotent saved-binding cleanup, and cleanup-only authorization for clearing disabled documents. New stopping and retry integration tests pass; controller/enable/document regression suite otherwise passes (new exact-binding test validated separately). mix q passes. Older coordination-specific tests intentionally await replacement/removal in zaq-mvw.3. No source commits authorized; completing work in this existing worktree.",
+      "timestamp": "2026-10-22T11:06:01Z"
+    },
+    {
+      "text": "User rejected ConnectorController and explicitly approved replacing it with channel_configs.lifecycle_state (idle/stopping, default idle, not null). Persist disabled/stopping before cleanup; clear stopping only on successful cleanup/runtime shutdown; retain stopping on failure/crash and retry disable/archive. Remove controller and its implementation-specific tests/supervision assertions; adapt regression expectations from volatile phase to persisted state. Action reuse: extend existing ConnectorLifecycle and ConnectorRuntime, reuse BridgeSupervisor start/stop boundary and existing adapter cleanup callbacks; no new Action, router coordination or process. Prior frozen tree passed mix q and serialized mix precommit before this design correction.",
+      "timestamp": "2026-10-22T12:18:19Z"
+    },
+    {
+      "text": "Persisted lifecycle implementation complete: new lifecycle_state idle/stopping enum + migration/constraints; removed ConnectorController, its tests, and supervised child. Engine persists disabled/stopping before cleanup and only clears after runtime shutdown + cleanup; failures/caller death survive in DB for retry. Child specs recheck fresh eligibility on supervised start/restart. Existing BridgeSupervisor runtime lock now covers cleanup/finalization, with local reentrant handling so nested stop cannot release cleanup exclusion; no new lock resource/controller or NodeRouter coordination. Exact-binding storage clear is permitted only while stopping. Added interruption/retry, in-flight startup, automatic restart, supervisor restart, concurrent retry, stale cleanup, confidential-finalization and bounded property cases. User explicitly approved enabling the existing room-reply-policy fixture; assertions preserved. mix q passes; 182 focused checks passed, then 39 runtime/supervision checks passed after the nested-lock fix. Final serialized precommit running; logs /tmp/zaq-mvw-persisted-precommit.log.",
+      "timestamp": "2026-10-22T12:42:46Z"
+    },
+    {
+      "text": "Implementation reverted at user request; item withdrawn from current epic scope, not delivered. Pre-epic disable/logout/archive behavior and tests restored, excluding coordination-specific code/tests retained as removals under items 2/3. Lifecycle migration removed after successful rollback in local dev and test databases. No automatic changes to existing connector enabled values.",
+      "timestamp": "2026-10-22T14:11:26Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-mvw.1] Implement connector-owned stopping state and retryable teardown",
+  "type": "task",
+  "updated_at": "2026-10-22T14:11:27Z"
+}

@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-09-25T17:52:01Z",
+  "description": "Add the real_python ExUnit tag to the genuine extensionless Google DOCX export regression test in test/zaq/ingestion/record_source_test.exs. Action reuse assessment: not applicable because this changes test metadata only; no executable operation or production consumer changes.",
+  "id": "zaq-0ik",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Tag DOCX conversion regression as real_python",
+  "type": "task",
+  "updated_at": "2026-09-25T17:52:01Z"
+}

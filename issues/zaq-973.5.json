@@ -1,0 +1,29 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-973.4"
+  ],
+  "blocks": [
+    "zaq-973.6"
+  ],
+  "created": "2026-10-20T10:03:45Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nUpdate lib/zaq/channels/jido_chat_bridge.ex handle_message_event/handle_unaddressed_message/handle_subscribed_message and trusted provider/connector policy resolution only as needed. Add a generic room reply policy (e.g. mention_required) selected for WhatsApp; retain other providers' defaults. Use normalized was_mentioned/is_me/is_dm/history facts, not JIDs/provider equality. Preserve unaddressed history capture and all existing paths: patterns, mentions, thread replies, hooks and DMs. Keep protocol normalization in WhatsApp.Message. Do not broaden behavior by treating any quoted reply as an explicit mention.\n\nTests to add before implementation:\nRegression table using jido_chat_bridge_test.exs and linked_device/integration_flows_test.exs: addressed/unaddressed group, DM, self, history, pattern match, subscribed reply, bot-root/human-root threads, mention of another user, and unknown root lookup. Exercise same policy with a non-WhatsApp adapter and old default with Telegram/Mattermost. Properties: history never invokes agent/reply hooks; mention-required room policy never invokes agent without normalized self mention; unaddressed capture remains available.\n\nBranches/paths validated:\nPolicy present/absent/invalid with documented safe behavior, atom/string provider configurations, history arriving despite disabled sync, queued live messages not discarded merely by age; no changed replay/deduplication semantics.\n\nMocking plan:\nReal routing/admission and normalized structs; fake external adapter/network edges only. Preserve current scenario/fixtures and assertions; add new tests instead of weakening old ones.\n\nDocumentations to update for both code and docs/ related content:\nChannels service incoming/room/thread policy and relevant module docs; distinguish adapter facts from host reply policy. No BO settings screen or new feature E2E.\n\nAction reuse assessment:\nEXTEND existing admission helpers and policy resolution; REUSE CommunicationBridge.route_incoming_message and existing history capture pipeline. LOCAL-ONLY policy predicate is not a standalone Action/tool. Same canonical Incoming/Outgoing and authorization semantics. Verify both live request and history-only consumers.\n\nRequired policy and epic constraints:\nRead this epic before starting. Read each affected repository's AGENTS.md. In ZAQ read docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md and applicable docs/conventions.md; before documentation edits read docs/documentation.md. Run bw prime and verify live source/Git/dependency state. Use Serena for source relationships and Context Mode for large output. Follow docs/WORKFLOW_AGENT.md#phase-4--validate and its final validation/coverage lifecycle rather than treating this ticket as an alternative policy. No existing test behavior change is approved by this plan. No new feature E2E is planned: this is a behavior-preserving boundary refactor with no UI change. Reassess that decision if scope expands.",
+  "id": "zaq-973.5",
+  "labels": [],
+  "parent": "zaq-973",
+  "comments": [
+    {
+      "text": "Removed :whatsapp message admission branch; trusted provider room_reply_policy :mention_required configured for WhatsApp. Added bounded non-WhatsApp property proving arbitrary deploy-pattern messages without mentions are captured and never request agent routing. Existing DM/group mention/history/thread routing tests unchanged and pass. No new UI or browser E2E.",
+      "timestamp": "2026-10-20T10:21:16Z"
+    },
+    {
+      "text": "Generic room policy implementation complete; new generated non-WhatsApp property (15 runs) proves unmentioned pattern matches capture history without agent routing. Existing tests unchanged; combined focused suite and ZAQ mix q pass.",
+      "timestamp": "2026-10-20T10:27:02Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-973.5] Replace WhatsApp message branching with a generic room reply policy",
+  "type": "task",
+  "updated_at": "2026-10-20T10:27:02Z"
+}

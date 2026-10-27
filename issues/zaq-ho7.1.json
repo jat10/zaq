@@ -1,0 +1,28 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-ho7.2"
+  ],
+  "closed_at": "2026-10-20T13:16:25Z",
+  "created": "2026-10-20T10:56:16Z",
+  "description": "Revised design authorized by the user after rejecting hardcoded history flags. This description supersedes the original fixed-false history requirements and historical completion comments. Preserve useful completed reply-policy work and RAM enforcement; rework the history configuration ownership and validate the composed result.\nRework ../jido_chat_whatsapp/lib/jido_chat_whatsapp/adapter.ex and focused package tests/docs. Replace unconditional false overwrites in BOTH saved-binding and trusted connection_options preparation. Read history options from existing ingress; explicit true and false must survive preparation and reach listener configuration. Define precedence: explicit ingress flags, then supported trusted connection history values, then documented prepared-path false fallback. Never use truthiness fallback that drops false. Accept only booleans; reject explicit invalid/null flag values with a stable error. Do not forward arbitrary persisted profile, storage or config overrides. Preserve authenticated identity/storage selection, sink_mfa, callback shapes and error propagation. Keep provider_child_specs strict RAM behavior and raw Mnesia configurability. Preserve lower-level listener compatibility.\n\nTests: both flags independently true/false and combinations; omission/fallback; invalid types; string-key persisted ingress; saved and trusted startup; tampered profile/storage protection; unavailable binding/storage errors; RAM success/disk rejection. Revise the new connection_defaults test that wrongly expects supplied true to be overwritten, keeping its independent safety assertions. No new callback/MFA/core change.\n\nRequired policies: AGENTS.md; docs/agent-tools.md; docs/WORKFLOW_AGENT.md;\ndocs/exec-plans/PLAN_STRATEGY.md; docs/action-reuse.md; docs/testing-approach.md;\ndocs/services/channels.md. Read sibling AGENTS.md before sibling changes, Engine\nguide before persistence work, and documentation hygiene before updating docs.\nRead system-config guidance if touching encrypted fields (which should be avoided).\nPreserve existing assertions. Obtain explicit approval before changing existing test\nbehavior; add focused tests first. No UI feature/E2E work is required by this refactor.\nCommit, push, publishing dependency revisions, and merge require separate authorization.\n",
+  "id": "zaq-ho7.1",
+  "labels": [],
+  "parent": "zaq-ho7",
+  "comments": [
+    {
+      "text": "Adapter implementation and new connection_defaults_test complete: default provider spec enforces RAM schema; subprocess verifies disk rejection and raw-storage opt-in remains available; saved and authentication handoff preparation retains identity/storage and suppresses history. New tests first failed on missing default/disk acceptance, then passed. Whole package mix q passes and mix test passes 199 tests + 12 properties (13 live excluded). No existing tests modified. Source owner and Action reuse match plan.",
+      "timestamp": "2026-10-20T11:16:49Z"
+    },
+    {
+      "text": "Rework verified: explicit ingress boolean flags override trusted handoff history, then prepared fallback false; arbitrary ingress profile/storage/config excluded. Both startup paths covered across all flag combinations plus invalid values. Package mix q passes (package alias checks formatting, so package formatter ran first); whole non-live suite passes 200 tests + 12 properties, 13 live excluded. Logs /tmp/zaq-ho7-rework-adapter-{format-quality,tests}.log. ZAQ ignored dependency will be synced only for integration validation; published lock remains unchanged until real revision exists.",
+      "timestamp": "2026-10-20T13:16:24Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ho7.1] Respect configurable WhatsApp history options during connection preparation",
+  "type": "task",
+  "updated_at": "2026-10-20T13:26:26Z"
+}

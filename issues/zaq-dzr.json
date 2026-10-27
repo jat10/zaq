@@ -1,0 +1,22 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-kra"
+  ],
+  "blocks": [],
+  "created": "2026-10-02T12:48:42Z",
+  "description": "Reuse Bridge.__using__/1, Bridge.restart_runtime/2 and Channels.Supervisor; extend WebBridge.build_runtime_specs to request child_spec from configured adapter Runtime. Local-only config projection preserves channel_config_id separate from widget_id; settings.widgets allowlist excludes internal routing and secrets. Add web provider and dependency. Verify enable/update/disable with real supervised Runtime. No new API, messaging, history, Action or browser E2E.",
+  "id": "zaq-dzr",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implementation wired through existing Bridge lifecycle; real enable/update/disable test passes. First focused run found web config inherited URL/token requirements; fixed with existing empty placeholder helper. Added configured adapter seam test and arbitrary-secret property test. q passed before final schema correction; rerunning q and focused tests. No generic supervisor changes or event implementation.",
+      "timestamp": "2026-10-02T13:01:33Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-kra] Wire WebBridge runtime lifecycle and contract tests",
+  "type": "task",
+  "updated_at": "2026-10-02T13:01:33Z"
+}

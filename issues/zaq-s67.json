@@ -1,0 +1,44 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-19T15:06:24Z",
+  "description": "Implementation plan for PR #847 on feat/whatsapp-main, requested by Jad in this conversation on 2026-10-19. Planning and issue creation only in this turn. Baseline ZAQ HEAD 37db92d1a; inspect ../jido_chat_whatsapp on feat/whatsapp-adapter-lifecycle-and-message-contracts (clean at planning). Main quote commit is 1edb1c349, which also contains reaction changes that MUST stay.\n\nTarget contract: for a WhatsApp reply, map the immediate quoted message ID to Incoming.external_thread_id and channel_meta.external_thread_id; non-replies retain nil. Use existing ZAQ thread/history machinery. A replies-to B chain does not recursively resolve a common ancestor: B replying to A uses A; C replying to B uses B. No synthetic root registry, inline prompt quote, quote hydration, or provider fetch is added. Missing originals remain absent. Direct-message history remains governed by existing Direct strategy (one chat history, ignores thread partition); Shared group history uses thread + bounded parent + matching root. Do not promise identical DM/group original availability.\n\nAudit: Message.incoming_attrs currently sets external_thread_id nil and builds reply_context; Adapter event envelopes use only room thread key. JidoChatBridge already maps external_thread_id to ZAQ Incoming.thread_id. TranscriptHistory.capture and ExecutionHistory.parent_context already resolve/create scopes and load authorized stored roots. Adapter fetch_message/fetch_messages are unsupported. Chat.Thread.post passes :thread_id, while WhatsApp SendOptions accepts :quoted; preserve current outbound transport quoting and delivery, do not pretend incoming IDs implement outbound quote support.\n\nScope: remove all inline-reply additions from this PR across ZAQ ingress, persistence, retrieval, formatting and follow-up paths; update adapter normalization/event routing, dependency integration and tests. No wholesale revert of 1edb1c349 or dependency rollback: preserve tones/reactions, identity, media, pairing and Markdown changes. Do not remove shared Jido core fields from another repository: ZAQ/WhatsApp cease consuming/emitting them, while unrelated core consumers remain compatible. Ignore old stored quote metadata; no destructive historical-data migration.\n\nExisting work: supersedes inline-quote direction in zaq-6zd/.1/.2. zaq-vl9/.1/.2 describes quote-media work and must not be reapplied; inspect live branch before removal because tracking includes work outside this branch. Record supersession without marking unlanded work completed.\n\nTest behavior scope disclosed: remove/replace quote-specific assertions in ZAQ quoted_reply_test, input_prompt/pipeline/executor/request_control/history_ingress and linked_device runtime tests; sibling message/normalization tests replace inline quote/nil-thread expectations with immediate-target thread IDs. Preserve all unrelated author, mention, media, scope and delivery assertions. User explicitly requested removal of this feature and replacement with thread-based coverage; any additional existing-test behavior changes need approval under the testing handbook.\n\nAction reuse: reuse existing Incoming constructor, bridge mapping, TranscriptHistory capture/list, ExecutionHistory projection, HistoryLoader, Executor/Factory and RequestControl lifecycle. Extend only adapter normalization/event identity. Pure formatting cleanup is local-only, no independent Action. Registry accounts.fetch_history is explicit recall, not automatic ingress enrichment; unsupported provider fetch is out of scope. No new Action/tool exposure, network call, state store or permissions bypass.\n\nAcceptance: no quote fields or append_reply_context in ZAQ active code/docs; adapter emits thread target consistently; captured accessible group root reaches agent through history exactly once; missing/deleted/denied root never causes cross-scope fallback/fetch; cold/warm/follow-up, DM/group, duplicate and attachment behavior covered. Nested direct-target semantics are explicit. Existing data remains readable and non-reply/native-thread providers unchanged.\n\nSequence: cleanup -\u003e adapter -\u003e integration -\u003e final review/coverage/validation. No new UI; backend integration tests required, no new browser feature E2E planned. Final validation follows repository gates and adapter AGENTS.md.\nPolicies: read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md and the applicable Channels/Engine/Agent service sections before implementation; sibling adapter has its own AGENTS.md. Read module docs before edits. No commit/push authorization. Preserve unrelated branch changes.\n",
+  "id": "zaq-s67",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Dependency plan: zaq-s67.1 -\u003e zaq-s67.2 -\u003e zaq-s67.3 -\u003e zaq-s67.4\n```mermaid\ngraph LR\n  zaq_s67_1 --\u003e zaq_s67_2\n  zaq_s67_2 --\u003e zaq_s67_3\n  zaq_s67_3 --\u003e zaq_s67_4\n```",
+      "timestamp": "2026-10-19T15:06:35Z"
+    },
+    {
+      "text": "Jad authorized continuing the entire epic on current ZAQ and sibling branches on 2026-10-19, with review at completion. Preserve existing uncommitted zaq-s67.1 changes. No commits or pushes. Per-issue review pause revoked.",
+      "timestamp": "2026-10-19T15:20:42Z"
+    },
+    {
+      "text": "Live local IEx test reported generic selected-agent execution failure when replying to an earlier WhatsApp message (screenshot: Is it saved anywhere). Diagnosis only: traced exact text to Executor.error_result and surface_execution_error; latter logs Configured agent execution failed with underlying reason. Current tool process list exposes language servers only, no app IEx/ZAQ runtime, and Docker daemon unavailable. Requested matching IEx error/stack trace from Jad; root cause not established. No code changes during diagnosis. Action reuse not applicable: investigating existing execution path, no new operation.",
+      "timestamp": "2026-10-19T16:26:58Z"
+    },
+    {
+      "text": "Jad authorized stashing local ZAQ changes, rebasing feature branch onto current main, force-pushing after validation, and restoring stash for testing. Fetch over SSH failed; per-command HTTPS with existing gh authentication succeeded without remote/config changes. origin/main and upstream/main both 32de562cf; feature remote matches local HEAD 37db92d1a. Sibling adapter work remains local and will not be pushed under this ZAQ branch operation. Action reuse not applicable to Git history maintenance.",
+      "timestamp": "2026-10-19T16:31:04Z"
+    },
+    {
+      "text": "Rebased all 33 feature commits onto freshly fetched upstream/main 32de562cf without conflicts. range-diff confirms identical patches. Clean rebased branch passed mix q and 202 tests + 2 properties; force-with-lease push succeeded, remote feat/whatsapp-main now 877c37844554f70374942ede5fe95a21110d9eb6. Original HEAD preserved at backup/whatsapp-main-before-rebase-20261019. Applied stash 074a3098661bd01ef4a7e50309a5403f38658b46 without conflicts (kept stash as backup); local migration, path dependency and lockfile removal restored. Sibling adapter remains local/unpushed. Running restored-workspace checks.",
+      "timestamp": "2026-10-19T16:34:06Z"
+    },
+    {
+      "text": "Post-rebase restored workspace passed mix deps.get, mix q, and isolated migration tests: 270 tests + 3 properties, zero failures. Verified 24 tracked changes and one untracked file match stash byte-for-byte; local HEAD and remote feature ref both 877c37844554f70374942ede5fe95a21110d9eb6. Final post-rebase mix precommit running with 900-second timeout; result captured /tmp/zaq-s67-post-rebase-precommit-status.json. Retaining stash as safety backup.",
+      "timestamp": "2026-10-19T16:37:08Z"
+    },
+    {
+      "text": "Post-rebase final mix precommit PASSED: actual exit 0, no timeout, 586.4s wall time; 11,381 tests + 282 properties + 48 doctests, zero failures, one existing skipped and 125 excluded. Logs /tmp/zaq-s67-post-rebase-precommit.log; persistent result /tmp/zaq-s67-post-rebase-precommit-status.json. User-requested stash/rebase/force-push/restore/test completed. Branch remote at 877c37844, local migration remains uncommitted, sibling adapter unchanged/unpushed. Stash 074a3098661bd01ef4a7e50309a5403f38658b46 and backup branch retained. Reported live reply failure still awaits runtime evidence; successful automated validation does not establish its root cause.",
+      "timestamp": "2026-10-19T16:47:13Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-s67] Replace WhatsApp inline quote pipeline with external_thread_id",
+  "type": "epic",
+  "updated_at": "2026-10-19T16:47:13Z"
+}

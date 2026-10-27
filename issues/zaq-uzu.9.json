@@ -1,0 +1,20 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-uzu.1",
+    "zaq-uzu.8"
+  ],
+  "blocks": [
+    "zaq-uzu.10"
+  ],
+  "created": "2026-09-25T09:05:41Z",
+  "description": "After implementation review approval, complete coverage-upper per docs/\n    WORKFLOW_AGENT.md. Record exceptions, review fixes and rerun affected checks. Preserve approved\n    runtime scope.",
+  "id": "zaq-uzu.9",
+  "labels": [],
+  "parent": "zaq-uzu",
+  "priority": 2,
+  "status": "open",
+  "title": "[#781] Review and coverage handoff",
+  "type": "task",
+  "updated_at": "2026-09-25T09:55:25Z"
+}

@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-0l7.11"
+  ],
+  "closed_at": "2026-10-11T12:26:15Z",
+  "created": "2026-10-11T12:23:51Z",
+  "description": "Review found Amarula emits message.to from me.id (phone-number JID), while group mentions may use the same account me.lid. Current exact-server comparison misses legitimate mentions. Extend provider identity enrichment from the exact active profile; promote both trusted aliases before shared Jido routing. No cross-account fallback. Action reuse: extend Incoming normalization and provider identity read; no new Action or BO operation. Add PN/LID and wrong-account tests; mix q and focused tests; commit/push and close.",
+  "id": "zaq-0l7.10",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Added provider-owned exact-profile alias read from active Amarula me.id/me.lid and supplied aliases before Jido handler selection. Tests cover companion-device suffixes, PN/LID mention and other-account alias rejection. mix q and 5 normalization tests pass. No UI change; no new Action.",
+      "timestamp": "2026-10-11T12:25:53Z"
+    }
+  ],
+  "priority": 1,
+  "status": "closed",
+  "title": "[zaq-0l7.10] Resolve receiving-account LID mentions",
+  "type": "bug",
+  "updated_at": "2026-10-11T12:26:15Z"
+}

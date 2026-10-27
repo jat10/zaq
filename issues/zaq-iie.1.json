@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-iie.2"
+  ],
+  "closed_at": "2026-10-16T16:35:04Z",
+  "created": "2026-10-16T16:32:06Z",
+  "description": "Extend existing CommunicationBridge/JidoChatBridge provider delegation with optional before_disable(config, actor, opts); default proceed, configured logout_mfa invokes existing package logout and preserves super-admin permission. Add confidential supplied-config Channels event for Engine lifecycle use. Action reuse: internal hook extends existing disable/archive operations, no new Action or agent tool; reuse logout and trusted actor validator. Test configured logout, absent callback, malformed/missing runtime, authorization and profile isolation. Follow parent policies and validation.",
+  "id": "zaq-iie.1",
+  "labels": [],
+  "parent": "zaq-iie",
+  "comments": [
+    {
+      "text": "Implemented optional Bridge.before_disable/3, CommunicationBridge delegation, confidential connector_prepare_disable event, and JidoChatBridge configured logout hook with current super-admin authorization. Default adapters proceed without custom logout. Existing explicit logout/disable semantics retained. mix q passed; 9 hook/logout/runtime tests passed. No existing test expectations changed in this step.",
+      "timestamp": "2026-10-16T16:35:03Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-iie] Add optional adapter pre-disable hook through Channels",
+  "type": "task",
+  "updated_at": "2026-10-16T16:35:04Z"
+}

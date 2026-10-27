@@ -1,0 +1,32 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-0l7.15"
+  ],
+  "blocks": [],
+  "closed_at": "2026-10-13T09:10:12Z",
+  "created": "2026-10-13T08:31:07Z",
+  "description": "Proposed, blocked by package runtime ownership. Remove concrete Amarula entry in config/config.exs and remove channels_runtime_children hook if no remaining consumers need it. Keep Channels limiter, SessionStorage, BridgeSupervisor ordering and generic adapter listener lifecycle. Update test/zaq/channels/supervision_test.exs to assert ZAQ-owned behavior without Amarula knowledge; move transport-root crash guarantees to package tests while retaining generic bridge reload, current PID tracking, limiter preservation, connector shutdown and disabled connector behavior. Reconcile existing uncommitted SessionStorage child addition before changing child-order assertions. Update architecture and channels service ownership docs; consume validated package version/path.\nAction reuse assessment: local-only OTP integration; reuse Channels.Supervisor, BridgeSupervisor and Adapter.listener_child_specs, preserving NodeRouter and existing linked-device Actions without new agent tools. Inputs enabled connectors and adapter child specs; results existing runtime start/stop/lookups. Verification: mix q plus isolated supervision, bridge lifecycle and onboarding/storage regressions; final mix precommit for implementation review. No UI feature change is proposed.",
+  "id": "zaq-0l7.16",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "User reported ZAQ no longer boots. Reproduced with MIX_ENV=test mix run: Channels.Supervisor fails starting Amarula.Supervisor with already started. Proceeding with authorized local ZAQ transition, preserving pre-existing changes. Action reuse: local-only OTP integration; remove unused channels_runtime_children hook and reuse existing limiter, RAM SessionStorage, BridgeSupervisor and adapter listener contracts. Package tests now own transport-root recovery; ZAQ tests retain storage/bridge/limiter restart and lifecycle assertions. No new feature E2E needed: ownership migration has no UI change.",
+      "timestamp": "2026-10-13T08:51:36Z"
+    },
+    {
+      "text": "Startup regression fixed: removed ZAQ channels_runtime_children config/hook; retained limiter -\u003e SessionStorage -\u003e BridgeSupervisor ordering. Updated supervision tests to cover ZAQ-owned session-store failure and removed profile-test fallback that started Amarula. Updated architecture/channels ownership docs, preserving existing uncommitted storage work. mix q passed; focused run passed 4 properties and 98 tests (supervision, supervisor, all linked_device tests, WhatsApp profiles), proving test-environment boot after the previously reproduced already_started failure. git diff --check clean. Final mix precommit still running; no commits/pushes.",
+      "timestamp": "2026-10-13T08:56:48Z"
+    },
+    {
+      "text": "Final validation complete: mix q passed; 4 properties + 98 targeted tests passed; corrected multi-node startup test passed all 3 peer tests. First precommit run found the remaining old Amarula child expectation in auth_rate_limiter_peer_test; updated that expectation and asserted jido_chat_whatsapp application starts on every tested node role. Final mix precommit exited 0: 48 doctests, 242 properties, 10708 tests, 0 failures, 1 skipped (122 excluded). Complete final log: /tmp/zaq-runtime-precommit-final.log. No remaining Amarula.Supervisor or channels_runtime_children references in ZAQ lib/config/test/docs. Changes local and uncommitted; unrelated existing working-tree changes preserved.",
+      "timestamp": "2026-10-13T09:10:11Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.16] Remove Amarula runtime wiring from ZAQ after package contract lands",
+  "type": "task",
+  "updated_at": "2026-10-13T09:10:12Z"
+}

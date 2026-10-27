@@ -1,0 +1,34 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-13T10:13:55Z",
+  "created": "2026-10-13T09:50:14Z",
+  "description": "User explicitly requests checkout/update refactor/webbridge, then rebase feat/whatsapp-integration onto it. Preserve old branch tips and session-logging.patch; do not push. Steps: (1) verify remote replacement and update WebBridge, (2) replay the 15 WhatsApp commits while preserving both runtime contracts and resolving overlaps, (3) validate combined Channels/Engine/UI behavior and patch applicability. Action reuse: reuse existing operations from both branches; this is history integration, no new Actions or tool exposure. Inspect conflicting module responsibilities and service contracts before resolving. Existing targeted tests plus mix q and final precommit validate integration; no new feature UX or E2E authoring.",
+  "id": "zaq-0l7.19",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Updated local refactor/webbridge to upstream 1ad46a514. Backups: backup/refactor-webbridge-before-webbridge-rebase-f4595b805 and backup/feat-whatsapp-integration-before-webbridge-rebase-2347e2869. Rebased all 15 WhatsApp commits onto WebBridge, preserving both provider/conversation lists, widget/linked-device API handlers, actor-aware status collection, forwarded startup options, widget infrastructure tests and combined listener PID/monitor tracking. Rebase completed; range-diff maps all 15 commits. mix q passes. Broad Channels/connector/BO tests running. session-logging.patch checksum unchanged and applies cleanly. No push authorized.",
+      "timestamp": "2026-10-13T09:58:55Z"
+    },
+    {
+      "text": "Validation found shared test lifecycle state: BridgeRuntimeRestartTest intentionally kills three permanent children against one global DynamicSupervisor (max_restarts 3 / 5 seconds). Alone its 6 tests pass; broad suite first failed at the third intentional crash and shut down application, cascading 604 Repo failures. Diagnostic setup observed an inherited restart timestamp before the first case. Audit: production-global supervisor and restart timestamps were logically per-test fixtures with no setup reset; PID/name dependencies resolved at runtime; smallest correction follows existing SupervisionTest: use shared DataCase for bootstrap DB access and restart Channels parent before each crash test. No production restart policy or assertions weakened. Temporary diagnostic prints removed. Timed diagnostic rerun lacked completion summary, so not counted as a passing test run.",
+      "timestamp": "2026-10-13T10:04:11Z"
+    },
+    {
+      "text": "Focused integrated validation passed: 311 tests, 9 properties across linked-device, WebBridge, widget transport, restart/supervision, Engine connector settings and BO communication pages; separate supervisor suite 61 tests passed. mix q passed; format/docs and per-test restart-budget isolation included in final rebased tip e3fdfc501. WebBridge base remains 1ad46a514; exactly 15 WhatsApp commits above it. Logging patch SHA256 e7dcee70194201f22e7316808c8244b972f41e89808b305861e32fe99b54d62c unchanged and applies. Final mix precommit running with 900000ms timeout; log /tmp/zaq-webbridge-rebase-precommit.log.",
+      "timestamp": "2026-10-13T10:07:57Z"
+    },
+    {
+      "text": "Final mix precommit passed, exit 0: 48 doctests, 257 properties, 10912 tests, 0 failures, 1 skipped, 122 excluded; duration379.5s. MCP host wait ended at300s, but background process continued and recorded successful completion in /tmp/zaq-webbridge-rebase-precommit-result.json. Final tip e3fdfc501 has exactly15 WhatsApp commits above WebBridge1ad46a514. Working tree has only preserved untracked session-logging.patch; diff check and patch application check pass. No remote history/PR metadata modified or pushed. Existing E2E/coverage feature gates remain separate.",
+      "timestamp": "2026-10-13T10:13:54Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Rebase WhatsApp integration onto current WebBridge branch",
+  "type": "task",
+  "updated_at": "2026-10-13T10:13:55Z"
+}

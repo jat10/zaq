@@ -1,0 +1,20 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-05T13:41:42Z",
+  "description": "User explicitly authorized ZAQ router integration for the local iframe smoke. Reuse WebWidget.Router and WebWidget.Static; mount outside BO auth using existing LiveView session transport. Action reuse: not applicable, transport installation only; no new domain operations. Validate mix q and package-owned host_mount_smoke.exs for static assets, connected LiveView, framing and disabled runtime. Existing dirty dependency/configuration changes are authorized session work and preserved. No new browser journey required for this small mount; HTTP/LiveView integration covers the boundary.",
+  "id": "zaq-6c5",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implemented the explicitly authorized router/static mount. Reused package macro outside BO auth and existing endpoint LiveView socket. mix q passed; package-owned host_mount_smoke.exs passed 1 test with real connected LiveView, assets and enabled/disabled framing assertions. No full precommit or final PR approval requested; local working-tree smoke installation only.",
+      "timestamp": "2026-10-05T13:42:38Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "Mount installed widget package in ZAQ endpoint",
+  "type": "task",
+  "updated_at": "2026-10-05T13:42:38Z"
+}

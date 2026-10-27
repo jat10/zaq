@@ -1,0 +1,34 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-f9w.1"
+  ],
+  "blocks": [
+    "zaq-f9w.3"
+  ],
+  "closed_at": "2026-09-29T20:12:16Z",
+  "created": "2026-09-29T14:30:45Z",
+  "description": "Dataset module and pinned Elixir extractor. Verify pinned checksum; deduplicate included IDs/content; preserve mappings; report actual counts. Test conflicts, determinism, malformed inputs.",
+  "id": "zaq-f9w.2",
+  "labels": [],
+  "parent": "zaq-f9w",
+  "comments": [
+    {
+      "text": "Action reuse assessment before extraction: searched Jido/Workflow Action declarations under lib/zaq and Ingestion APIs; SearchKnowledgeBase is retrieval, DataSource document Actions operate on configured sources, and DocumentProcessor prepares indexed chunks rather than parse an external Parquet benchmark archive. Decision: local-only pinned extractor (priv/bench/liverag/extract.py) plus read-only Zaq.Bench.LiveRAG.Dataset loader, with no agent tool/workflow exposure. Inputs: pinned upstream Parquet or generated files; outputs: deterministic document, alias, question mapping JSONL plus SHA-256 manifest; errors: checksum mismatch, malformed records, conflicting IDs/mappings; no actor or ZAQ data mutation. Consumers: later corpus runner only. Verify synthetic conflicts/malformed/permutations, manifest integrity, and actual pinned archive when pyarrow available.",
+      "timestamp": "2026-09-29T14:45:12Z"
+    },
+    {
+      "text": "Implemented pinned Python Parquet extractor, tracked pin/requirements, ignored generated data, deterministic documents/aliases/question mappings plus manifest, and checksum-validating Zaq.Bench.LiveRAG.Dataset loader. Parsed the verified 4,718,428-byte upstream file using an already cached pyarrow 17.0.0 (no software installation): 895 mappings, 970 unique documents, 970 aliases; Elixir loader accepted all generated artifacts. Validation: Python unittest 8/8, isolated ExUnit 1/1, mix q passed with no Credo issues, local doc links and git diff --check clean. Action reuse review unchanged: local extraction only, no Action/tool exposure. No commit/push per user.",
+      "timestamp": "2026-09-29T14:56:12Z"
+    },
+    {
+      "text": "User requested Elixir-only extraction. Replaced the Python extractor, pyarrow requirements, and Python tests with Zaq.Bench.LiveRAG.Extractor and mix liverag.corpus extract. Explorer 0.13.0 is a dev/test dependency; its Parquet reader supplies nested rows. Action reuse remains local-only: this offline benchmark archive parser has no ZAQ Action contract or agent exposure. The Elixir command read the pinned 4,718,428-byte source and produced 970 documents, 970 aliases, 895 mappings. All three JSONL SHA-256 hashes exactly match the prior Python output. Focused ExUnit 7/7, mix q passed; git diff --check clean. The extract command starts only Explorer/Req, not ZAQ app services. No commit/push.",
+      "timestamp": "2026-09-29T20:12:13Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-f9w.2] Extract pinned supporting corpus",
+  "type": "task",
+  "updated_at": "2026-09-29T20:12:16Z"
+}

@@ -1,0 +1,28 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-scg.1"
+  ],
+  "blocks": [],
+  "closed_at": "2026-10-15T10:28:38Z",
+  "created": "2026-10-15T10:01:05Z",
+  "description": "Functional specification: add regression exercising real sealed WhatsApp media through JidoChatBridge passive capture, Engine persistence, authorized history read/hydration and existing materialization/download_document; verify no unsolicited agent turn. Include captioned/captionless, self/history and direct/mentioned normalization controls; run existing attachment agent integration and provider normalization suites. Tests before production changes in this step; no existing assertions changed. Mock only external provider media operations, preserve actual internal capture/auth/hydration. Action reuse: receive_incoming_message, HistoryIngress.capture, Conversations history APIs, CommunicationMedia hydration and existing download_document; no new operation. Update docs/services/channels.md contract and validate following WORKFLOW_AGENT.md. No browser E2E for this backend correction. Coverage handoff occurs after review; final gate before final approval.",
+  "id": "zaq-scg.2",
+  "labels": [],
+  "parent": "zaq-scg",
+  "comments": [
+    {
+      "text": "Added sealed-media integration regression through actual WhatsApp adapter normalization, passive bridge dispatch, Engine canonical capture/replay, person-authorized history, Engine execution admission/hydration, and existing DownloadDocument/materializer routing to the exact provider config. Provider byte retrieval alone is replaced. Captioned/captionless media, self/history suppression, unrelated-person history denial, different/missing sender redemption denial, and no eager fetch are asserted. Existing full delayed-agent history test passes. Targeted runs: 213 tests + 2 properties, then 28 tests + 2 properties including added normalization/Engine cases, all passing. mix q passes. docs/services/channels.md documents the generic optional callback and evidence requirements. Final precommit gate pending. A concurrent unrelated edit in lib/zaq/channels/supervisor.ex is excluded from this task.",
+      "timestamp": "2026-10-15T10:10:15Z"
+    },
+    {
+      "text": "Final validation passed against final files: mix q, focused new regressions (1 property + 5 tests), and mix precommit (no stale tests after focused verification). Prior broad precommit completed successfully: 48 doctests, 264 properties, 11136 tests, 0 failures, 1 skipped, 125 excluded; 519.7 seconds. Final review tightened attachment assertions so every projected message must contain an attachment. No existing test expectations changed and no upstream/dependency changes. No production backfill is included.",
+      "timestamp": "2026-10-15T10:28:37Z"
+    }
+  ],
+  "priority": 1,
+  "status": "closed",
+  "title": "[zaq-scg] Verify passive media history and later authorized download",
+  "type": "task",
+  "updated_at": "2026-10-15T10:28:38Z"
+}

@@ -1,0 +1,32 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T17:38:12Z",
+  "description": "User explicitly requested restoring main phone matching after reviewing the changed distinct-owner same-phone test and confirming phone 123 must select the existing Person. Remove match_phone opt-out and restore the two-argument People API; retain unrelated profile-name and blank-value enrichment fixes. Update the discussed test to require same-phone identity reuse and preserve native-owner conflict protection. Action reuse: reuse People.find_or_create_from_channel/2 and its existing transactional matching/identity checks; no new Action. Validate focused identity suites and mix q. No UI/E2E scope or commit/push authorization.",
+  "id": "zaq-285",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Restored main discovery implementation and two-argument API; removed match_phone opt-out from resolver/People. User approval source: current conversation explicitly examined same-phone distinct-Person test, requested phone matching remain enabled, then said revert that how it was on main. Updated that disclosed test to require same-Person links, retained edited phone assertions, added real offline WhatsApp profile lookup regression. Existing contradictory native-owner test unchanged and passes. Service docs aligned. mix q passes; focused 4 files: 1 property, 63 tests, 0 failures. Scope is restoration of existing matching semantics; bounded example regressions and existing identity invariant property retained. Final precommit next; no commits/pushes.",
+      "timestamp": "2026-10-15T17:39:53Z"
+    },
+    {
+      "text": "Final verification: discovery/retry/transaction implementation compared byte-for-byte with local main and matches. git diff --check clean. Full mix precommit reported ChatLiveTest normalized errors render one fallback and stale responses are ignored at test/zaq_web/live/bo/communication/chat_live_test.exs:609: LiveView ClientProxy startup MatchError on {:error, :invalid}. Context Mode response timed out at 300s although requested 900s; process continued. Stopped that already-failing full run; isolated failing case passes (1 test, 0 failures, 95 excluded). No unrelated UI source/test changes. Final full-suite gate is not green; issue retained in progress for validation follow-up. User-requested code revert is implemented, focused 63 tests plus 1 property and mix q passed. Logs: /tmp/zaq-285-quality.log, /tmp/zaq-285-tests.log, /tmp/zaq-285-precommit.log, /tmp/zaq-285-chat-isolated.log. No commit or push.",
+      "timestamp": "2026-10-15T17:47:22Z"
+    },
+    {
+      "text": "User additionally requests restoring original IdentityResolver profile merge, rejecting shared nil/empty filtering for WhatsApp. Removed Map.reject and restored pre-PR merge exactly. Inspecting provider boundary: WhatsApp Adapter.get_user returns UserInfo with id and metadata.phone only; shared JidoChatBridge.fetch_profile constructs display_name/email/username keys with nil values. This means upstream omission alone cannot prevent current bridge from reintroducing nil fields. Running focused tests to quantify impact before proposing any boundary contract change.",
+      "timestamp": "2026-10-15T17:59:14Z"
+    },
+    {
+      "text": "Profile merge revert verified: IdentityResolver has no diff against PR base 2a876c6. Focused resolver/WhatsApp suite: 29 tests, 2 failures, both existing WhatsApp name preservation scenarios (phone JIDs and delayed LID enrichment). No assertions changed. Cause: WhatsApp phone-only UserInfo is projected by JidoChatBridge.fetch_profile into a map with nil display_name; original Map.merge then overwrites message-provided name. Provider/bridge profile contract needs follow-up; no additional shared normalization or provider-specific workaround introduced without resolving ownership. Prior green focused result predates this requested second revert.",
+      "timestamp": "2026-10-15T17:59:53Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Restore main phone matching in channel identity discovery",
+  "type": "task",
+  "updated_at": "2026-10-15T17:59:53Z"
+}

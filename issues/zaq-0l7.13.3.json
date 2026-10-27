@@ -1,0 +1,36 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-0l7.13.2"
+  ],
+  "blocks": [],
+  "closed_at": "2026-10-13T08:42:04Z",
+  "created": "2026-10-13T08:06:35Z",
+  "description": "User explicitly approved RAM-only Mnesia on 2026-10-13 after discussion of restart message-decryption risk. No disk state, checkpoints or replication. Preserve existing unrelated BO worktree edits. No Git mutations authorized.\nPolicies: docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md, docs/services/channels.md, docs/services/system-config.md, docs/services/engine.md; docs/documentation.md before docs edits.\nArchitecture: Channels owns profile-scoped Mnesia ram_copies table; only session and sender_key namespaces are volatile. Pairing creds and other protocol records remain encrypted through Engine. Keep per-call confidential Engine binding validation for RAM access. User approves loss on node/Mnesia restart; listener restart retains RAM state. No new UI; no new E2E required.\nUpdate owner docs/services/channels.md and system-config.md, engine.md new document operation, architecture.md RAM lifecycle; no policy duplication. Run mix q and focused integration suites per implementation issue, review final diff and mix precommit with 900000ms timeout. Record validation failures accurately. Test actual restart loss in isolated BEAM and preserve credentials in PostgreSQL. Action reuse not applicable to docs; review implementation assessments. Coverage phase follows PR-review approval and is not prematurely invoked. No commits/pushes.",
+  "id": "zaq-0l7.13.3",
+  "labels": [],
+  "parent": "zaq-0l7.13",
+  "comments": [
+    {
+      "text": "Owner documentation updated for RAM session loss, durable supporting records, current-binding DB reads, startup legacy cleanup and Mnesia supervision. Corrected pre-existing architecture summary drift (one_for_one versus actual rest_for_one). Local documentation link targets verified. mix q passed; 39 supervisor tests passed; additional saved-pairing/RAM-seed-failure test passed. Final precommit running with 900000ms timeout. Coverage phase awaits PR-review approval per workflow; no new UI/E2E flow.",
+      "timestamp": "2026-10-13T08:24:14Z"
+    },
+    {
+      "text": "First full precommit completed: 48 doctests, 242 properties, 10708 tests, 3 failures. Two exact supervisor-tree assertions needed the new RAM-store worker. Third failure reproduced alone in unchanged EmailBridge test and unchanged BridgeSupervisor: fixture omitted :start, so wrapper raised before DynamicSupervisor validation. Repaired fixture to provide :start and omit :id; retained invalid_child_spec log assertion and strengthened returned-error assertion. No email production behavior changed. MCP tool call timed out at 300s despite requested 900000ms, but process completed and log was recovered.",
+      "timestamp": "2026-10-13T08:33:04Z"
+    },
+    {
+      "text": "All three precommit failures corrected and focused checks passed: 13 tests for supervision, actual peer-node role startup, and malformed email child-spec rejection. mix q passed again. Final precommit rerun started with streaming log and explicit exit-status artifact to survive MCP host timeout.",
+      "timestamp": "2026-10-13T08:35:06Z"
+    },
+    {
+      "text": "Final validation passed: mix q; isolated linked-device/credential suites (61 tests, 5 properties before the additional onboarding failure test), 39 supervisor tests, and 13 focused supervision/peer-role/email-fixture tests. Final mix precommit exited 0: 48 doctests, 242 properties, 10708 tests, 0 failures, 1 skipped, 122 excluded. Took 391.5 seconds; recovered explicit exit status after MCP 300-second transport timeout. Logs /tmp/zaq-whatsapp-ram-precommit-final.log and result JSON alongside. Local documentation targets and git diff --check passed. No Git mutations; existing BO edits preserved.",
+      "timestamp": "2026-10-13T08:42:03Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.13.3] Document and validate volatile session lifecycle",
+  "type": "task",
+  "updated_at": "2026-10-13T08:42:04Z"
+}

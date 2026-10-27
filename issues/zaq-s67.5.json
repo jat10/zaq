@@ -1,0 +1,23 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-s67.4"
+  ],
+  "blocks": [],
+  "created": "2026-10-19T15:41:04Z",
+  "description": "Post-review release handoff for zaq-s67. Local implementation uses {:jido_chat_whatsapp, path: \"../jido_chat_whatsapp\"} in mix.exs, preserving the local dependency setup selected during review. The previous ignored dependency overlay has been removed and its original cached source restored. Both repositories remain uncommitted and unpushed per Jad. After Jad reviews and explicitly authorizes publication, publish the reviewed adapter changes through its branch/PR workflow, replace the local path dependency with the actually fetchable Git revision, refresh mix.lock, fetch and compile that dependency, rerun relevant integration tests and final mix precommit, then submit ZAQ changes through its PR workflow. Do not fabricate a revision or publish now. Action reuse: not applicable to dependency metadata; existing adapter and Engine runtime operations are reused. Verify fetched source matches the reviewed sibling source and thread contract tests pass without a local path or overlay. Publication remains a release gate, not a production-code or test failure.",
+  "id": "zaq-s67.5",
+  "labels": [],
+  "parent": "zaq-s67",
+  "comments": [
+    {
+      "text": "During validation an external workspace edit replaced the Git declaration in mix.exs with {:jido_chat_whatsapp, \"../jido_chat_whatsapp\"}. Preserved that local-path intent and corrected syntax to path: \"../jido_chat_whatsapp\". Removed the prior ignored dependency lib overlay and restored the original cached lib. Current review environment now uses an explicit local path in mix.exs. Before release, replace that local path with the reviewed published Git revision and refresh mix.lock, then validate fetched source. This workspace edit supersedes earlier plan preference to leave mix.exs unchanged for local review.",
+      "timestamp": "2026-10-19T15:55:13Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-s67.5] Pin reviewed WhatsApp thread adapter revision after publication",
+  "type": "task",
+  "updated_at": "2026-10-19T15:59:19Z"
+}

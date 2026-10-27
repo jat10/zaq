@@ -1,0 +1,42 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-hce.3",
+    "zaq-v0p"
+  ],
+  "blocks": [
+    "zaq-hce.5"
+  ],
+  "created": "2026-10-20T08:54:27Z",
+  "description": "User correction: the parallel host callback API was rejected and all implementation changes were reverted. Earlier completion comments and validation results refer to that discarded implementation; they do not establish completion of this revised scope. ZAQ and sibling adapter working trees are clean.\nValidate the corrected implementation against unchanged existing adapter and ZAQ tests and required checks. Ensure the actual changed dependency is exercised if applicable. Prior validation belongs to reverted work. Keep pre-existing failure zaq-v0p distinct from regressions; record current evidence.\nMandatory constraints: Preserve sink_mfa option, MFA invocation shape, request/result shapes and existing jido_chat_* adapter behavior. Do not replace sink_mfa with persist_mfa, activate_mfa or storage_mfa. Do not introduce compatibility modules solely to support a replacement API. No test, fixture, assertion, helper or test configuration changes. No Mnesia policy or persistence changes. No commit/push without authorization.\nRead inherited ZAQ AGENTS.md and docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md, and docs/conventions.md before affected work. Read each sibling repository's AGENTS.md. Before documentation edits read docs/documentation.md. Use Serena for source understanding and Context Mode for large output; run bw prime. Recheck live Git state and preserve unrelated work.\nTests to add before implementation: none, explicitly prohibited by user. Run existing tests; no new E2E authoring or UI changes. Mocking plan: no test/mock changes; retain existing external-edge fixtures. Coverage improvements requiring test changes are outside authorization; record gaps rather than modifying tests.",
+  "id": "zaq-hce.4",
+  "labels": [],
+  "parent": "zaq-hce",
+  "comments": [
+    {
+      "text": "Validation to date: unchanged adapter suite 12 properties/196 tests passed; adapter mix quality passed (including Dialyzer/Doctor); ZAQ mix q passed twice; focused ZAQ integration/credential/general bridge suites 4 properties/270 tests passed. Compiled BEAM compile_info confirms HostCallbacks source is the sibling checkout. git diff -- test/config/mix.exs/mix.lock is empty in both repos. Final mix precommit is still running against .zaq-hce-mix.exs with log /tmp/zaq-hce-precommit.log; Context Mode transport timed out at 300s, but original BEAM PID 99363 remains alive. Do not start duplicate precommit while it runs. Final gate configured with 900000ms subprocess timeout. Remove temporary .zaq-hce-mix.exs after completion. No numerical coverage work or new tests under user restriction.",
+      "timestamp": "2026-10-20T09:14:25Z"
+    },
+    {
+      "text": "Final precommit completed: 48 doctests, 282 properties, 11387 tests, 1 failure, 1 skipped (125 excluded), 550.3 seconds. Failure reproduced against unchanged HEAD production modules in a separate process with identical assertion; tracked as zaq-v0p, which blocks final green validation. See /tmp/zaq-hce-precommit.log and /tmp/zaq-hce-baseline.log. No assertions/tests/config changes. Callback implementation and focused tests passed. Do not request final approval or mark epic complete until blocker resolves and gate passes. Publication/pin remains zaq-hce.5.",
+      "timestamp": "2026-10-20T09:19:03Z"
+    },
+    {
+      "text": "Run unchanged suites against both modified local dependencies with temporary MIX_EXS projects; source mix.exs/mix.lock stay unchanged. Core quality and 246 tests passed; ZAQ quality passed. Adapter Dialyzer requires --force-check to refresh its PLT for the local core addition.",
+      "timestamp": "2026-10-20T09:37:54Z"
+    },
+    {
+      "text": "Final mix precommit is running against both local sibling dependencies; log /tmp/zaq-hce-sink-precommit.log. No new tests or test changes. Self-review: public/private dispatch remains synchronous and version/reference checks precede authorization; Any protocol fallback preserves ordinary listener routing. Existing callback sanitizer, timeouts, task lifecycle, secret encoding and Mnesia behavior unchanged. No UI/E2E feature change; coverage edits excluded by user constraint.",
+      "timestamp": "2026-10-20T09:39:44Z"
+    },
+    {
+      "text": "Cancelled at explicit user request. All implementation and documentation changes reverted in ZAQ, ../jido_chat and ../jido_chat_whatsapp; temporary dependency projects removed and validation stopped. Closed as cancelled, not delivered.",
+      "timestamp": "2026-10-20T09:45:13Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Validate preserved sink_mfa behavior with unchanged tests",
+  "type": "task",
+  "updated_at": "2026-10-20T09:45:14Z"
+}

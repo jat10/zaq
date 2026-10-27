@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-0l7.3"
+  ],
+  "blocks": [
+    "zaq-zho"
+  ],
+  "closed_at": "2026-10-11T12:01:42Z",
+  "created": "2026-10-11T09:54:40Z",
+  "description": "Files:\n- lib/zaq/channels/jido_chat_bridge.ex\n- lib/zaq/channels/api.ex\n- lib/zaq/channels/jido_chat_bridge/incoming.ex\n- proposed lib/zaq/channels/jido_chat_bridge/incoming/whatsapp.ex\n\nFunctional specifications:\nBind trusted channel_config_id to sink; ignore payload-supplied connector identity. Reuse State, canonical Incoming/Outgoing, Engine routing and delivery confirmation. Supply matching profile for text/files/edits/deletes/typing/reactions and audit other declared capabilities. Fail ambiguous provider-only requests. Normalize only evidenced conversation/source facts; unknown room kinds never imply membership or history access.\nUser requirement: reuse Telegram implementation patterns for configuration-bound ingress, canonical message normalization, agent routing and confirmed outgoing delivery; no parallel WhatsApp agent pipeline. Add direct-message and group tests: mention of the connected account triggers configured agent; no mention does not trigger reply; preserve existing capture policy independently. Test wrong-account mention, connector isolation and quoted/mentioned identities.\n\nTests before implementation:\n- Same peer and message ID across two accounts never cross-route\n- All operation types select account B despite A being first\n- Spoofed connector rejected\n- Disabled/wrong-provider/missing connector fails\n- Existing Telegram/Mattermost regressions\n\nBranches validated:\n- incoming\n- outgoing operation matrix\n- ambiguous config\n- unknown room\n- unavailable account\n\nDocumentation:\n- docs/services/channels.md\n- docs/services/message-lifecycle.md\n- normalization module docs\n\nAction reuse assessment:\nExtend existing JidoChatBridge/Channels Api and reuse CommunicationBridge and Engine routing; no parallel message pipeline. Canonical message plus exact config in, existing delivery/error result out. Preserve actor context and existing authorization; no new tool.\n\nValidation:\nFollow docs/WORKFLOW_AGENT.md validation lifecycle; tests before implementation, focused checks per issue, final gate before approval. No live account connection or send without scoped authorization.\n\nMocking:\nExternal Amarula transport only; use real internal boundaries and isolated DB/process/storage fixtures; inject config and clock without global mutation.\n\nPolicy:\nRecheck module responsibilities, docs/services/channels.md, Action reuse, system-config and testing guidance before coding. BO calls use explicit NodeRouter Events; nil actor never grants permission.",
+  "id": "zaq-0l7.4",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Implemented exact profile propagation through shared delivery/edit/typing/reactions/profile/test/DM paths, incoming facts and self/mention promotion before Jido routing. Group agent guard requires receiving-account mention. File/delete audit: upstream capabilities are not standalone operations in current ZAQ shared bridge; no new exposure added. mix q passes; 304 focused tests pass including Telegram and shared Api/bridge regressions. External adapter stub is scoped in a synchronous delivery fixture because registry selection is application-wide; normalization tests async. Consolidated agent/E2E scenarios remain in zaq-0l7.8.",
+      "timestamp": "2026-10-11T12:01:13Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.4] Carry exact connector through ingress and all outgoing operations",
+  "type": "task",
+  "updated_at": "2026-10-11T12:01:42Z"
+}

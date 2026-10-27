@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-09-29T14:30:43Z",
+  "description": "Approved corpus-only plan on current branch based on #814. Follow repository policies and validation lifecycle. Preserve owning APIs and authorization. No full-corpus ingestion, query preparation, evaluation, generation, or live smoke execution. End with automated validation and smoke-test readiness. No commit/push authorization.",
+  "id": "zaq-f9w",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-f9w] LiveRAG corpus preparation",
+  "type": "epic",
+  "updated_at": "2026-09-29T14:30:44Z"
+}

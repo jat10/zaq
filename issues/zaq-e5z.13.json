@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-21T14:54:37Z",
+  "description": "Latest review comment 2. Action reuse assessment: extend DeviceSignInPolling schedule/consume/stop with caller-supplied slot, identity, interval and active flag; remove ObservationPolling indirection and duplicate timer assigns. Existing OAuth schedule/consume defaults preserved; LinkedDeviceUI retains domain IO and async generations. Socket-local timer lifecycle has no independent service Action/tool/workflow contract. Verification: preserve polling property and stale tick/cancellation/expiry/QR tests; migrate slot isolation test mechanically. User explicitly approved LinkedDeviceUI assign-seeding/assertion updates to helper-created private timers in this session. No UI behavior change or new E2E; existing feature E2E gates remain. Validate mix q and isolated polling/consumer tests.",
+  "id": "zaq-e5z.13",
+  "labels": [],
+  "parent": "zaq-e5z",
+  "priority": 2,
+  "status": "open",
+  "title": "PR #847 simplify polling helper",
+  "type": "task",
+  "updated_at": "2026-10-21T14:54:37Z"
+}

@@ -1,0 +1,27 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-owg.1"
+  ],
+  "blocks": [],
+  "created": "2026-10-01T22:09:36Z",
+  "description": "Files: standalone fixture and docs/guides/widget-chat-spike.md plus docs index. Document reuse, duplicated lifecycle glue, anonymous signed capability, frame policy, Lax cookie limitations, validation evidence and production gaps. Action reuse not applicable: fixture/docs only. Verify local links, fixture and focused tests; mix q and final precommit. Depends on widget implementation.",
+  "id": "zaq-owg.2",
+  "labels": [],
+  "parent": "zaq-owg",
+  "comments": [
+    {
+      "text": "Fixture and report implemented at test/fixtures/widget-chat.html and docs/guides/widget-chat-spike.md; docs index/service guide link added. Browser confirmed iframe connection and suggested-prompt round trip. Q lint found no issues after alias fixes; test-environment Q could not run ExDoc, so normal dev Q is now running. Final precommit attempted with 15-minute tool timeout but failed inside ExDNA Task.Supervised.stream(5000), before final gate completion. BO MCP failure tracked separately as zaq-xn9. No commits or pushes.",
+      "timestamp": "2026-10-01T23:11:12Z"
+    },
+    {
+      "text": "Report finalized with files/reuse/duplication, signed anonymous capability and no permission bypass, local Chromium iframe evidence, CSP/Lax cookie limitations, production requirements, passing mix q and unresolved BO MCP/precommit limitations. No new E2E suite authored: focused LiveView integration plus browser inspection cover the spike. Git mutations remain unrequested.",
+      "timestamp": "2026-10-01T23:15:21Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-owg] Add iframe fixture and spike report, validate final changes",
+  "type": "task",
+  "updated_at": "2026-10-01T23:15:21Z"
+}

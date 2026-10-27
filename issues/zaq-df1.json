@@ -1,0 +1,56 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T12:19:48Z",
+  "description": "Problem\nZAQ download_document accepts optional document_mime_type and forwards it to materialization. CommunicationMedia declares materialization_options/0 as [], so valid WhatsApp attachment handles fail with :invalid_materialization_options before provider dispatch.\n\nEvidence\nRead-only IEx investigation of transcript ff01b6b0-b584-41e0-8bed-92efcdf973a0 in zaq_feat_whatsapp_integration, 2026-10-15:\n- Positions 6, 19, 36 (10:17, 11:19, 11:55 UTC): download_document called with materialization_handle and document_mime_type=image/jpeg; all returned invalid_materialization_options.\n- Position 10 (10:18 UTC): exact same handle, without MIME option, succeeded and image was described.\n- All four handle strings were identical. The assistant's later claim of an invalid/expired handle did not match the tool error.\n- IEx reproduction: Zaq.Materialization.materialize_with_handler(Zaq.Channels.Materializers.CommunicationMedia, %{}, %{}, %{\"document_mime_type\" =\u003e \"image/jpeg\"}) returns {:error, :invalid_materialization_options}.\n\nOwnership and locations\nZAQ owns this mismatch; rejection occurs before jido_chat_whatsapp is invoked.\n- lib/zaq/agent/tools/data_source/download_document.ex: schema and materialization_options/1\n- lib/zaq/materialization.ex: materialize_with_handler/4 and validate_options/2\n- lib/zaq/channels/materializers/communication_media.ex: materialization_options/0\n\nAction reuse assessment\nOperation: download_document / communication-media materialization.\nCandidates: existing DownloadDocument Action, Zaq.Materialization, CommunicationMedia handler.\nDecision: extend/align the existing contract; no new Action or parallel download path.\nBoundary: preserve handle verification, source authorization, connector routing, and NodeRouter dispatch.\nContract: supported tool inputs must be compatible with the selected materializer; document export behavior must remain intact.\nVerification: focused Action-to-materializer regression tests and existing domain tests.\n\nAcceptance criteria\n1. A valid communication-image handle with the advertised source MIME option does not fail due to this contract mismatch; establish the intended handler-specific option policy.\n2. Handle-only materialization remains successful.\n3. Data-source source/export MIME behavior is preserved.\n4. Unsupported options and authorization checks remain enforced according to the explicit contract.\n5. Regression coverage exercises the actual DownloadDocument-to-materializer path.\n6. Follow repository validation lifecycle; obtain human approval before changing existing test behavior.\n\nScope\nFix the MIME contract mismatch only. Quoted-image attachment resolution and general agent error interpretation are separate follow-ups. No implementation was performed during diagnosis.",
+  "id": "zaq-df1",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Related issue: zaq-vl9 resolves quoted image attachments in agent reply input. The same transcript exposed both problems: zaq-df1 addresses MIME-option rejection during download; zaq-vl9 addresses resolving the quoted original attachment before download. Validate the combined flow; no implementation dependency is assumed.",
+      "timestamp": "2026-10-15T12:21:15Z"
+    },
+    {
+      "text": "Implementation decision: extend CommunicationMedia materialization_options with advisory document_mime_type only. Signed locator MIME remains authoritative; no export support or weakened unknown-option validation. Reuse DownloadDocument Action -\u003e Materialization -\u003e existing Channels dispatch. Add validated Jido.Exec regression tests for handle-only and MIME-hint success, provenance preservation and unsupported-option rejection. Existing assertions remain unchanged. Backend regression; no new browser E2E needed.",
+      "timestamp": "2026-10-15T12:23:25Z"
+    },
+    {
+      "text": "Focused validation passed: 2 properties, 46 tests, zero failures across DownloadDocument, CommunicationMedia and Materialization. Validated Action regression covers no hint, matching hint and conflicting hint while signed MIME/provenance remain authoritative; unsupported export still fails. Implementation remains uncommitted pending final validation/review.",
+      "timestamp": "2026-10-15T12:26:27Z"
+    },
+    {
+      "text": "mix q passed with the combined implementation: formatting, compilation, hook verification, strict Credo and documentation generation. No existing test assertions/scenarios changed. No commits or pushes performed.",
+      "timestamp": "2026-10-15T12:32:57Z"
+    },
+    {
+      "text": "Expanded adjacent suite PASSED: 6 doctests, 10 properties, 256 tests, zero failures. MIME regression also exercised through actual Executor/Factory/LLM boundary with a quoted historical image. Final mix precommit running with 900000ms timeout through Context Mode.",
+      "timestamp": "2026-10-15T12:35:01Z"
+    },
+    {
+      "text": "Final validation PASSED against final changes: mix q; expanded image/agent suite (6 doctests, 10 properties, 256 tests, zero failures); affected timezone/UI suite (205 tests, zero failures, seed 59818); mix precommit (497.6s, 17 doctests, 198 properties, 9963 tests, zero failures, one existing skip, 117 excluded). Precommit's MCP transport timed out at 300s, but the background process completed normally; exit status 0 verified in /tmp/zaq-image-precommit-final.status and summary in /tmp/zaq-image-precommit-final.log. Initial timezone interference repaired under zaq-krc by scheduling only; assertions/fixtures unchanged. Implementation and local validation are ready for review. No commits/pushes performed. Issues remain open for review/coverage/landing under repository workflow.",
+      "timestamp": "2026-10-15T12:55:46Z"
+    },
+    {
+      "text": "User requested discarding this implementation to restart from a clean baseline. All associated uncommitted code, documentation and test changes were removed. Working tree is clean at 4281f333c. Previous validation results describe the discarded implementation, not the current code. Investigation findings remain; implementation is no longer present.",
+      "timestamp": "2026-10-15T14:54:27Z"
+    },
+    {
+      "text": "User requested a failing regression test on the clean baseline. Action reuse assessment: reuse DownloadDocument through Jido.Exec.run/3, real signed CommunicationMedia handles and Materialization; fake only the NodeRouter external-service boundary. Test first proves handle-only success, then expects the identical download to succeed with the advertised matching source MIME. No production changes or existing-test behavior changes. Concrete incident regression; no browser E2E or broad property generator needed.",
+      "timestamp": "2026-10-15T14:56:00Z"
+    },
+    {
+      "text": "Added test/zaq/agent/tools/data_source/download_document_mime_regression_test.exs only. Confirmed red: 1 test, 1 failure at the matching-MIME Jido.Exec call, returning Jido.Action.Error.ExecutionFailureError with Record materialization failed: :invalid_materialization_options. The preceding handle-only call and provider-dispatch assertion pass with the exact same signed handle and authorized actor. mix q passes. No production code or existing tests changed. Intentionally left failing as requested; no full precommit because the requested artifact is a red regression.",
+      "timestamp": "2026-10-15T14:57:02Z"
+    },
+    {
+      "text": "Follow-up zaq-pcj tracks the clean-baseline shared tool-contract fix. User requires download_document_mime_regression_test.exs to remain byte-for-byte untouched and pass; its SHA-256 is recorded in zaq-pcj. Previous implementation remains discarded.",
+      "timestamp": "2026-10-15T14:58:18Z"
+    }
+  ],
+  "priority": 1,
+  "status": "in_progress",
+  "title": "[zaq-df1] Fix download_document MIME option mismatch for communication attachments",
+  "type": "bug",
+  "updated_at": "2026-10-15T14:58:18Z"
+}

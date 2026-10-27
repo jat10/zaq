@@ -1,0 +1,27 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-0l7.24.11"
+  ],
+  "blocks": [
+    "zaq-0l7.24.5"
+  ],
+  "closed_at": "2026-10-13T15:04:21Z",
+  "close_reason": "Implemented and validated in local working trees. Package: 144 tests + 2 properties, 0 failures, live excluded; mix quality including Dialyzer/Doctor passed. ZAQ: mix q and 62 focused integration tests passed; final mix precommit: 48 doctests, 255 properties, 10911 tests, 0 failures (1 skipped, 122 excluded). Parent retains review/coverage and release handoff; no commit or publication performed.",
+  "created": "2026-10-13T14:09:25Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nWire package PairingSession and composite storage into existing Channels.LinkedDevice facade, PairLinkedDevice Action and supervisor. Explicitly start package infrastructure before host preparation/pairing/listeners. Use upstream lifecycle and thin host callbacks, preserving BO response shapes, owner checks, identity guard, retry/cancel/expiry and saved/runtime_pending. Delete lib/zaq/channels/linked_device/session.ex, temporary_storage.ex, storage.ex and session_storage.ex; the entire directory must be absent. Remove obsolete references/config/test support and duplicate implementations. Keep linked_device.ex outside the directory only for host configuration/binding/lifecycle glue; no renamed state machine elsewhere. Audit Mnesia consumers before altering shared app/schema config. Preserve the local dependency override for development.\n\nTests to add before implementation:\nBefore edits adapt real onboarding/storage/supervision/restart tests through existing Actions and actual package APIs. Preserve operator/binding denial, stale identity, frozen save retry, idempotent confirm, one-time seed, logout both stores, post-save start failure and multi-account behavior. Move generic unit/property coverage upstream while retaining host authorization/persistence integration assertions. Final source/reference audit proves all four modules and directory are gone without renamed duplicates.\n\nBranches/paths validated:\nProvisional/confirmed; allowed/denied operator; stale/current identity and attempt; saved/runtime_pending; revoked credentials; multiple accounts; node/Mnesia restart.\n\nMocking plan:\nReal internal collaborators; inject external transport/host-callback edges only. Isolated BEAMs for global Mnesia. Explicit config/clock/dependency options.\n\nDocumentations to update for both code and docs/ related content:\nZAQ channels/system-config owner docs and module docs updated for complete upstream ownership; no UI redesign.\n\nAction reuse assessment:\nConsume upstream prerequisites and existing host Actions/events. Remove duplicated mechanisms rather than relocating them. Preserve confidential NodeRouter execution boundaries; no new agent tools.\n\nValidation and E2E:\nRead owning AGENTS.md and ZAQ workflow, action-reuse, testing, system-config and documentation policies as applicable. Use real internal state/process/DB boundaries; mock only external WhatsApp transport or package host-callback boundary in upstream standalone tests. Isolate global Mnesia tests in separate BEAMs. Runtime dependency seams use explicit public options. Preserve current UI journeys; run relevant existing tests, no new feature E2E authoring unless scope changes and the required UX approval is recorded. Follow post-review coverage and final validation gates; no automatic commit/push/publication.",
+  "id": "zaq-0l7.24.4",
+  "labels": [],
+  "parent": "zaq-0l7.24",
+  "comments": [
+    {
+      "text": "Deleted all four modules from lib/zaq/channels/linked_device/. Wired existing Action to package API; complete host linked-device/supervision run: 55 tests passed.",
+      "timestamp": "2026-10-13T14:50:56Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.4] Wire upstream APIs and remove the entire ZAQ linked_device directory",
+  "type": "task",
+  "updated_at": "2026-10-13T15:04:21Z"
+}

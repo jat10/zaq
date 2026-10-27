@@ -1,0 +1,22 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-dzr"
+  ],
+  "created": "2026-10-02T12:48:31Z",
+  "description": "Action reuse assessment: local-only OTP configuration storage, with no agent/workflow operation. Add Runtime child_spec/start_link and widget lookup with process-owned Registry entries. Input: channel_config_id, sink_mfa, allowlisted widgets; no routing or credentials. Verify multiple widgets, duplicate identity, lookup and cleanup. No browser E2E needed: this is supervised runtime configuration only.",
+  "id": "zaq-kra",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Runtime implementation and four focused tests pass; web_widget precommit passes (14 tests). ZAQ integration exposed LiveView ~\u003e1.1.0 vs ~\u003e1.2 mismatch; widen dependency constraint to ~\u003e1.1. RuntimeRegistry owns widget identity; runtime child owns server configuration. Host disables standalone server/database through start_web_server: false. Continuing integration without commits per task scope.",
+      "timestamp": "2026-10-02T12:55:05Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[widget-runtime] Add supervised web_widget configuration runtime",
+  "type": "task",
+  "updated_at": "2026-10-02T12:55:05Z"
+}

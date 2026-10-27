@@ -1,0 +1,28 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-s67.2"
+  ],
+  "closed_at": "2026-10-19T15:20:43Z",
+  "created": "2026-10-19T15:06:26Z",
+  "description": "Selectively reverse quote-related hunks against the merge base with main, not whole files/commit. Delete lib/zaq/engine/messages/incoming/reply_context.ex and quote-specific test/zaq/engine/messages/quoted_reply_test.exs. Remove reply_context/external_reply_to_id from ZAQ Incoming and JidoChatBridge.to_internal. Remove quote metadata persistence/projection from HistoryIngress, Conversations, TranscriptHistory; restore attachment-only handling without losing attachment changes. Remove quote formatting/propagation from InputPrompt, Pipeline retrieval, Executor, HistoryLoader and RequestControl follow-up paths. Preserve author/time, admitted content, runtime aliases, identity and authorization.\nFiles: lib/zaq/agent/{executor,history_loader,input_prompt,pipeline,request_control}.ex; lib/zaq/channels/jido_chat_bridge.ex; lib/zaq/engine/{conversations,history_ingress}.ex; lib/zaq/engine/conversations/transcript_history.ex; lib/zaq/engine/messages/incoming.ex. Update docs/services/{channels,engine}.md quote sections only, preserve reactions. Search all PR changes for later quote additions including linked_device/runtime_contracts_test.exs. Existing stored metadata is ignored, not deleted.\nTests: replace/remove only user-requested inline contract assertions in agent tests, history_ingress_test and runtime_contracts; retain unrelated assertions. Demonstrate normal author/time/attachments and system/tool formatting unchanged, no injected quote for live/retrieval/steering/history paths, legacy stored metadata harmless. Run mix q and focused isolated tests.\nAction reuse: local-only removal of duplicate input enrichment; existing ingress/persistence/rendering operations remain owners. Pure/no new network or tool behavior. Verification through existing public paths.\nPolicies: read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md and the applicable Channels/Engine/Agent service sections before implementation; sibling adapter has its own AGENTS.md. Read module docs before edits. No commit/push authorization. Preserve unrelated branch changes.\n",
+  "id": "zaq-s67.1",
+  "labels": [],
+  "parent": "zaq-s67",
+  "comments": [
+    {
+      "text": "Implementation started on existing PR branch as requested. User authorized implementation and review after each issue, with no commits/pushes. Action reuse rechecked: selective removal only, retain Incoming/bridge/history and Executor/RequestControl operations. Existing quote-only tests removed/replaced within disclosed zaq-s67 scope; unrelated assertions retained. New negative regression coverage verifies obsolete stored/Jido quote data stays out of formatted live/history/retrieval/steered input and external_thread_id mapping remains intact. Adapter work waits for review of this issue.",
+      "timestamp": "2026-10-19T15:12:49Z"
+    },
+    {
+      "text": "Implementation complete; awaiting Jad review before adapter issue zaq-s67.2. Selectively removed inline quote normalizer/fields, bridge mapping, prompt/retrieval/steering enrichment and history persistence/projection; preserved unrelated PR behavior. Added/replaced regressions for obsolete quote fields ignored in canonical input, live executor, restored history with attachments, retrieval and native steering. Validation PASSED: mix q (including formatting/compilation/Credo/docs); focused suite 205 tests + 5 properties + 6 doctests; persistence/history suite 213 tests + 5 properties; zero failures. git diff --check clean; no inline quote plumbing in lib or active service docs. Sibling adapter unchanged. No commits/pushes. Issue remains in progress pending requested review; final coverage and mix precommit remain in zaq-s67.4 after implementation review, per workflow.",
+      "timestamp": "2026-10-19T15:16:45Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-s67.1] Remove PR inline-quote plumbing from ZAQ",
+  "type": "task",
+  "updated_at": "2026-10-19T15:20:43Z"
+}

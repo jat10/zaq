@@ -1,0 +1,29 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-973.2"
+  ],
+  "blocks": [
+    "zaq-973.4"
+  ],
+  "created": "2026-10-20T10:03:42Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nUpdate lib/zaq/channels/jido_chat_bridge.ex from_listener/3,4, pairing_request, storage_request and dispatch functions to consume core types. Preserve trusted config/provider/connector scope and public ingress rejection; never forward private requests through State or ordinary ActionEvent routing. Reuse persist_authentication/start_authentication and existing NodeRouter/Event Actions. Do not make browser/request binding authoritative, or mistake a reference/type for authorization. Update dependency wiring locally as required to exercise prerequisite core/package together; final reproducible pin handled by validation child.\n\nTests to add before implementation:\nNew focused shared-sink tests plus existing test/zaq/channels/linked_device/integration_flows_test.exs and runtime_contracts_test.exs. A fake non-WhatsApp provider must persist/start/read/write via the same host path. Reject public ingress, foreign provider/connector/binding, missing/revoked actor, malformed operations/version and unauthorized runtime paths. Prove storage completes when State is blocked in an outbound call; do not merely invoke private helpers. Preserve commit-before-ack and uncertain-save behavior. Properties: changing supplied binding/provider cannot widen trusted sink scope.\n\nBranches/paths validated:\nProvisional persist/start vs saved bind/CRUD; disabled/deleted/mismatched binding; nil/stale operator; exception/timeout; error/no-record distinction; start error after committed receipt; explicit-runtime unavailable without recursive startup. Preserve existing RPC timeout layering.\n\nMocking plan:\nReal host Actions, Engine/domain persistence and request routing, controlled external adapter/transport edges; use injected supported config/events and SQL sandbox. No new test-only production bypass or global mutations.\n\nDocumentations to update for both code and docs/ related content:\nBridge @moduledoc and relevant channels/system-config service sections: shared envelope types, single trusted sink, synchronous private branch and authorization ownership. Link Engine authoritative operations.\n\nAction reuse assessment:\nREUSE PairLinkedDevice, ConfirmLinkedDevice/LinkedDeviceConfirmation and CredentialDocument/Connect via existing validated NodeRouter/Event routes. Input/output/actor/binding/side effects exactly as epic. No new Actions or tool exposure. Confirm real operations remain sole persistence owners using integration tests.\n\nRequired policy and epic constraints:\nRead this epic before starting. Read each affected repository's AGENTS.md. In ZAQ read docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md and applicable docs/conventions.md; before documentation edits read docs/documentation.md. Run bw prime and verify live source/Git/dependency state. Use Serena for source relationships and Context Mode for large output. Follow docs/WORKFLOW_AGENT.md#phase-4--validate and its final validation/coverage lifecycle rather than treating this ticket as an alternative policy. No existing test behavior change is approved by this plan. No new feature E2E is planned: this is a behavior-preserving boundary refactor with no UI change. Reassess that decision if scope expands.",
+  "id": "zaq-973.3",
+  "labels": [],
+  "parent": "zaq-973",
+  "comments": [
+    {
+      "text": "Generic bridge now consumes shared core request types, retaining private synchronous bypass of State, existing actor/binding/provider checks and Engine Actions. Existing saved_connection tests prove public rejection, scope mismatch rejection, idempotent persistence and State storage reentrancy. Focused combined ZAQ suite passes 322 tests + 7 properties before additional conformance test.",
+      "timestamp": "2026-10-20T10:21:14Z"
+    },
+    {
+      "text": "Shared private sink implementation complete; focused ZAQ 322 tests + 7 properties pass, including public-ingress rejection, actor/binding checks and real State storage reentrancy. ZAQ mix q passes.",
+      "timestamp": "2026-10-20T10:26:58Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-973.3] Replace ZAQ concrete request handling with shared private sink contracts",
+  "type": "task",
+  "updated_at": "2026-10-20T10:26:59Z"
+}

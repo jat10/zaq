@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-07T08:11:59Z",
+  "description": "Change mix.exs from the GitHub web_widget dependency to path ../web_widget for local development. Action reuse assessment: not applicable; dependency configuration only. Verify Mix resolves the sibling checkout. Preserve existing docker-compose.yml and mix.lock edits.",
+  "id": "zaq-x8s",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Use local sibling web_widget dependency",
+  "type": "task",
+  "updated_at": "2026-10-07T08:11:59Z"
+}

@@ -1,0 +1,31 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-10n.7"
+  ],
+  "created": "2026-10-14T13:53:48Z",
+  "description": "Full-suite run 87776 fails RestartTest with storage_unavailable; isolated restart/onboarding/supervision tests pass (31 tests). Shared BridgeSupervisor is restarted under temporary provider maps by other synchronous tests, so restoring application env does not guarantee provider storage processes exist. Linked-device fixtures must explicitly initialize their required provider runtime before connector operations. Action reuse: reuse JidoChatBridge.start_runtime({:provider, :whatsapp}, []) which delegates existing generic Bridge runtime startup and is idempotent for an existing provider. No new production API or Action. Verify controlled absent-provider reproduction, full restart/onboarding suites, and full gate. Keep async false and preserve storage/confirmation assertions.",
+  "id": "zaq-10n.11",
+  "labels": [],
+  "parent": "zaq-10n",
+  "comments": [
+    {
+      "text": "Controlled reproduction: explicitly stopping provider:whatsapp before the restart test reproduces storage_unavailable at connector startup. Fixed by reusing JidoChatBridge.start_runtime({:provider, :whatsapp}, []) before connector operations, with same provider dependency initialized in onboarding setup. Cold provider bootstrap remains exercised in restart regression. Lifecycle/restart/onboarding/supervision suites: 31 tests pass at seed 87776. mix q passes. Full gate rerunning.",
+      "timestamp": "2026-10-14T13:55:26Z"
+    },
+    {
+      "text": "Second full run exposed the same missing provider storage in WhatsAppFullFlowTest setup (three cases), before any message handling. Audited all WhatsAppFlowAdapter/Transport consumers: onboarding, restart and full-flow. Added the same explicit provider bootstrap to the third fixture. This is the same dependency initialization defect, not a message-processing failure.",
+      "timestamp": "2026-10-14T14:01:58Z"
+    },
+    {
+      "text": "All three WhatsApp flow fixture consumers now initialize provider storage explicitly. Last full run had only three WhatsAppFullFlowTest setup failures; those now pass in isolation (3 tests), and mix q passes after final edit. The other 10925 tests from that full run passed. Final gate restarted against all fixes.",
+      "timestamp": "2026-10-14T14:04:04Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-10n.11] Initialize provider storage in linked-device integration fixtures",
+  "type": "bug",
+  "updated_at": "2026-10-14T14:04:04Z"
+}

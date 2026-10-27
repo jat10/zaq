@@ -1,0 +1,20 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-06T20:07:20Z",
+  "description": "Add branch-only GHCR zaq-dev workflow for feat/web-widget-wire, separate native amd64/arm64 runners and merged manifest. Reuse current Dockerfile and pinned Git dependency. Action reuse not applicable: CI packaging only. No release or production tags. Validate locally; commit/push and remote execution remain user-controlled.",
+  "id": "zaq-vc2",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Prepared widget-dev-image.yml: feature-branch push/manual trigger, native amd64/arm64 matrix, bounded BuildKit concurrency, GHA cache, run-specific architecture tags, merged latest and commit tags, manifest verification. Added dev setup instructions. actionlint v1.7.7 and mix q passed. Changes remain uncommitted; no remote workflow or registry publication triggered. Remote build validation pending user push.",
+      "timestamp": "2026-10-06T20:08:38Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "Build web widget test image on GitHub Actions",
+  "type": "task",
+  "updated_at": "2026-10-06T20:08:38Z"
+}

@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-meb"
+  ],
+  "blocks": [
+    "zaq-0l7.2"
+  ],
+  "closed_at": "2026-10-11T11:36:49Z",
+  "created": "2026-10-11T09:54:36Z",
+  "description": "Files:\n- lib/zaq/engine/channel_config.ex\n- lib/zaq/connector_config/settings.ex\n- config/config.ex\n- config/runtime.exs\n- proposed Channels linked-device configuration module\n\nFunctional specifications:\nRegister WhatsApp through current config owner; allow URL/token-free setup. Derive stable string profile from exact channel_config_id and use the same resolver everywhere. No arbitrary profile UI overrides initially; any compatibility overrides require uniqueness and consistent ingress/egress resolution. Translate allowlisted JSON string keys safely. Enforce sync_history=false and sync_full_history=false after merging options. Configure the custom Amarula storage adapter through the bridge; omit storage_root. Resolve the exact credential association through existing ZAQ Credentials/Connect boundaries. No filesystem storage requirement. Define one runtime owner per connector across nodes; default Amarula registry uniqueness is node-local.\nArchitecture refinement: Shared configuration contract carries connector/credential identity and delegates provider-specific profile/settings resolution. Amarula sync flags remain in WhatsApp binding.\nAssert exact runtime options reach jido_chat_whatsapp: connector-derived profile, custom storage association, sync_history=false, sync_full_history=false, no storage_root override.\n\nTests before implementation:\n- Two same-provider configs yield distinct stable profiles\n- Persisted string keys cannot enable sync\n- Reload/reconnect keeps profile\n- Malformed settings and conflicting override fail\n- Property test profile and configuration isolation\n- Runtime options preserve custom storage and omit storage_root\n- Connector-to-credential association cannot cross profiles\n- Exercise shared contract with a minimal fake second provider; keep WhatsApp-specific expectations in provider contract tests\n\nBranches validated:\n- create\n- edit\n- reload\n- disabled\n- duplicate profile\n- storage failure\n\nDocumentation:\n- docs/services/channels.md\n- docs/services/system-config.md\n- operator credential-backed session persistence\n- module contracts\n\nAction reuse assessment:\nExtend Engine ChannelConfig and ConnectorConfig.Settings CRUD. Runtime option/profile translation is local transport logic. Exact config in, validated options or error out; no connection side effects. Existing BO persistence boundary stays authoritative; no new tool. Inspect and reuse existing device-connection behavior before adding shared modules; document any missing contract as a prerequisite. No duplicate provider-specific credential store or pairing framework.\n\nValidation:\nFollow docs/WORKFLOW_AGENT.md validation lifecycle; tests before implementation, focused checks per issue, final gate before approval. No live account connection or send without scoped authorization.\n\nMocking:\nExternal Amarula transport only; use real internal boundaries and isolated DB/process/storage fixtures; inject config and clock without global mutation.\n\nPolicy:\nRecheck module responsibilities, docs/services/channels.md, Action reuse, system-config and testing guidance before coding. BO calls use explicit NodeRouter Events; nil actor never grants permission.",
+  "id": "zaq-0l7.1",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Completed and pushed 2293cdea7. Shared pure config/provider contract, stable profile per persisted connector, explicit trusted storage binding, WhatsApp registration and token/URL-free persistence via existing placeholders. WhatsApp history flags forced false; settings cannot override profile/storage. Tests include actual upstream listener-spec pass-through, two database configs, generic second-provider stub and profile-isolation property. mix q and 57 tests/1 property passed. Lifecycle wiring and credential association remain in dependent issues. Discovered upstream/zaq-p8t/device-code-sign-in: its HTTP polling/token-exchange behavior is OAuth-specific, unsuitable for direct Amarula socket pairing; reuse credential infrastructure rather than that protocol interface.",
+      "timestamp": "2026-10-11T11:36:48Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.1] Define shared linked-device configuration and WhatsApp binding",
+  "type": "task",
+  "updated_at": "2026-10-11T11:36:49Z"
+}

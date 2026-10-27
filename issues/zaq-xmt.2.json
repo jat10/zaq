@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-xmt.1"
+  ],
+  "blocks": [
+    "zaq-0l7.7"
+  ],
+  "closed_at": "2026-10-17T00:53:33Z",
+  "created": "2026-10-17T00:39:45Z",
+  "description": "After callback migration, verify Mix source resolution, strengthen real-package logout/archive integration if needed, validate permissions/failure/profile isolation and existing UI/Action/runtime regression suites, preserve staging exclusions, and run final precommit. No new E2E before existing UX gate. Reuse parent Action assessment; no new operation implementation.",
+  "id": "zaq-xmt.2",
+  "labels": [],
+  "parent": "zaq-xmt",
+  "comments": [
+    {
+      "text": "Verified MIX_ENV=test Mix.Project.deps_paths resolution equals ../jido_chat_whatsapp and Adapter.module_info(:compile) source points into that sibling checkout; Adapter.logout/1 exported. Regression validation passed: 149 tests and 5 properties, zero failures across real-package, bridge, authorization, lifecycle/archive, Action, shared LiveView/web-widget and policy suites. Self-review preserves per-call configuration, exact listener lookup, authorization, existing error normalization and optional callback defaults. No active logout_mfa references in lib/config/test/docs/services; mix.lock unchanged. Numerical coverage phase awaits PR review approval; browser E2E remains behind existing UX gate. Final precommit next.",
+      "timestamp": "2026-10-17T00:43:25Z"
+    },
+    {
+      "text": "Final validation passed: mix precommit exit 0, 48 doctests, 276 properties, 11311 tests, 0 failures, 1 skipped/125 excluded (529.6s). mix q passed; focused regression suite 149 tests and 5 properties passed. Exact test-environment dependency and compiled source verified under ../jido_chat_whatsapp. Logs: /tmp/zaq-xmt-quality.log, /tmp/zaq-xmt-source-verification.log, /tmp/zaq-xmt-integration-tests.log, /tmp/zaq-xmt-precommit.log. Migration staged; pre-existing unstaged .gitignore, state.ex and review report preserved. No commits/pushes. UX/E2E gates remain separate.",
+      "timestamp": "2026-10-17T00:53:32Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-xmt.2] Validate local-package Disable and Delete integration",
+  "type": "task",
+  "updated_at": "2026-10-17T00:53:33Z"
+}

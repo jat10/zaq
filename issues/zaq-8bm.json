@@ -1,0 +1,21 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-06T17:05:30Z",
+  "created": "2026-10-06T17:03:01Z",
+  "description": "Supply sibling web_widget as named Docker build context, build dependency JS/CSS with Node and host Mix deps, run library installer before digest and verify release assets. Update Compose/build documentation and validate available Docker tooling. Action reuse: extend existing Docker build pipeline; no domain operation or Action.",
+  "id": "zaq-8bm",
+  "labels": [],
+  "comments": [
+    {
+      "text": "User requested reverting Docker work. Restored Dockerfile, Compose, dockerignore, release workflow and deployment docs to their exact pre-task contents. Earlier widget task/static integration changes preserved.",
+      "timestamp": "2026-10-06T17:05:29Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Build and install widget assets in Docker",
+  "type": "task",
+  "updated_at": "2026-10-06T17:05:30Z"
+}

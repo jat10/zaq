@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-r4n.2"
+  ],
+  "closed_at": "2026-10-16T14:35:31Z",
+  "created": "2026-10-16T14:29:31Z",
+  "description": "Action reuse: extend ConnectorLifecycle scope/revision/runtime helpers; add confidential super-admin DisableChannelConnector Action with context/disable commands. No existing saved-connector logout Action found (PairLinkedDevice handles provisional authentication only). Reuse installed jido_chat_whatsapp ConnectionWorker.logout/1 through configured logout_mfa, CommunicationBridge and JidoChatBridge; no Registry exposure. Engine persists enabled=false only after successful logout, checks exact provider/kind/revision before side effects and before write. No lock held over adapter storage calls. Return ID-only status plus runtime cleanup warnings. Repeat already-disabled requests are harmless; reenabled/edited/archived/mismatched targets rejected. Add focused Action/lifecycle and bridge tests, including authorization, failure, stale target and profile isolation. Read applicable policies from parent and Engine service guide.",
+  "id": "zaq-r4n.1",
+  "labels": [],
+  "parent": "zaq-r4n",
+  "comments": [
+    {
+      "text": "Service implementation and isolated validation complete: 9 tests pass; mix q passes after fixing two Credo findings. No commits authorized. Parent stays active through UI and final validation.",
+      "timestamp": "2026-10-16T14:35:30Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-r4n] Add scoped connector logout/disable Action and bridge callback",
+  "type": "task",
+  "updated_at": "2026-10-16T14:35:31Z"
+}

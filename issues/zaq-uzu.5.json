@@ -1,0 +1,19 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-uzu.4"
+  ],
+  "blocks": [
+    "zaq-uzu.6"
+  ],
+  "created": "2026-09-25T09:05:40Z",
+  "description": "Execute approved S4 in parent zaq-uzu. Real Runner, image_dedup.py and Pillow/imagehash\n    with observable results. Default suites exclude real_python. No converter-specific runtime checks.",
+  "id": "zaq-uzu.5",
+  "labels": [],
+  "parent": "zaq-uzu",
+  "priority": 2,
+  "status": "open",
+  "title": "[#781] S4: Add real-Python ImageDedup regression",
+  "type": "task",
+  "updated_at": "2026-09-25T09:05:43Z"
+}

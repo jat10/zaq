@@ -1,0 +1,29 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-fx0"
+  ],
+  "blocks": [
+    "zaq-yqd"
+  ],
+  "closed_at": "2026-09-18T23:22:49Z",
+  "created": "2026-09-18T22:36:16Z",
+  "description": "Functional specifications/files: update private extension_for/2 in lib/zaq/ingestion/record_source.ex; replace/remove extension_from_record/1 including PDF-only clause. Keep store_download/2 base64 branch and write_original/3 call signature. Precedence: safe downloaded filename suffix wins when MIME nonspecific or suffix is in downloaded MIME allowed mappings; otherwise choose downloaded MIME first safe canonical suffix; only when downloaded MIME nonspecific and no usable artifact filename use safe original filename suffix; otherwise .bin. A specific unknown MIME is not missing metadata. Do not infer representation from original MIME. Original Record, title/provenance, routing, decode errors and markdown paths stay intact. Helper integration: alias Zaq.Ingestion.ArtifactType and call canonical_extension/1 and compatible_extension?/2. Keep safe filename extraction/normalization and nil/blank/octet-stream classification private in RecordSource; do not move either into the helper. Tests to add before implementation: Step 1 regression matrix plus helper tests already RED; add a bounded public-boundary property that varying stale source suffix cannot override fixed specific exported MIME. Run until all tests GREEN, including existing flat disk PDF fallback, row markdown, text and failure tests. Mocking: same existing precise NodeRouter boundary, async-safe filesystem roots; no converter/network mocks or Python changes needed. Documentation: add concise artifact-extension contract to RecordSource moduledoc and docs/services/ingestion.md near materialization; link policy rather than duplicate in other service docs. Action reuse assessment: extend Zaq.Ingestion.RecordSource staging policy; local-only pure MIME helper. Inspected RecordSource.materialize/2 -\u003e store_download/2 -\u003e TemporaryMaterializationStore.write_original/3, Materialization.materialize/4, Agent.Tools.DataSource.DownloadDocument Action, workflow steps, and all MIME/extension references under lib/zaq. DownloadDocument redeems content and does not own ingestion filenames; DiskBridge MIME.from_path/1 infers MIME in the opposite direction. No existing ZAQ MIME-to-extension abstraction found. Reuse installed MIME 2.0.7 mapping. Inputs are original/downloaded Record metadata; output is a safe extension. Preserve signed-handle authorization, actor context, download errors, bytes, original record/provenance, temporary-root lifecycle and row/plain-text .md paths. No new Action, tool, workflow surface, runtime configuration or external dependency seam. Verify through materialize/2 and pure helper tests.",
+  "id": "zaq-m8g",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Audit scope guard: precedence remains private to RecordSource. ArtifactType should expose only MIME→canonical extension and extension compatibility; it must not own filename parsing, MIME nonspecific classification, .bin fallback, or materialization lifecycle.",
+      "timestamp": "2026-09-18T22:46:28Z"
+    },
+    {
+      "text": "Implemented in working tree, including regression tests and ArtifactType helper.\n  Confirmed 21 failures before the fix; afterward, 54 focused tests and 2 properties passed. mix q\n  passed. Contract docs updated. E2E and full-suite validation stopped at user request. Changes are not\n  committed.",
+      "timestamp": "2026-09-18T23:05:35Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[#568] GREEN: apply downloaded representation at RecordSource boundary",
+  "type": "task",
+  "updated_at": "2026-09-18T23:22:49Z"
+}

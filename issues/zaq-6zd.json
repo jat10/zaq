@@ -1,0 +1,36 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T11:21:03Z",
+  "description": "Problem\nWhen a WhatsApp user quotes an earlier message and mentions the bot (for example, \"Explain this\"), the adapter exposes the quoted message but ZAQ drops its explicit reply context at the Engine boundary. The original may independently be in history, but the reply relationship and inline quote are not carried to the agent.\n\nRepository evidence\n- deps/amarula/lib/amarula.ex: resolve_quoted/2 returns an inline quoted Amarula.Msg or requests asynchronous redelivery if the inline original is absent.\n- deps/jido_chat_whatsapp/lib/jido_chat_whatsapp/message.ex: reply_context/2 supplies external_message_id, text, and author; normalize supplies external_reply_to_id and detects mentions. external_thread_id remains nil.\n- lib/zaq/channels/jido_chat_bridge.ex: to_internal/2 copies incoming.text, identifiers and metadata, but neither reply_context nor external_reply_to_id.\n- lib/zaq/engine/messages/incoming.ex: canonical Incoming currently has no explicit reply context field.\n- No resolve_quoted caller was found in the adapter or ZAQ. Findings are source-based; no live reproduction performed.\n\nProposed fix\n1. Extend the shared canonical Incoming contract with optional, normalized quoted-reply context: referenced external message ID, original author, available text, and enough source/connector/room scope to resolve it safely. Keep defaults backward compatible.\n2. Map Jido.Chat.Incoming.reply_context and external_reply_to_id in the existing JidoChatBridge.to_internal/2 boundary. Preserve the distinction between a quote and a native thread; do not invent a WhatsApp thread ID.\n3. Trace and extend the existing Engine history/input projection so the agent receives the available quote with clear attribution alongside the new message. Reuse authorized history lookup where appropriate. Treat inline quoted content as untrusted message data; a quote is not authority to fetch another room or connector's history.\n4. Handle missing text, malformed context and unavailable originals gracefully. Do not silently assume that a reference ID guarantees original content. Asynchronous Amarula redelivery and original-media retrieval are separate follow-ups unless implementation evidence makes them necessary.\n\nAction reuse assessment\nExtend existing JidoChatBridge.to_internal/2 and Engine.Messages.Incoming normalization; reuse/extend the existing Engine history and agent-input projection after identifying its exact owner during implementation. These transformations belong to existing ingress/history operations, not a new agent tool. No new Action is proposed. Preserve NodeRouter boundaries, sender identity, mention routing, permissions and normal non-reply behavior. Inputs are trusted adapter structure containing untrusted quoted content; missing quote defaults to absent. Normalization is pure and must not introduce network requests.\n\nAcceptance and validation\n- A WhatsApp group reply with a bot mention carries original ID, author and inline text through the canonical boundary into agent input.\n- The same reply works when the original was not previously captured, subject to existing access policy.\n- Missing inline text/unknown original, malformed fields, media-only quotes, and cross-room/connector references do not crash or broaden access.\n- Non-replies and native-thread providers retain their behavior; no fabricated thread IDs.\n- Add focused normalization and Engine input integration tests, plus properties for normalization invariants as appropriate.\n- Follow docs/testing-approach.md and docs/WORKFLOW_AGENT.md: isolated tests, mix q, coverage requirements, final mix precommit. Obtain explicit approval before changing existing test expectations; assess the human UX approval gate before authoring new feature E2E.\n\nScope/authorization\nUser requested issue creation with a proposed fix. No implementation or dependency change is authorized by this issue-creation request. Keep separate from the reactions epic.",
+  "id": "zaq-6zd",
+  "labels": [],
+  "comments": [
+    {
+      "text": "User authorized implementation on current branch preserving all prior changes. Boundary analysis complete: adapter Incoming -\u003e JidoChatBridge.to_internal -\u003e canonical Incoming -\u003e Engine router/admission -\u003e Agent Pipeline/Executor -\u003e InputPrompt -\u003e Factory. Incoming owns JSON-safe data, InputPrompt owns model formatting, Engine owns authorization; no new mutable state or original lookup. Invariants: raw message content/identity/admission unchanged, quote is untrusted data, never a thread or permission grant. Tests cover missing normalization and current input propagation; asynchronous redelivery/media retrieval remain out of scope. Plan DAG: zaq-6zd.1 -\u003e zaq-6zd.2. No existing test behavior changes planned. Historical quote persistence will be assessed against canonical projection owner separately from current input.",
+      "timestamp": "2026-10-15T11:25:20Z"
+    },
+    {
+      "text": "Implementation and self-review complete. Action reuse confirmed: extend Incoming/ReplyContext normalization, JidoChatBridge mapping, existing InputPrompt formatting, Pipeline retrieval, Executor and RequestControl consumers, HistoryIngress capture and TranscriptHistory authorized projection; no new Action/tool/lookup. Added regression tests failed before fixes. Expanded focused validation: 6 doctests, 6 properties, 358 tests, zero failures (117s). Existing test behavior unchanged. Existing user reaction changes retained. E2E unnecessary for this backend data-projection fix. Post-review numerical coverage phase remains for landing after review approval; running final mix precommit now. No commits/pushes authorized.",
+      "timestamp": "2026-10-15T11:36:09Z"
+    },
+    {
+      "text": "Final validation PASSED: mix q; expanded focused suite (6 doctests, 6 properties, 358 tests, 0 failures); mix precommit (497.6s, 17 doctests, 201 properties, 9969 tests, 0 failures, 1 existing skip, 117 excluded); git diff --check. Precommit completed successfully despite MCP transport timeout; completion confirmed in /tmp/zaq-6zd-precommit.log. Existing user changes preserved, no commit/push performed. Implementation ready for review; issues remain open for post-review coverage/landing per workflow.",
+      "timestamp": "2026-10-15T11:45:05Z"
+    },
+    {
+      "text": "Follow-up created: zaq-vl9 covers authorized resolution of original image attachments from scoped quoted replies, which was explicitly outside this issue. Linked incident: zaq-df1 covers the separate MIME-option download failure.",
+      "timestamp": "2026-10-15T12:21:16Z"
+    },
+    {
+      "text": "Jad requested replacement of inline quote handling with external_thread_id on PR #847 on 2026-10-19. Migration plan: zaq-s67. Do not extend/reapply inline quote plumbing while that plan is executed. This note preserves historical work/status and does not claim its implementation is reverted yet.",
+      "timestamp": "2026-10-19T15:06:35Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-6zd] Preserve WhatsApp quoted reply context through ZAQ agent input",
+  "type": "bug",
+  "updated_at": "2026-10-19T15:06:35Z"
+}

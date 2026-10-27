@@ -1,0 +1,20 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-23T09:45:22Z",
+  "description": "Extend ServerManager rejection logging with runtime and configured agent IDs and bound/requested conversation IDs. Action reuse: not applicable — diagnostic-only change to existing lifecycle validation, no new operation or changed authorization contract. Preserve existing tests and add focused log coverage. Validate mix q, isolated tests, mix precommit.",
+  "id": "zaq-sqr",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Added diagnostic warning with configured agent ID, runtime ID/PID and bound/requested conversation IDs. mix q passed. User requested stopping tests and no test addition; stopped test process and removed only the newly added test. Existing tests unchanged. No further test execution.",
+      "timestamp": "2026-10-23T09:49:02Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Add history binding mismatch diagnostics",
+  "type": "task",
+  "updated_at": "2026-10-23T09:49:02Z"
+}

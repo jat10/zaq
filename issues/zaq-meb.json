@@ -1,0 +1,25 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-hjp"
+  ],
+  "blocks": [
+    "zaq-0l7.1"
+  ],
+  "closed_at": "2026-10-11T11:31:33Z",
+  "created": "2026-10-10T13:41:35Z",
+  "description": "User authorized adding jido_chat_whatsapp and fetching its current upstream version to reassess the old integration. Add dependency using existing Git main convention, resolve and inspect exact lock revision, compare installed worker lifecycle/history/config contracts with prior revision 63c4a29eb1a1a008c24aa93380eee07ec13f80a1, compile and run applicable checks. Action reuse: not applicable to dependency installation and investigation; no messaging operations or provider registration are being implemented. E2E and numerical coverage not applicable because no feature behavior is wired. Preserve existing dependency pins where resolution allows; document conflicts and validation blockers.",
+  "id": "zaq-meb",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Completed in 3d8243142 and pushed to origin/feat/whatsapp-integration. Installed WhatsApp 7f04d338 with Amarula 0.5.10 and required JidoChat 1.2.1. Preserved history-b upstream Jido AI revision. Validation on updated base: mix q and commit/pre-push hooks pass; focused shared bridge/Telegram/opaque-alias suite: 239 tests, 3 properties, zero failures. Upgrade retains known lifecycle/sync concerns tracked in zaq-0l7; no provider runtime is enabled by this dependency-only change.",
+      "timestamp": "2026-10-11T11:31:32Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Add current WhatsApp dependency and reassess adapter contracts",
+  "type": "task",
+  "updated_at": "2026-10-11T11:31:33Z"
+}

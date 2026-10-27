@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-ijp.1"
+  ],
+  "blocks": [
+    "zaq-ijp.3"
+  ],
+  "closed_at": "2026-10-24T15:45:22Z",
+  "created": "2026-10-24T15:33:50Z",
+  "description": "Reuse test/support/bin/test-partitions. Preserve full Mix test selection and every assertion. Fix negated wait status bug; bound per-VM schedulers; compile once before concurrent test loads; isolate per-partition TMPDIR as well as existing database/BEAM isolation. Test-first validation scenarios: any failed partition must fail parent; all partitions must finish; success aggregates; args preserved; no test counts lost. Validate with a fake mix shell harness and full real benchmark. Action reuse not applicable: test orchestration only. Update runtime report after measurements. Existing related issue zaq-l9d.",
+  "id": "zaq-ijp.2",
+  "labels": [],
+  "parent": "zaq-ijp",
+  "comments": [
+    {
+      "text": "mix q passed (26.573s). Four runner regression tests passed (2.1s tests): argument preservation, distinct TMPDIR, failed child propagates exit 7, compile failure halts startup, invalid counts rejected. Initial benchmark launcher inherited Context Mode ephemeral TMPDIR, which vanished after tool return; no tests ran. Rerunning with durable /private/tmp. Fresh baseline: 11649 passed, 283.3s ExUnit / 290.551s wall (77.8 async, 205.4 sync).",
+      "timestamp": "2026-10-24T15:42:16Z"
+    },
+    {
+      "text": "First complete four-partition run passed: 11653 total (11649 original plus four runner regression cases), one skipped, 155 excluded; 130.175s wall. Worker suite durations 119.4/106.9/91.5/115.0s; no isolation failures. Compile and new-database migration startup included. Under two minutes not yet met. Next experiment six workers at two schedulers each to reduce longest partition and total scheduler contention.",
+      "timestamp": "2026-10-24T15:45:21Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ijp.2] Make existing partition runner preserve failures and isolate temporary files",
+  "type": "task",
+  "updated_at": "2026-10-24T15:45:22Z"
+}

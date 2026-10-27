@@ -1,0 +1,20 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-23T06:39:15Z",
+  "description": "Restore lib/zaq/node_router.ex exactly from local main as requested. Action reuse assessment: not applicable; exact restoration of existing module, no operation design or new API.",
+  "id": "zaq-zvc",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Restored lib/zaq/node_router.ex from local main (a2a1a1e9e). Exact match confirmed with git diff --exit-code main. No tests run; task is an exact file restoration. Left untracked user artifact untouched.",
+      "timestamp": "2026-10-23T06:39:25Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Restore NodeRouter module from main",
+  "type": "task",
+  "updated_at": "2026-10-23T06:39:25Z"
+}

@@ -1,0 +1,21 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-09-28T12:52:01Z",
+  "created": "2026-09-28T12:49:00Z",
+  "description": "Temporarily point the jido_chat_mattermost Mix dependency at /Users/jad/Desktop/Jad/workspace/zaq/forks/jat10/jido_chat_mattermost in this working tree. Action reuse: not applicable — dependency source selection changes no executable operation. Verify Mix resolves the local checkout. Do not commit this machine-specific path.",
+  "id": "zaq-3df",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Local-only setup complete. mix.exs points to sibling checkout; mix deps.compile jido_chat_mattermost, mix q, and focused Mattermost reaction ingress test passed. mix.lock refreshed fresh to Hex 0.4.4. Changes intentionally uncommitted because the absolute path is machine-specific.",
+      "timestamp": "2026-09-28T12:51:53Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Use local jido_chat_mattermost for testing",
+  "type": "task",
+  "updated_at": "2026-09-28T12:52:01Z"
+}

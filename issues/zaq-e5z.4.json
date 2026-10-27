@@ -1,0 +1,34 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-e5z.3"
+  ],
+  "blocks": [
+    "zaq-e5z.5"
+  ],
+  "closed_at": "2026-10-21T11:00:28Z",
+  "created": "2026-10-21T09:42:51Z",
+  "description": "Execution boundary: planning approved; this issue does not authorize commits, pushes, merges, upstream publication, GitHub comments, live WhatsApp access, or real messages. Revalidate current source/Git state before implementation. Preserve unrelated work, including the already-edited docs/architecture.md. Track this work in the ZAQ Beadwork store even when files belong to the sibling package; do not initialize another store.\nRead AGENTS.md in the affected repository. For ZAQ read docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the domain policies listed below. Read module documentation before editing. Source navigation uses Serena with bounded fallback if unavailable. Record test results honestly; plan approval is not completed-feature UX approval. Follow repository validation owners; no assertion weakening or unrelated refactors. Existing test changes outside the specifically approved contracts need human approval.\n\nRequired domain policies: docs/workflows.md; docs/WORKFLOW_AGENT.md; docs/services/channels.md; sibling AGENTS.md. Publication is a separate approval gate.\n\nFunctional specifications covered with associated files to edit/add:\nOwns the handoff from ../jido_chat_whatsapp to ZAQ mix.exs/mix.lock. First prepare/review the completed package diff and record exact base/head, non-live tests and quality results. Do not publish, commit, push or modify GitHub under this planning authorization. Obtain separate authorization for those actions or use a user-published reviewed revision. This task stays open while that external publication prerequisite is pending; do not invent a SHA or close based on a local checkout.\nAfter an authorized package revision is accessible, update ONLY the intended jido_chat_whatsapp pin through the supported dependency workflow. Preserve the existing jido_chat shared contracts, other adapter pins, and unrelated lock entries. Confirm packaged cleanup extension and backend coverage exist at that exact revision. Temporary local package validation may be used in an isolated development environment, but no machine-specific path override may land. Record rollback pin and precise local-vs-published verification.\nThis is the dependency prerequisite to zaq-e5z.5. Package implementation can proceed before publication; ZAQ production integration is not marked complete against an unpublished local-only dependency.\n\nTests to add before implementation:\nBefore pinning, require package acceptance tests from zaq-e5z.2/zaq-e5z.3 and review. After pinning, compile/validate the real installed adapter capability plus targeted existing ZAQ adapter boundary tests. Never use network/live WhatsApp as a dependency smoke test.\n\nBranches/paths validated:\nPublished revision reachable, capability present, no jido_chat/Amarula changes, no accidental lock churn, local-only override rejected.\n\nMocking plan:\nNo mocking of Git revision/capability. Existing offline external transport fixture for adapter compatibility checks.\n\nDocumentations to update for both code and docs/ related content:\nUpdate inaccurate dependency-source guidance in docs/services/channels.md if necessary after final pin, preserving owner boundaries. Record exact revisions and publication authorization evidence in this issue; do not post external updates without authorization.\n\nAction reuse assessment:\nAction reuse: not applicable to dependency delivery itself. Verify existing shared authentication/connection contracts and new package extension; no executable host operation or agent-tool exposure is introduced by the pin.",
+  "id": "zaq-e5z.4",
+  "labels": [],
+  "parent": "zaq-e5z",
+  "comments": [
+    {
+      "text": "Package implementation and full local non-live/quality validation are prepared at ../jido_chat_whatsapp based on dfa920e. No commit/publication is authorized yet, so no new reachable SHA exists and this issue remains open/in progress. Do not pin fabricated SHA or edit tracked deps to bypass gate. Continue independent roots; request publication only after concrete local changes are ready for review.",
+      "timestamp": "2026-10-21T10:04:50Z"
+    },
+    {
+      "text": "User authorized committing jido_chat_whatsapp in this conversation. Created local commit c6edbf6ca248ff1ec5f8b650b3c72a382d196a3e (feat(adapter): add offline saved-connection cleanup) on feat/whatsapp-adapter-lifecycle-and-message-contracts. Six intended files committed, including offline storage/adapter regression tests and docs; package working tree clean. Prior validation: full non-live suite 216 tests + 13 properties pass, quality passes. No push performed; publication and ZAQ pin remain pending, so this issue stays in_progress and dependent integration tasks stay open.",
+      "timestamp": "2026-10-21T10:53:44Z"
+    },
+    {
+      "text": "User requested updating mix.lock and continuing after adapter commit. Published tested adapter commit c6edbf6ca248ff1ec5f8b650b3c72a382d196a3e to existing HTTPS Git remote feature branch; SSH origin check failed without config changes. HTTPS ls-remote confirms published SHA, Mix dependency update selects c6edbf6, only jido_chat_whatsapp lock entry changes. No ZAQ commit/push.",
+      "timestamp": "2026-10-21T11:00:27Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-e5z.4] PR #847 point 3: validate adapter delivery and pin authorized published revision",
+  "type": "task",
+  "updated_at": "2026-10-21T11:00:28Z"
+}

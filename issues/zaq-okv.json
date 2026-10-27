@@ -1,0 +1,25 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-06T16:52:59Z",
+  "created": "2026-10-06T16:50:35Z",
+  "description": "User requests mix assets.install and removal of endpoint WebWidget.Static. Copy complete built dependency bundle to ZAQ priv/static/web_widget/assets, serve via existing Plug.Static, preserve URLs and add build/deploy hooks. Action reuse: local-only Mix build operation; extend existing assets aliases, no domain Action or agent tool. Test copy/reinstall/failure and host static serving.",
+  "id": "zaq-okv",
+  "labels": [],
+  "comments": [
+    {
+      "text": "User explicitly requested reverting this task. Removed installer and tests, restored WebWidget.Static and original asset aliases/static allowlist, and reverted associated documentation. Earlier session and widget integration changes preserved.",
+      "timestamp": "2026-10-06T16:52:58Z"
+    },
+    {
+      "text": "Corrected implementation per user: task now lives in web_widget/lib/mix/tasks/assets.install.ex, with no task or alias added to ZAQ. Ran mix assets.install from ZAQ successfully. Host only changes are normal static allowlist, removing WebWidget.Static and generated-directory gitignore. Library precommit 155 tests passed; ZAQ mix q passed. Installed complete bundle preserves existing URLs.",
+      "timestamp": "2026-10-06T16:57:04Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Install widget static assets into ZAQ build",
+  "type": "task",
+  "updated_at": "2026-10-06T16:57:04Z"
+}

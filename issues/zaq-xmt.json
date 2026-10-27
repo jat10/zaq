@@ -1,0 +1,25 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-17T00:53:35Z",
+  "created": "2026-10-17T00:37:57Z",
+  "description": "Problem\nZAQ currently uses logout_mfa configuration to invoke WhatsApp ConnectionWorker.logout/1. The library implementation reviewed under work-wb7 in ../workspace-planning now exposes Jido.Chat.WhatsApp.Adapter.logout/1. Migrate ZAQ to this adapter-owned callback without changing user-visible Disable/Delete behavior.\n\nRequired local dependency\nChange the jido_chat_whatsapp dependency in mix.exs from its GitHub/branch declaration to {:jido_chat_whatsapp, path: \"../jido_chat_whatsapp\"}. This relative path is explicitly requested by the user so tests exercise the local library implementation. Verify Mix resolves that sibling checkout and exports Adapter.logout/1; do not test against a stale deps copy. Do not revert to the Git dependency during this task without user direction. The local path requires the sibling checkout; document that constraint in the handoff. Preserve unrelated dependencies and lock entries.\n\nAction reuse assessment\nOperation: explicit selected-profile logout and pre-disable preparation. Extend existing JidoChatBridge.logout/2 and before_disable/3; reuse CommunicationBridge, confidential Channels events, DisableChannelConnector, ArchiveChannelConnector and ConnectorLifecycle. Resolve the already-configured adapter and invoke its optional logout/1 export instead of a configured MFA. The library callback delegates to the existing worker; do not duplicate transport or storage cleanup, introduce a new Action/agent tool, hardcode WhatsApp in the shared bridge, or repurpose sink_mfa for host commands.\n\nImplementation\n- Remove logout_mfa from config/config.exs and all fixtures/documentation.\n- Detect callback support on the resolved, loaded adapter. Preserve no-op Delete preparation for adapters without logout/1; explicit logout remains unsupported/fail-closed when absent.\n- Preserve current actor authorization, confidential NodeRouter boundaries, exact selected listener lookup, error normalization, missing-runtime handling and concurrent revision checks.\n- Preserve Disable Confirm/Cancel behavior, successful-logout-before-disable ordering, shutdown-before-archive ordering, disabled/unarchived state on shutdown failure, and retry behavior that skips repeated logout/ingress teardown.\n- Update injected adapters/test doubles, including the offline integration adapter, to expose/delegate logout/1 as appropriate. Keep assertions intact; obtain explicit approval before any existing test behavioral expectation changes.\n- Preserve current staging and unrelated working changes. Continue excluding .gitignore, log files and docs/exec-plans/report/pr-843-review.md. No commit or push without authorization.\n\nAcceptance and validation\nProve tests use ../jido_chat_whatsapp and its public Adapter.logout/1, with no logout_mfa references remaining in active source/config/tests/docs. Cover selected profile success and credential/session cleanup, sibling isolation, logout failure, missing runtime, permission denial, adapters lacking the optional callback, ordinary shutdown preserving sessions, and Delete retry. Run mix q and focused bridge/lifecycle/Action/LiveView/real-package integration tests, then the final mix precommit gate per docs/WORKFLOW_AGENT.md. Use ERL_FLAGS='+S 4:4' for this host, as prior validation required bounded schedulers. New browser feature E2E remains under zaq-0l7.7 UX approval followed by zaq-0l7.8; record any updated scenarios there.\n\nReferences\nLibrary issue: work-wb7 in ../workspace-planning; reviewed local library implementation passed mix quality and 176 tests/8 properties (13 excluded). Existing ZAQ behavior: zaq-r4n (Disable), zaq-iie (Delete), zaq-0l7.27 (Enable QR). This request creates the issue only; implementation follows separately.",
+  "id": "zaq-xmt",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implemented and validated adapter-owned logout using requested local path ../jido_chat_whatsapp. Removed logout_mfa configuration and all active references; optional callback detection preserves supported/unsupported behavior and existing authorization/runtime selection. Existing Disable/Delete/QR behaviors and assertions preserved. Final precommit passed 11311 tests, 276 properties and 48 doctests. Required sibling checkout documented; mix.lock unchanged. Changes staged, no commit/push.",
+      "timestamp": "2026-10-17T00:53:34Z"
+    },
+    {
+      "text": "Staging correction after final status check: the Git index changed during the long validation run and previously staged tracked edits are now unstaged. Preserved the current index rather than overwriting concurrent staging changes. Implementation and validation results remain as recorded; no source edits after the successful gate.",
+      "timestamp": "2026-10-17T00:53:43Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-xmt] Migrate WhatsApp logout to adapter callback using local library dependency",
+  "type": "task",
+  "updated_at": "2026-10-17T00:53:43Z"
+}

@@ -1,0 +1,31 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-vl9.2"
+  ],
+  "created": "2026-10-15T12:24:30Z",
+  "description": "Extend TranscriptHistory scoped batch projection, ExecutionHistory current-input quote and existing Engine Api confidential hydration. Reuse existing domain operations, no new Action. Quotes confer no access; exact source scope and existing Person permission checks apply; no persisted handles or eager bytes. Add regression/property tests for scope, authorization, replay and hydration. Preserve existing tests. Backend-only; no browser E2E.",
+  "id": "zaq-vl9.1",
+  "labels": [],
+  "parent": "zaq-vl9",
+  "comments": [
+    {
+      "text": "Engine implementation and isolated validation passed: 84 tests and 5 properties. TranscriptHistory resolves quote descriptors in a single bounded batch per page, checks exact provider/config/room/source namespace and earlier same-transcript placement, strips injected attachment fields, and does not change stored rows. ExecutionHistory exposes the current input quote separately; Api hydrates current/historical quotes after transaction completion. Existing media source-author checks retained. No new Action or permissions introduced. Serena returned empty symbol results, so source understanding used bounded targeted reads.",
+      "timestamp": "2026-10-15T12:30:55Z"
+    },
+    {
+      "text": "Final validation PASSED against final changes: mix q; expanded image/agent suite (6 doctests, 10 properties, 256 tests, zero failures); affected timezone/UI suite (205 tests, zero failures, seed 59818); mix precommit (497.6s, 17 doctests, 198 properties, 9963 tests, zero failures, one existing skip, 117 excluded). Precommit's MCP transport timed out at 300s, but the background process completed normally; exit status 0 verified in /tmp/zaq-image-precommit-final.status and summary in /tmp/zaq-image-precommit-final.log. Initial timezone interference repaired under zaq-krc by scheduling only; assertions/fixtures unchanged. Implementation and local validation are ready for review. No commits/pushes performed. Issues remain open for review/coverage/landing under repository workflow.",
+      "timestamp": "2026-10-15T12:55:48Z"
+    },
+    {
+      "text": "User requested discarding this implementation to restart from a clean baseline. All associated uncommitted code, documentation and test changes were removed. Working tree is clean at 4281f333c. Previous validation results describe the discarded implementation, not the current code. Investigation findings remain; implementation is no longer present.",
+      "timestamp": "2026-10-15T14:54:29Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-vl9.1] Resolve and hydrate authorized quoted attachments in Engine",
+  "type": "task",
+  "updated_at": "2026-10-15T14:54:29Z"
+}

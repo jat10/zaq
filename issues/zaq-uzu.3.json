@@ -1,0 +1,19 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-uzu.2"
+  ],
+  "blocks": [
+    "zaq-uzu.4"
+  ],
+  "created": "2026-09-25T09:05:39Z",
+  "description": "Implement the provisioner and focused tests from approved S3 in parent zaq-uzu. Own\n    Python 3.13 validation, fresh venv, locked installation and pip check. Mix orchestration belongs to\n    S3b.",
+  "id": "zaq-uzu.3",
+  "labels": [],
+  "parent": "zaq-uzu",
+  "priority": 2,
+  "status": "open",
+  "title": "[#781] S3a: Implement shared Python provisioner",
+  "type": "task",
+  "updated_at": "2026-09-25T09:05:43Z"
+}

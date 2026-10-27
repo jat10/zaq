@@ -1,0 +1,25 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-10n.1"
+  ],
+  "blocks": [
+    "zaq-10n.3"
+  ],
+  "created": "2026-10-14T12:42:17Z",
+  "description": "Functional specifications/files: ../jido_chat_whatsapp/lib/jido_chat_whatsapp/message.ex and adapter.ex as necessary; normalize raw pushname consistently for author.full_name and display_name. Keep JID/phone/LID interpretation behind existing adapter/Transport contracts. Preserve current get_user/2 phone behavior; introduce only capabilities proven necessary by the preceding contract.\nTests to add before implementation: sibling adapter/message/profile tests for nil, empty, whitespace, tilde placeholders, Unicode and legitimate names including @; idempotent name normalization property. Preserve existing user_profile_test.exs connection isolation and missing-connection tests.\nBranches/paths validated: map and Amarula message ingress, absent/placeholder/valid names, phone JIDs, unmapped/mapped LIDs and transport errors. Adapter must never know Person rows, merge rules or user-edit persistence.\nDocumentations: callback/module docs and docs/adapter_contracts.md if contract changes; never edit generated CHANGELOG.md.\nAction reuse assessment: extend Message.incoming_attrs/1 and Adapter.get_user/2 only where required; reuse Transport.user_phone/2. Local normalization belongs at the existing callback boundary, not a new Action. Inputs provider payload and selected connection; outputs canonical Incoming/UserInfo or existing errors; no ZAQ DB effects or new permissions. Consumers existing Jido listeners and ZAQ bridge; validate through public callbacks with offline transport fixtures.\nPolicies: read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md and applicable module/service guidance before implementation. For sibling changes read ../jido_chat_whatsapp/AGENTS.md. Follow the authoritative validation lifecycle; preserve existing assertions. No commits, pushes or merges are authorized by this plan.\nMocking plan: keep internal modules and database boundaries real; isolate external transport at its existing contract, with connection-scoped offline fixtures. Avoid global configuration mutation.\nE2E: no new UI or user journey; unit, property and thin integration tests provide the required coverage. Reassess if scope changes.\n\nMANDATORY IMPLEMENTATION REPOSITORY: ../jido_chat_whatsapp, resolved relative to the original ZAQ checkout (not an assumed deps directory or a differently located worktree). Current absolute location: /Users/jad/Desktop/Jad/workspace/zaq/forks/jat10/jido_chat_whatsapp. Make the adapter changes in this repository itself; do not patch ZAQ deps/jido_chat_whatsapp or substitute WhatsApp-specific cleanup in ZAQ.\nConcrete required change: in lib/jido_chat_whatsapp/message.ex normalize raw pushname before assigning BOTH author.full_name and canonical display_name. Map absent, blank/whitespace and tilde-placeholder names to nil, trim real names and preserve legitimate names including @ and Unicode. Keep external user identifiers intact. Reuse an existing helper if suitable. Retain get_user/2 phone enrichment and connection-scoped LID behavior; change adapter.ex or transport only if contract evidence requires it. Do not add ZAQ Person persistence, matching, merging or repair logic to this package.\nTests: update existing adapter/message tests to exercise public transform_incoming with map and supported Amarula inputs; cover names and stable external_user_id. Preserve user_profile_test.exs phone/LID isolation and missing-connection checks. Run focused tests, default non-live suite and mix quality according to sibling guidance. No live WhatsApp tests or credentials. Do not edit generated CHANGELOG.md.\nCompletion requires actual sibling source/test changes, validation evidence, and a handoff identifying how ZAQ consumes this exact modified checkout/revision. Coordinate dependency wiring with zaq-10n.3; do not claim integration passes while testing a different installed adapter.\n",
+  "id": "zaq-10n.2",
+  "labels": [],
+  "parent": "zaq-10n",
+  "comments": [
+    {
+      "text": "Implemented in sibling ../jido_chat_whatsapp: Message.incoming_attrs trims real pushnames and maps blank/tilde placeholders to nil for both author.full_name and display_name. IDs unchanged. Added map and Amarula Msg tests. Focused adapter test 19/19; prior full default non-live suite 162 tests and 5 properties passed before the additional Amarula test. mix quality passed.",
+      "timestamp": "2026-10-14T13:09:12Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-10n.2] Normalize WhatsApp profile names at the adapter boundary",
+  "type": "task",
+  "updated_at": "2026-10-14T13:09:12Z"
+}

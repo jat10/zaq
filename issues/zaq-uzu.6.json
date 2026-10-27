@@ -1,0 +1,19 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-uzu.5"
+  ],
+  "blocks": [
+    "zaq-uzu.7"
+  ],
+  "created": "2026-09-25T09:05:40Z",
+  "description": "Execute approved S5 in parent zaq-uzu. Preserve dated Trixie, explicit Python 3.13 and\n    shared provisioner. Build and execute ImageDedup smoke on amd64 and arm64.",
+  "id": "zaq-uzu.6",
+  "labels": [],
+  "parent": "zaq-uzu",
+  "priority": 2,
+  "status": "open",
+  "title": "[#781] S5: Validate shared provisioning in Trixie Docker",
+  "type": "task",
+  "updated_at": "2026-09-25T09:05:44Z"
+}

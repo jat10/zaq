@@ -1,0 +1,17 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-15p.3"
+  ],
+  "blocks": [],
+  "created": "2026-10-13T13:56:44Z",
+  "description": "Controlled tests: incoming-\u003eagent reply, outbound-first, offline-marked queued incoming and group after RAM reset while retaining credentials. Preserve existing external transport/model stubs and real ZAQ path. Use fresh-process tests for VM boot identity/reset. Live tests require identified test contact/group and coordination; server restart authorized. Document observed proof vs simulation and provider limitations, mechanism, delay measurement and operator procedure. Action reuse: existing runtime and test harness; no domain operation changes. No UI feature/browser E2E: internal diagnostics, protocol integration tests. Run mix q, focused regressions and final precommit; no commit/push requested.",
+  "id": "zaq-15p.4",
+  "labels": [],
+  "parent": "zaq-15p",
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-15p] Validate restart scenarios and document evidence",
+  "type": "task",
+  "updated_at": "2026-10-13T14:09:53Z"
+}

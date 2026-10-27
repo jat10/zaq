@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-09-21T13:42:59Z",
+  "description": "Follow-up infrastructure; does not block #568. After the deterministic single-DOCX gate lands, evaluate automated PRs for crawler-ingest revision bumps, dependency hash locking or artifact integrity beyond immutable Git SHAs, per-format/minimal dependency groups to reduce CI cost, and real PDF/XLSX/PPTX converter smoke coverage. Each automated bump must run the mandatory real-converter job and production Docker packaging check. Keep the committed revision and Mix.Tasks.Zaq.Python.Fetch as the sole source-selection/provisioning contract; do not create another downloader or silently track upstream main. Action reuse: extend the same build-time fetch/update contract; no runtime Action or agent-tool exposure.",
+  "id": "zaq-lpb",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-lpb] Automate crawler-ingest pin updates and broaden converter CI",
+  "type": "task",
+  "updated_at": "2026-09-21T13:43:05Z"
+}

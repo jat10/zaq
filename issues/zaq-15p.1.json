@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-15p.2"
+  ],
+  "closed_at": "2026-10-13T14:01:08Z",
+  "created": "2026-10-13T13:56:41Z",
+  "description": "Own SessionLog and SessionStorage. Tests first: keyed hashing domains/scopes, boot identity, strict allowlists, malformed metadata/config/IO failures preserve results, atomic create/update classification, fresh VM RAM reset. Action reuse: extend existing SessionLog.operation/record and SessionStorage transactional operations; local-only diagnostics, no Action/tool exposure or authorization change. Inputs explicitly selected fields; outputs safe JSONL; no raw error/record values. Document schema/privacy in Channels guide. Verify focused logger/storage tests and mix q.",
+  "id": "zaq-15p.1",
+  "labels": [],
+  "parent": "zaq-15p",
+  "comments": [
+    {
+      "text": "Implemented v2 boot identity, independent optional diagnostic HMAC key, strict fields and atomic created/updated classification. 3 properties +16 tests pass; mix q passes. No commit requested; final docs and broad validation tracked in .4.",
+      "timestamp": "2026-10-13T14:00:32Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-15p] Extend JSONL identity and storage diagnostics",
+  "type": "task",
+  "updated_at": "2026-10-13T14:01:08Z"
+}

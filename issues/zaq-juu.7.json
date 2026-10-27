@@ -1,0 +1,19 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-juu.6"
+  ],
+  "blocks": [
+    "zaq-juu.8"
+  ],
+  "created": "2026-10-27T11:53:32Z",
+  "description": "Parent plan: https://chatgpt.com/space/page_0d26b92b5bc8819181fab088efc0283c\n\n## Functional specifications covered with associated files to edit/add\ntest/zaq/channels/disk_file_delivery_integration_test.exs and email_file_delivery_integration_test.exs, plus minimal test/CI provisioning. Existing datasource APIs create signed Records for two real Disk files; trusted Outgoing Event selects one. Real Materialization/Channels/Jido/Mailer. Mattermost recipient downloads actual post file; SMTP receiver raw MIME is decoded and compared. Keep fixtures/assertions reusable for later Agent scenarios.\n\n## Tests to add before implementation\nScenarios defined now, authored after final feature review: exactly selected bytes/name/MIME, thread/audience/receipt; empty-attachment control; two concurrent journeys per channel and Mattermost/email together; observe overlap and no crossed resources or cleanup.\n\n## Branches/paths validated\nTrue delivery E2E boundary starts at Outgoing, no Agent/LLM/IMAP ingress claim. Existing ServerManager blocker matters only if actually reached. Agent PR adds ingress/tools later in same modules and retains these scenarios.\n\n## Mocking plan\nReal disposable Mattermost/PostgreSQL and SMTP receiver; no mocked upload/materialization/internal dispatch. Unique identities/connectors/mailboxes/files, private sandbox ownership and explicit process allowances. No Application env mutation, global Mox, shared default fixtures or fixed sleeps.\n\n## Documentations to update for both code and docs/ related content\nKeep affected module docs accurate. Coordinate the final docs/services/channels.md update and update this issue with evidence/decisions; follow documentation hygiene.\n\n## Action reuse assessment\nReuse existing provider provisioning/readback patterns and datasource permission APIs. Reuse zaq-o9d setup only where it satisfies real-server acceptance. Test helpers remain test-only; no production functions for observation.\n\n## Constraints and validation\nRead parent settled decisions and applicable repository service, tool-routing, Action reuse and testing policies before implementation. Preserve current test behavior. Follow authoritative validation lifecycle; feature E2E authoring waits for final review task, but focused tests are immediate. Agent selection and #875 acquisition budgets are outside scope. No global configuration mutation.\n",
+  "id": "zaq-juu.7",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-juu.7] Implement both real-provider delivery E2Es and async isolation",
+  "type": "task",
+  "updated_at": "2026-10-27T11:53:41Z"
+}

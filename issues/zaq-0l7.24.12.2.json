@@ -1,0 +1,34 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-0l7.24.12.1"
+  ],
+  "blocks": [
+    "zaq-0l7.24.12.3"
+  ],
+  "closed_at": "2026-10-14T21:54:59Z",
+  "created": "2026-10-14T21:29:20Z",
+  "description": "Functional spec/files: Adapter.connection_options, Storage.Split and ConnectionWorker/pairing handoff own storage construction/preparation and synchronous request invocation using trusted sink options. Replace document_mfa plumbing with compatibility adapter to new sink contract; retain standalone callback mode until hosts migrate. Keep volatile routing/Mnesia runtime and guarded failure behavior; publish provider infrastructure through existing package child-spec boundary while host injects require_ram_schema.\nTests before code: current storage/worker/pairing tests plus bootstrap request before listener start, no State dependence, read/write/list/delete/clear ack shapes, callback failure latching, generation invalidation during call, timeout then retry, duplicate put silence, profile stability, cross-profile isolation, unchanged encoded records. Property tests for binding/profile determinism and isolated namespaces. Test authentication confirmation uses same storage request path after durable save.\nAction reuse: extend Split.binding_options/prepare/document_call and Adapter existing methods; reuse Mnesia, GuardedStorage and pairing lifecycle. No copied backend or new Action. Sink is runtime-supplied per connection; no globals, secrets in status, disk session fallback or host dependencies. Unknown binding/error fails closed.\nMocking: host storage boundary and external WhatsApp only. Docs: package adapter_contracts and callback docs. Default backwards compatibility; never dual-write.",
+  "id": "zaq-0l7.24.12.2",
+  "labels": [],
+  "parent": "zaq-0l7.24.12",
+  "comments": [
+    {
+      "text": "Implementation owner: ../jido_chat_whatsapp. Keep durable edits in this source checkout, not only deps. Read parent epic Agent execution handoff before starting. Preserve existing reaction-normalization work.",
+      "timestamp": "2026-10-14T21:31:09Z"
+    },
+    {
+      "text": "Package setup and pairing handoff now support sink requests with legacy document_mfa compatibility. Isolated private request tests pass including real seven-second timeout and sanitized callback failure. Broad ZAQ migrated storage/linked-device tests passed 72 tests and 3 properties. Investigating package full-suite timeout before final validation. Added Engine expected_provider fence because authentication sinks precede a connector-scoped runtime.",
+      "timestamp": "2026-10-14T21:54:10Z"
+    },
+    {
+      "text": "Full package validation passed: 169 tests + 7 properties, no failures (13 live excluded); mix quality exit 0 including Dialyzer and Doctor. A preceding full run timed out; traced rerun completed in 57.4s with per-test 30s bound. Legacy callbacks remain compatible and no shared core changes were needed.",
+      "timestamp": "2026-10-14T21:54:58Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.12.2] Move storage setup and callbacks into WhatsApp sink requests",
+  "type": "task",
+  "updated_at": "2026-10-14T21:54:59Z"
+}

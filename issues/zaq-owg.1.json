@@ -1,0 +1,31 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-owg.2"
+  ],
+  "created": "2026-10-01T22:09:34Z",
+  "description": "Owner: WidgetLive, widget root layout, route-specific frame plug; extend Composer with default-on filters. Tests first: signed-token mount/rejection, per-mount isolation, explicit anonymous actor and skip_permissions false in Engine routing event, WebBridge status/stream/final delivery, duplicate/stale rejection, BO secure headers and existing chat regression suite. Action reuse: reuse Engine route_incoming_message via Event/NodeRouter; reuse WebBridge delivery, Incoming/Outgoing, History and ChatMessage/Composer. No new Action or tool; UI lifecycle and signed widget access are local-only. Token grants anonymous widget access only; no Person or BO user identity. No permission bypass. Native LiveView async dispatch with generic failures. Fixture and report follow. LiveView integration tests cover spike contracts; browser inspection for iframe, no new E2E suite needed for this scoped spike.",
+  "id": "zaq-owg.1",
+  "labels": [],
+  "parent": "zaq-owg",
+  "comments": [
+    {
+      "text": "Widget compiled and ran in Chromium iframe from localhost:8080 to localhost:4019: LiveView connected, suggestion updates input and enables send, no page errors. Found installed Phoenix uses CSP framing, not X-Frame-Options; corrected new regression assertion. First test run: 5 tests, 2 test-only failures (wrong header assumption and unavailable Floki), both corrected. Retrying focused tests and quality checks after stopping preview build. Explicit anonymous actor, no permission bypass; API conversation stamp prevents BO default persistence classification.",
+      "timestamp": "2026-10-01T22:46:13Z"
+    },
+    {
+      "text": "Focused regression run: 128 tests, 1 failure; all 5 widget tests passed. Failure is existing ChatLiveTest mcp tool timeout inside ask/3 returns clean UI error at line 2313, assert_mcp_tool_called/0 line 3392. Broad run failed during MCP tools/list initialization with a 50ms timeout before tools/call. Isolated rerun also failed expected tools/call. No existing assertions or MCP implementation changed. New tests exercise public contracts and fixed event wiring; no new permission algorithm or broad normalization requires a new property suite. Q rerun in progress after alias lint fixes.",
+      "timestamp": "2026-10-01T22:53:31Z"
+    },
+    {
+      "text": "Final normal-development mix q PASSED: formatting, hooks.verify, strict Credo (1428 files, no issues), docs generation and compile. Focused combined regression remains 128 tests / 1 BO MCP failure; all widget tests passed. Final precommit attempted but stopped in ExDNA internal Task.Supervised.stream(5000) timeout. No source assertions weakened. Implementation complete in working tree; validation limitations remain open and no final approval requested.",
+      "timestamp": "2026-10-01T23:15:19Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-owg] Implement widget route and focused LiveView tests",
+  "type": "task",
+  "updated_at": "2026-10-01T23:15:19Z"
+}

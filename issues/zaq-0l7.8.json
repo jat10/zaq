@@ -1,0 +1,50 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-0l7.7"
+  ],
+  "blocks": [
+    "zaq-0l7.9",
+    "zaq-e5z.11"
+  ],
+  "created": "2026-10-11T09:54:46Z",
+  "description": "Files:\n- test/zaq/channels\n- test/zaq_web\n- repository E2E suite\n\nFunctional specifications:\nAfter human UX approval, implement scenarios defined now: two connectors, pairing fixtures, isolated receive/reply, disabled sync at reconnect, replay handling, expiry/retry failure, disabling A while B works, app restart with separate sessions. Include existing adapters regression and installed adapter-to-Amarula contract. Follow test/validation owners. Live provider smoke only with explicit account/authorization; report limits.\nUser-requested E2E: render QR, simulate scan via realistic adapter pairing events, assert passed configuration; receive adapter message -\u003e real ZAQ bridge/NodeRouter/agent routing -\u003e deterministic agent reply (mock external model provider) -\u003e outbound adapter send; assert account, recipient, content and result. Cover DM and group mention/no-mention. Stop full application/runtime, clear memory, start using persisted state and verify reconnect without QR. Disable via normal channel UI and verify other connector continues. Mock jido_chat_whatsapp external behavior via existing production seams; keep internal ZAQ pipeline real. Separate adapter accepted-send from recipient delivery. Inspect installed receipt capabilities before asserting a delivery-receipt scenario; no invented supported event. Mocked receipt proves application handling only, not actual user receipt. Actual device receipt requires separately authorized live-account smoke, reported as unverified otherwise. New E2E authoring remains blocked on explicit human UX approval; immediate unit/integration/component tests proceed.\n\nTests before implementation:\n- Consolidated scenarios above; preserve previous tests\n\nBranches validated:\n- success\n- failure\n- recovery\n- cross-account isolation\n- historical suppression\n\nDocumentation:\n- test prerequisites\n- operator final instructions\n- validation evidence\n\nAction reuse assessment:\nNot applicable to validation-only work; verify consumers share production runtime/config/routing implementation.\n\nValidation:\nFollow docs/WORKFLOW_AGENT.md validation lifecycle; tests before implementation, focused checks per issue, final gate before approval. No live account connection or send without scoped authorization.\n\nMocking:\nExternal Amarula transport only; use real internal boundaries and isolated DB/process/storage fixtures; inject config and clock without global mutation.\n\nPolicy:\nRecheck module responsibilities, docs/services/channels.md, Action reuse, system-config and testing guidance before coding. BO calls use explicit NodeRouter Events; nil actor never grants permission.\n\nEnable after logout (zaq-0l7.27)\nExtend the existing /bo/channels/retrieval/whatsapp journey: Disable with Confirm logs out the selected profile; Enable automatically opens its saved-profile connection modal after successful startup. QR relinking reconnects the same configuration and binding without provisional onboarding or a duplicate connector. Cover valid saved sessions displaying connected without QR, QR expiry/retry targeting the same profile, Close preserving the saved connection, runtime startup failure feedback, profile isolation and other adapters retaining default Enable presentation. Reuse existing fixtures/specs. Author only after explicit UX approval in zaq-0l7.7 covering the completed enable and disable flows.\n\n## PR #847 remediation scope (zaq-e5z)\n\nReuse this single consolidated E2E issue for zaq-e5z; do not create a second browser suite issue. Remains blocked by actual approval in zaq-0l7.7. Read docs/e2e-testing.md, docs/testing-approach.md and docs/WORKFLOW_AGENT.md before authoring. Keep original scope, adding focused regression scenarios for approved points 2–5:\n1. QR authentication presents phone/account.external_id and optional display_name, persists both, absent name falls back without losing phone.\n2. Super-admin enables the same saved WhatsApp connector, receives QR after cleanup or connected state for valid saved session. Non-super-admin enable is rejected, connector remains disabled, no runtime starts, no QR leaks. This supersedes any earlier expectation allowing non-super-admin WhatsApp enable; other providers unchanged.\n3. Persisted enabled connector whose activation failed/no listener can Disable and Archive via normal UI; partial cleanup failure reports incomplete/retry, never false success, and another account remains intact.\n4. Startup pending remains visible and recoverable; retry/close and stale results/ticks preserve correct selected account and existing intervals/observation limit.\nUse existing browser fixtures/specs and real ZAQ boundaries; fake external transport/model only. Full File/custom/prebuilt/Split backend matrix and lock races belong to package/ExUnit suites, not duplicated browser tests. No live remote-unlink guarantee. Functional code changes discovered here become tracked fixes; do not weaken assertions. Record exact revision/results, update fixtures/docs as needed, then unblock zaq-e5z.11. Action reuse: no new operation; verify browser consumers use shared Engine/Channels paths.",
+  "id": "zaq-0l7.8",
+  "labels": [],
+  "parent": "zaq-e5z",
+  "comments": [
+    {
+      "text": "User explicitly requested authoring the complete QR-to-recipient integration flow. Added whatsapp_full_flow_test.exs: real BO LiveView QR, simulated scan through external transport, real linked-device owner/adapter decoder/bridge/NodeRouter/Engine/configured-agent/model HTTP/adapter send-edit to separate simulated recipient mailbox. DM and group mention pass; unmentioned group stays history-only. Production files unchanged. Related suite: 36 tests + 2 properties, zero failures; mix q passed. No new issues created. Remaining broader E2E scenarios (full application restart, two-profile disable/isolation journey, live-device receipt) are not claimed complete.",
+      "timestamp": "2026-10-11T19:32:21Z"
+    },
+    {
+      "text": "Additional pending journey for zaq-r4n: WhatsApp Disable opens logout warning; Cancel/dismiss preserves session; Confirm logs out only the chosen profile and disables it; another profile and other adapters continue normally. New browser authoring remains gated by zaq-0l7.7.",
+      "timestamp": "2026-10-16T14:29:43Z"
+    },
+    {
+      "text": "Extend consolidated E2E scope with zaq-0l7.27: after logout/disable, Enable automatically opens the existing profile QR modal; scan/reconnect keeps the same configuration, profile isolation, expiry/retry and other-adapter behavior. Author only after zaq-0l7.7 explicit UX approval.",
+      "timestamp": "2026-10-16T15:23:54Z"
+    },
+    {
+      "text": "Delete iteration zaq-iie adds pending UX-approved E2E scenarios: shared disable-before-delete; WhatsApp selected-profile logout; normal non-WhatsApp deletion; logout failure preserving enablement; runtime stop failure retaining disabled/unarchived card; successful retry. Human UX gate zaq-0l7.7 remains pending.",
+      "timestamp": "2026-10-16T16:44:08Z"
+    },
+    {
+      "text": "zaq-xmt changes only logout delegation and local dependency resolution. Existing pending Disable/Delete/Enable scenarios remain unchanged; integration must verify Adapter.logout/1 from ../jido_chat_whatsapp. UX approval gate remains in effect.",
+      "timestamp": "2026-10-17T00:42:07Z"
+    },
+    {
+      "text": "Reparented from zaq-0l7 to zaq-e5z for the agreed PR #847 remediation. Existing ID, status, history and dependency edges retained. This prevents Beadwork external-blocker rollup from hiding otherwise ready implementation roots; no implementation or gate approval is implied.",
+      "timestamp": "2026-10-21T09:47:22Z"
+    },
+    {
+      "text": "Final existing-browser evidence: npm run test -- specs/channels.spec.js specs/system_config.spec.js completed with 128 passed (Chromium/WebKit), 64 failed to launch because the required Firefox executable firefox-1509 is missing. No production assertion failure is claimed from those launch errors. Full 556-test suite was interrupted after native Context response timeout; not a full pass. Do not change expectations/skip projects to mask this; Firefox installation/rerun and full browser validation remain pending. Test server shut down and generated Storybook inventory restored. mix q, 261 ExUnit tests + 7 properties pass. Documentation links and diff whitespace checks pass. Implementation/integration audit is complete; completed-UX approval, consolidated E2E, review, post-review coverage and final precommit remain open.",
+      "timestamp": "2026-10-21T11:39:01Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-0l7.8] Finalize integration and consolidated E2E",
+  "type": "task",
+  "updated_at": "2026-10-21T11:39:01Z"
+}

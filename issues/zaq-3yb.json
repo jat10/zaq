@@ -1,0 +1,44 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T15:21:53Z",
+  "description": "Fix the verified WhatsApp incident in transcript ff01b6b0-b584-41e0-8bed-92efcdf973a0: a second authorized group participant must receive and redeem an attachment handle while original uploader provenance remains unchanged. CommunicationMedia author matching currently denies that participant despite canonical history read access. Implementation adds confidential Engine authorization for exact stored attachment membership in a Shared transcript and current persisted-Person read access, used at both hydration and redemption. Direct and Replicated transcripts do not qualify. Three production files: CommunicationMedia, Engine.Api, TranscriptHistory. Existing group, private-access and MIME regression tests must remain untouched. New authorization tests cover revocation, outsiders, invalid identities, numeric-string connector IDs and source substitutions. Action reuse: extend current materialization authorization, reuse authorized TranscriptHistory.list and existing permissions; local-only authorization helper and Engine boundary, no new Action/tool exposure. Backend integration/property coverage makes new browser E2E unnecessary. Child plan: zaq-3yb.1 -\u003e zaq-3yb.2. Current validation: mix q and focused 10 properties/145 tests pass; final precommit in progress. Changes remain uncommitted pending authorized landing.",
+  "id": "zaq-3yb",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Added test/zaq/engine/conversations/whatsapp_group_attachment_access_test.exs. Real WhatsApp connector, two persisted people and channel identities, read grants to the exact group, uploader image capture, second participant question admission and Engine history hydration. Confirmed 1 test, 1 failure at is_binary(attachment[\"materialization_handle\"]): nil, after successful authorized history access and matching transcript/image assertions. Remaining assertions require signed uploader/group/config provenance plus successful DownloadDocument through Jido.Exec with the requesting participant as actor; only final media transport dispatch is mocked. mix q passes; git diff --check passes. No production edits or existing test behavior changes in this task. zaq-pcj immutable MIME test checksum remains unchanged. Regression intentionally remains failing as requested; full precommit not run for a deliberately red test.",
+      "timestamp": "2026-10-15T15:23:50Z"
+    },
+    {
+      "text": "Verified actual production incident handle before implementation. Read-only IEx with configured signing key supplied through Handle.verify options (no key output): position 45 signed handle signature VALID, version 1, type communication_media. Entire decoded locator exactly equals persisted attachment source. Provider whatsapp; channel_config_id string 13 matches canonical account scope numeric 13; source_channel_id matches group; source_message_id matches original message 3A1E89AB83A9CE61E487; source_author_id matches Jad; mime image/jpeg; size 71346; reference matches stored attachment ID. Position 47 argument fails signature verification because it is exactly the inner whatsapp://media provider reference, not a signed handle. Separately, resolving the persisted Julien execution Person and calling authorized canonical history list for position 44 succeeds; hydrating that returned attachment with Julien actor yields unauthorized_materialization_handle. Thus valid source metadata and existing history permission are confirmed; hydration still denies based on uploader mismatch. Exact historical LLM prompt was not captured by this check, so model motivation remains inferred. Sanitized handle evidence /tmp/zaq-3yb-handle-verification.json. No group-access production changes yet.",
+      "timestamp": "2026-10-15T15:32:53Z"
+    },
+    {
+      "text": "Added a separate private WhatsApp authorization regression before group implementation, per user request: test/zaq/engine/conversations/whatsapp_private_attachment_access_test.exs. Persists a one_to_one/direct transcript and two real identities on the same connector, each with only their own private history grant. Uploader hydrates and downloads successfully; other user is denied hydration and redemption of the valid signed uploader handle with unauthorized_materialization_handle. No unauthorized provider dispatch is permitted. Isolated run: 1 test, 0 failures. Paired run: private passes, existing group regression still fails at missing handle (2 tests, 1 expected failure). mix q passes. Existing MIME and group regression hashes unchanged. No production changes for this request. Acceptance for the upcoming group fix includes keeping this private denial test passing without weakening it. Reuse: existing HistoryIngress, CommunicationMedia and DownloadDocument public contracts; no new operation or Action needed. Logs: /tmp/zaq-3yb-private.log, /tmp/zaq-3yb-private-quality.log, /tmp/zaq-3yb-access-pair.log.",
+      "timestamp": "2026-10-15T15:41:15Z"
+    },
+    {
+      "text": "User authorized implementation. Plan DAG: zaq-3yb.1 (Engine shared source authorization) -\u003e zaq-3yb.2 (CommunicationMedia integration and validation). Three production files required to preserve NodeRouter role boundaries: TranscriptHistory, Engine.Api, CommunicationMedia. Reuse existing authorized transcript reads and permission checks; local-only authorization predicate, no new Action/tool. Canonical exact source membership plus current read rights at hydration and redemption. Rollback criterion: any private access widening, provenance substitution, or existing assertion weakening. Existing regressions stay untouched. Existing MIME fix remains in working tree. No E2E needed for this backend authorization correction.",
+      "timestamp": "2026-10-15T15:42:51Z"
+    },
+    {
+      "text": "Final focused validation: 10 properties, 145 tests, 0 failures; mix q passed. Source changes limited to three production files for this group fix, plus contract docs and separate authorization tests. Existing group and MIME test hashes exactly unchanged; private regression unchanged. Final precommit running. Child Engine implementation is complete locally; Beadwork still blocks integration child until prerequisite is landed, so neither child is being closed before authorized commit/review.",
+      "timestamp": "2026-10-15T15:48:44Z"
+    },
+    {
+      "text": "Implementation complete in working tree. Final mix precommit PASSED (exit 0): 491.5 seconds, 17 doctests, 201 properties, 9968 tests, 0 failures, 1 skipped, 117 excluded. mix q passed and focused suite passed 10 properties/145 tests. Group, private denial and immutable MIME regressions pass unchanged. Shared attachment authorization checks exact stored canonical source and current persisted-Person read rights at hydration and redemption; revocation invalidates access through existing handles. Original uploader provenance and requester identity preserved. New group-fix production edits limited to CommunicationMedia, Engine.Api and TranscriptHistory, with two contract-doc updates and one added authorization test file. Prior MIME changes remain intact. Logs: /tmp/zaq-3yb-precommit.log, /tmp/zaq-3yb-focused.log, /tmp/zaq-3yb-quality.log. No commit, push or issue closure performed; awaiting authorized landing/review.",
+      "timestamp": "2026-10-15T15:57:46Z"
+    },
+    {
+      "text": "User explicitly requested discarding all changes. Restored tracked implementation/docs to HEAD and removed added tests and resource_permission_issue.md. Shared attachment implementation and regressions are no longer present in the working tree; earlier validation applies only to the discarded implementation. Investigation evidence remains in issue history.",
+      "timestamp": "2026-10-15T16:43:10Z"
+    }
+  ],
+  "priority": 1,
+  "status": "in_progress",
+  "title": "[zaq-3yb] Authorize shared-conversation attachments for another reader",
+  "type": "bug",
+  "updated_at": "2026-10-15T16:43:10Z"
+}

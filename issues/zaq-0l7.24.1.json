@@ -1,0 +1,25 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-0l7.24.2"
+  ],
+  "closed_at": "2026-10-13T15:04:16Z",
+  "close_reason": "Implemented and validated in local working trees. Package: 144 tests + 2 properties, 0 failures, live excluded; mix quality including Dialyzer/Doctor passed. ZAQ: mix q and 62 focused integration tests passed; final mix precommit: 48 doctests, 255 properties, 10911 tests, 0 failures (1 skipped, 122 excluded). Parent retains review/coverage and release handoff; no commit or publication performed.",
+  "created": "2026-10-13T14:09:19Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nFinalize complete generic linked-device extraction: package explicit infrastructure, Mnesia and temporary storage, PairingSession, composite storage and confirmation/handoff contracts. Host provides trusted typed authorization/durable save/connector confirmation/runtime-start callbacks with opaque context. Define owner/capability validation, attempt idempotency, presented identity guard, bounded callbacks, freeze/retry, cancellation during persistence, redacted public status and credential lifetime. Explicit immutable infrastructure init options precede preparation/seeding/listeners; readiness differs from startup. Reconcile with automatic Amarula transport startup and start_runtime:false without double ownership. No lazy startup, application-env copying, replication or quorum expansion. Exact API names are implementation decisions. Required final result: remove every module under lib/zaq/channels/linked_device/, not just SessionStorage and not renamed copies. Existing linked_device.ex outside that directory remains thin host facade.\n\nTests to add before implementation:\nBefore code specify standalone upstream consumer contract fixtures; configuration/compatibility matrix; begin/status/retry/cancel/confirm; wrong owner/nil context; identity change; save retry/uncertain outcome; seed/start partial failure; expiry; no secrets in public status. Prove File/DETS/custom consumers unchanged and DB/RAM split preserved.\n\nBranches/paths validated:\nInfrastructure absent/unready/replaced; direct/composite backend; provisional/saved account; callback invalid/denied/failed; immutable options; strict RAM-only/coexistence.\n\nMocking plan:\nReal internal collaborators; inject external transport/host-callback edges only. Isolated BEAMs for global Mnesia. Explicit config/clock/dependency options.\n\nDocumentations to update for both code and docs/ related content:\nPackage README and adapter_contracts plus module contracts; ZAQ owner docs after behavior ships. Reference web_widget as design evidence, not dependency.\n\nAction reuse assessment:\nReuse ConnectionWorker, Adapter, GuardedStorage and existing host PairLinkedDevice/ConfirmLinkedDevice/credential_document. Generic mechanisms are local-only package APIs. No new tool exposure or permission bypass. User requested this broader plan; coding remains paused for this plan-update turn.\n\nValidation and E2E:\nRead owning AGENTS.md and ZAQ workflow, action-reuse, testing, system-config and documentation policies as applicable. Use real internal state/process/DB boundaries; mock only external WhatsApp transport or package host-callback boundary in upstream standalone tests. Isolate global Mnesia tests in separate BEAMs. Runtime dependency seams use explicit public options. Preserve current UI journeys; run relevant existing tests, no new feature E2E authoring unless scope changes and the required UX approval is recorded. Follow post-review coverage and final validation gates; no automatic commit/push/publication.",
+  "id": "zaq-0l7.24.1",
+  "labels": [],
+  "parent": "zaq-0l7.24",
+  "comments": [
+    {
+      "text": "Contract implemented: explicit Storage.Runtime child with immutable Mnesia options; Split document callback context/request; PairingSession owner-scoped API and persist/start callbacks. Host database/authorization boundaries retained. Package standalone pairing tests and ZAQ onboarding tests pass. Full directory removed in working tree; implementation validation ongoing.",
+      "timestamp": "2026-10-13T14:50:50Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.1] Define complete upstream linked-device and host callback contracts",
+  "type": "task",
+  "updated_at": "2026-10-13T15:04:16Z"
+}

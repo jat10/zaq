@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-ho7.2"
+  ],
+  "blocks": [
+    "zaq-ho7.4"
+  ],
+  "closed_at": "2026-10-20T13:19:42Z",
+  "created": "2026-10-20T10:56:19Z",
+  "description": "Current revision (user approved: \"better implement this\"): initial defaults are defined by provider clauses in the existing Zaq.ConnectorConfig.Settings.defaults/1, not application configuration. Remove the config block and configuration injection from pure settings helpers. Saved values still win; selective preservation and runtime fallback remain. Replace obsolete custom-config fixture coverage with module-owned defaults coverage; retain override/idempotence/removal assertions. This supersedes any configuration-entry requirements below. No new module, migration, adapter callback or MFA.\n\nImplemented Settings.effective and default-aware projections for missing legacy keys. No DB write/backfill; explicit saved values win, malformed values are not silently replaced. Removed both unshipped reply-policy/history migrations and migration-only tests on user approval. New regression proves legacy DB row remains unchanged and runtime options/policy resolve correctly. Deployment-default changes affect absent legacy keys; reload runtimes after configuration changes.\n\nThe authoritative final ownership and delivery scope is in zaq-ho7. Historical dedicated-module/backfill requirements are superseded.\n\nRequired policies: AGENTS.md; docs/agent-tools.md; docs/WORKFLOW_AGENT.md;\ndocs/exec-plans/PLAN_STRATEGY.md; docs/action-reuse.md; docs/testing-approach.md;\ndocs/services/channels.md. Read sibling AGENTS.md before sibling changes, Engine\nguide before persistence work, and documentation hygiene before updating docs.\nRead system-config guidance if touching encrypted fields (which should be avoided).\nPreserve existing assertions. Obtain explicit approval before changing existing test\nbehavior; add focused tests first. No UI feature/E2E work is required by this refactor.\nCommit, push, publishing dependency revisions, and merge require separate authorization.\n",
+  "id": "zaq-ho7.3",
+  "labels": [],
+  "parent": "zaq-ho7",
+  "comments": [
+    {
+      "text": "Migration implemented with brief SHARE ROW EXCLUSIVE table lock: validates JSON object shape before one atomic JSONB update; only WhatsApp missing/null policies change, including disabled/archived connectors. Explicit policies and sibling JSON preserved; token/status/timestamps byte-identical. Down is deliberately non-destructive. New migration tests first fail without backfill, now pass 3 tests + 1 losslessness/idempotence property. Malformed subtree failure leaves all rows unchanged. mix q passes. Migration applied only to isolated test DB during test setup; production/dev rollout not performed. Uses historical SQL rather than live schema/credential callbacks as planned.",
+      "timestamp": "2026-10-20T11:23:37Z"
+    },
+    {
+      "text": "Added separate 20261020123000_backfill_whatsapp_history_settings migration; earlier reply-policy migration unchanged. Both migrations preserve explicit values and unrelated columns, include disabled/archived rows, lock validation/update consistently, reject malformed JSON transactionally, and keep inserted defaults on down. History migration treats null containers as absent but explicit null/nonboolean leaves reject with safe repair guidance. Tests cover tokens/timestamps unchanged, other providers untouched, partial flags, explicit combinations, rollback/idempotence/property preservation and malformed inputs. mix q passes; both migration files pass 6 tests + 2 properties. Migration executed only in test database through normal test setup. No shared/dev DB migration or secret callbacks.",
+      "timestamp": "2026-10-20T13:19:41Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ho7.3] Resolve legacy connector defaults at runtime without migrations",
+  "type": "task",
+  "updated_at": "2026-10-20T14:41:37Z"
+}

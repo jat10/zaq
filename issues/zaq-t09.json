@@ -1,0 +1,21 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-09-28T18:59:53Z",
+  "created": "2026-09-28T18:41:24Z",
+  "description": "Use the sibling jido_chat_mattermost checkout requested for this working tree. Action reuse: not applicable because dependency source selection changes no executable operation. Verify Mix resolves and compiles the local checkout, refresh mix.lock, run required validation. Related prior local setup: zaq-3df. Keep machine-specific path uncommitted.",
+  "id": "zaq-t09",
+  "labels": [],
+  "comments": [
+    {
+      "text": "User superseded local-fork request and asked to return Mattermost to https://github.com/www-zaq-ai/jido_chat_mattermost. Restored mix.exs and mix.lock to HEAD state; mix deps.get succeeded and Mix resolves GitHub source. Prior local-fork mix precommit retry passed before reversal. No code changes remain for this ticket.",
+      "timestamp": "2026-09-28T18:59:49Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Point Mattermost dependency at local fork and refresh lock",
+  "type": "task",
+  "updated_at": "2026-09-28T18:59:53Z"
+}

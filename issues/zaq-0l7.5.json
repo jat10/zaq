@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-zho"
+  ],
+  "blocks": [
+    "zaq-0l7.6"
+  ],
+  "closed_at": "2026-10-11T12:11:08Z",
+  "created": "2026-10-11T09:54:42Z",
+  "description": "Files:\n- lib/zaq/channels/jido_chat_bridge/state.ex\n- lib/zaq/channels/api.ex\n- lib/zaq/channels/events.ex\n- linked-device runtime owner\n\nFunctional specifications:\nUse existing ingress status and focused retry dispatch. Track connector and attempt generation; distinguish QR/connected/disconnected/expired/failed, clear expired QR and ignore stale events. Return actual restart errors; control events never reach agent. Require trusted authorized operator context and redact credentials.\nArchitecture refinement: Common pairing events/status represent pending, connected, expired, disconnected and failed with connector and attempt generation. Provider translates native events and supplies QR/code payload and expiration evidence. QR is a presentation method, not an OAuth assumption.\n\nTests before implementation:\n- QR expiry and refresh with controlled clock\n- Stale attempt ignored\n- A/B status isolation\n- Restart error surfaced\n- Unauthorized/nil actor denied\n- Control events excluded from agent\n- Exercise shared contract with a minimal fake second provider; keep WhatsApp-specific expectations in provider contract tests\n\nBranches validated:\n- unpaired\n- pairing\n- connected\n- expired\n- disconnected\n- retry failure\n- forbidden\n\nDocumentation:\n- Channels status/retry contract\n- operator pairing recovery\n\nAction reuse assessment:\nExtend existing channel_ingress_status and runtime restart APIs. Local authenticated process/session management; agent/workflow exposure inappropriate. Registry/workflow Actions/Channels events search found no pairing Action. Reuse archive_channel_connector for archival; do not duplicate config/archive operations. Exact config and actor in; bounded status/error out via explicit NodeRouter Events. Inspect and reuse existing device-connection behavior before adding shared modules; document any missing contract as a prerequisite. No duplicate provider-specific credential store or pairing framework.\n\nValidation:\nFollow docs/WORKFLOW_AGENT.md validation lifecycle; tests before implementation, focused checks per issue, final gate before approval. No live account connection or send without scoped authorization.\n\nMocking:\nExternal Amarula transport only; use real internal boundaries and isolated DB/process/storage fixtures; inject config and clock without global mutation.\n\nPolicy:\nRecheck module responsibilities, docs/services/channels.md, Action reuse, system-config and testing guidance before coding. BO calls use explicit NodeRouter Events; nil actor never grants permission.",
+  "id": "zaq-0l7.5",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Implemented generic Pairing reducer and owner-owned attempt generation/QR expiry/status. Provider translation for WhatsApp, native control excluded from chat handlers. Exact connector status/retry authorize confidential super-admin actor; disabled/forged config rejected; actual restart result retained. Socket open required for connected; adoption queries actual Amarula state. OAuth device branch inspected earlier: HTTP code polling behavior is incompatible with socket QR lifecycle, canonical Credential reused instead. mix q and 123 tests/2 properties pass including expiry, stale attempts, account isolation, owner replacement, unauthorized/nil actor and actual retry error.",
+      "timestamp": "2026-10-11T12:10:45Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.5] Normalize shared linked-device pairing status and retry",
+  "type": "task",
+  "updated_at": "2026-10-11T12:11:08Z"
+}

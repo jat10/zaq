@@ -1,0 +1,25 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-10n.3"
+  ],
+  "blocks": [
+    "zaq-10n.6"
+  ],
+  "created": "2026-10-14T12:42:20Z",
+  "description": "Functional specifications/files: lib/zaq/accounts/people.ex and person_identities.ex only as required by the approved contract. Replace WhatsApp phone conflict and stored-placeholder rules with generic evidence-driven persistence; remove provider-specific moduledoc claims. Preserve Repo transaction/retry boundaries, protected merge behavior and channel ownership. Audit every direct find_or_create_from_channel caller for compatible defaults.\nTests to add before implementation: extend accounts/channel_identity_test.exs, connector_person_discovery_test.exs, channel_identity_concurrency_test.exs and people tests. Cover generic enrichment-only phone, authoritative conflicting owners, preservation of explicit edits, atomic link/backfill rollback, races and safe invalid-evidence defaults. Use properties for replacement eligibility and ownership invariants.\nBranches/paths validated: insert/match, connector/unscoped compatibility, email conflict, enrichment phone versus identity evidence, existing user edits, failed linking and retry. No provider-specific parsing, names, flags or callbacks in generic People logic. Do not broaden phone matching semantics for other providers accidentally.\nDocumentations: People and PersonIdentities module contracts and appropriate existing service owner.\nAction reuse assessment: extend People.find_or_create_from_channel/2 and existing update changesets; reuse PersonIdentities.lookup/claim and existing transaction ownership. Inputs trusted canonical discovery evidence; outputs {:ok, person} or controlled errors; all writes rollback on conflicts. Current callers retain authorization responsibilities; no permission bypass or new agent/tool exposure. No parallel discovery Action. Verify through real DB transactions and caller integration.\nPolicies: read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md and applicable module/service guidance before implementation. For sibling changes read ../jido_chat_whatsapp/AGENTS.md. Follow the authoritative validation lifecycle; preserve existing assertions. No commits, pushes or merges are authorized by this plan.\nMocking plan: keep internal modules and database boundaries real; isolate external transport at its existing contract, with connection-scoped offline fixtures. Avoid global configuration mutation.\nE2E: no new UI or user journey; unit, property and thin integration tests provide the required coverage. Reassess if scope changes.\n\nScope correction from user: this integration has not shipped. Remove obsolete legacy-JID repair branches and update/remove the test dedicated solely to historical repair. This is an intentional scope change, not permission to weaken active-contract tests. Retain tests for late enrichment of newly created incomplete profiles, missing names/phones, and preservation of explicit edits. No migration or historical data cleanup is required.\n\nImplementation constraint confirmed with user: add no new ZAQ modules. Extend existing module responsibilities and existing canonical maps/callbacks. Do not introduce a discovery policy module, profile evidence module, wrapper Action, or provider-specific helper under People. Keep the contract minimal and document it in existing owners. If implementation evidence makes this constraint impossible, explain the concrete conflict before changing the agreed scope.\n",
+  "id": "zaq-10n.4",
+  "labels": [],
+  "parent": "zaq-10n",
+  "comments": [
+    {
+      "text": "Implemented in People: removed WhatsApp-specific phone conflict and stored JID/name parsing; generic profile_phone enriches without claiming identity, explicit phone still conflicts. Generated name replacement is generic and profile edits retained. Added Mattermost two-authority same-profile-phone test. Existing direct-phone conflict test passes.",
+      "timestamp": "2026-10-14T13:09:15Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-10n.4] Apply provider-neutral discovery and profile persistence in People",
+  "type": "task",
+  "updated_at": "2026-10-14T13:09:15Z"
+}

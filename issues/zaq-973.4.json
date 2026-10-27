@@ -1,0 +1,33 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-973.3"
+  ],
+  "blocks": [
+    "zaq-973.5"
+  ],
+  "created": "2026-10-20T10:03:43Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nUpdate lib/zaq/channels/jido_chat_bridge.ex runtime/provider specs, connection preparation/identity, listener opts, status/logout and outbound options; lib/zaq/channels/bridge.ex fetch_connection_details_for_config; lib/zaq/channels/jido_chat_bridge/state.ex lifecycle handling only where needed. Route through shared Adapter wrappers, retain listener_child_specs and existing supervisor machinery. Base Bridge delegates to configured bridge for connection details; preserve non-Jido bridge defaults. Consume opaque adapter options/identity without constructing profile/storage details. Trust policy from host config, not persisted ingress; package translates history/RAM flags. Preserve provider startup before provisional pairing, saved restore and listener restart semantics. Generalize lifecycle guards by supported contract rather than :linked_device special-case when appropriate, keeping original source/attempt checks.\n\nTests to add before implementation:\nUse runtime_contracts_test.exs, connector_disable_test.exs, jido_chat_delivery_test.exs, jido_chat_bridge_test.exs and jido_chat_bridge/whatsapp_lifecycle_ingress_test.exs. Add non-WhatsApp contract adapter integration, legacy Telegram/Mattermost/no-callback defaults, startup options precedence, provider-runtime once-only, startup cleanup/restart, no-state start recursion, every outbound operation retaining exact connector scope. Prove QR update before sink ack, stale source/attempt rejection, source death, redacted status and explicit logout vs stop. Test identity resolution on cold/stopped connectors and unsupported/no-identity errors without profile fallback.\n\nBranches/paths validated:\nEnabled/disabled/archived bootstrap; fresh/prepared/cold connection; absent optional methods; stopped listener and failed logout; concurrent profiles; shared infrastructure replacement; new source vs stale process exit; unrelated providers retain runtime and restart behavior.\n\nMocking plan:\nReal BridgeSupervisor/State and generic wrappers; use real adapter with fake external transport and a conformance adapter for provider-neutrality. Async-safe dependency configuration; isolate genuinely global OTP storage.\n\nDocumentations to update for both code and docs/ related content:\nChannels service runtime/bridge/state contracts and package option docs; remove stale WhatsApp-shaped orchestration descriptions and hardcoded generic status wording. No product UI change.\n\nAction reuse assessment:\nEXTEND existing Bridge/JidoChatBridge contract and REUSE CommunicationBridge.sync_config_runtime, BridgeSupervisor and existing logout authorization/action path. LOCAL-ONLY specs/preparation and option forwarding; no new executable Action or tool. Verify consumers use selected adapter and preserve all existing authorization/storage boundaries.\n\nRequired policy and epic constraints:\nRead this epic before starting. Read each affected repository's AGENTS.md. In ZAQ read docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md and applicable docs/conventions.md; before documentation edits read docs/documentation.md. Run bw prime and verify live source/Git/dependency state. Use Serena for source relationships and Context Mode for large output. Follow docs/WORKFLOW_AGENT.md#phase-4--validate and its final validation/coverage lifecycle rather than treating this ticket as an alternative policy. No existing test behavior change is approved by this plan. No new feature E2E is planned: this is a behavior-preserving boundary refactor with no UI change. Reassess that decision if scope expands.",
+  "id": "zaq-973.4",
+  "labels": [],
+  "parent": "zaq-973",
+  "comments": [
+    {
+      "text": "Base Bridge delegates connection details to configured bridge callback. Jido bridge consumes core runtime/preparation/identity/options/logout wrappers; WhatsApp storage runtime/profile/history flags removed from orchestration. Non-WhatsApp conformance test proves opaque tuple scope, delivery with no profile and lifecycle updates on webhook ingress. Existing cold restore, multi-account, supervision and synchronous QR/source fencing tests pass. Existing fake adapters mechanically forward renamed shared callbacks.",
+      "timestamp": "2026-10-20T10:21:15Z"
+    },
+    {
+      "text": "Generic runtime/outbound/lifecycle implementation complete and focused tests pass. Additional non-WhatsApp execution tests prove opaque tuple identity/delivery scope without a profile and lifecycle acknowledgement on webhook mode. ZAQ mix q passes.",
+      "timestamp": "2026-10-20T10:27:00Z"
+    },
+    {
+      "text": "Broad precommit exposed a genuine legacy Discord DM regression: generic open_dm dispatch selected adapters that had not opted into connection_options. Fixed selection to use common scoped open_dm only for adapters implementing connection_options, preserving legacy open_dm_channel behavior. Existing scoped_channel_rating_test unchanged; full relevant file now passes in expanded focused run.",
+      "timestamp": "2026-10-20T10:35:19Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-973.4] Generalize ZAQ runtime, connection options and lifecycle handling",
+  "type": "task",
+  "updated_at": "2026-10-20T10:35:19Z"
+}

@@ -1,0 +1,29 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-973.1"
+  ],
+  "blocks": [
+    "zaq-973.3"
+  ],
+  "created": "2026-10-20T10:03:40Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nOwn changes in ../jido_chat_whatsapp/lib/jido_chat_whatsapp/adapter.ex, pairing_session.ex, pairing/request.ex, storage/request.ex, storage/split.ex and only required lifecycle/worker modules. Use core shared request types with the unchanged sink_mfa. Implement optional contracts by reusing existing prepare_connection, connection_options, Split.profile, storage Runtime and logout worker. Keep protocol state, bounded tasks, retries, namespace routing, QR/TTL, RAM seed sequencing and concrete history configuration here. Avoid parallel implementations; evaluate public package request API consumers before removal, with only necessary compatibility for actual existing callers (never extra MFA shims). Dependency edits must use the core revision from prerequisite.\n\nTests to add before implementation:\nFocused real-package tests in existing authentication_test, pairing_session_test, pairing_request_test, storage_request_test, adapter_test, storage_lifecycle_test, lifecycle_delivery_test, history_contract_test, and mnesia_contract_test surfaces. Cover shared request types over same sink; authorization/storage errors; false/false history and RAM schema policy; fresh/restored preparation; duplicate profile refusal; confirmation timeout retry; seed/start failures preserve saved receipt; stop vs logout. Add bounded properties for binding/profile isolation and snapshot/attempt idempotency when justified.\n\nBranches/paths validated:\nBind unavailable/nil/malformed; callbacks raise/exit/timeout; missing storage; fresh/cold/recovered connection; canceled/expired/changed identity; repeat confirm; stale snapshot; outage/generation recovery; no real WhatsApp traffic.\n\nMocking plan:\nFake only Amarula/external transport and host sink edges. Exercise real PairingSession, Split, Mnesia/runtime and shared contracts. Use isolated BEAM tests for global Mnesia lifecycle where existing harness requires it.\n\nDocumentations to update for both code and docs/ related content:\nAdapter/session/storage module docs and package integration guides; corrected single-sink sample, host-policy precedence and no new host callbacks. Keep generated release notes untouched.\n\nAction reuse assessment:\nEXTEND package Adapter and reuse PairingSession, ConnectionWorker, Split/Runtime and existing bounded request execution. No host-specific action/permission/Repo logic enters package. Input trusted sink/options and opaque binding; output specs/options/identity or sanitized errors. Host authorize/persist/start calls retain exact semantics; verify native package flows instead of copied host logic.\n\nRequired policy and epic constraints:\nRead this epic before starting. Read each affected repository's AGENTS.md. In ZAQ read docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md and applicable docs/conventions.md; before documentation edits read docs/documentation.md. Run bw prime and verify live source/Git/dependency state. Use Serena for source relationships and Context Mode for large output. Follow docs/WORKFLOW_AGENT.md#phase-4--validate and its final validation/coverage lifecycle rather than treating this ticket as an alternative policy. No existing test behavior change is approved by this plan. No new feature E2E is planned: this is a behavior-preserving boundary refactor with no UI change. Reassess that decision if scope expands.",
+  "id": "zaq-973.2",
+  "labels": [],
+  "parent": "zaq-973",
+  "comments": [
+    {
+      "text": "Migrated emitted envelopes to core types. Existing WhatsApp storage wrapper retains 7-second Task deadline; pairing retains existing bounded owner. Adapter implements optional runtime/identity/preparation/logout contracts and owns history policy translation. Full non-live suite: 196 tests + 12 properties pass (13 excluded). Existing test edits are mechanical envelope namespace migrations only, preserving assertions and scenarios. Package quality cache/type correction in progress; no expected behavioral assertion changes.",
+      "timestamp": "2026-10-20T10:21:13Z"
+    },
+    {
+      "text": "WhatsApp full tests pass (196 tests, 12 properties); mix q including Dialyzer and Doctor now passes after force-refreshing dependency PLT. Child specs normalized via Supervisor.child_spec. Existing fixtures/assertions preserved; namespace/delegate migrations only.",
+      "timestamp": "2026-10-20T10:26:57Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-973.2] Migrate WhatsApp internals to the shared sink and adapter contracts",
+  "type": "task",
+  "updated_at": "2026-10-20T10:26:57Z"
+}

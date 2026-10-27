@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-mvw.1"
+  ],
+  "blocks": [
+    "zaq-mvw.3"
+  ],
+  "closed_at": "2026-10-22T11:08:14Z",
+  "created": "2026-10-22T10:47:32Z",
+  "description": "Functional specification and files:\n- After the connector-owned stopping lifecycle works, remove lib/zaq/node_router/coordination.ex and lib/zaq/node_router/async_handoff.ex.\n- Remove coordination dispatch options, ownership propagation/holds, coordination-specific wrappers/checks and handoff acknowledgements from lib/zaq/node_router.ex and all consumers. Inventory current references before editing, including Channels.Api, ConnectorRuntime, ConnectorLifecycle and BO dispatches.\n- Keep NodeRouter as event transport with its ordinary local/remote, synchronous/asynchronous dispatch behavior, error reporting, confidentiality and authorization boundaries. Removing AsyncHandoff does not mean removing ordinary asynchronous dispatch.\n- Replace connector consumers with the lifecycle owner from the prerequisite. Remove obsolete configuration, application children or support code only when exclusively required by the deleted machinery.\n- Do not leave orphan calls to coordinated?, coordination resource options or AsyncHandoff, and do not rebuild generic coordination under another name.\n\nTests to add before implementation: use the new stopping-state regression and existing ordinary NodeRouter contract tests as protection. Add narrowly scoped local/remote and ordinary async regression cases only if existing coverage misses an affected behavior. Dedicated coordination tests are removed in the next task; inventory the expected transitional failures without weakening unrelated tests.\n\nBranches/paths validated: ordinary sync/async local dispatch, remote dispatch and RPC error handling, routing options, connector startup/teardown under the new owner, actor/confidentiality checks.\n\nMocking plan: reuse existing NodeRouter contract seams or peer-node integration support for routing behavior. Keep connector lifecycle integration real; no mocks of the new controller.\n\nDocumentation: remove obsolete router coordination/async ownership documentation in module docs and docs/architecture.md; update connector references to their domain owner. Read docs/documentation.md before edits.\n\nAction reuse assessment: simplify existing NodeRouter dispatch infrastructure; no new operation, Action or agent tool. Reuse established service dispatch and the prerequisite connector lifecycle API. Preserve dispatch input/output/error semantics except the explicitly removed coordination feature.\n\nApproval: user explicitly requested removal of NodeRouter coordination and both coordination/async_handoff modules in this conversation. Follow-up to closed zaq-nuz, whose earlier change removed only public wrappers and retained coordination.\n\nValidation: reference audit, focused ordinary routing and connector lifecycle tests, mix q; record coordination-only test failures until the dependent removal task completes.",
+  "id": "zaq-mvw.2",
+  "labels": [],
+  "parent": "zaq-mvw",
+  "comments": [
+    {
+      "text": "Removed lib/zaq/node_router/coordination.ex and async_handoff.ex, coordinated receiver execution, scope capture/options and handoff logic. No production lib/config references remain. Ordinary NodeRouter suites pass: 43 tests/properties; mix q passes. Updated architecture and Engine/Channels lifecycle ownership documentation while preserving unrelated edits. Coordination-only test/support cleanup follows in zaq-mvw.3.",
+      "timestamp": "2026-10-22T11:08:13Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-mvw.2] Remove NodeRouter coordination and AsyncHandoff machinery",
+  "type": "task",
+  "updated_at": "2026-10-22T11:08:14Z"
+}

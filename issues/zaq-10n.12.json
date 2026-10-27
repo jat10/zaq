@@ -1,0 +1,25 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-14T14:06:13Z",
+  "description": "User requested replacing the local ../jido_chat_whatsapp path with the sibling repository current GitHub branch. Update mix.exs and resolve the corresponding mix.lock revision. Preserve other dependency choices. Action reuse: not applicable, dependency configuration only. Validation gate remains stopped at user request; do not run tests or mix precommit.",
+  "id": "zaq-10n.12",
+  "labels": [],
+  "parent": "zaq-10n",
+  "comments": [
+    {
+      "text": "Updated mix.exs to github jat10/jido_chat_whatsapp branch feat/whatsapp-adapter-lifecycle-and-message-contracts. Remote branch matches sibling HEAD 099e7c98b28f1f316f63e870e5c1262303f7e323 (incoming push-name normalization). mix deps.update jido_chat_whatsapp succeeded and refreshed lock. Validation gate remains stopped at user request.",
+      "timestamp": "2026-10-14T14:06:43Z"
+    },
+    {
+      "text": "User also requested switching jido_chat. Extend this dependency configuration task to replace ../jido_chat with published jat10/jido_chat branch feat/shared-pairing-capability, retaining override: true. No tests or validation gate will be run.",
+      "timestamp": "2026-10-14T14:07:33Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-10n.12] Point WhatsApp dependency at published GitHub branch",
+  "type": "task",
+  "updated_at": "2026-10-14T14:07:33Z"
+}

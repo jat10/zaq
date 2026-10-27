@@ -1,0 +1,19 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-0l7.8"
+  ],
+  "blocks": [
+    "zaq-e5z.12"
+  ],
+  "created": "2026-10-21T09:43:04Z",
+  "description": "Execution boundary: planning approved; this issue does not authorize commits, pushes, merges, upstream publication, GitHub comments, live WhatsApp access, or real messages. Revalidate current source/Git state before implementation. Preserve unrelated work, including the already-edited docs/architecture.md. Track this work in the ZAQ Beadwork store even when files belong to the sibling package; do not initialize another store.\nRead AGENTS.md in the affected repository. For ZAQ read docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the domain policies listed below. Read module documentation before editing. Source navigation uses Serena with bounded fallback if unavailable. Record test results honestly; plan approval is not completed-feature UX approval. Follow repository validation owners; no assertion weakening or unrelated refactors. Existing test changes outside the specifically approved contracts need human approval.\n\nRequired domain policies: docs/WORKFLOW_AGENT.md phases 4–6; relevant review skill and owner policies.\n\nFunctional specifications covered with associated files to edit/add:\nReview completed implementation, reused consolidated E2E evidence (zaq-0l7.8) and source revisions. Follow applicable pr-review/adversarial-pr-review skill if used, including required policies; do not edit production code during an adversarial review. Prove findings with execution-path evidence; check cleanup races/partial failure, actor demotion/nil, backend compatibility, no migration regressions and stale polling. Record remaining findings as scoped issues and require their resolution before approval.\nThis issue records actual reviewer approval for the implemented PR revisions, which is distinct from the user's approval of this plan. Do not mark complete based on silence, prior PR review, generated review text or passing tests. Prepare review material locally; posting, requesting review, resolving GitHub threads or publishing remains separately authorized. This gate precedes dedicated coverage zaq-e5z.12. Final human acceptance follows final validation, not this gate.\n\nTests to add before implementation:\nUse implementation and E2E evidence; add temporary execution-path reproductions only if needed for concrete review concerns, under review skill constraints. Do not weaken assertions or assume absent coverage proves correctness.\n\nBranches/paths validated:\nAll agreed point-2–5 contracts and external dependencies, lifecycle failure/recovery, authorization, storage variants, UI consumer behavior, exact revision alignment.\n\nMocking plan:\nReal boundaries and offline external edges; no live provider verification assumed.\n\nDocumentations to update for both code and docs/ related content:\nRecord reviewed SHAs, findings, resolution evidence, approver/source and pending authorized communications in issue. Keep review approval distinct from UX approval and final acceptance.\n\nAction reuse assessment:\nAction reuse: not applicable to review-only gate. Audit actual operation ownership and consumer reuse, with no new Actions.",
+  "id": "zaq-e5z.11",
+  "labels": [],
+  "parent": "zaq-e5z",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-e5z.11] PR #847: review completed remediation and record review approval gate",
+  "type": "task",
+  "updated_at": "2026-10-21T09:44:43Z"
+}

@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-0l7.10"
+  ],
+  "blocks": [
+    "zaq-0l7.7"
+  ],
+  "closed_at": "2026-10-11T12:29:05Z",
+  "created": "2026-10-11T12:23:52Z",
+  "description": "Review source trace: Amarula.Connection.update_creds ignores Storage.put return then reports new in-memory credentials/pairing success. Adapter currently returns error on failed write, permitting success without durable state. Fail closed without logging credentials, verify final caller cannot continue after failure and stored state unchanged. Inspect caller shutdown and reconnect lifecycle, avoid callback calls to Amarula (deadlock). Action reuse: strengthen existing custom storage callback, reuse Engine storage; no new Action. Add tests, mix q, commit/push and close.",
+  "id": "zaq-0l7.11",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Fail closed on mutation/read/decryption/dispatch failures with exit({:shutdown, :linked_device_storage_unavailable}), avoiding abnormal state-bearing GenServer crash reports. No callback calls provider. Test uses real Amarula.Storage scope and real Engine DB boundary: caller ignores write result like upstream but cannot reach success notification; persisted state remains previous version after re-enable. Wrong profile, corruption and disabled assertions strengthened to shutdown. mix q plus 53 tests/2 properties pass, including actual jido_chat_bridge/state_test.exs.",
+      "timestamp": "2026-10-11T12:28:44Z"
+    }
+  ],
+  "priority": 1,
+  "status": "closed",
+  "title": "[zaq-0l7.11] Fail closed when linked-device persistence fails",
+  "type": "bug",
+  "updated_at": "2026-10-11T12:29:05Z"
+}

@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-24T15:33:46Z",
+  "description": "Action reuse: not applicable; test fixtures and scheduling only, no product operation edits. Preserve all scenarios, assertions, property runs, failure paths, and production modules. User authorized test-only runtime changes and validation, plus commit/push. Reuse test/support fixture controls and explicit production opts. No new mocks of internal code. No E2E authoring needed; no production coverage changes. Update existing test/runtime-report.txt after reading documentation policy. Steps: profile -\u003e optimize waits -\u003e isolate concurrency -\u003e validate and deliver. Existing unrelated partition runner zaq-l9d is separate.",
+  "id": "zaq-ijp",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ijp] Reduce complete mix test runtime below two minutes",
+  "type": "task",
+  "updated_at": "2026-10-24T15:33:47Z"
+}

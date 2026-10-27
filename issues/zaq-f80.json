@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-22T10:37:31Z",
+  "description": "Documentation-only cleanup of channels, engine, people-access and system-config. Move provider setup/storage details to a dedicated integration guide; retain generic contracts, verify links and supervision facts. Action reuse assessment: not applicable; no executable operations change. Preserve existing test-file edits. Validate diff, local links, mix q and final mix precommit.",
+  "id": "zaq-f80",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Moved provider onboarding/storage/listener details to docs/guides/whatsapp-integration.md; generalized four service owners and updated navigation. Verified Channels.Supervisor.init uses one_for_one and corrected stale people-access restart topology. Checked 125 local links/anchors and git diff --check. mix q passed. Documentation-only: application tests and coverage not applicable; final precommit in progress. Existing connector_disable_test.exs edit preserved.",
+      "timestamp": "2026-10-22T10:41:05Z"
+    },
+    {
+      "text": "User correction applied: removed the newly created WhatsApp integration guide and all its links; reverted docs index addition. Shared service guides and architecture now retain general contracts only. User explicitly waived mix precommit for this documentation-only task; stopped the running precommit process and verified exit. No further Mix commands run. Final local Markdown links/anchors and git diff --check passed. No code or test edits made by this task.",
+      "timestamp": "2026-10-22T10:47:49Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Clean PR 847 provider details out of shared service guides",
+  "type": "task",
+  "updated_at": "2026-10-22T10:47:49Z"
+}

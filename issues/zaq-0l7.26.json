@@ -1,0 +1,21 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-14T14:27:18Z",
+  "description": "The WhatsApp onboarding LiveView test fails because ProviderCatalog.label(\"whatsapp\") falls back to \"Whatsapp\" after ChannelsLive switched to the shared catalog. Add the canonical WhatsApp label and verify the existing onboarding assertion. Action reuse: not applicable; this changes display metadata only and adds no executable operation.",
+  "id": "zaq-0l7.26",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Reproduced failure at whatsapp_onboarding_test.exs:76. Rebase switched ChannelsLive to ProviderCatalog.label/1; missing whatsapp entry caused fallback label Whatsapp. Added canonical WhatsApp label. Focused test now passes (1 test, 0 failures); diff --check clean. Full validation remains user-owned per prior instruction. Change is in working tree, not committed.",
+      "timestamp": "2026-10-14T14:27:59Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-0l7.26] Restore WhatsApp provider display label after webbridge rebase",
+  "type": "bug",
+  "updated_at": "2026-10-14T14:27:59Z"
+}

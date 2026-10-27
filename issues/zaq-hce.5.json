@@ -1,0 +1,27 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-hce.4"
+  ],
+  "blocks": [],
+  "created": "2026-10-20T09:07:40Z",
+  "description": "User correction: the parallel host callback API was rejected and all implementation changes were reverted. Earlier completion comments and validation results refer to that discarded implementation; they do not establish completion of this revised scope. ZAQ and sibling adapter working trees are clean.\nLocal changes now span ../jido_chat (new HostRequest protocol) and ../jido_chat_whatsapp (opt-in implementations on existing request structs). Publish compatible reviewed core and adapter revisions only after explicit authorization through normal branch/PR workflow. Publish core first, align the adapter dependency with that real accessible core revision, then pin both compatible revisions in ZAQ. No existing adapter callback delivery or sink_mfa API changes. Never invent commits or commit local path overrides. Current source dependency files are unchanged; temporary MIX_EXS projects exercise both local siblings for validation and are removed afterward. Core baseline f154f07464377ecd8d81c6dd0de1b8af016fa616; adapter baseline 7d6cb1d5901180c28961614c45d7e4dbdfe8301a; ZAQ baseline 8714d6c763dc1da0ac11e0f3acfde05d89151663.\nMandatory constraints: Preserve sink_mfa option, MFA invocation shape, request/result shapes and existing jido_chat_* adapter behavior. Do not replace sink_mfa with persist_mfa, activate_mfa or storage_mfa. Do not introduce compatibility modules solely to support a replacement API. No test, fixture, assertion, helper or test configuration changes. No Mnesia policy or persistence changes. No commit/push without authorization.\nRead inherited ZAQ AGENTS.md and docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md, and docs/conventions.md before affected work. Read each sibling repository's AGENTS.md. Before documentation edits read docs/documentation.md. Use Serena for source understanding and Context Mode for large output; run bw prime. Recheck live Git state and preserve unrelated work.\nTests to add before implementation: none, explicitly prohibited by user. Run existing tests; no new E2E authoring or UI changes. Mocking plan: no test/mock changes; retain existing external-edge fixtures. Coverage improvements requiring test changes are outside authorization; record gaps rather than modifying tests.",
+  "id": "zaq-hce.5",
+  "labels": [],
+  "parent": "zaq-hce",
+  "comments": [
+    {
+      "text": "Corrected dependency scope: core ../jido_chat now contains the additive HostRequest protocol, and ../jido_chat_whatsapp contains two protocol implementations. Both would need real reviewed published revisions before ZAQ can pin them; publish core first, align adapter dependency, then pin compatible revisions in ZAQ. No publication authorized; leave dependency files unchanged. Temporary local MIX_EXS overrides are validation-only and must be removed.",
+      "timestamp": "2026-10-20T09:37:55Z"
+    },
+    {
+      "text": "Cancelled at explicit user request. All implementation and documentation changes reverted in ZAQ, ../jido_chat and ../jido_chat_whatsapp; temporary dependency projects removed and validation stopped. Closed as cancelled, not delivered.",
+      "timestamp": "2026-10-20T09:45:15Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Publish compatible core and adapter revisions and pin ZAQ",
+  "type": "task",
+  "updated_at": "2026-10-20T09:45:16Z"
+}

@@ -1,0 +1,28 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-xmt.2"
+  ],
+  "closed_at": "2026-10-17T00:42:48Z",
+  "created": "2026-10-17T00:39:43Z",
+  "description": "Replace the Git dependency with the requested ../jido_chat_whatsapp path, use the existing configured adapter logout/1 export in JidoChatBridge, remove MFA config/docs, and update injected adapter fixtures without changing assertions. Reuse existing logout Action/NodeRouter/lifecycle as described in parent. Run mix q and isolated bridge tests.",
+  "id": "zaq-xmt.1",
+  "labels": [],
+  "parent": "zaq-xmt",
+  "comments": [
+    {
+      "text": "Rechecked reuse: existing adapter_for/2 resolves per-call injected configuration; optional adapter export replaces the MFA only. Existing Actions, role events and lifecycle remain authoritative. Existing test assertions preserved; only fixtures now supply adapters/delegate logout. Added stopped-listener exit regression. No new operation/Action/tool or UI behavior.",
+      "timestamp": "2026-10-17T00:40:12Z"
+    },
+    {
+      "text": "Implemented adapter-owned logout capability detection with per-call adapter resolution and module loading. Removed application MFA config, converted fixtures to adapter configuration, and documented the required local sibling checkout. mix deps.get made no lockfile changes. mix q passed; eight isolated logout/pre-disable tests passed, including permissions, selected listener, unsupported adapter, transport failure, missing/stopped runtime. Existing assertions preserved. First Credo finding fixed before rerun.",
+      "timestamp": "2026-10-17T00:42:47Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-xmt.1] Use the local adapter logout callback",
+  "type": "task",
+  "updated_at": "2026-10-17T00:42:48Z"
+}

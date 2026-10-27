@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-r4n.1"
+  ],
+  "blocks": [
+    "zaq-0l7.7"
+  ],
+  "closed_at": "2026-10-16T14:53:31Z",
+  "created": "2026-10-16T14:29:32Z",
+  "description": "Reuse configurable ChannelConnectorCard.toggle_event and existing BOModal.confirm_dialog. Add local-only pure communication UI disable policy: WhatsApp confirmation, default proceed for other adapters and enabling. LiveView saves exact scoped descriptor/revision, Cancel/Escape/backdrop no side effects, Confirm delegates confidential Engine disable Action. Keep other adapter behavior. Add policy and LiveView tests; approved existing WhatsApp test gains Confirm click, preserving assertions. Follow design/testing policies; reuse existing UX approval zaq-0l7.7 and E2E zaq-0l7.8 for final authoring.",
+  "id": "zaq-r4n.2",
+  "labels": [],
+  "parent": "zaq-r4n",
+  "comments": [
+    {
+      "text": "UI implementation complete: ChannelDisablePolicy.before_disable/2 returns confirmation only for enabled WhatsApp; existing shared toggle_event and BOModal.confirm_dialog reused without modifying shared component. LiveView stores Engine-issued scoped revision, ignores submitted confirmation IDs, and clears pending state before execution. Cancel and duplicate Confirm cause no logout. Existing WhatsApp test changed only as explicitly approved. Dedicated UI run: 73 tests + 1 property passed; related regression run: 459 tests + 1 property passed. mix q passed. Authoritative Channels/Engine guides updated. Final mix precommit is running; UX approval and browser finalization remain under zaq-0l7.7/zaq-0l7.8.",
+      "timestamp": "2026-10-16T14:46:47Z"
+    },
+    {
+      "text": "Final validation passed: mix q; related isolated/regression suite 459 tests + 1 property; mix precommit completed in 546.9 seconds with 48 doctests, 274 properties, 11292 tests, 0 failures, 1 existing skipped and 125 excluded. The MCP call transport timed out at 300s, but the original process continued and its complete saved log confirms successful test completion; no duplicate run was started. UI implementation ready for human review. No commits or pushes performed.",
+      "timestamp": "2026-10-16T14:53:30Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-r4n] Wire adapter disable policy and WhatsApp confirmation dialog",
+  "type": "task",
+  "updated_at": "2026-10-16T14:53:31Z"
+}

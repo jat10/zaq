@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-09-23T19:32:01Z",
+  "description": "Fix coupled workflow lifecycle invariants: failed Runic Runnable must durably fail WorkflowRun before sibling success can mask it; interrupt_run must lock/reload authoritative persisted state; UI and lifecycle observer dispatch failures must not alter committed state. Action reuse: local-only orchestration in WorkflowRunAgent/Workflows; no reusable Action applies because these are persistence and driver-state ownership internals. Verify existing three regressions plus stale completed interruption regression, focused suites, mix q.",
+  "id": "zaq-1er",
+  "labels": [],
+  "comments": [
+    {
+      "text": "PR #765 lifecycle follow-up: reproduced stale pending start, stale paused resume, stale DAG-build failure overwriting cancellation, and pause/cancel losing to RunWatcher when API is traced and suspended at transaction entry beyond 200 ms. Fixed via locked pending/paused -\u003e running transition and guarded build failure, persisted pause/cancel before driver kill with post-kill active-step settlement. Focused tests and 190-test workflow subset pass; mix q passes. Native CI failure is LLMPerformanceFailureTest sandbox-owner shutdown, unrelated by current evidence.",
+      "timestamp": "2026-09-24T14:00:20Z"
+    },
+    {
+      "text": "Refined pause/cancel order after review: acquire row lock, persist run and active steps, kill monitored driver, settle any in-flight step writes, then commit. A telemetry-held transaction test now keeps the post-kill commit open until RunWatcher passes its grace and attempts recovery; pause/cancel remain authoritative with no interrupted event.",
+      "timestamp": "2026-09-24T14:06:25Z"
+    }
+  ],
+  "priority": 1,
+  "status": "in_progress",
+  "title": "[zaq-1er] Fix PR 765 workflow failure durability",
+  "type": "bug",
+  "updated_at": "2026-09-24T14:06:25Z"
+}

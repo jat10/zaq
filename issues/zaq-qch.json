@@ -1,0 +1,33 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-14T19:01:29Z",
+  "description": "Extend existing ReactionMapper.to_rating/2 to accept one standard Unicode skin-tone modifier on thumbs up/down across providers, including WhatsApp. Action reuse assessment: extend lib/zaq/channels/jido_chat_bridge/reaction_mapper.ex, already called by JidoChatBridge.handle_reaction_event/2 before dispatch_message_rating through NodeRouter. Pure binary/atom input returns {:ok, 1 | 5} or :ignored; no side effects, actor changes or new Action/tool exposure. Preserve Mattermost shortcode handling and malformed-input rejection. Verify all five tones, negative cases, and normalization properties using existing async mapper tests; run mix q, focused tests and final mix precommit. E2E not needed: pure mapping bug with public-contract unit/property coverage.",
+  "id": "zaq-qch",
+  "labels": [],
+  "parent": "zaq-3f5",
+  "comments": [
+    {
+      "text": "Implementation requested by user on 2026-10-15. Existing negative assertions for toned Unicode thumbs require separate disclosed test behavior approval under docs/testing-approach.md; approval requested and pending. Action reuse rechecked: extend existing pure ReactionMapper.to_rating/2; handle_reaction_event/2 already delegates mapped ratings to shared dispatch_message_rating/3. No new Action or boundary change. Plan: exact UTF-8 thumb-plus-one-modifier match, focused valid/malformed properties, WhatsApp reaction dispatch context regression, mix q and isolated tests, final precommit. E2E unnecessary for this pure mapping fix.",
+      "timestamp": "2026-10-15T11:04:41Z"
+    },
+    {
+      "text": "User explicitly approved changing the existing toned-thumb expectations on 2026-10-15 via reply: Approve the test expectation change. Scope: exactly one standard Unicode modifier on thumbs up/down maps to 5/1; malformed reactions remain ignored. New Unicode properties and WhatsApp dispatch context regression pass (18 cases).",
+      "timestamp": "2026-10-15T11:06:06Z"
+    },
+    {
+      "text": "Implementation complete in working tree: exact UTF-8 matching for one U+1F3FB..U+1F3FF modifier on thumbs, shared across providers; shortcode mappings and dispatch code unchanged. User-approved legacy assertions updated. All focused reaction suites pass: 34 tests and 4 properties, including WhatsApp sender/connector/room-scoped message context and existing Mattermost/Telegram ingress coverage. mix q passed; git diff --check passed. Final mix precommit running. Numerical coverage phase remains post-review per workflow; no review approval or commit authorization supplied.",
+      "timestamp": "2026-10-15T11:07:15Z"
+    },
+    {
+      "text": "User requested stop the precommit; stopped active retry with SIGTERM. Final gate remains incomplete. First precommit completed with 9960 tests, 200 properties, one transient Bandit :eaddrinuse failure at mattermost_shared_history_integration_test.exs:560; that test then passed in isolation. Retry interrupted at user request, not a passing gate. mix q and focused reaction suites (34 tests, 4 properties) passed. Changes remain uncommitted.",
+      "timestamp": "2026-10-15T11:21:29Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Normalize Unicode thumb reaction skin tones",
+  "type": "task",
+  "updated_at": "2026-10-15T11:21:29Z"
+}

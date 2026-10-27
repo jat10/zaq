@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-13T09:20:49Z",
+  "created": "2026-10-13T09:12:16Z",
+  "description": "Switch mix.exs from sibling path to the requested jat10/jido_chat_whatsapp branch feat/whatsapp-adapter-lifecycle-and-message-contracts and update its lock. Verify remote package includes runtime ownership changes required by current ZAQ; run quality and focused startup/lifecycle tests. Action reuse: not applicable — dependency source change, no new executable operations. Preserve unrelated working-tree changes.",
+  "id": "zaq-0l7.17",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Switched mix.exs to github jat10/jido_chat_whatsapp branch feat/whatsapp-adapter-lifecycle-and-message-contracts. mix deps.get locked 1d40ab55f1a51a5623c1670e25a24979cc4f8a65; only this dependency lock entry changed. Compared complete fetched lib tree against validated sibling: identical. mix q passed; startup/supervision and linked-device regressions passed 4 properties and 54 tests. Final precommit currently running. No commits or pushes.",
+      "timestamp": "2026-10-13T09:15:04Z"
+    },
+    {
+      "text": "Final mix precommit passed: 48 doctests, 242 properties, 10708 tests, 0 failures, 1 skipped (122 excluded). Log /tmp/zaq-whatsapp-git-precommit.log. Current working tree is clean; observed commit b13d94789 contains requested dependency and lock change (commit occurred outside this agent actions).",
+      "timestamp": "2026-10-13T09:20:48Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.17] Point WhatsApp dependency at jat10 lifecycle branch",
+  "type": "task",
+  "updated_at": "2026-10-13T09:20:49Z"
+}

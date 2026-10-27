@@ -1,0 +1,23 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-ojt.2"
+  ],
+  "created": "2026-10-22T14:40:32Z",
+  "description": "Functional specifications / files: extend lib/zaq/channels/jido_chat_bridge.ex and shared bridge/runtime API as needed. Read module responsibilities first. Resolve and load adapter in Channels, check its optional logout/1 callback and synchronously await it on the selected live listener. Unsupported callback allows normal teardown; implemented callback failure/exit propagates. Keep logout preparation free of premature runtime stop: current finish_saved_logout also stops runtime, so it cannot be reused unchanged. Preserve webhook-specific teardown. Define missing-listener behavior from adapter cleanup contract and distinguish local cleanup from remote unlink.\nTests to add before implementation: shared bridge tests for supported/unsupported logout, blocking callback proving no early teardown, error/exit, selected profile isolation, missing listener, and webhook adapter behavior. Use the real storage boundary where credential access matters.\nBranches/paths validated: load failure, callback absence, success, explicit error, process exit, runtime absent, unrelated adapter. Review dependency callback return contract rather than assuming it.\nMocking plan: existing offline WhatsApp transport and controllable external adapter callback; keep host routing and storage real. Inject through established opts/config seams, no global test-only hooks.\nDocumentation: bridge function contracts and docs/services/channels.md adapter disable ownership.\nAction reuse assessment: extend JidoChatBridge and existing runtime-sync infrastructure; adapter callback is local-only lifecycle detail, not a new public Action/tool. Input is trusted resolved connector plus selected runtime; output :ok/error. Application supplies authorized context; adapter selection does not grant permissions. Consumers are shared disable/Delete through existing service boundaries.\n\nRequired policies: docs/agent-tools.md, docs/action-reuse.md, docs/testing-approach.md, docs/WORKFLOW_AGENT.md, docs/services/channels.md and docs/services/engine.md. Read docs/services/system-config.md before touching credential boundaries. Recheck live main/branch and existing callers before implementation. Dependencies are sequential to avoid parallel overlapping lifecycle edits.",
+  "id": "zaq-ojt.1",
+  "labels": [],
+  "parent": "zaq-ojt",
+  "comments": [
+    {
+      "text": "Implemented optional Channels preparation on the shared runtime-sync flow. Jido loads configured adapter, skips absent logout callback, awaits implemented callback, preserves privilege checks, propagates failure/load/exit, and leaves runtime stopping to reconciliation. Removed premature stop/final-clear wrapper. Production GuardedStorage used by offline integration fixture. Focused callback/ordering/failure tests pass.",
+      "timestamp": "2026-10-22T14:59:31Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ojt.1] Extend shared Channels disable preparation with synchronous optional logout",
+  "type": "task",
+  "updated_at": "2026-10-22T14:59:32Z"
+}

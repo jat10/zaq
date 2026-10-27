@@ -1,0 +1,48 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T12:21:05Z",
+  "description": "Problem\nQuoted replies to an existing WhatsApp image can reach agent input as text-null quotes without access to the referenced attachment. The agent then says the image is unavailable and asks for a resend, even though the original image has a persisted attachment descriptor.\n\nEvidence\nTranscript ff01b6b0-b584-41e0-8bed-92efcdf973a0, 2026-10-15:\n- Position 5 stores image/jpeg attachment metadata for original external message 3A8CE282B916C91C8AA7.\n- Position 38 (\"here is the image\", 11:58 UTC) has attachments=[] and reply_context referencing that original, with text=null.\n- Position 39 claims the quoted content is unavailable; execution made no download_document call.\n- Position 31 similarly quotes the image; position 32 asks to answer the last question, and position 33 claims the image is unavailable without a tool call.\n- InputPrompt.append_reply_context/2 emits \"Original text unavailable.\" for null text and intentionally does not resolve references. HistoryLoader formats quotes and each message's own attachments separately.\nEvidence establishes the missing quote-to-attachment resolution path; the complete model input and precise reason for each model decision were not captured in this investigation.\n\nRelated work\nRelated to zaq-df1 (MIME option mismatch). That issue fixes actual download failures; this issue makes quoted attachment references available to the agent. Validate both together for the observed image flow.\nFollow-up to zaq-6zd (quoted reply context propagation), which explicitly excluded original-media retrieval. Reuse its scoped reply context and existing input/history projection.\nThese are related issues, not an assumed implementation blocking dependency.\n\nProposed scope\nResolve quoted message attachments through existing authorized history lookup using provider, connector/config, source room/scope, and external message identity. Hydrate durable descriptors into lazy Records/handles and associate them with the quote in agent input. Avoid fetching media bytes merely to format input. Distinguish absent quoted text from unavailable media. Keep unresolved/inaccessible references explicit and safe.\n\nAction reuse assessment\nCandidates: existing Engine authorized TranscriptHistory/history projection, HistoryLoader, InputPrompt, CommunicationMedia hydration, and download_document Action.\nDecision: extend/reuse existing history and materialization operations; no new tool or duplicate download path. Confirm exact lookup owner before implementation.\nBoundary/contract: Engine owns authorized history resolution; quote data is untrusted and never a permission grant. Preserve NodeRouter service boundaries, actor identity, connector/room scope, and runtime alias scope.\nVerification: focused authorized history-to-agent-input tests plus integrated download coverage with zaq-df1.\n\nAcceptance criteria\n1. A reply to a stored accessible image exposes the referenced lazy attachment to agent input even when quoted text is null and the current message has no new attachment.\n2. The quote remains explicitly associated with the original message and attachment, including when replayed from canonical history.\n3. Unknown, deleted, malformed or inaccessible originals degrade gracefully without claiming absent text proves media absence.\n4. Cross-person/room/connector references cannot broaden access; identical external IDs in different scopes cannot select the wrong image.\n5. Text-only replies, ordinary attachments and native-thread behavior remain unchanged.\n6. Add focused quote-resolution and history/input integration regression coverage; validate materialization with zaq-df1.\n7. Follow repository validation lifecycle and obtain human approval before changing existing test behavior.\n\nAuthorization\nIssue creation only. No code changes, provider dependency changes or implementation performed.",
+  "id": "zaq-vl9",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Plan: Engine TranscriptHistory batches quote lookups strictly within the authorized transcript and exact provider/config/room/source namespace; project durable quote attachments without modifying stored messages. ExecutionHistory returns the authorized current input quote separately. Existing Engine Api hydration handles both historical and current quotes via confidential Channels dispatch. InputPrompt/HistoryLoader/Executor format hydrated aliases under each quote. Existing source-author redemption checks remain intact. No new Action: extend existing projection and materialization operations; quote resolution is an internal projection detail, not an independently exposed command. Invariants: quotes never grant access; malformed/cross-scope references resolve no attachments; no eager media bytes; no persisted handles. Add focused domain, property and actual Executor integration tests; no UI or new browser E2E. Existing assertions will remain unchanged.",
+      "timestamp": "2026-10-15T12:24:18Z"
+    },
+    {
+      "text": "Action reuse review confirmed existing DownloadDocument, TranscriptHistory, ExecutionHistory, Engine Api hydration, InputPrompt and runtime alias store remain the sole paths. No new tools, provider branches, grants, persistent runtime state or eager media downloads. Service owners updated: docs/services/materialization.md and docs/services/engine.md. mix q passed; expanded adjacent tests and final precommit are next. Numerical coverage phase remains after human review per WORKFLOW_AGENT Phase 6.",
+      "timestamp": "2026-10-15T12:32:58Z"
+    },
+    {
+      "text": "Expanded validation PASSED: 6 doctests, 10 properties, 256 tests, zero failures (128.6s), covering Executor, Pipeline, RequestControl, history projection/hydration, existing delayed-image recovery, new quoted-image real-agent flow and MIME handling. mix q PASSED. Existing test assertions/scenarios preserved. Final mix precommit is running; logs in /tmp/zaq-image-precommit.log. No browser E2E needed for this backend regression. No commits or pushes authorized/performed.",
+      "timestamp": "2026-10-15T12:35:00Z"
+    },
+    {
+      "text": "Read-only IEx cross-check against the real incident confirmed original position 5 and quoted input position 38 have identical source_account_key and that quote provider/config/room/source_scope exactly match the authorized transcript. The new lookup therefore covers the stored WhatsApp incident, including its text-null quote. No data migration or history mutation needed.",
+      "timestamp": "2026-10-15T12:46:43Z"
+    },
+    {
+      "text": "Read-only IEx validation against actual development history succeeded through Conversations.list_canonical_messages/3 using persisted Person 136: transcript ff01b6b0-b584-41e0-8bed-92efcdf973a0, after_position:37/up_to_position:38/limit:1 returned position 38 with zero own attachments and one resolved quoted image/jpeg attachment. This exercises the updated authorized projection against the exact failing incident. No media download, provider message, data mutation or bypassed permission check was used.",
+      "timestamp": "2026-10-15T12:51:44Z"
+    },
+    {
+      "text": "Final validation PASSED against final changes: mix q; expanded image/agent suite (6 doctests, 10 properties, 256 tests, zero failures); affected timezone/UI suite (205 tests, zero failures, seed 59818); mix precommit (497.6s, 17 doctests, 198 properties, 9963 tests, zero failures, one existing skip, 117 excluded). Precommit's MCP transport timed out at 300s, but the background process completed normally; exit status 0 verified in /tmp/zaq-image-precommit-final.status and summary in /tmp/zaq-image-precommit-final.log. Initial timezone interference repaired under zaq-krc by scheduling only; assertions/fixtures unchanged. Implementation and local validation are ready for review. No commits/pushes performed. Issues remain open for review/coverage/landing under repository workflow.",
+      "timestamp": "2026-10-15T12:55:47Z"
+    },
+    {
+      "text": "User requested discarding this implementation to restart from a clean baseline. All associated uncommitted code, documentation and test changes were removed. Working tree is clean at 4281f333c. Previous validation results describe the discarded implementation, not the current code. Investigation findings remain; implementation is no longer present.",
+      "timestamp": "2026-10-15T14:54:28Z"
+    },
+    {
+      "text": "Jad requested replacement of inline quote handling with external_thread_id on PR #847 on 2026-10-19. Migration plan: zaq-s67. Do not extend/reapply inline quote plumbing while that plan is executed. This note preserves historical work/status and does not claim its implementation is reverted yet.",
+      "timestamp": "2026-10-19T15:06:36Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-vl9] Resolve quoted image attachments in agent reply input",
+  "type": "bug",
+  "updated_at": "2026-10-19T15:06:36Z"
+}

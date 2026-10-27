@@ -1,0 +1,29 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-10n.4"
+  ],
+  "blocks": [
+    "zaq-10n.7"
+  ],
+  "created": "2026-10-14T12:42:23Z",
+  "description": "Functional specifications/files: extend existing test/zaq/people/whatsapp_profile_test.exs, generic identity/discovery tests, relevant Engine/ingestion caller tests and sibling adapter tests. Audit the final diff for provider rules hidden in generic names, metadata flags or helpers. Verify direct callers share the contract and no duplicate implementation remains.\nTests to add before implementation: thin end-to-end module integrations across adapter -\u003e bridge -\u003e resolver -\u003e People for two providers, plus phone/LID-specific adapter fixtures. Cover late enrichment, user edits including @ names, connector isolation, authoritative conflict rollback, repeated/concurrent discovery, lookup failure.\nBranches/paths validated: normal/error paths and all inventoried callers; no phone/display-name merge from enrichment. No new feature E2E because there is no changed UI journey.\nDocumentations: update existing service/architecture descriptions and record validation evidence in Beadwork/PR; follow docs/documentation.md.\nAction reuse assessment: no new executable operation; tests verify all consumers reuse the preceding shared APIs. Recheck earlier reuse assessments and public boundaries. Follow issue validation lifecycle for changed code and sibling mix quality/default non-live tests; do not enable live WhatsApp tests or use credentials.\nPolicies: read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md and applicable module/service guidance before implementation. For sibling changes read ../jido_chat_whatsapp/AGENTS.md. Follow the authoritative validation lifecycle; preserve existing assertions. No commits, pushes or merges are authorized by this plan.\nMocking plan: keep internal modules and database boundaries real; isolate external transport at its existing contract, with connection-scoped offline fixtures. Avoid global configuration mutation.\nE2E: no new UI or user journey; unit, property and thin integration tests provide the required coverage. Reassess if scope changes.\n\nScope correction from user: this integration has not shipped. Remove obsolete legacy-JID repair branches and update/remove the test dedicated solely to historical repair. This is an intentional scope change, not permission to weaken active-contract tests. Retain tests for late enrichment of newly created incomplete profiles, missing names/phones, and preservation of explicit edits. No migration or historical data cleanup is required.\n\nAdapter alignment evidence: inspected installed deps/jido_chat_mattermost, jido_chat_telegram and jido_chat_discord. Mattermost Adapter.get_user/2 builds display_name from first/last name with username fallback and returns a map. Telegram incoming messages expose external_user_id, username and first-name display_name. Discord incoming messages expose external_user_id, username and global_name/username display_name. Telegram/Discord adapters do not implement get_user/2 in these versions. Shared Jido.Chat.Adapter accepts UserInfo or map and optional profile lookup. Preserve this existing canonical Incoming plus optional profile lookup pattern; do not require all adapters to implement a new evidence/provenance/refresh protocol. Any ZAQ ownership/replacement semantics must remain minimal internal rules and preserve these existing callers. Retain unsupported-profile fallback. Verify these three providers as compatibility cases.\n\nCross-repository acceptance: verify the canonical name normalization runs inside ../jido_chat_whatsapp before the message reaches ZAQ. Confirm ZAQ integration tests compile/use that modified adapter. Report sibling focused/default non-live tests and quality results alongside ZAQ checks, with repository paths. An adapter issue is not complete if only ZAQ fallback cleanup changed.\n",
+  "id": "zaq-10n.6",
+  "labels": [],
+  "parent": "zaq-10n",
+  "comments": [
+    {
+      "text": "Focused ZAQ suites passed (86 tests, 1 property before final generic Resolver change; 50 tests after it). Sibling adapter full non-live suite passed (162 tests, 5 properties) and new focused map/Amarula test passed (19 tests). ZAQ mix q passed after final source change. No new feature E2E. Final mix precommit is still running; final review/coverage gate remains.",
+      "timestamp": "2026-10-14T13:09:17Z"
+    },
+    {
+      "text": "Final focused regression result: ZAQ 86 tests plus 1 property passed across discovery/account/resolver suites; subsequent Resolver-specific rerun 50 tests passed. Adapter default non-live suite 162 tests plus 5 properties passed; after adding Amarula input test, focused adapter 19 tests passed and mix quality passed. No provider names or JID suffixes remain in People/IdentityResolver/Resolver.",
+      "timestamp": "2026-10-14T13:25:02Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-10n.6] Validate provider-neutral discovery across all consumers",
+  "type": "task",
+  "updated_at": "2026-10-14T13:25:02Z"
+}

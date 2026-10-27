@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T21:32:58Z",
+  "description": "Follow-up to workspace-planning work-d8a. User approved local ../jido_chat_whatsapp dependency and explicitly approved existing test contract changes in this conversation: WhatsApp raw facts replace empty raw; fabricated empty-raw Telegram media rejected, real Telegram media succeeds. Remove shared sanitized_media_facts and unused optional conversation_type/1 callback/implementations; preserve provider normalize/3, sender matching, timestamp and secret exclusion. Update channels docs. Action reuse: local-only normalization; reuse existing provider normalize/3 APIs, no new operation, Action or tool. Synchronous pure mapping has no lifecycle changes. Validation: mix q, focused normalization and bridge tests. No E2E needed: no UI change. Roll back if native adapter facts fail or confidentiality regresses. No commit/push. Dependency remains local until upstream fix is published.",
+  "id": "zaq-if8",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implemented local ../jido_chat_whatsapp dependency, removed shared sanitized_media_facts and optional conversation_type/1 callback plus provider opt-ins. User explicitly approved test expectation updates via async reply. Real Telegram adapter retains raw chat/from/date; no fallback needed. WhatsApp DM/group media tests retain facts, timestamps, membership and secret exclusion, reject empty/mismatched raw. Updated channels contract and jads_finding resolution. Validation: mix q passed; focused sanitized_media_normalization, incoming_normalization and jido_chat_bridge tests: 199 tests + 2 properties, 0 failures; git diff --check clean. mix.lock unchanged; local path bypasses old Git pin. Upstream fix remains uncommitted; published pin needed for standalone delivery. Full mix precommit not rerun at this issue-level stage. No commit/push; prior user changes preserved.",
+      "timestamp": "2026-10-15T21:35:44Z"
+    },
+    {
+      "text": "User pushed upstream and requested restoring GitHub. mix.exs restored to jat10/jido_chat_whatsapp branch feat/whatsapp-adapter-lifecycle-and-message-contracts. mix deps.update jido_chat_whatsapp changed only its lock entry to ccd638f198f6063e5ae612875c24e0cad597ad5e. Verified fetched source contains safe media facts. Focused tests against GitHub dependency: 12 tests + 2 properties, 0 failures. Updated report to remove stale local-only delivery limitation.",
+      "timestamp": "2026-10-15T21:37:40Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-if8] Consume upstream media facts and remove shared sanitized fallback",
+  "type": "task",
+  "updated_at": "2026-10-15T21:37:40Z"
+}

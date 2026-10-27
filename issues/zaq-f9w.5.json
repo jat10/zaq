@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-f9w.4"
+  ],
+  "blocks": [
+    "zaq-f9w.6"
+  ],
+  "closed_at": "2026-09-29T15:41:13Z",
+  "created": "2026-09-29T14:30:47Z",
+  "description": "Task-owned constrained run/document/chunk/attempt schema. Atomic preparation/success/retry transactions. Dedicated advisory-lock session; stop scheduling on loss; fence commits. Test crashes, integrity, explicit retry.",
+  "id": "zaq-f9w.5",
+  "labels": [],
+  "parent": "zaq-f9w",
+  "comments": [
+    {
+      "text": "Action reuse assessment: ordinary Ingestion IngestJob/IngestChunkJob track production Oban jobs and retry semantics, but do not own an isolated benchmark run, source hashes, owner generation or stale-worker fencing. Ecto Repo transactions and PostgreSQL advisory locks are the relevant primitives. Decision: local-only benchmark Checkpoint/Lease persistence boundary; no new Action or agent tool because calls are internal runner lifecycle steps and must share one held corpus DB session. Inputs: run/config/source identity, prepared chunk payloads, owner lease, result/failure; outputs: constrained state and fixed errors, no actor-facing API; side effects confined to corpus DB, explicit retries only. Tests: atomic preparation/success/rollback, uniqueness, crash/reacquire, lock contention, stale lease rejection, no secret/provider body persistence.",
+      "timestamp": "2026-09-29T15:26:32Z"
+    },
+    {
+      "text": "Implemented dedicated constrained checkpoint migration and Ecto schemas; session advisory lock with persisted generation/token and stale-owner checks; atomic document preparation, vector+checkpoint success, redacted failure, explicit retry, and completion transactions. Verified 8 focused ExUnit tests covering resume, crash/reacquire, idempotence/conflict, vector rollback, duplicate success refusal, redaction, retry, stale commit. mix q passes. Corpus schema setup and runner integration remain in zaq-f9w.6.",
+      "timestamp": "2026-09-29T15:41:08Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-f9w.5] Persist checkpoints and fencing",
+  "type": "task",
+  "updated_at": "2026-09-29T15:41:13Z"
+}

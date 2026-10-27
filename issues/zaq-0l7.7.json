@@ -1,0 +1,51 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-0l7.11",
+    "zaq-0l7.27",
+    "zaq-0l7.6",
+    "zaq-e5z.10",
+    "zaq-iie.2",
+    "zaq-r4n.2",
+    "zaq-xmt.2"
+  ],
+  "blocks": [
+    "zaq-0l7.8"
+  ],
+  "created": "2026-10-11T09:54:45Z",
+  "description": "Files:\n\n\nFunctional specifications:\nRecord explicit approval after completed feature can be reviewed; reopen on material UI changes. Gate E2E authoring only, not backend/unit/component work.\n\nTests before implementation:\n- Not applicable to human review; existing checks must pass\n\nBranches validated:\n- two accounts\n- QR expiry\n- retry failure\n- sync disabled\n- independent disable\n\nDocumentation:\n- Beadwork approval evidence\n\nAction reuse assessment:\nNot applicable: human review, no executable operation.\n\nValidation:\nFollow docs/WORKFLOW_AGENT.md validation lifecycle; tests before implementation, focused checks per issue, final gate before approval. No live account connection or send without scoped authorization.\n\nMocking:\nExternal Amarula transport only; use real internal boundaries and isolated DB/process/storage fixtures; inject config and clock without global mutation.\n\nPolicy:\nRecheck module responsibilities, docs/services/channels.md, Action reuse, system-config and testing guidance before coding. BO calls use explicit NodeRouter Events; nil actor never grants permission.\n\n## PR #847 remediation scope (zaq-e5z)\n\nReused completed-feature UX approval gate for zaq-e5z. Newly blocked by zaq-e5z.10; preserve all historical prerequisites. The user's agreement to the remediation plan is NOT approval of completed UX and does not close this gate.\nReview the actual implemented WhatsApp journey: QR scan still displays phone and available name; same saved account on relink; non-super-admin enable denied with no state/runtime/QR effect; super-admin enable succeeds or clearly reports runtime pending; saved account with failed activation can Disable/Delete without a listener; cleanup failure is visible and retryable; other account unaffected; close/retry/expiry and polling behavior preserved. No live device access or real messages without separate authorization.\nRecord approver, exact revision, date and message/review source once explicit approval is given. Reopen for material UX changes. Until then do not author/expand new E2E journeys in zaq-0l7.8; immediate unit/integration/LiveView/property tests and running existing E2E remain allowed. Tests/mocking: human review gate, no production changes; use existing offline demo/fixtures. Documentation: this issue's approval evidence. Action reuse: not applicable, no executable operation.",
+  "id": "zaq-0l7.7",
+  "labels": [],
+  "parent": "zaq-e5z",
+  "comments": [
+    {
+      "text": "Completed UI ready for explicit human UX approval. Requested asynchronously with QR/connected/expired previews on 2026-10-11. Implementation committed per issue; no E2E authoring until approval per docs/testing-approach.md. Awaiting reply.",
+      "timestamp": "2026-10-11T12:21:45Z"
+    },
+    {
+      "text": "zaq-r4n WhatsApp disable confirmation is implemented and ready for UX review. Dialog warns disabling logs out the selected profile and requires relinking; Confirm logs out/disables, Cancel/Escape/backdrop has no side effects. Other adapter toggles and WhatsApp enablement retain existing behavior. All immediate checks pass, including mix precommit (11292 tests, 274 properties, 48 doctests, zero failures). Approval remains pending; no new browser E2E authored.",
+      "timestamp": "2026-10-16T14:53:33Z"
+    },
+    {
+      "text": "UX review now includes zaq-0l7.27: enabling WhatsApp automatically opens the selected saved profile connection modal after successful startup. Review QR relinking after logout, connected-without-QR, expiry/retry and Close preserving the running connector. Other adapters retain default presentation. Implementation and focused checks complete; final full validation running. Approval remains pending.",
+      "timestamp": "2026-10-16T15:31:01Z"
+    },
+    {
+      "text": "zaq-0l7.27 implementation is complete and closed. WhatsApp Enable opens the same saved profile connection modal after successful runtime startup; QR when relinking is needed, connected status for an existing valid session, scoped retry, Close preserving the saved runtime. Focused tests and mix q pass; final precommit passes with 4 Erlang schedulers: 10072 tests, 201 properties, 17 doctests, zero failures. Ready for explicit UX review covering both Enable and Disable. No new browser E2E authored; approval remains pending.",
+      "timestamp": "2026-10-16T15:59:56Z"
+    },
+    {
+      "text": "Reparented from zaq-0l7 to zaq-e5z for the agreed PR #847 remediation. Existing ID, status, history and dependency edges retained. This prevents Beadwork external-blocker rollup from hiding otherwise ready implementation roots; no implementation or gate approval is implied.",
+      "timestamp": "2026-10-21T09:47:20Z"
+    },
+    {
+      "text": "All PR #847 remediation implementation and integration audit issues are complete. Ready for actual completed-UX review of /bo/channels/retrieval/whatsapp: current super-admin enables exact saved profile, QR/name/phone preserved, pending startup shown, non-super-admin denied with no enable/runtime/QR effect, missing-listener Disable/Delete and isolated cleanup, retry/expiry/close preserved. Approval requested asynchronously this turn; no approval received, gate remains OPEN. Existing browser evidence: Chromium/WebKit focused 128 pass; Firefox executable missing; full-suite completion pending. No new feature E2E authored.",
+      "timestamp": "2026-10-21T11:39:03Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-0l7.7] Human UX approval before feature E2E authoring",
+  "type": "task",
+  "updated_at": "2026-10-21T11:39:03Z"
+}

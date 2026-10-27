@@ -1,0 +1,28 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-0l7.16"
+  ],
+  "closed_at": "2026-10-13T08:49:18Z",
+  "created": "2026-10-13T08:31:06Z",
+  "description": "Proposed, not implemented. Owner: ../jido_chat_whatsapp. Add an OTP application/supervised transport runtime hidden behind Transport; reconcile AGENTS.md runtime wording. Reuse ConnectionWorker and AmarulaClient instead of parallel connection orchestration. Replace caller-owned lazy start with a single stable supervisor owner and define legacy-host startup compatibility. Preserve host listener child specs, profile isolation, storage contracts, stop versus logout, and opaque handles. Detect shared runtime loss so listeners cannot retain stale connected state; recover with bounded retries/restart behavior and fresh attempt identity. Decide idle infrastructure behavior on non-Channels nodes without starting profiles automatically.\nAction reuse assessment: local-only; OTP lifecycle is not an independently authorized business Action. Inputs package startup/options and adapter listener specs; outputs standard OTP child/start results and sanitized transport errors. Consumers adapter listeners and pairing CLI; no agent/workflow exposure. Verify dependency-only boot, simultaneous profiles/start races, shared-root and registry/connection-supervisor crashes, stop-one/start-another, host shutdown, stale cleanup, CLI lifecycle, and custom transport behavior. Run package non-live tests and quality gate; update package README/contracts and test setup.",
+  "id": "zaq-0l7.15",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Implementation authorized in the local sibling checkout. Chosen design: package OTP application owns Amarula runtime and a health sentinel under one_for_all; optional transport connection_processes callback allows listener relays to detect shared infrastructure or instance loss. Existing host-owned listener supervision/restart policy is preserved. Bounded readiness wait avoids racing runtime restart. start_runtime: false supports explicitly host-owned legacy infrastructure during migration; default starts idle infrastructure, never profiles. Action reuse remains local-only OTP lifecycle, extending Transport and ConnectionWorker. Rollback/reject if profile isolation, stale cleanup, storage preservation, custom transports, or listener shutdown semantics regress. No ZAQ application edits in this step.",
+      "timestamp": "2026-10-13T08:35:29Z"
+    },
+    {
+      "text": "Implemented in local ../jido_chat_whatsapp working tree, not committed. Added package Application and transport-owned AmarulaRuntime/RuntimeHealth, one_for_all generation rebuild, bounded infrastructure-start retries for old process name teardown, readiness wait, and optional Transport.connection_processes lifetime monitoring with partial-start cleanup. Added boot-time start_runtime: false legacy mode without adoption. Updated package docs/agent guidance and migrated synchronous runtime fixtures to application-owned tree; cold VM storage probes now start package. Validation: mix q passes (format, warnings-as-errors compile, Credo, Dialyzer, Doctor); mix coveralls full non-live suite passes; git diff --check clean. Runtime regression cases kill package runtime, shared root, both registries, connections supervisor, and one instance owner; verify two-profile recovery/isolation, stale cleanup, stop/start, no caller ownership, app shutdown, legacy mode, refusal to adopt, and watcher startup cleanup. No live WhatsApp tests, commits, pushes, or ZAQ application changes. Local package uses new startup default; ZAQ must opt out temporarily or remove its shared child in zaq-0l7.16 before booting against it.",
+      "timestamp": "2026-10-13T08:48:49Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.15] Own shared transport startup and recovery in jido_chat_whatsapp",
+  "type": "task",
+  "updated_at": "2026-10-13T08:49:18Z"
+}

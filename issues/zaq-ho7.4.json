@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-ho7.3"
+  ],
+  "blocks": [
+    "zaq-ho7.5"
+  ],
+  "closed_at": "2026-10-20T13:23:20Z",
+  "created": "2026-10-20T10:56:21Z",
+  "description": "Revised design authorized by the user after rejecting hardcoded history flags. This description supersedes the original fixed-false history requirements and historical completion comments. Preserve useful completed reply-policy work and RAM enforcement; rework the history configuration ownership and validate the composed result.\nRetain implemented connector-owned reply-policy reader, refresh fingerprint and minimal config registry. Verify existing listener_opts -\u003e optional prepare_connection -\u003e listener_child_specs forwards each connector's saved ingress to its selected adapter. Do not add provider-specific history handling to generic bridge.\n\nInspect runtime restart/refresh identity: a saved history-option change must reach the running listener through existing generic lifecycle, restarting if required; a policy-only change should keep current lightweight handler refresh. Avoid stale options after confirmation/handoff or relink. Extend existing generic comparison only if evidence shows it misses listener configuration changes.\n\nTests: creation/persisted true and false reach actual WhatsApp listener configuration in both startup paths; two connectors remain independent; changing flags updates/restarts listener as appropriate; policy-only refresh retains prior behavior; Telegram/Mattermost/Discord unaffected. Preserve mentions/DM/self/history behavior, sole sink, authorization and trusted binding. Keep existing reply-policy and shared-adapter tests strong. No UI or new callback/MFA.\n\nRequired policies: AGENTS.md; docs/agent-tools.md; docs/WORKFLOW_AGENT.md;\ndocs/exec-plans/PLAN_STRATEGY.md; docs/action-reuse.md; docs/testing-approach.md;\ndocs/services/channels.md. Read sibling AGENTS.md before sibling changes, Engine\nguide before persistence work, and documentation hygiene before updating docs.\nRead system-config guidance if touching encrypted fields (which should be avoided).\nPreserve existing assertions. Obtain explicit approval before changing existing test\nbehavior; add focused tests first. No UI feature/E2E work is required by this refactor.\nCommit, push, publishing dependency revisions, and merge require separate authorization.\n",
+  "id": "zaq-ho7.4",
+  "labels": [],
+  "parent": "zaq-ho7",
+  "comments": [
+    {
+      "text": "Bridge now reads pure per-connector policy projection, retains normalized mention/DM/self/history and subscribed-thread paths, and includes effective policy in refresh fingerprint. Registry now contains exactly bridge/adapter/ingress_mode. Existing shared adapter fixture mechanically moved the same policy into connector settings, with assertions/scenario preserved. New real Telegram ingress tests prove independent persisted connector policies, mentions/DMs, self/history suppression, and same-State handler refresh after policy-only save. mix q passes; combined relevant suites pass 407 tests + 12 properties. Local ZAQ deps/jido_chat_whatsapp/adapter.ex mirrors the uncommitted sibling adapter for validation; current lock still points to previously published a055569, so fresh checkout delivery requires publication and pinning later.",
+      "timestamp": "2026-10-20T11:27:59Z"
+    },
+    {
+      "text": "Generic saved_connection_options/2 now forwards normalized connector ingress, matching normal listener startup; no provider branch added. Existing ingress listener fingerprint already triggers restart, so lifecycle production code needed no change. New tests prove persisted flag combinations reach real WhatsApp child specs on saved and trusted-auth paths, preserve profile/binding scope, and generic runtime sync replaces State/listener on ingress change. Existing policy-only refresh suite remains green. First combined run exposed new assertion comparing intentionally different sink closures; corrected new test to compare profile/context/scope. Next run used stale compiled dependency; forced test-env dependency compile and all 320 tests + 7 properties pass. Local ignored adapter source matches sibling; lock unchanged. mix q passed. No existing assertions weakened.",
+      "timestamp": "2026-10-20T13:23:19Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-ho7.4] Verify generic bridge forwards saved options and refreshes the correct runtime",
+  "type": "task",
+  "updated_at": "2026-10-20T13:26:28Z"
+}

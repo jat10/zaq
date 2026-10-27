@@ -1,0 +1,32 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-f9w.2"
+  ],
+  "closed_at": "2026-09-29T14:38:43Z",
+  "created": "2026-09-29T14:30:44Z",
+  "description": "Save docs/exec-plans/liverag-corpus-preparation.md with approved contracts, dedicated-session locking, stale-worker fencing, explicit inspection/retry, acceptance stages, and issue links.",
+  "id": "zaq-f9w.1",
+  "labels": [],
+  "parent": "zaq-f9w",
+  "comments": [
+    {
+      "text": "Action reuse: not applicable — this step records the approved design and changes no executable operation. Source discovery for steps .2-.8 will be rechecked before each implementation.",
+      "timestamp": "2026-09-29T14:34:14Z"
+    },
+    {
+      "text": "Drafted docs/exec-plans/liverag-corpus-preparation.md and linked it from docs/README.md. Verified linear .1→.8 dependency graph. Input pin remains unresolved: epic/#819 and archived #526 name LiveRAG/Benchmark but provide no approved revision or SHA-256. Asked user for the approved pin before accepting .1 or starting extraction.",
+      "timestamp": "2026-09-29T14:36:39Z"
+    },
+    {
+      "text": "Pinned LiveRAG/Benchmark at revision 9deaaa8efdbf4e04be758a0333736a2ccd0216a2; downloaded 4,718,428 bytes and verified SHA-256 8282bd5cf806030a432674abefe2f02d8f8134561dbe42c1e14b784a1f67010e against upstream LFS. Contract and docs index added; local links checked (none missing), git diff --check clean. Documentation-only: mix q/isolated application tests not applicable. Changes remain uncommitted per user instruction.",
+      "timestamp": "2026-09-29T14:38:40Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-f9w.1] Save approved corpus plan",
+  "type": "task",
+  "updated_at": "2026-09-29T14:38:43Z"
+}

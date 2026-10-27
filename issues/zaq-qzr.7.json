@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-qzr.6"
+  ],
+  "blocks": [
+    "zaq-qzr.8"
+  ],
+  "closed_at": "2026-09-17T23:47:12Z",
+  "created": "2026-09-17T17:46:50Z",
+  "description": "\n**Goal:** Complete the actual boundary replacement after P1/P2/P3 contracts are ready.\n\n**Files/modules affected:** `step_runner.ex`, `map_node_builder.ex`, `dag_builder.ex`; StepRunner, map and DAG tests; workflow service documentation.\n\n**Exact behavioral change:** Replace both wrapped-action direct-call branches with one `Jido.Exec.run(actual_module, action_params, enriched_context, explicit_opts)`. Route map substeps through explicitly configured outer Jido StepRunner execution for boundary parity. Remove ZAQ `Task.async/yield/shutdown`, `retry_call`, duplicate attempt constant/loop, and raw timeout special-casing made obsolete by normalized failure classification. Handle returned execution failures rather than depending on action rescue/re-raise. Keep a narrow infrastructure failure safeguard so ZAQ persistence failures are not mistaken for action failures.\n\nStepRunner retains write-before recording, context/permissions, control handling, branch/fork policy, replay, persistence, logs and cascade. Successful `PendingApproval` metadata is handled before business-output persistence/decorations; retained metadata on validation failures never turns an error into waiting. Jido validates output before ZAQ injects cascade/index. Preserve pre-validation submitted input as the audit input and document that defaults/transforms are delivered to the action; do not run validation twice merely to rewrite audit input. No wrapped action execution path may retain `mod.run/2` fallback.\n\n**Dependency:** Requires all earlier steps. Mechanism removal and executor switch must share a commit/PR so there is never a period with two owners or no timeout/retry enforcement.\n\n**Tests required before implementation:** Minimal EncodeBase64/DecodeBase64 inputs through persisted ordinary, timed and map paths; required/type/enum/refinement failures prevent run/2; input/output hooks fire at the proper frequency; output failure persists useful errors after execution without being retried as validation success. Context actor/router/source_request/cascade, nil-identity defaults, explicit overrides, logs/metadata, failure triples, crash and timeout cleanup, fork isolation and exact attempt counts. Assert actual action metadata replaces wrapper metadata only inside the actual action context.\n\n**Migration/regression risks:** Jido child processes alter process-local state, Ecto Sandbox and Mox ownership; use supported propagation/allowance, never production global test state. Input validation runs before attempts; output rejection occurs after side effects. Do not restore exception propagation or skipped validation to satisfy old tests.\n\n**Action reuse/docs:** Reuse Jido.Exec, existing Actions and StepRunner persistence. No new execution engine. Update stale direct-call/exception/timeout statements in owning module docs and `docs/services/workflows.md`; leave the two reports historical, with links to the eventual implementation if needed.\n\n\n\nExecution notes: Source specification transferred verbatim from docs/exec-plans/active/issue-706-implementation-plan.md. Recheck Action reuse against live source before starting. Mocking plan: keep internal boundaries real; mock only external APIs. Branches/paths validated: success, failure and regression paths enumerated above. Backend only; no new feature browser E2E. Preserve deployment grouping: 1; 2–4 atomic; 5; 6–8. User authorized implementation; architecture review must be recorded for driver. Issue-level validation follows docs/WORKFLOW_AGENT.md.",
+  "id": "zaq-qzr.7",
+  "labels": [],
+  "parent": "zaq-qzr",
+  "comments": [
+    {
+      "text": "Reuse rechecked: reuse actual EncodeBase64/DecodeBase64 Actions and Jido.Exec; retain StepRunner as cursor/context/control owner and Runic ActionNode as adapter. Remove direct-call, Task timeout and retry loop together with executor wiring. Existing worktree edits belong to this continuing authorized task; preserve unrelated untracked agent guidance.",
+      "timestamp": "2026-09-17T23:36:47Z"
+    },
+    {
+      "text": "Executor migration and mechanism removal complete together in working tree: inner Jido.Exec, explicit outer DAG/map options, checked completion persistence, normalized failures, no mod.run/Task/retry_call fallback. Minimal Base64 regressions failed on all 4 old paths before switch, now pass; persisted hook/default/refinement/output/retry assertions added. Updated only exposed fixture schema and obsolete error/HITL expectations. mix q passed; combined workflow/Condition/Base64 suite: 851 tests and 16 properties, 0 failures. No commit made; deployment unit 6-8 stays atomic.",
+      "timestamp": "2026-09-17T23:47:12Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[#706] 7. Switch to inner Jido.Exec and delete duplicate mechanisms atomically",
+  "type": "task",
+  "updated_at": "2026-09-17T23:47:12Z"
+}

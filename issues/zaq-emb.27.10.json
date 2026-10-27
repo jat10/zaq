@@ -17,11 +17,15 @@
     {
       "text": "User-approved legacy-test cleanup complete. Removed 11 impossible/redundant runtime identity cases identified in the read-only audit; restored ordinary Person/channel fixtures to People.create_person/add_channel; retained valid multiway identity, ownership, profile, notification, routing and audit invariants using distinct identities. Canonical email resolver keeps fast/slow activity-touch coverage without injected duplicate rows. Unique historical blank-name labels and channel-field consolidation live in PersonEmailDataMigrationTest. Action reuse: tests reuse existing People APIs; no new operation/tool. Seven-file affected run:215 tests+8 properties passed; final expanded migration run:10 tests+2 properties passed; mix q passed in isolated dev build. Prior full precommit predates this cleanup. No commit/push.",
       "timestamp": "2026-10-02T15:11:20Z"
+    },
+    {
+      "text": "During storage sink refactor validation (zaq-0l7.24.12.4), existing identity tests reproduced in isolation: connector_person_discovery_test.exs:166 expects DB NOT NULL person_identity_id but insert succeeds; identity_resolver_test.exs:17 expects different Person IDs across WhatsApp connectors while canonical identity returns same; identity_resolver_test.exs:110 and history_ingress_test.exs:137 fixtures create email People after ambiguous default email connectors. No Accounts/People/schema changes made in storage refactor and assertions were preserved. These block the full ZAQ precommit gate.",
+      "timestamp": "2026-10-14T22:10:43Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "Standardize external Person identity independently of connector links",
   "type": "task",
-  "updated_at": "2026-10-02T15:11:20Z"
+  "updated_at": "2026-10-14T22:10:43Z"
 }

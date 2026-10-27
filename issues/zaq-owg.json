@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-01T22:09:08Z",
+  "description": "Minimal public LiveView widget reusing chat components, Engine routing and WebBridge. No frontend or chat architecture redesign.",
+  "id": "zaq-owg",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-owg] Widget chat spike",
+  "type": "epic",
+  "updated_at": "2026-10-01T22:09:32Z"
+}

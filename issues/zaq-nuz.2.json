@@ -1,0 +1,25 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-nuz.1"
+  ],
+  "blocks": [],
+  "closed_at": "2026-10-22T07:43:52Z",
+  "close_reason": "closed with parent zaq-nuz",
+  "created": "2026-10-22T07:06:50Z",
+  "description": "Functional scope: add trusted canonical connector resource key to BO enable/disable execution and archive event options; preserve whole-operation scopes and nested callback propagation. Update docs/architecture.md and affected service guides to describe dispatch options and internal direct-entry guards.\nAction reuse: extend existing ChannelsLive connector_command/event construction; reuse existing NodeRouter dispatch coordination and Engine Actions/ConnectorLifecycle implementation. No new operation/Action/tool. Same actor, confidential flags, request shapes and outputs; no changes to permission checks.\nTests before implementation: add deterministic outer dispatch regression proving hold across multiple inner calls/local state transition; retain existing connector startup/disable/archive races and run LiveView enable/disable/archive tests. New public API absence check in preceding step.\nBranches: execution versus confirmation context; enable/disable/archive; saved/direct startup, stale snapshots, caller death and async/remote holds. Mocking: real boundaries and existing external adapter fakes; no new global state.\nDocumentation: authoritative architecture coordination section then Engine/Channels summaries. Read documentation owner before edits.\nValidation: mix q, focused NodeRouter/lifecycle/startup/LiveView suites, final mix precommit under workflow lifecycle. Coverage target handoff only after human review; no speculative coverage churn.\nRollback: reject lost direct-entry lock protection, changed timeout/async semantics, or assertion weakening. E2E unnecessary for this behavior-preserving refactor; no UX/markup change.",
+  "id": "zaq-nuz.2",
+  "labels": [],
+  "parent": "zaq-nuz",
+  "comments": [
+    {
+      "text": "Validation exposed a previously unused process boundary: Jido.Exec.run/3 runs enable/disable Actions in supervised timeout workers (deps/jido_action/lib/jido_action/exec.ex execute_action_with_timeout). An outer dispatch holds coordination in the parent, but the worker otherwise generates a new requester and contends with it. Fix within the existing confidential ConnectorCommand boundary: pass opaque router scopes in trusted internal Action context (never event opts/payload), and independently acquire them around execution. Preserve Jido validation, default timeout, actor revalidation and existing domain guards. This is required scope propagation, not a timeout/async redesign. Baseline BO failures reproduced with the current change; existing assertions remain untouched. The new real disable test will cover this supervised execution path.",
+      "timestamp": "2026-10-22T07:17:30Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-nuz] Coordinate outer BO lifecycle dispatches and validate integration",
+  "type": "task",
+  "updated_at": "2026-10-22T07:43:52Z"
+}

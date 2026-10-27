@@ -1,0 +1,27 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-uzu.3"
+  ],
+  "created": "2026-09-25T09:05:39Z",
+  "description": "Execute approved S2 in parent zaq-uzu. Revision stays under priv/python/. Extend\n    existing fetch tests and preserve the previous valid tree on normal failure.",
+  "id": "zaq-uzu.2",
+  "labels": [],
+  "parent": "zaq-uzu",
+  "comments": [
+    {
+      "text": "User authorized proceeding against S1 commit on jat10/crawler-ingest main before upstream merge. Verified SHA c726f63fc963f6d0acaaa297a580fc927d0e34ae serves requirements.lock through the existing www-zaq-ai raw URL (HTTP 200). Keep upstream PR #6 merge as a final review prerequisite. Action reuse recheck: extend existing Mix.Tasks.Zaq.Python.Fetch build-time operation; local-only Mix task, no runtime Action, BO call or agent tool. Preserve --repo/--branch/--commit overrides and HTTP stub tests.",
+      "timestamp": "2026-09-25T09:55:24Z"
+    },
+    {
+      "text": "S2 implementation is in ZAQ fix/issue-781 working tree and review patch /private/tmp/zaq-781-s2.patch. Default fetch reads tracked full SHA c726f63; explicit branch and commit overrides remain. Fetch stages 12 managed files plus manifest beside destination, publishes with old-tree rollback and cleans stage; stale files disappear. New publisher module owns rename/rollback. Validation: mix q passed; isolated fetch suite 1 property and 14 tests passed; real default fetch from www-zaq-ai raw URL succeeded and downloaded lock hash matches crawler commit. E2E not run because this step changes setup-time fetch only, not runtime ingestion/UI. Git staging/commit unavailable in this sandbox because common git index/object directory is outside writable roots. Keep issue in progress and S3 blocked until S2 is landed; after upstream PR #6 merges, revalidate or update pinned SHA before final review.",
+      "timestamp": "2026-09-25T10:12:08Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[#781] S2: Pin and transactionally fetch crawler",
+  "type": "task",
+  "updated_at": "2026-09-25T10:12:08Z"
+}

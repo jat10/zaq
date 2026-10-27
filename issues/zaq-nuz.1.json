@@ -1,0 +1,25 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-nuz.2"
+  ],
+  "closed_at": "2026-10-22T07:43:52Z",
+  "close_reason": "closed with parent zaq-nuz",
+  "created": "2026-10-22T07:06:49Z",
+  "description": "Functional scope: remove NodeRouter.with_coordination/2,3; retain direct ConnectorLifecycle and ConnectorRuntime startup protection using existing Coordination.capture/1 and run/2. Mechanically migrate existing locking/peer test setup to a shared test-only coordinate helper; retain all assertions and scenarios.\nAction reuse: reuse existing Coordination.capture/run, AsyncHandoff and lifecycle domain APIs. Local-only infrastructure; no new Action, tool, or public NodeRouter function. Contract: same resource IDs, independent holds, default timeout, async handoff, error/exception cleanup and authorization.\nTests before implementation: add public API absence test; confirm existing coordination/peer and lifecycle locking tests as baseline. Paths: local/remote/nested/async/caller death/contention; direct startup and direct workflow archive stay guarded.\nMocking: no new mocks; existing injected runtime and peer nodes only.\nDocumentation: NodeRouter public docs removal; architecture docs updated with consumer step.\nRollback: reject if any existing assertion needs weakening or any direct entry point loses its continuous hold.\nNon-goals: timeout semantics, async redesign, unrelated architecture. E2E unnecessary for behavior-preserving infrastructure refactor; existing feature UX/E2E gate remains separate.",
+  "id": "zaq-nuz.1",
+  "labels": [],
+  "parent": "zaq-nuz",
+  "comments": [
+    {
+      "text": "Removed public wrapper; direct domain/bootstrap consumers now use existing Coordination.capture/run. Existing scope fixtures migrated mechanically with assertions retained. API-removal test failed before removal and now passes. mix q passed after correcting alias order; focused suite: 49 tests and 2 properties, 0 failures.",
+      "timestamp": "2026-10-22T07:10:38Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-nuz] Remove public wrapper and preserve internal coordination entry points",
+  "type": "task",
+  "updated_at": "2026-10-22T07:43:52Z"
+}

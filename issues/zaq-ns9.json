@@ -1,0 +1,16 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-15T22:07:04Z",
+  "close_reason": "Reviewed PR #843 at c288dd562; report saved to docs/exec-plans/report/pr-843-review.md. Request changes: one medium failing media-history assertion, one low restart-documentation mismatch. Focused tests: 77 tests/2 properties pass; remaining changed suites: 757 tests/16 properties/6 doctests, one failure; isolated failure reproduced. mix q completed. No production/test edits or GitHub posting.",
+  "created": "2026-10-15T21:59:22Z",
+  "description": "Review PR head c288dd562 against refactor/webbridge, gather linked issue context, inspect changed runtime/storage/UI/identity paths and tests, validate concrete findings, and save report to docs/exec-plans/report. No production edits or GitHub posting. Action reuse: report-only work is not applicable; audit PR operations against docs/action-reuse.md.",
+  "id": "zaq-ns9",
+  "labels": [],
+  "priority": 2,
+  "status": "closed",
+  "title": "[PR #843] Review WhatsApp integration and write report",
+  "type": "task",
+  "updated_at": "2026-10-15T22:07:04Z"
+}

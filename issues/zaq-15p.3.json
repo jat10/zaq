@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-15p.2"
+  ],
+  "blocks": [
+    "zaq-15p.4"
+  ],
+  "closed_at": "2026-10-13T14:09:52Z",
+  "created": "2026-10-13T13:56:43Z",
+  "description": "Own existing JidoChatBridge and Agent.Api boundary instrumentation. Extend existing incoming metadata carrier, Agent.Api admission/execution and bridge send entry points; never duplicate dispatch, execution or sends. Tests first for stable opaque correlation incoming-\u003eagent-\u003ereply, distinct send attempts, routing/admission/agent failures, skip non-WhatsApp, preserve values/exceptions and asynchronous propagation. Diagnostic helper local-only; no new Action/tool or permission changes. Document process/node identity and provider-acceptance distinction.",
+  "id": "zaq-15p.3",
+  "labels": [],
+  "parent": "zaq-15p",
+  "comments": [
+    {
+      "text": "Implemented opaque metadata correlation through normalized incoming -\u003e Agent API invocation -\u003e provider create/edit calls. Existing dispatch/return hop unchanged. Trace privacy/exception tests and direct/group full-flow tests pass (8 tests); mix q passes. Sends logged as accepted, never delivered without receipt.",
+      "timestamp": "2026-10-13T14:09:51Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-15p] Correlate incoming agent execution and outgoing sends",
+  "type": "task",
+  "updated_at": "2026-10-13T14:09:52Z"
+}

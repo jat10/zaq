@@ -1,0 +1,20 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T21:49:08Z",
+  "description": "User scoped PR843 finding 2 fix to Executor only; leave Pipeline unchanged. Reuse existing Event/NodeRouter send_typing dispatch and Channels identity_connection/3 exact connector selection. Local-only event payload correction, no new Action or authorization/lifecycle behavior. Add new test with per-call router seam for two same-provider incoming connector IDs; retain existing tests. Validate executor suite and mix q. No commit/push.",
+  "id": "zaq-mq1",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implemented Executor-only channel_config_id forwarding in existing async Event/NodeRouter dispatch. Pipeline unchanged per explicit user instruction. Added new per-call router regression for two WhatsApp connector IDs sharing provider/room, existing assertions unchanged. Executor suite: 52 tests, 6 doctests, 1 property, 0 failures. Existing background Telemetry.Buffer emitted SQL Sandbox ownership errors in output; suite exited successfully. mix q passed; git diff --check clean. Report records scoped resolution and pre-existing ambiguity. No commit/push; full precommit not run at issue-level stage.",
+      "timestamp": "2026-10-15T21:50:21Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-mq1] Forward Executor connector ID in typing events",
+  "type": "bug",
+  "updated_at": "2026-10-15T21:50:21Z"
+}

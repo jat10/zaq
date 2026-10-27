@@ -1,0 +1,24 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-09-17T17:45:32Z",
+  "description": "Implement docs/exec-plans/active/issue-706-implementation-plan.md. Authorized implementation on fix/bug-706. Eight-step linear DAG: contracts → sequential driver → durable HITL → replay → Condition → execution policy → Jido migration → integration/rollout. PR boundaries: step 1; steps 2–4 deployed atomically; step 5; steps 6–8. Preserve authorization, immutable snapshots and existing domain ownership. Backend work; no new browser E2E. Validation follows docs/WORKFLOW_AGENT.md; coverage handoff after review. Full specifications and reuse evidence belong in child tasks.",
+  "id": "zaq-qzr",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Transferred all eight specifications. Verified reciprocal blocks/blocked_by edges form the intended linear DAG with step 1 as the sole root; steps 2–8 each have their predecessor. Existing fix/bug-706 checkout retained; unrelated untracked files preserved. No commits or pushes authorized. Architecture review: docs/architecture.md delegates workflow DAG/approval/recovery internals to docs/services/workflows.md. Proposed driver changes execution scheduling within WorkflowRunAgent, retaining Workflows persistence and Jido/Runic execution ownership; no new service or database architecture.",
+      "timestamp": "2026-09-17T17:48:45Z"
+    },
+    {
+      "text": "Implementation status: children 1-7 complete in working tree; 8 integration tests and rollout documentation implemented, target stored-definition audit outstanding (configured dev DB absent). Validation: mix q passed, combined workflow/Condition/Base64 851 tests+16 properties passed, additional generated suspension+Engine API suite 78 tests+1 property passed. Ready for code review, not final delivery approval: post-review coverage and final precommit still required. No application commits or pushes.",
+      "timestamp": "2026-09-17T23:52:52Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[#706] Restore validated Jido workflow execution and durable approval suspension",
+  "type": "epic",
+  "updated_at": "2026-09-17T23:52:52Z"
+}

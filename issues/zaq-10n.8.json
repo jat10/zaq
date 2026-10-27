@@ -1,0 +1,27 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-10n.7"
+  ],
+  "created": "2026-10-14T13:25:37Z",
+  "description": "Validation repair for provider-neutral People epic zaq-10n. Confirmed previous commit b1535ae47 (HEAD^) introduced the explicit listener bridge-ID startup guard, preserved by HEAD 42a48854e. The shared Mattermost history fixture and tests are identical across those commits. Fixtures passed an explicit bridge_id without starting a runtime; from_listener returned runtime_unavailable, and the adapter ignored the sink error while reporting success. Repair reuses JidoChatBridge.start_runtime/1 before fixture ingress in test/support/mattermost_history_fixture.ex and test/zaq/channels/person_credential_ingress_integration_test.exs. Production startup ownership remains intact. Action reuse: reuse existing runtime domain API; no new operation or Action. Both history suites pass (63 tests), credential ingress passes, and mix q passes. The original full log completed with 64 failures; initial report of missing final totals was corrected. First repaired full run completed 10928 tests with three newly exposed timing/storage fixture failures, tracked in zaq-10n.10 and zaq-10n.11; BO fixture fixes are zaq-10n.9. Final gate is rerunning. Changes remain uncommitted in the user-requested checkout; no worktree or commit authorized.",
+  "id": "zaq-10n.8",
+  "labels": [],
+  "parent": "zaq-10n",
+  "comments": [
+    {
+      "text": "Confirmed listener startup guard introduced by b1535ae47 (HEAD^), preserved in 42a48854e (HEAD). Mattermost history fixture and test are identical in both commits. The fixture supplies explicit bridge_id without starting runtime, causing runtime_unavailable; adapter ignores sink return and reports success. Action reuse assessment: reuse JidoChatBridge.start_runtime/1 in existing test fixture before listener ingress. No production operation changes/new Action; preserve supervisor ownership and nonrecursive listener startup. Verify isolated failing terminal tests and both history suites.",
+      "timestamp": "2026-10-14T13:38:36Z"
+    },
+    {
+      "text": "Fix applied in current checkout: start bridge runtime before explicit listener sink calls in shared Mattermost history fixture and credential ingress fixture. Both history suites passed (63 tests); credential ingress/onboarding suites passed in isolated combined run. Current historical precommit log now contains final totals: 42 doctests, 245 properties, 9900 tests, 64 failures in 872.4s; earlier report of no final totals was incomplete. mix q passes. Full precommit rerun in progress, bounded at 900 seconds.",
+      "timestamp": "2026-10-14T13:44:18Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-10n.8] Investigate history integration failures blocking provider-neutral People validation",
+  "type": "bug",
+  "updated_at": "2026-10-14T13:56:49Z"
+}

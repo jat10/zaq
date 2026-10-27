@@ -1,0 +1,27 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-0l7.24.10"
+  ],
+  "blocks": [
+    "zaq-0l7.24.4"
+  ],
+  "closed_at": "2026-10-13T15:04:21Z",
+  "close_reason": "Implemented and validated in local working trees. Package: 144 tests + 2 properties, 0 failures, live excluded; mix quality including Dialyzer/Doctor passed. ZAQ: mix q and 62 focused integration tests passed; final mix precommit: 48 doctests, 255 properties, 10911 tests, 0 failures (1 skipped, 122 excluded). Parent retains review/coverage and release handoff; no commit or publication performed.",
+  "created": "2026-10-13T14:28:38Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nExtend existing lib/zaq/channels/linked_device.ex host facade and existing PairLinkedDevice/ConfirmLinkedDevice Actions and Engine credential_document boundary only as needed. Provide thin callback glue for exact binding authorization, encrypted document operations/legacy cleanup, idempotent connector creation and saved-runtime start. Keep NodeRouter confidential events and real Connect encryption. Host selects session/sender_key RAM policy and infrastructure options; generic storage routing, serialization and state machine belong upstream. Do not recreate Storage/Session under a different ZAQ path. Preserve current durable encoding; no implied SQL migration. Revalidate current operator/binding and deny nil actor, wrong owner and stale credentials.\n\nTests to add before implementation:\nBefore code: real Engine/Connect integration proves encrypted format compatibility, binding revocation/rotation/cross-connector denial even for RAM, nil/wrong actor denial, idempotent atomic confirmation, only durable namespaces in DB, only session/sender_key in package RAM, cleanup and saved/runtime_pending behavior.\n\nBranches/paths validated:\nAuthorized/revoked binding; nil/wrong/current operator; old persisted record; duplicate attempt; save failure; wrong profile; cleanup.\n\nMocking plan:\nReal internal collaborators; inject external transport/host-callback edges only. Isolated BEAMs for global Mnesia. Explicit config/clock/dependency options.\n\nDocumentations to update for both code and docs/ related content:\nExisting facade/Action module docs; docs/services/channels.md and system-config.md at their owners.\n\nAction reuse assessment:\nReuse PairLinkedDevice, ConfirmLinkedDevice, Engine.LinkedDeviceConfirmation, credential_document, LinkedDevice.profile and CommunicationBridge runtime operations. Extend thin host adapters only; no new Actions or agent tools.\n\nValidation and E2E:\nRead owning AGENTS.md and ZAQ workflow, action-reuse, testing, system-config and documentation policies as applicable. Use real internal state/process/DB boundaries; mock only external WhatsApp transport or package host-callback boundary in upstream standalone tests. Isolate global Mnesia tests in separate BEAMs. Runtime dependency seams use explicit public options. Preserve current UI journeys; run relevant existing tests, no new feature E2E authoring unless scope changes and the required UX approval is recorded. Follow post-review coverage and final validation gates; no automatic commit/push/publication.",
+  "id": "zaq-0l7.24.11",
+  "labels": [],
+  "parent": "zaq-0l7.24",
+  "comments": [
+    {
+      "text": "Existing LinkedDevice facade supplies thin Engine document, connector-confirmation and runtime-start callbacks. Existing authorization/encryption remain real; host storage and legacy format tests pending final combined gate.",
+      "timestamp": "2026-10-13T14:50:55Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.11] Bind upstream callbacks to existing ZAQ host boundaries",
+  "type": "task",
+  "updated_at": "2026-10-13T15:04:21Z"
+}

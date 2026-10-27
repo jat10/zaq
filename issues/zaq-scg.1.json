@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-scg.2"
+  ],
+  "closed_at": "2026-10-15T10:05:14Z",
+  "created": "2026-10-15T10:01:04Z",
+  "description": "Functional specification: extend Channels IncomingNormalization/Incoming with a shared sanitized-media path, using optional native channel classification callbacks in WhatsApp and Telegram integrations. Validate provider, room, top-level kind, sender and author consistency before producing facts. Only use sanitized path for empty raw and nonempty media; retain raw validations and Discord independent evidence policy. Pure local-only boundary normalization, no new Action; reuse existing source_scope and MessageTimestamp helpers. Tests before implementation: new focused generic normalization test module, real WhatsApp adapter media sealing and Telegram normalized fixtures; property-test inconsistent room/sender/kind/provider rejection. Branches: valid room/direct, invalid evidence, unsupported callback/provider, nonempty contradictory raw. External mocks only at WhatsApp media transport. Document public callback and service contract. Existing test behavior unchanged. See epic comment for generic requirement.",
+  "id": "zaq-scg.1",
+  "labels": [],
+  "parent": "zaq-scg",
+  "comments": [
+    {
+      "text": "Implemented optional conversation_type/1 integration callback plus shared sanitized-media consistency validation. WhatsApp and Telegram opt in through native classifiers; existing raw validation remains authoritative. New regression failed before implementation; 2 properties and 12 normalization tests now pass. mix q passes after correcting alias ordering. No existing test assertions changed.",
+      "timestamp": "2026-10-15T10:05:13Z"
+    }
+  ],
+  "priority": 1,
+  "status": "closed",
+  "title": "[zaq-scg] Normalize sanitized media through a shared adapter contract",
+  "type": "task",
+  "updated_at": "2026-10-15T10:05:14Z"
+}

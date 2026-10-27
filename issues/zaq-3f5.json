@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T11:03:07Z",
+  "description": "Close the confirmed WhatsApp reaction skin tone gap in feat/whatsapp-integration.\n\nEvidence: ReactionMapper.to_rating/2 accepts bare Unicode thumbs up/down but ignores the same thumbs followed by a standard skin tone modifier. JidoChatBridge.handle_reaction_event/2 therefore skips rating dispatch.\n\nScope and solution: reuse existing issue zaq-qch; extend the shared mapper to accept exactly one Unicode modifier U+1F3FB through U+1F3FF on thumbs up/down. Preserve ratings 5/1, bare thumbs, existing provider shortcodes, malformed-input rejection, and existing reaction identity/authorization and NodeRouter boundaries. Phone number investigation is outside this epic.\n\nAction reuse assessment: extend the existing pure ReactionMapper.to_rating/2 implementation used by JidoChatBridge.handle_reaction_event/2. Inputs remain provider atom and emoji; outputs remain {:ok, 1 | 5} or :ignored. No new Action, tool exposure, side effects, or permission semantics.\n\nAcceptance: all five tones work for thumbs up/down on WhatsApp; focused mapper tests and properties cover valid and malformed inputs; reaction ingress coverage demonstrates toned thumbs reach the existing rating dispatch with unchanged sender/message context. Preserve existing unrelated behavior.\n\nApproval status: user authorized epic creation only. Existing reaction_mapper_test.exs explicitly expects toned Unicode thumbs to be ignored; obtain explicit approval of that expectation change before editing the existing test.\n\nValidation when implementation is authorized: mix q, isolated mapper/reaction tests, required coverage checks, and final mix precommit under docs/WORKFLOW_AGENT.md. Pure mapping fix does not require new feature E2E.\n\nExecution: zaq-qch implements and validates the fix; close this epic after its acceptance criteria and final review are satisfied.",
+  "id": "zaq-3f5",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-3f5] WhatsApp reaction skin tone support",
+  "type": "epic",
+  "updated_at": "2026-10-15T11:03:14Z"
+}

@@ -1,0 +1,31 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-0l7.24.4"
+  ],
+  "blocks": [
+    "zaq-0l7.24.6"
+  ],
+  "closed_at": "2026-10-13T15:10:43Z",
+  "close_reason": "User confirmed upstream pushed and authorized restoring GitHub dependency. Restored jat10/jido_chat_whatsapp branch feat/whatsapp-adapter-lifecycle-and-message-contracts; mix deps.update fetched and locked b4665e14f7a9532196ceecbb93532e9aea85276d. Only WhatsApp lock entry changed. Updated channels documentation to remove local checkout requirement. mix q passed; 62 focused integration tests passed against fetched revision. Prior package quality and full ZAQ precommit passed. Review/coverage remains tracked separately in zaq-0l7.24.6.",
+  "created": "2026-10-13T14:09:27Z",
+  "description": "Functional specifications covered with associated files to edit/add:\nOwners: package README/docs and ZAQ dependency/configuration/docs. Document explicit package infrastructure child/init options separately from per-connection upstream composite storage and host callbacks, with prepare/seed readiness ordering, strict RAM-only vs coexistence, node-local data lifetime and resource ownership. Show the complete flow: Amarula callbacks -\u003e upstream composite storage with ZAQ authorization/durable callbacks -\u003e encrypted Connect database for paired/supporting state, or package Mnesia for session/sender_key. Explain dependency-started Mnesia vs configured package tables; immutable option changes require replacing the infrastructure generation. Document compatibility with automatic Amarula startup and start_runtime:false; no replicated/quorum mode is introduced. Audit all callers and remove obsolete local-store references. Prepare package release/PR and ZAQ integration handoff with exact tested revision; production pin changes wait until revision is available remotely under separately authorized publishing. Stop affected listeners during deployment: no live copy or dual-write migration of volatile protocol state. Preserve encrypted pairing; explicitly document cold RAM state and possible message decryption interruption on rollout/rollback. Reconcile zaq-0l7.22 only after its regression is proved; do not close on planning alone.\n\nTests to add before implementation:\nBefore release changes, define dependency compatibility smoke checks for old default File/custom consumers, DETS and opt-in Mnesia; clean dependency resolution against the eventual pinned revision. Verify docs examples against compiled API and distinguish existing live tests from non-live checks.\n\nBranches/paths validated:\nLocal path development vs production git dependency; new package with old host; migrated host with matching package; unavailable revision; rollout and rollback requiring listener stop.\n\nMocking plan:\nUse real internal storage, transactions, supervision and host boundaries. Inject fake WhatsApp network transport only at external provider boundary; isolated BEAMs for VM-wide Mnesia state. Configuration resolved at public boundaries; ZAQ runtime config uses Zaq.Config per policy.\n\nDocumentations to update for both code and docs/ related content:\nPackage README/docs/adapter_contracts and ZAQ docs/services/channels.md/system-config.md; no generated CHANGELOG edits. Read docs/documentation.md and index before documentation changes.\n\nAction reuse assessment:\nNot applicable to documentation/release metadata operations; reuse existing Mix dependency mechanism. No new runtime Actions or automatic publication. Release authorization remains separate from plan approval.\n\nValidation and E2E:\nFollow docs/WORKFLOW_AGENT.md and docs/testing-approach.md; package follows its own quality gate. No new UI or user journey: no new E2E authoring required. Implementation must preserve existing assertions and include property tests for isolation/idempotence/capacity invariants.\n\nweb_widget-influenced refinement (user-authorized plan update):\nReference web_widget as design evidence, not a runtime dependency. Explain that adding the explicit infrastructure child is a host integration change; table lifecycle remains package implementation. Existing File/DETS/custom storage clients retain compatibility and do not need Mnesia infrastructure unless they select it.\n\nExpanded upstream extraction scope (supersedes earlier references to retaining ZAQ Storage/Session): package owns temporary storage, pairing lifecycle, generic namespace routing/serialization and confirmation/handoff. ZAQ keeps only thin authorization/encrypted-persistence/connector callbacks in existing responsibility-compatible facades. All four modules under lib/zaq/channels/linked_device/ must be deleted; no equivalent state machine relocated elsewhere. Preserve this step's existing backend, lifecycle, rollout and validation requirements. New prerequisite issues cover the additional package and host API work. Document standalone non-ZAQ use, all typed callback contracts, preserved encrypted-record format and removal of the old directory. Package revision must be available before production dependency pinning; rollout/rollback stops provisional and saved listeners, preserves encrypted pairing and permits fresh RAM sessions. No release or git mutation without separate authorization.",
+  "id": "zaq-0l7.24.5",
+  "labels": [],
+  "parent": "zaq-0l7.24",
+  "comments": [
+    {
+      "text": "Updated package API/rollout docs and ZAQ owner docs. Local path retained as requested. Production pin/publication remains separately authorized release prerequisite.",
+      "timestamp": "2026-10-13T14:50:56Z"
+    },
+    {
+      "text": "Documentation and migration handoff prepared. Local path ../jido_chat_whatsapp remains explicitly requested. Production publication and dependency pin remain pending separate authorization; do not ship the local path as a release.",
+      "timestamp": "2026-10-13T15:04:23Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.24.5] Prepare cross-repository release and deployment handoff",
+  "type": "task",
+  "updated_at": "2026-10-13T15:10:43Z"
+}

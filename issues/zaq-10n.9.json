@@ -1,0 +1,23 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-10n.7"
+  ],
+  "created": "2026-10-14T13:41:45Z",
+  "description": "Current ChannelsLive tests omit current_user in manual mount sockets and BridgeFake lacks the shared authentication_capability contract added in 42a48854e. Repair fixtures without weakening assertions or changing production authorization/UI. Action reuse: no production operation changes; fixtures exercise existing confidential NodeRouter channel_authentication_capability and runtime sync APIs. Verify complete channels_live_test.exs suite and mix q.",
+  "id": "zaq-10n.9",
+  "labels": [],
+  "parent": "zaq-10n",
+  "comments": [
+    {
+      "text": "Fixture repair complete: fake bridge supplies authentication_capability, manual mount sockets carry setup current_user, and two async pairing tests wait up to 1 second for database-backed dispatch. All original assertions preserved. ChannelsLive suite passes: 69 tests, 0 failures; mix q and git diff --check pass. Full validation running.",
+      "timestamp": "2026-10-14T13:44:19Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-10n.9] Repair BO authentication fixtures after shared adapter migration",
+  "type": "bug",
+  "updated_at": "2026-10-14T13:44:42Z"
+}

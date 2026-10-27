@@ -1,0 +1,39 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-ho7.5"
+  ],
+  "blocks": [],
+  "created": "2026-10-20T10:56:25Z",
+  "description": "Revised design authorized by the user after rejecting hardcoded history flags. This description supersedes the original fixed-false history requirements and historical completion comments. Preserve useful completed reply-policy work and RAM enforcement; rework the history configuration ownership and validate the composed result.\nReview must assess corrected persisted history configuration, explicit overrides, startup and refresh paths, and the web widget ownership pattern. All reopened prerequisites must pass before final review/coverage/delivery.\n\n\nFunctional specifications: final cross-repository review and the workflow-required\ncoverage-upper handoff after implementation and explicit PR review approval.\nDo not run coverage phase prematurely or equate conversational design agreement\nwith approval of the finished code. Coordinate with zaq-973.6's delivery record.\nTests to add before implementation: none for this tracking step; coverage phase\nmay add targeted missing behavioral cases once review is approved.\nBranches/paths validated: review all ownership boundaries, migration safety,\nconfiguration refresh, package-default compatibility, per-connector isolation.\nMocking plan: preserve isolated production seams; no new global-mutation fixtures.\nDocumentation: record review, coverage exceptions, final validation and dependency\npublication/pin status in Beadwork and any authorized PR description.\nAction reuse assessment: not applicable; this is review/coverage coordination,\nnot a new executable business operation. Recheck implementation assessments.\nCompletion requires approved review, completed coverage handoff, required green\nvalidation or explicitly documented unresolved blockers, and authorized reproducible\ndependency delivery. Keep the epic open while required work remains.\n\nRequired policies: AGENTS.md; docs/agent-tools.md; docs/WORKFLOW_AGENT.md;\ndocs/exec-plans/PLAN_STRATEGY.md; docs/action-reuse.md; docs/testing-approach.md;\ndocs/services/channels.md. Read sibling AGENTS.md before sibling changes, Engine\nguide before persistence work, and documentation hygiene before updating docs.\nRead system-config guidance if touching encrypted fields (which should be avoided).\nPreserve existing assertions. Obtain explicit approval before changing existing test\nbehavior; add focused tests first. No UI feature/E2E work is required by this refactor.\nCommit, push, publishing dependency revisions, and merge require separate authorization.\n",
+  "id": "zaq-ho7.6",
+  "labels": [],
+  "parent": "zaq-ho7",
+  "comments": [
+    {
+      "text": "Implementation children zaq-ho7.1 through .5 are complete and validated. Keep this task and epic open: finished-code/PR review approval has not yet been recorded, so workflow post-review coverage-upper and final mix precommit gate have not run. Source changes remain uncommitted in ZAQ (baseline f8832ada74bc13bdc27c53e9838fc490aeba11a3) and ../jido_chat_whatsapp (baseline a0555694ffaabc589c89bec6b7c93fbba7f6ff5f). New package revision must be published with authorization and ZAQ mix.lock updated before shipping; current integration tests use a single ignored adapter source copy matching sibling bytes, with manifests unchanged. Do not close this task/epic merely because local tests pass. Follow docs/WORKFLOW_AGENT.md Phase 6 after review. No browser/live WhatsApp tests needed for pure ownership refactor; live tests remain excluded. Deferred zaq-v0p remains separate and its approved removed scenario was not restored or modified here.",
+      "timestamp": "2026-10-20T11:31:14Z"
+    },
+    {
+      "text": "Steps 1-5 reimplemented and green after corrected design. Awaiting finished-code review approval before workflow Phase 6 coverage and final mix precommit; no final human approval requested yet. No commits/push/publication performed. ZAQ baseline f8832ada74bc13bdc27c53e9838fc490aeba11a3; sibling adapter baseline a0555694ffaabc589c89bec6b7c93fbba7f6ff5f with uncommitted changes; core eeaebf821c352b0ef28b796f8110308fadb757fb clean. Ignored ZAQ dependency adapter.ex exactly matches sibling SHA256 424d2c1df1f7d57c5cd4233b0f2c154b619a0bc92bc6d5f74f125665a2c1a932 and was rebuilt explicitly in test/dev for validation. mix.exs/mix.lock unchanged; publish reviewed sibling revision and update real lock before claiming reproducible clean-checkout delivery. Keep epic open until remaining delivery checks complete; coordinate zaq-973.6. Deferred zaq-v0p and removed baseline regression unchanged.",
+      "timestamp": "2026-10-20T13:26:33Z"
+    },
+    {
+      "text": "Latest review target is shared channel_settings_defaults and generic Settings projections/preservation; dedicated WhatsApp module and both backfills removed. No migration rollout is required. Latest validation 414 tests + 12 properties and mix q green. Existing review/coverage/final precommit and adapter publication/lock gate remains pending; do not review stale migration-based scope.",
+      "timestamp": "2026-10-20T14:30:57Z"
+    },
+    {
+      "text": "User pushed jido_chat_whatsapp and requested the lock update. Verified remote branch feat/whatsapp-adapter-lifecycle-and-message-contracts at dfa920ef41a7c71f49186465dc1ba87e2bcbbeb6. mix deps.update jido_chat_whatsapp --no-deps changed only its lock entry. Removed the earlier local dependency-source override after confirming it matches the published sibling; fetched checkout is clean at the locked SHA and adapter source matches. Publication/pinning prerequisite is satisfied; review/coverage/final precommit gates remain. Action reuse: not applicable, dependency revision update only. Validation running against published source.",
+      "timestamp": "2026-10-20T15:01:42Z"
+    },
+    {
+      "text": "Published dependency validation passed: mix q; 415 tests + 12 properties, zero failures; git diff --check. Logs /tmp/zaq-whatsapp-published-quality.log and /tmp/zaq-whatsapp-published-tests.log. Lock and clean dependency checkout both point to dfa920ef41a7c71f49186465dc1ba87e2bcbbeb6. No ZAQ commit or push performed.",
+      "timestamp": "2026-10-20T15:02:10Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ho7.6] Complete review approval and post-review coverage handoff",
+  "type": "task",
+  "updated_at": "2026-10-20T15:02:10Z"
+}

@@ -1,0 +1,42 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-hce.2"
+  ],
+  "blocks": [
+    "zaq-hce.4"
+  ],
+  "closed_at": "2026-10-20T09:07:01Z",
+  "created": "2026-10-20T08:54:25Z",
+  "description": "User correction: the parallel host callback API was rejected and all implementation changes were reverted. Earlier completion comments and validation results refer to that discarded implementation; they do not establish completion of this revised scope. ZAQ and sibling adapter working trees are clean.\nUse the audited minimal boundary to remove concrete WhatsApp request handling from the generic bridge. Preserve the existing sink MFA shape and all authorization, dispatch, storage, activation and synchronous execution semantics. Reuse existing Actions; no duplicate operations.\nMandatory constraints: Preserve sink_mfa option, MFA invocation shape, request/result shapes and existing jido_chat_* adapter behavior. Do not replace sink_mfa with persist_mfa, activate_mfa or storage_mfa. Do not introduce compatibility modules solely to support a replacement API. No test, fixture, assertion, helper or test configuration changes. No Mnesia policy or persistence changes. No commit/push without authorization.\nRead inherited ZAQ AGENTS.md and docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, docs/services/system-config.md, and docs/conventions.md before affected work. Read each sibling repository's AGENTS.md. Before documentation edits read docs/documentation.md. Use Serena for source understanding and Context Mode for large output; run bw prime. Recheck live Git state and preserve unrelated work.\nTests to add before implementation: none, explicitly prohibited by user. Run existing tests; no new E2E authoring or UI changes. Mocking plan: no test/mock changes; retain existing external-edge fixtures. Coverage improvements requiring test changes are outside authorization; record gaps rather than modifying tests.",
+  "id": "zaq-hce.3",
+  "labels": [],
+  "parent": "zaq-hce",
+  "comments": [
+    {
+      "text": "ZAQ implementation now supplies explicit callback MFAs. Generic JidoChatBridge has zero Jido.Chat.WhatsApp references; legacy envelope matching lives only in LegacyRequests to preserve unchanged caller/test contracts. HostCallbacks reuses current-user super-admin checks, connector/provider binding constraints, confidential Engine actions and synchronous dispatch outside State. profile_binding now shares the storage callback too. mix q passed with sibling source. Current Git dependency pin remains unchanged pending authorized publication; validation uses MIX_EXS=/tmp/zaq-hce-mix.exs (identical project with only WhatsApp dependency replaced by sibling path), avoiding repository test/config changes.",
+      "timestamp": "2026-10-20T09:04:56Z"
+    },
+    {
+      "text": "Focused ZAQ integration validation passed against sibling adapter: 4 properties, 270 tests, 0 failures. Covers real shared authentication/confirmation, storage operations while State handles work, public-ingress and actor rejection, credential persistence/bindings, lifecycle/startup and other adapter behavior. No production-path regressions found; tests/fixtures/helpers unchanged. Source wiring complete; publishing/pinning deferred to explicit release follow-up because commits/pushes are not authorized.",
+      "timestamp": "2026-10-20T09:07:00Z"
+    },
+    {
+      "text": "Implementation: from_listener/3 and /4 classify via shared HostRequest protocol. Existing pairing_request/storage_request/dispatch_storage and sink construction are unchanged. No concrete WhatsApp struct references remain in generic bridge.",
+      "timestamp": "2026-10-20T09:37:53Z"
+    },
+    {
+      "text": "Validation: ZAQ mix q passed; focused unchanged suites passed: 9 properties, 338 tests, 0 failures (bridge, saved connections, linked-device flows/runtime, credential documents, confirmation). Both local sibling dependencies were exercised via temporary MIX_EXS override; Git dependency files and configuration unchanged. Generic bridge contains no concrete WhatsApp module reference. Existing auth/storage helpers and sink construction were not edited.",
+      "timestamp": "2026-10-20T09:39:43Z"
+    },
+    {
+      "text": "Cancelled at explicit user request. All implementation and documentation changes reverted in ZAQ, ../jido_chat and ../jido_chat_whatsapp; temporary dependency projects removed and validation stopped. Closed as cancelled, not delivered.",
+      "timestamp": "2026-10-20T09:45:12Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Decouple ZAQ handling without changing sink wiring",
+  "type": "task",
+  "updated_at": "2026-10-20T09:45:12Z"
+}

@@ -1,0 +1,23 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-6zd.2"
+  ],
+  "created": "2026-10-15T11:25:06Z",
+  "description": "Extend Incoming and JidoChatBridge.to_internal with optional reply_context and external_reply_to_id. Pure normalization binds provider, connector, room and source namespace to the enclosing incoming; rejects conflicting scope and malformed values. Tests before implementation: bridge WhatsApp quote, malformed and reference-only inputs, normalization properties, nonreply/native-thread regression. Action reuse: extend existing canonical constructor and bridge mapping; local-only shallow data normalization, no Action/network/history lookup or tool exposure. Existing routing/person policy unchanged. Update service contract docs. Isolated tests and mix q per workflow.",
+  "id": "zaq-6zd.1",
+  "labels": [],
+  "parent": "zaq-6zd",
+  "comments": [
+    {
+      "text": "Implemented and validated: 1 property + 211 focused/existing tests pass; mix q passes. Existing user changes preserved. Implementation complete; left open pending review/landing (no commit authorization).",
+      "timestamp": "2026-10-15T11:28:02Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-6zd] Normalize scoped quoted reply context at ingress",
+  "type": "task",
+  "updated_at": "2026-10-15T11:28:02Z"
+}

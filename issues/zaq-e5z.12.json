@@ -1,0 +1,19 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-e5z.11"
+  ],
+  "blocks": [
+    "zaq-0l7.24.6"
+  ],
+  "created": "2026-10-21T09:43:06Z",
+  "description": "Execution boundary: planning approved; this issue does not authorize commits, pushes, merges, upstream publication, GitHub comments, live WhatsApp access, or real messages. Revalidate current source/Git state before implementation. Preserve unrelated work, including the already-edited docs/architecture.md. Track this work in the ZAQ Beadwork store even when files belong to the sibling package; do not initialize another store.\nRead AGENTS.md in the affected repository. For ZAQ read docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the domain policies listed below. Read module documentation before editing. Source navigation uses Serena with bounded fallback if unavailable. Record test results honestly; plan approval is not completed-feature UX approval. Follow repository validation owners; no assertion weakening or unrelated refactors. Existing test changes outside the specifically approved contracts need human approval.\n\nRequired domain policies: coverage-upper skill; docs/WORKFLOW_AGENT.md phase 6; docs/testing-approach.md; package AGENTS.md.\n\nFunctional specifications covered with associated files to edit/add:\nAfter all remediation implementation and actual review approval in zaq-e5z.11, apply coverage-upper for ZAQ changed files and the package's appropriate coverage workflow. Use fresh successful coverage runs; do not reuse stale/failed reports or impose speculative numerical targets on earlier issues. Follow the skill's actual required agent/delegation rules only when invoked; no implementation agents are spawned by this planning task.\nPlan/implement meaningful remaining contract/failure tests with async-safe seams already established. Preserve approved behavioral contracts; any additional existing-test expectation change needs separate approval. Review coverage-generated changes and repeat affected validation. Record justified exclusions/follow-ups and evidence, not false completeness based on ratios.\nReused final validation issue zaq-0l7.24.6 depends on this task. That final gate must run against the completed final source and pinned dependencies before requesting final approval. No commit/push/merge authorization is implied.\n\nTests to add before implementation:\nUse fresh coverage reports per coverage-upper; target uncovered meaningful branches in changed confirmation, lifecycle, authorization, adapter cleanup and polling. Add property coverage where invariants span broad inputs. Retest coverage changes with focused suites and re-review when required.\n\nBranches/paths validated:\nChanged-code reachable branches, error/success/retry/permissions/isolation and approved exceptions; exact revision/freshness.\n\nMocking plan:\nPreserve production config seams and real internal boundaries; external transport/model only. No global mutation for coverage convenience.\n\nDocumentations to update for both code and docs/ related content:\nRecord reports, changed-file scope, exceptions, follow-ups and review evidence in issues; prepare PR summary for later authorized publication.\n\nAction reuse assessment:\nAction reuse: not applicable to coverage-only handoff; verify new tests exercise shared existing operations rather than duplicates. Any discovered production fix becomes a scoped prerequisite with updated reuse assessment.",
+  "id": "zaq-e5z.12",
+  "labels": [],
+  "parent": "zaq-e5z",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-e5z.12] PR #847: perform dedicated post-review coverage handoff",
+  "type": "task",
+  "updated_at": "2026-10-21T09:44:45Z"
+}

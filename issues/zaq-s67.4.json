@@ -1,0 +1,38 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-s67.3"
+  ],
+  "blocks": [
+    "zaq-s67.5"
+  ],
+  "closed_at": "2026-10-19T16:12:02Z",
+  "created": "2026-10-19T15:06:31Z",
+  "description": "Verify PR diff has removed all inline-quote-only code/docs/tests and preserved nonquote changes, using merge-base and commit 1edb1c349 as evidence. Search ZAQ production for reply_context/external_reply_to_id/append_reply_context and explain any intentional remaining references; adapter may preserve native outbound quoted transport API, not model quote enrichment. Confirm dependency revision matches tested sibling implementation and no temporary path overrides remain. Record plan supersession of zaq-6zd and quote-media zaq-vl9, without silently closing unrelated work.\nRun isolated adapter and ZAQ regression suites and quality checks per preceding issues. After implementation review approval perform coverage-upper workflow, fresh mix coveralls.json then mix coverup, target \u003e=95% affected whole files or justified exceptions. Preserve test isolation, fix failures, rerun affected checks only as warranted. Adapter mix quality and mix coveralls required; default tests must not use a live WhatsApp account. Final ZAQ mix precommit (15-minute tool timeout) after fixes and coverage before final human approval. No new browser UI flows, so browser E2E authoring not required for this backend migration; document live-device verification not run unless explicitly performed.\nAcceptance report includes immediate-target semantics, Direct vs Shared behavior, missing-root limitation, outbound quote distinction, exact tested dependency and coverage. No commits/pushes/merge without authorization.\nAction reuse: not applicable to validation itself; verify earlier reuse decisions and no hidden provider lookup/permission bypass.\nPolicies: read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md and the applicable Channels/Engine/Agent service sections before implementation; sibling adapter has its own AGENTS.md. Read module docs before edits. No commit/push authorization. Preserve unrelated branch changes.\n",
+  "id": "zaq-s67.4",
+  "labels": [],
+  "parent": "zaq-s67",
+  "comments": [
+    {
+      "text": "Adversarial migration review: invariants checked across adapter payload -\u003e Jido incoming/event -\u003e bridge -\u003e Engine capture/admission -\u003e exact authorized transcript -\u003e model context -\u003e Executor/Factory -\u003e durable finalization -\u003e HistorySync completion -\u003e warm runtime. Tests prove root appears once, untrusted inline text is absent, duplicate capture is stable, cross-room/connector references do not leak, membership+manual revocation denies history, missing roots do not fetch or traverse siblings, parent attachments retain their authorized placement, ordinary delivery remains in the chat and explicit native quoted sends remain intact. No production correctness blocker found in this migration. Oversized native thread IDs are bounded to 255 UTF-8 bytes to fit existing persisted identifiers, with boundary tests. Existing metadata remains readable but ignored. Native live WhatsApp and multi-node execution were not exercised. Release gate remains zaq-s67.5: published reviewed adapter revision must replace current lock before merge; local linked source is only the validation environment. Full ZAQ coverage process still running; MCP client connection expired at 300s while actual subprocess remains within the 600s task limit. Do not use coverage report until actual successful completion is confirmed.",
+      "timestamp": "2026-10-19T15:48:22Z"
+    },
+    {
+      "text": "Actual full coverage command completed successfully despite the MCP client disconnect: 547.7s test runtime, 11379 tests + 282 properties + 48 doctests, zero failures, one existing skip/125 excluded; full project 97.0%. The original wrapper creates /tmp/zaq-s67-coverup.log only in the return-code-zero branch; that file and a fresh exported JSON confirm actual success. Successful full JSON preserved at /tmp/zaq-s67-full-coverage-success.json; lib source hashes preserved. All modified production lines covered. All touched ZAQ production files \u003e=95% except RequestControl 94.66% (missed 63,73,215,229,271-273). Coverage-upper delegated one additive public-boundary security test for line 63 to assigned test-file owner; no production edits or existing assertion changes. Other coverup entries belong to unrelated pre-existing PR scope and are not changed by this migration.",
+      "timestamp": "2026-10-19T15:57:27Z"
+    },
+    {
+      "text": "Final mix q passed (format, hooks, strict Credo, compilation, documentation). Additive RequestControl processing_status test rejects supplied Person/scope/message selectors even for an authorized Person. Targeted --cover completed; isolated module coverage 115/131 lines (87.7%), including the formerly missed rejection return, while other full-suite-covered paths are absent in this isolated file. Full production source hashes remain unchanged since successful 97.0% full coverage. Final mix precommit running with 900-second process limit and persistent result in /tmp/zaq-s67-precommit-status.json. No commits or pushes.",
+      "timestamp": "2026-10-19T16:01:47Z"
+    },
+    {
+      "text": "Final gate PASSED: mix precommit actual process exit 0, no timeout, 578.1s wall time; 11,380 tests, 282 properties, 48 doctests, zero failures, one existing skipped and 125 excluded. Full captured log /tmp/zaq-s67-precommit.log and actual result /tmp/zaq-s67-precommit-status.json. Final mix q passed. Adapter mix quality and full serial non-live coverage passed: 196 tests + 12 properties, zero failures, 84.9%, all changed executable production lines covered. ZAQ fresh full coverage passed at 97.0%; additive selector regression is included in final passing gate. Review report /tmp/zaq-s67-review.txt. No remaining proven production correctness findings. Explicit sibling path dependency is the approved local-review setup and supersedes the original no-path-overlay validation criterion; publication and validation against a fetchable reviewed revision remain in zaq-s67.5. No live-device/multinode verification. No commits or pushes. Ready for Jad code review in both repositories.",
+      "timestamp": "2026-10-19T16:12:01Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-s67.4] Review thread migration and complete coverage and validation",
+  "type": "task",
+  "updated_at": "2026-10-19T16:12:02Z"
+}

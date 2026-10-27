@@ -1,0 +1,26 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [
+    "zaq-0l7.5"
+  ],
+  "blocks": [
+    "zaq-0l7.7"
+  ],
+  "closed_at": "2026-10-11T12:21:39Z",
+  "created": "2026-10-11T09:54:44Z",
+  "description": "Files:\n- lib/zaq_web/live/bo/communication/channels_live.ex\n- lib/zaq_web/live/bo/communication/channels_live.html.heex\n- lib/zaq_web/live/bo/communication/ingress_status_ui.ex\n- shared QR component and Storybook\n\nFunctional specifications:\nRead DESIGN.md and BO component guide. Adapt prior provider card, label, token-free validation intent and safe QR matrix renderer. Use exact connector for all status/retry events. Show sync disabled. Cancel/bound polling and tag generations; clear QR on expiry/disconnect and show real failures. Do not copy old discarded restart error or stale timer handling.\nArchitecture refinement: Use provider-neutral QR/status/retry components and existing Credentials device-connection UX where compatible. Provider labels and WhatsApp sync policy remain provider-specific; do not hardcode Amarula in shared UI.\n\nTests before implementation:\n- Two configs and selected account\n- Expiry\n- Retry failure\n- Navigation cleanup\n- Stale event ignored\n- Disabled sync UI\n- Exercise shared contract with a minimal fake second provider; keep WhatsApp-specific expectations in provider contract tests\n\nBranches validated:\n- create\n- edit\n- pair\n- expire\n- retry\n- disable\n- access denial\n\nDocumentation:\n- Storybook\n- component docs\n- operator setup guide\n\nAction reuse assessment:\nReuse Engine persistence and Channels status/retry through NodeRouter. BO owns presentation/timers only; no credentials or connection ownership. Preserve authorization; no new Action. Immediate LiveView/component tests; E2E authoring deferred to explicit human UX gate. Inspect and reuse existing device-connection behavior before adding shared modules; document any missing contract as a prerequisite. No duplicate provider-specific credential store or pairing framework.\n\nValidation:\nFollow docs/WORKFLOW_AGENT.md validation lifecycle; tests before implementation, focused checks per issue, final gate before approval. No live account connection or send without scoped authorization.\n\nMocking:\nExternal Amarula transport only; use real internal boundaries and isolated DB/process/storage fixtures; inject config and clock without global mutation.\n\nPolicy:\nRecheck module responsibilities, docs/services/channels.md, Action reuse, system-config and testing guidance before coding. BO calls use explicit NodeRouter Events; nil actor never grants permission.",
+  "id": "zaq-0l7.6",
+  "labels": [],
+  "parent": "zaq-0l7",
+  "comments": [
+    {
+      "text": "Implemented generic DS pairing modal + Storybook; reused safe QR matrix renderer approach and local WhatsApp icon from prior branch, not its lifecycle. Added WhatsApp card and token-free form, exact account selection, bounded generation-tagged polling and cleanup on close/config changes, retry errors, secret-free mode query through NodeRouter. QR omitted from background card health responses. Static component browser previews at /tmp/zaq-pairing-{pairing,connected,expired}.png use dummy non-credential QR. mix q/assets build pass; 246 focused UI/Api/bridge tests pass. Human completed UX review requested asynchronously; no new E2E authored.",
+      "timestamp": "2026-10-11T12:21:14Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[zaq-0l7.6] Build shared linked-device pairing UI with WhatsApp entry point",
+  "type": "task",
+  "updated_at": "2026-10-11T12:21:39Z"
+}

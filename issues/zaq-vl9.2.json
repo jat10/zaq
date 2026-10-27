@@ -1,0 +1,39 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-vl9.1"
+  ],
+  "blocks": [],
+  "created": "2026-10-15T12:24:31Z",
+  "description": "Consume Engine-issued current/historical quotes through existing InputPrompt, HistoryLoader and Executor; reuse runtime-scoped aliases. No new Action or storage access from formatter. Add real Executor/LLM-boundary regression for reply-to-image plus MIME hint, cold/warm history and unavailable originals. Preserve existing test assertions. Run isolated tests, mix q and final mix precommit. Depends on Engine projection step.",
+  "id": "zaq-vl9.2",
+  "labels": [],
+  "parent": "zaq-vl9",
+  "comments": [
+    {
+      "text": "Engine prerequisite implementation validated; proceeding with input integration in the same authorized working tree while issues remain open for final validation/review. InputPrompt/HistoryLoader/Executor now format Engine-issued quote attachments with exact-runtime aliases; active queued inputs use the same trusted admission projection through RequestControl. Real agent regression passed with the original image beyond the last 100 history entries and a download_document MIME hint. Combined focused suite: 7 properties, 121 tests, zero failures. Existing test behavior unchanged. DAG remains zaq-vl9.1 -\u003e zaq-vl9.2; no Git mutations authorized.",
+      "timestamp": "2026-10-15T12:30:57Z"
+    },
+    {
+      "text": "Final precommit currently reports one failure in unchanged WorkflowDetailLiveTest (test/zaq_web/live/bo/ai/workflow_detail_live_test.exs:263), expected timestamp 2024-06-01 12:30; suite seed 59818. No image/quote failure reported so far. Source inspection found async DateFormatTest mutates global :system_timezone_fun via TimezoneTestHelpers while WorkflowDetailLiveTest also runs async; timezone interference is a hypothesis pending isolated rerun. Existing tests/expectations have not been edited. Waiting for suite completion before isolated diagnosis to avoid shared test-database interference.",
+      "timestamp": "2026-10-15T12:40:04Z"
+    },
+    {
+      "text": "Initial final precommit completed: 17 doctests, 198 properties, 9963 tests, one existing workflow timestamp failure, one skip, 117 excluded; 480s. Four-module isolated reproduction with seed 59818 passed 195 tests. Isolation audit confirmed three existing async test modules mutate global timezone config; tracked and mechanically serialized under zaq-krc without changing expectations/scenarios. Revalidating quality checks, affected UI/date tests and full precommit.",
+      "timestamp": "2026-10-15T12:45:02Z"
+    },
+    {
+      "text": "Final validation PASSED against final changes: mix q; expanded image/agent suite (6 doctests, 10 properties, 256 tests, zero failures); affected timezone/UI suite (205 tests, zero failures, seed 59818); mix precommit (497.6s, 17 doctests, 198 properties, 9963 tests, zero failures, one existing skip, 117 excluded). Precommit's MCP transport timed out at 300s, but the background process completed normally; exit status 0 verified in /tmp/zaq-image-precommit-final.status and summary in /tmp/zaq-image-precommit-final.log. Initial timezone interference repaired under zaq-krc by scheduling only; assertions/fixtures unchanged. Implementation and local validation are ready for review. No commits/pushes performed. Issues remain open for review/coverage/landing under repository workflow.",
+      "timestamp": "2026-10-15T12:55:49Z"
+    },
+    {
+      "text": "User requested discarding this implementation to restart from a clean baseline. All associated uncommitted code, documentation and test changes were removed. Working tree is clean at 4281f333c. Previous validation results describe the discarded implementation, not the current code. Investigation findings remain; implementation is no longer present.",
+      "timestamp": "2026-10-15T14:54:30Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-vl9.2] Format resolved quoted attachments in agent input and validate",
+  "type": "task",
+  "updated_at": "2026-10-15T14:54:30Z"
+}

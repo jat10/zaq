@@ -1,0 +1,30 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-09-27T18:16:52Z",
+  "close_reason": "ProviderModels test isolation landed in 0065e1bab; post-bcrypt timing and completed report status recorded.",
+  "created": "2026-09-27T17:10:28Z",
+  "description": "Test-only isolation and timing work on fix/test-provider-models-isolation. Action reuse: not applicable — no executable production operation changes; reuse existing ProviderModels AdapterConfig and ZAQRouterAuthAdapter seams. Preserve authentication, fallback, OAuth, and real LLMDB integration contracts. Validate affected tests, mix q, mix precommit, and matched module/full-suite timings. No commit, push, or PR per user.",
+  "id": "zaq-akn",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Isolation audit: ProviderModelsTest was async with 31 tests and 1 property; auth setup reloaded shared LLMDB before each of six tests and cleanup reloaded it again. LLMDB is VM-global, so concurrent modules could observe temporary catalog changes. ProviderModels selects its adapter per call through Zaq.Config; AdapterConfig plus adapter_opts/1 are the existing isolation seam. Auth checks use test-local adapter data. ZAQRouterTest remains sync and owns the one real ProviderModels-to-LLMDB integration assertion, restoring LLMDB after each test. Preserved contracts: absent/blank key yields [], valid router key exposes models, other provider fallback remains, OAuth Codex includes chat and embedding models. Action reuse: not applicable, test-only changes; no production operation changes.",
+      "timestamp": "2026-09-27T17:32:45Z"
+    },
+    {
+      "text": "Validation complete without commit/PR per user. Affected modules together passed seeds 12345, 67890, 24680 (34 tests, 1 property each); ProviderModelsTest alone seed 12345 passed (30 tests, 1 property). mix q passed. Full suite seed 12345, max-cases 8 passed before and after with 9741 tests, 178 properties, 48 doctests, zero failures. ExUnit full time 540.0s to 523.7s; module time 30.4s to 0.2s. mix precommit initial full stale run passed; confirmation rerun exited 0. Existing untracked docs/reports preserved.",
+      "timestamp": "2026-09-27T17:50:30Z"
+    },
+    {
+      "text": "Landed as 0065e1bab. Post-bcrypt whole-suite ExUnit timing supplied by user: 274.3s (56.0s async, 218.3s sync) before provider isolation; 261.5s (26.7s async, 234.8s sync) after. Whole-suite saving 12.8s; async -29.3s, sync +16.5s. Report candidate 2 marked done.",
+      "timestamp": "2026-09-27T18:16:42Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "[test-provider-models-isolation] Isolate ProviderModels auth tests from LLMDB reloads",
+  "type": "task",
+  "updated_at": "2026-09-27T18:16:52Z"
+}

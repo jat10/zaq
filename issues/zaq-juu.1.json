@@ -1,0 +1,35 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-juu.2"
+  ],
+  "created": "2026-10-27T11:53:21Z",
+  "description": "Parent plan: https://chatgpt.com/space/page_0d26b92b5bc8819181fab088efc0283c\n\n## Functional specifications covered with associated files to edit/add\nlib/zaq/engine/messages/outgoing.ex. Add Record list with empty default and map explicit result attachments through the existing builder; exclude runtime collection from metadata and never echo incoming attachments.\n\n## Tests to add before implementation\nExisting Outgoing suite: omitted/empty, valid explicit collection, malformed collection, no incoming echo, no runtime metadata duplication; property checks for normalization invariants.\n\n## Branches/paths validated\nLegacy text-only and supplied-file builder paths; malformed requested files must fail explicitly.\n\n## Mocking plan\nNo external service needed; real structs/builders.\n\n## Documentations to update for both code and docs/ related content\nKeep affected module docs accurate. Coordinate the final docs/services/channels.md update and update this issue with evidence/decisions; follow documentation hygiene.\n\n## Action reuse assessment\nExtend existing Outgoing.from_pipeline_result/2; no new builder or Agent selection. Inputs Incoming plus result; output normal Outgoing with attachments; no provider effects.\n\n## Constraints and validation\nRead parent settled decisions and applicable repository service, tool-routing, Action reuse and testing policies before implementation. Preserve current test behavior. Follow authoritative validation lifecycle; feature E2E authoring waits for final review task, but focused tests are immediate. Agent selection and #875 acquisition budgets are outside scope. No global configuration mutation.\n",
+  "id": "zaq-juu.1",
+  "labels": [],
+  "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Live Action reuse assessment: extend existing pure Outgoing.from_pipeline_result/2 (canonical outbound builder); Record is an existing pure domain-agnostic struct. Existing pipeline/executor/API callers use this builder; no new Action or agent exposure. Inputs remain Incoming plus atom-keyed result map, output remains Outgoing for valid input, adding {:error, :invalid_attachments} for malformed explicit collection. No I/O, actor decisions, retries or runtime configuration. Strip atom/string attachment keys from merged metadata; never copy Incoming.attachments. Existing callers never supply attachments today; downstream handling for explicitly malformed new attachment requests must preserve the tagged error (Agent propagation excluded from this epic). New pure async example/property tests precede implementation; existing assertions unchanged. Service documentation finalization deferred to zaq-juu.8.",
+      "timestamp": "2026-10-27T12:11:50Z"
+    },
+    {
+      "text": "Validation environment blocker diagnosed by parent: Postgres.app server PID 773 listens on localhost:5432, but authentication children are held by pending PostgresPermissionDialog processes. pg_isready times out and normal mix test fails before tests. Asked user asynchronously to approve local connection dialogs; no auth configuration changed. Pure focused contract tests and implementation can continue; normal isolated test gate remains required before completion/commit/push.",
+      "timestamp": "2026-10-27T12:15:35Z"
+    },
+    {
+      "text": "Implementation ready for parent integration; left uncommitted because normal isolated mix test is blocked by Postgres.app local connection permission prompt. TDD pure red (MIX_ENV=test mix run --no-start --no-compile with ExUnit.start and Code.require_file outgoing_test.exs): legacy 3 passed, new 4 examples and 2 properties failed as expected. mix q passed exit 0, hooks.verify 8 events OK, Credo 1671 files no issues. Pure green (MIX_ENV=test mix run --no-start with ExUnit.start and Code.require_file outgoing_test.exs + incoming_identifier_property_test.exs): 10 passed (3 properties, 7 tests), exit 0. Logs /tmp/zaq-juu-1-{red,pure-red,q,pure-green}.log. Self-review: only Outgoing module and existing Outgoing test file changed; original test assertions unchanged; valid success shape/routing/person preserved; no configuration, Agent, Actions, transport, provider limits or file lifecycle changes. Public input is atom-keyed result.attachments; Record shape only is validated here, materialization/provider eligibility belongs to later tasks. git diff --check passed. Await parent standard test validation before commit; do not close issue.",
+      "timestamp": "2026-10-27T12:16:20Z"
+    },
+    {
+      "text": "Reviewed and integrated the exact two-file implementation onto feat/channel-files, left uncommitted. mix q passed in isolated worktree (hook verification, docs/compile, Credo; no issues). Integrated branch pure suite passed: MIX_ENV=test mix run --no-start -e ExUnit.start plus outgoing_test.exs and incoming_identifier_property_test.exs: 10 passed (3 properties, 7 tests); log /tmp/zaq-juu-1-branch-pure-green.log. git diff --check passed. Existing behavioral assertions unchanged; no unrelated files integrated. Normal mix test remains blocked by Postgres.app connection approval requested from user; no commit, push or issue closure until required isolated test gate passes. Dependent zaq-juu.2 remains blocked. Coverage handoff/final precommit are later gates, not run prematurely.",
+      "timestamp": "2026-10-27T12:17:08Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "[zaq-juu.1] Add Outgoing attachment contract",
+  "type": "task",
+  "updated_at": "2026-10-27T12:17:08Z"
+}

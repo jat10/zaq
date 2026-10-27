@@ -1,0 +1,24 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-13T13:07:14Z",
+  "description": "Apply session-logging.patch unchanged and validate logger and existing storage contracts. Action reuse assessment: local-only storage diagnostics; extends SessionStorage and Storage callbacks with a shared SessionLog helper outside transactions. Existing Engine document dispatch and credential authorization remain authoritative. No user or agent operation is exposed. Verify supplied filtering, rotation, failure, restart and concurrency tests plus existing storage tests and mix q. E2E not applicable: internal diagnostics only.",
+  "id": "zaq-bvc",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Applied the supplied patch unchanged. git apply --reverse --check and git diff --check pass. mix q passed. Targeted SessionLog, SessionStorage and Storage tests passed: 2 properties, 20 tests, 0 failures. No commit or PR requested; changes remain in the working tree. Context Mode execution works but automatic capture hooks are not configured. Final PR/merge precommit gate not invoked for this patch-application-only task.",
+      "timestamp": "2026-10-13T13:11:40Z"
+    },
+    {
+      "text": "Analyzed log/whatsapp_sessions.jsonl snapshot: 74 valid events, 2026-10-13 13:33:02.775 to 13:33:37.661 UTC, one VM and connector 13. One new RAM table; credentials get 2 hits and 5 successful writes; RAM session get 7 misses/16 hits and 20 successful writes; no error outcomes, no subsequent table recreation, no seed/clear events. Pattern supports initially empty volatile storage followed by writes/reads, not demonstrated credential loss or storage failure. Keys omitted, so individual misses cannot be correlated with later hits. Message decryption/delivery and any root cause of a user-visible failure remain unproven; correlate adapter logs for the same interval if needed. Read-only diagnosis; no code changes.",
+      "timestamp": "2026-10-13T13:37:29Z"
+    }
+  ],
+  "priority": 2,
+  "status": "in_progress",
+  "title": "Apply supplied linked-device session logging patch",
+  "type": "task",
+  "updated_at": "2026-10-13T13:37:29Z"
+}

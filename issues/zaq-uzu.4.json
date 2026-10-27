@@ -1,0 +1,19 @@
+{
+  "assignee": "",
+  "blocked_by": [
+    "zaq-uzu.3"
+  ],
+  "blocks": [
+    "zaq-uzu.5"
+  ],
+  "created": "2026-09-25T09:05:39Z",
+  "description": "Implement Mix orchestration and bootstrap verification from approved S3 in parent\n    zaq-uzu. Fetch then invoke the shared provisioner. Propagate failures; no separate manual provisioning\n    command.",
+  "id": "zaq-uzu.4",
+  "labels": [],
+  "parent": "zaq-uzu",
+  "priority": 2,
+  "status": "open",
+  "title": "[#781] S3b: Preserve complete mix setup bootstrap",
+  "type": "task",
+  "updated_at": "2026-09-25T09:05:43Z"
+}

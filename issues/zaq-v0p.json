@@ -1,0 +1,22 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [
+    "zaq-hce.4"
+  ],
+  "created": "2026-10-20T09:19:01Z",
+  "description": "Scope update authorized by the user in this session: \"there is a failing test this should be removed since we will tackle it in other issue\". Remove only the test \"a DM reply identifies its World Cup target after the conversation switches to NBA\" from test/zaq/engine/whatsapp_thread_history_test.exs. This explicit authorization supersedes earlier instructions below to retain that test in the current branch. The underlying bug remains open and is NOT fixed by removal. Restore the same regression scenario and assertions when implementing this issue, before applying its production fix. Recover the exact test from git revision 8714d6c763dc1da0ac11e0f3acfde05d89151663, file test/zaq/engine/whatsapp_thread_history_test.exs, original lines 304-375. All shared fixtures and other tests must remain unchanged. This deferred bug no longer blocks zaq-973.6 solely on this removed scenario; final validation/review gates remain required. Action reuse: not applicable to this test-only scope change; no production operations change.\n\nHistorical investigation (test-retention instructions superseded by the authorization above):\n\nPre-existing validation blocker discovered while implementing zaq-hce. Final mix precommit at ZAQ baseline 8714d6c763dc1da0ac11e0f3acfde05d89151663 with local callback refactor completed 48 doctests, 282 properties, 11387 tests with exactly 1 failure (1 skipped, 125 excluded).\nFailure: test/zaq/engine/whatsapp_thread_history_test.exs:304, assertion line 373: current user model input must associate In 2014 with the stored World Cup reply target after switching conversation to NBA. Actual current user content contains only author/time and In 2014, although both topics exist in conversation history. Preserve the existing assertion and test unchanged.\nBaseline evidence: a separate MIX_ENV=test process loaded the exact HEAD versions via git show of every modified executable pre-existing module (ZAQ JidoChatBridge; adapter Adapter, PairingSession, Storage.Split) using Code.compile_string before running the same unchanged test with seed 481731. Identical assertion failure reproduced in 3 seconds. New callback helper modules are unused by the HEAD versions. No Agent/Engine production source changed in this refactor. This is independent of host callback transport changes.\nArtifacts: /tmp/zaq-hce-precommit.log; /tmp/zaq-hce-baseline.log; baseline loader /tmp/zaq-hce-baseline.exs. Focused callback/storage/lifecycle suites passed: ZAQ 4 properties/270 tests, adapter 12 properties/196 tests. Both quality gates passed.\nInvestigate ownership of persisted reply-target context at the model input boundary; read AGENTS.md, docs/services/agent.md harness checks, docs/services/engine.md, docs/testing-approach.md, and docs/action-reuse.md before changes. Do not weaken, skip, edit, or rewrite existing tests/helpers/configuration. Reproduce on baseline before changing production and reuse canonical history projection/context APIs. Current user authorized callback refactor, so unrelated Engine/Agent behavior fix is separately tracked. This bug blocks zaq-hce.4 final green validation.\nAction reuse assessment: investigation pending; no new operation design authorized by this issue. Identify/reuse existing HistoryIngress, Conversations and Agent history/context entry points before proposing a fix.",
+  "id": "zaq-v0p",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Still reproducible during zaq-973 implementation on the same baseline. Broad precommit and isolated unchanged test/zaq/engine/whatsapp_thread_history_test.exs:304 both fail the same current-user reply-target assertion at line 373. New work changes generic channel contracts only; Agent/Engine source/test expectations remain untouched. Followup log /tmp/zaq-973-precommit-followup.log. Blocks final green validation for zaq-973.6.",
+      "timestamp": "2026-10-20T10:35:22Z"
+    }
+  ],
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-v0p] Restore stored DM reply target in current model input",
+  "type": "bug",
+  "updated_at": "2026-10-20T11:11:56Z"
+}

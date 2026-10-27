@@ -1,0 +1,25 @@
+{
+  "assignee": "Jad",
+  "blocked_by": [],
+  "blocks": [],
+  "closed_at": "2026-10-06T14:05:33Z",
+  "created": "2026-10-06T14:03:01Z",
+  "description": "Confirmed Chrome SchemefulSameSiteLax blocks ZAQ session under ngrok iframe. Make SameSite configurable with Lax default, enable None plus Secure for current development HTTPS tunnel. Preserve existing widget wiring. Action reuse: not applicable, endpoint cookie configuration only. Validate emitted dev and prod cookies and focused session tests; no new feature E2E.",
+  "id": "zaq-dmk",
+  "labels": [],
+  "comments": [
+    {
+      "text": "Implemented session_same_site compile config default Lax and dev None plus Secure. Added actual Plug.Session cookie regression alongside unchanged production Lax expectation. mix q passed; focused session and login tests 31 passed. Existing widget wiring preserved. Running server/tunnel currently returns HTTP 400; restart required to load compile-time config. No commit or PR requested.",
+      "timestamp": "2026-10-06T14:05:04Z"
+    },
+    {
+      "text": "Live verification now passes: server picked up settings, Chrome stored _zaq_key with SameSite=None and Secure, iframe LiveView readiness received, getSettings returned light/en through ngrok. Automated inspection bypassed ngrok warning only. Earlier transient HTTP 400 cleared.",
+      "timestamp": "2026-10-06T14:05:32Z"
+    }
+  ],
+  "priority": 2,
+  "status": "closed",
+  "title": "Fix development widget iframe session cookies",
+  "type": "task",
+  "updated_at": "2026-10-06T14:05:33Z"
+}
