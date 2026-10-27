@@ -39,11 +39,15 @@
     {
       "text": "Completed and committed d48e9ad2d1d33a1e3f39b377ef85f5eb36f2a61c after user downloaded official Mattermost10.11.0 and explicitly resumed. Compose aligned to exact amd64 RepoDigest68f9788a401c0e44caa2b9de413aa2da75da59d75725237a8098820721da0a13; no latest download. Exact final real-provider command: sh scripts/test_channel_files.sh. Fresh owned project zaq-files-1793120058-35355 bootstrapped actual PG16/Mattermost10.11.0/Mailpit, reused locked adapter request/wait_ready helpers, and passed all7 tests in3.9s (async). Verified actual recipient download from final Mattermost post, selected signed Disk Record exact non-UTF8 bytes/name/MIME/thread/sender, empty controls, actual SMTP websocket acceptance/raw MIME bytes/thread/audience/receipt, two overlapping send intervals per channel, simultaneous Mattermost+SMTP, no crossed source cleanup. No fake provider/materialization/dispatch/Mailer, no application-env mutation/global Mox/sleeps in journeys, no Agent/LLM/IMAP claim. Script teardown removed all owned containers/network; explicit label-filter inspection found no owned containers/networks/volumes remaining. Parent qx0923fy services, user zaq-app/zaq-postgres and user manual builder were untouched. Final mix q passed (Credo1677files no issues, hooks.verify8, formatting/docs), commit qf/message hooks passed, diff check clean. Prior unchanged focused regression group171 passed (6properties,165tests); not rerun unnecessarily after test-only naming/bootstrap/image corrections. Logs /tmp/zaq-juu-7-full-real.log,/tmp/zaq-juu-7-q.log,/tmp/zaq-juu-7-regressions.log. Exact7 committed files include force-added ignored scripts/test_channel_files.sh;655 added test/CI/provisioning lines, zero production changes. Only _build/deps local symlinks untracked. No push or closure by child; parent integrates/pushes/confirms before closing/sync. Hosted CI execution, review/coverage/final precommit remain .8 scope. Earlier partial-cache cleanup mistake was reported; durable manual resume script remains outside repo and was not executed by agent after pause.",
       "timestamp": "2026-10-27T16:57:56Z"
+    },
+    {
+      "text": "Implemented and reviewed; root commit d16711b59 (agent d48e9ad2d). Full disposable Mattermost 10.11.0/PostgreSQL/Mailpit startup, bootstrap, seven real-provider tests and teardown passed (7 passed in 3.9s); mix q and hooks passed; 171 focused regression checks previously passed unchanged. Push to origin/feat/channel-files rejected by GitHub: OAuth credential lacks workflow scope required for .github/workflows/elixir-ci.yml. gh auth status confirms repo scope but no workflow scope. Issue remains open pending user credential refresh: gh auth refresh -h github.com -s workflow, then retry push and verify remote before closure. Dependent zaq-juu.8 remains open; no final validation or epic completion claimed.",
+      "timestamp": "2026-10-27T16:58:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.7] Implement both real-provider delivery E2Es and async isolation",
   "type": "task",
-  "updated_at": "2026-10-27T16:57:56Z"
+  "updated_at": "2026-10-27T16:58:12Z"
 }
