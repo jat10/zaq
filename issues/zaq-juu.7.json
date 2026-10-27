@@ -31,11 +31,15 @@
     {
       "text": "Concurrency proof strengthened after initial SMTP pass: each task reports monotonic start immediately before actual NodeRouter send and timestamp when its real confirmed receipt returns; test asserts max(send starts)\u003cmin(acceptance returns), independently of subsequent readback barrier. Thus concurrent send-call intervals themselves overlap; acceptance/readback barrier additionally keeps both owned resources live before cleanup. Real SMTP module re-ran green3 tests in1.3s with this stronger assertion. Shared helper/new modules self-review finds no Application/System env setters, global Mox, sleeps, fake servers or Req.Test. Full source/helper changes still test-only, no production changes. Current remaining blocker is real Mattermost image provisioning; parent owns Docker investigation, no duplicate pulls or user-resource changes by this agent. Required MM/mixed run, pinned MM digest and end-to-end provisioning-script execution remain outstanding; issue not complete/uncommitted.",
       "timestamp": "2026-10-27T15:11:31Z"
+    },
+    {
+      "text": "Provider recovery update: parent turn ended after status response; child took over existing owned provisioning to avoid indefinite wait, notified parent. No live previous pull existed. Standard resumed pull failed httpReadSeeker invalid_token authorization; temporary empty-auth Docker client configuration downloaded small layers but main496.36MB remained pending for5min, so only owned pull PID40640 terminated. An isolated explicitly owned BuildKit builder now downloads immutable official amd64 manifest b0fdecf049bbb5d224d719bade7f438261b27e7061205f904bcc9e4f2f36eb70, Dockerfile contains only FROM, with export/load to owned zaq-juu7-mattermost:verified tag. Existing user Docker settings/credentials/containers unchanged; only private temporary client config links existing buildx executable. Session30635, log/tmp/zaq-juu7-buildkit-mattermost.log. Genuine progress57.67/496.36MB at302.5s, measured throughput~0.19MB/s implies~40min; parallel public range probes do not improve aggregate throughput. Parent now active and informed, retains only read-only inspection; child retains mutation ownership. Upstream c3752ef integration source reviewed (already pinned93025d5): real CI uses Mattermost10.11.0/PG16.6; older image actually larger581.99MB, so no replacement pull. Bootstrap now reuses upstream locked request/wait_ready helpers; per-journey unique source/recipient fixtures stay domain-specific. CI compose now pins actual official MM manifest plus supplied PG/Mailpit RepoDigests, no latest placeholders. Script syntax/compose checks pass; full real MM/mixed and fresh full-script tests remain required; no completion/commit yet.",
+      "timestamp": "2026-10-27T15:43:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.7] Implement both real-provider delivery E2Es and async isolation",
   "type": "task",
-  "updated_at": "2026-10-27T15:11:31Z"
+  "updated_at": "2026-10-27T15:43:28Z"
 }
