@@ -90,7 +90,7 @@ defmodule Zaq.Engine.ConnectorArchiveWebhookTest do
     bridge_id = start_runtime(config)
     Process.put(:runtime_stop_failure, :runtime_down)
 
-    assert {:error, {:runtime_stop_failed, :runtime_down}} = archive(config)
+    assert {:error, {:runtime_pending, :failed}} = archive(config)
     assert_received {:delete_webhook, ^bridge_id}
     assert_received {:stop_runtime, ^bridge_id}
     assert %ChannelConfig{enabled: false, archived_at: nil} = Repo.get!(ChannelConfig, config.id)

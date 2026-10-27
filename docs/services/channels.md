@@ -10,7 +10,8 @@ for implementation sequencing, ownership checks and acceptance scenarios.
 
 Interactive authentication uses the optional `Jido.Chat.Adapter.authenticate/4`
 contract through `CommunicationBridge` and `JidoChatBridge`. The confidential
-`:pair_linked_device` Action revalidates the current super-admin on every command.
+`:pair_linked_device` Action consumes super-admin authorization from the trusted
+BO session context, without reloading the user on each command.
 Adapters without this capability retain their existing configuration path.
 The adapter owns provisional connections, challenges, expiry and cancellation;
 Channels owns delegation and runtime activation. Private authentication and storage
@@ -33,13 +34,18 @@ cancellation.
 
 New connector onboarding uses the same capability transport with `scope: :provider`,
 without selecting a saved connector. `authentication_flow: :linked_device` selects
-the existing provisional pairing UI after a current super-admin check; `:default`
-preserves the standard form and OAuth flow. JidoChatBridge declares linked-device
+the existing provisional pairing UI after checking the authenticated BO user's role;
+`:default` preserves the standard form and OAuth flow. JidoChatBridge declares linked-device
 authentication only for linked-device ingress with native adapter authentication.
 
 Engine's trusted `:confirm_linked_device` Action persists a normalized account and
 encoded credentials atomically, with attempt-scoped idempotence. Activation follows
 persistence; a startup failure leaves a saved connector with runtime pending.
+The Action owns the private transaction directly, without a forwarding completion
+module; it does not take over adapter session or runtime ownership.
+After seeding transient storage, the adapter's private start request retains the
+trusted session authorization and synchronizes the saved connector locally in the
+bridge, carrying transient connection options through the fresh saved-binding check.
 See [credential documents](engine.md#connector-credential-documents) for persistence
 and authorization, and [shared extension contracts](#shared-adapter-extension-contracts)
 for the adapter boundary. Provider-specific onboarding, transport settings and
@@ -302,13 +308,33 @@ dispatch checks provider/config consistency before invoking an adapter.
 Target-source watch lookups likewise reject matches across connectors; within
 one connector they use the latest matching watch. An explicitly supplied but
 malformed connector ID is rejected instead of becoming an unscoped lookup.
+`CommunicationBridge.sign_in/3` implements the shared `Zaq.SignIn` lifecycle over
+the existing adapter authentication transport. The confidential `PairLinkedDevice`
+Action accepts normalized commands with trusted BO session authorization and
+actor-derived session ownership. Raw operations remain internal adapter protocol;
+bridge authentication uses the optional `authenticate/5` callback, including options.
+Bridges without it return `:unsupported`.
+Channels projects challenge/account/receipt and resume/restart/dismiss policy, while
+the adapter retains provisional session state and durable completion ordering.
+Opaque session references are server-only, not client authority.
+The shared BO `DeviceSignInPolling` owns generation/request admission, one in-flight
+command, bounded observation, challenge replacement and completion delivery. Authorized
+command callbacks and refs remain socket-private. `DesignSystem.DeviceSignIn` renders
+verification-code, locally generated QR and confirmation content; caller modal shells
+retain saved-profile controls. Closing a provisional session cancels it; closing a
+saved connector only detaches presentation. Saved-profile Cancel still uses the
+configuration transition. Saved ingress observations optionally request the same
+normalized presentation without changing ordinary ingress-status callers.
+
 BO connector removal archives rather than deletes the config: it disables
 runtime selection, retains historical lookup by ID and preserves the FK of
 PersonChannel identities. Archived configs are excluded from ordinary BO
 lists and provider-only upserts. Delete first tears down ingress, prepares adapter
 disablement, stops the runtime, then persists the disabled state before
-archiving. Preparation failures leave the configuration enabled; runtime stop
-failures leave it disabled and unarchived so the BO can retry Delete.
+archiving. Preparation failures and unknown preparation outcomes leave the
+configuration enabled; confirmed post-preparation runtime stop failures leave it
+disabled and unarchived. BO refreshes persisted state and reports success or failure;
+only an explicit user or caller invocation attempts deletion again.
 For data-source connectors, archiving first unwatches each active/error watch;
 successful stops are persisted and failed IDs remain retryable with the connector
 still live. The post-archive reconciliation and late watch upserts schedule
@@ -317,11 +343,12 @@ archived credentials to unwatch the exact matching connector; regular ingress
 and watch creation remain unavailable after archive.
 Engine `ConnectorLifecycle` owns archive descriptor/revision validation, watch ordering
 and configuration persistence. BO Enable/Disable dispatches the existing Engine
-`:connector_lifecycle` command; Engine uses the original `:sync_channel_runtime`
-before/after configuration request. Channels checks the optional bridge
+`:connector_lifecycle` command; Toggle and Archive use confidential `:connector_sync_runtime`
+with exact before/desired configuration, revision and a before/after-persistence phase.
+Channels checks the optional bridge
 `before_disable/3` hook before running the existing runtime synchronization. Engine
 performs this call before writing disabled, keeping credentials available during
-logout. Save and enable continue to use the original runtime-sync contract.
+logout. Legacy direct synchronization reuses these same provider operations.
 BO selects confirmation from the exact connector capability snapshot's
 `resolved.logout_on_disable` flag. Adapters without logout retain normal teardown.
 JidoChatBridge loads the configured adapter, detects optional `logout/1`, enforces
@@ -334,11 +361,27 @@ Archive retains its existing watch and webhook teardown followed by confidential
 pre-disable hook before stopping the runtime. Engine persists disabled afterward
 and refuses archival on runtime failure. Already-disabled archive retries skip
 logout and retry runtime shutdown. Archived rows reconcile runtime and watch cleanup.
+Channels returns a confirmed transition with matching target and complete/pending
+runtime, or `{:error, bounded_reason}`. Only Channels interprets provider stages.
+Enable requests a continuation after committed eligibility; linked-device activation
+retains the trusted BO session authorization. Archive intent retains exact runtime
+reconciliation after its ordered ingress teardown; Toggle retains the provider's normal sync behavior.
+Uncertain pre-persistence replies cannot authorize disable persistence. Engine reports
+pending runtime without rollback if a continuation fails after persistence.
 These Channels events perform no configuration persistence. The shared Engine
-command owns enable/disable persistence; Channels does not perform an Engine
-prepare/persist callback sequence. There is no controller,
+command owns enable/disable persistence and interprets only the generic outcome.
+Channels does not perform an Engine prepare/persist callback sequence. There is no controller,
 stopping state or router coordination.
 The public result contains IDs and bounded outcomes, never credentials.
+
+Saved-binding startup and restart share `ConnectorRuntime.current_config/1` to
+resolve a fresh enabled, nonarchived Engine snapshot through the confidential
+runtime-context event. Legacy provider targets pass through unchanged. Bridge
+startup stays in the selected bridge; Jido's state refresh/start/restart behavior
+is private to JidoChatBridge, without an additional Channels startup event.
+BO detail-page readiness reuses `IngressStatusUI.collect/2` with four concurrent
+checks and a five-second per-check timeout. Results remain connector-ID keyed,
+retain the requesting actor, omit QR material, and isolate failed checks.
 
 ### Replicated email history contract (#768)
 
@@ -1042,15 +1085,17 @@ During edits, the canonical changeset preserves saved values for defaulted keys
 unless explicitly replaced. Engine also protects
 [paired identity and credential metadata](engine.md#connector-credential-documents).
 User-owned settings retain their replacement semantics.
-Persisted settings use string keys. Shared projections resolve absent legacy values
-at runtime without a backfill; explicit malformed values are not silently replaced.
-Adapters validate transport options. The bridge forwards the connector's
+Persisted settings use string keys. Shared projections read stored values without
+reapplying provider defaults. Direct form validation/insertion selects the initial
+reply policy in the canonical changeset; it does not insert history options.
+Adapters validate transport options and supply their own omission behavior.
+The bridge forwards the connector's
 `settings["jido_chat"]["ingress"]` without interpreting provider storage or profiles.
 
 Saving and synchronizing changed ingress settings restarts the listener through the
-shared lifecycle. Changing only reply policy refreshes handlers. Changes to defaults
-in code affect connectors with absent keys; reload affected runtimes on deployment.
-Provider-specific defaults and startup precedence follow the adapter contract.
+shared lifecycle. Changing only reply policy refreshes handlers. Changes to creation
+defaults do not silently change saved connectors. Provider-specific transport
+omission behavior and startup precedence follow the adapter contract.
 
 ### Connector reply policy
 

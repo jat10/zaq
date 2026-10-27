@@ -174,9 +174,13 @@ defmodule Zaq.Engine.ChannelConfig do
   end
 
   defp saved_room_reply_policy(changeset) do
-    changeset.data
-    |> Map.put(:provider, get_field(changeset, :provider))
-    |> Settings.jido_chat_setting("room_reply_policy")
+    initial =
+      get_in(Settings.defaults(get_field(changeset, :provider)), [
+        "jido_chat",
+        "room_reply_policy"
+      ])
+
+    Settings.jido_chat_setting(changeset.data, "room_reply_policy", initial)
   end
 
   defp put_valid_room_reply_policy(changeset, _settings, _chat, nil), do: changeset

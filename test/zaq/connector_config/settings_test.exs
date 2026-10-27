@@ -54,7 +54,7 @@ defmodule Zaq.ConnectorConfig.SettingsTest do
     end
   end
 
-  property "defaults fill missing keys idempotently while explicit nested values win" do
+  property "creation defaults merge idempotently while explicit nested values win" do
     check all(
             value <- one_of([integer(), boolean(), string(:alphanumeric), constant(nil)]),
             max_runs: 30
@@ -64,7 +64,7 @@ defmodule Zaq.ConnectorConfig.SettingsTest do
         settings: %{"other" => value, "jido_chat" => %{"ingress" => %{"sync_history" => value}}}
       }
 
-      effective = Settings.effective(config)
+      effective = Settings.merge(Settings.defaults(config.provider), config.settings)
 
       assert effective == %{
                "other" => value,
@@ -74,10 +74,32 @@ defmodule Zaq.ConnectorConfig.SettingsTest do
                }
              }
 
-      assert Settings.effective(%{config | settings: effective}) == effective
+      assert Settings.merge(Settings.defaults(config.provider), effective) == effective
 
       assert Settings.preserve(%{config | settings: effective}, %{"other" => "edited"}) ==
                %{"other" => "edited", "jido_chat" => effective["jido_chat"]}
+    end
+  end
+
+  test "settings projections read stored values without inserting provider defaults" do
+    config = %{provider: "whatsapp", settings: %{}}
+    assert Settings.jido_chat_room_reply_policy(%{}) == :default
+    assert Settings.jido_chat_settings(config) == %{}
+    assert Settings.jido_chat_room_reply_policy(config) == :default
+
+    partial = %{config | settings: %{"jido_chat" => %{"ingress" => %{"sync_history" => true}}}}
+    assert Settings.jido_chat_setting(partial, "ingress") == %{"sync_history" => true}
+
+    for settings <- [
+          nil,
+          "invalid",
+          %{"jido_chat" => nil},
+          %{"jido_chat" => []},
+          %{"jido_chat" => %{"room_reply_policy" => nil}},
+          %{"jido_chat" => %{"room_reply_policy" => "all"}}
+        ] do
+      malformed = %{config | settings: settings}
+      assert Settings.jido_chat_room_reply_policy(malformed) == :mention_required
     end
   end
 end

@@ -502,13 +502,6 @@ defmodule ZaqWeb.Live.BO.Communication.WebWidgetLive do
   defp error_message(:invalid_agent), do: "Choose a conversation-enabled agent."
   defp error_message(:connector_not_found), do: "Configuration not found or archived."
 
-  defp error_message({:runtime_stop_failed, _}),
-    do:
-      "The configuration is disabled, but its connection could not be stopped. Retry Delete to finish."
-
-  defp error_message({:disable_failed, _}),
-    do: "Could not disable the configuration. It was not deleted."
-
   defp error_message(:key_already_exists),
     do: "A key already exists. Use Rotate authentication key."
 

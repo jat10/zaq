@@ -13,6 +13,18 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     alias Zaq.Channels.Api, as: ChannelsApi
 
     def dispatch(%Event{opts: opts, request: %{before_config: _, after_config: _}} = event) do
+      case Process.get(:runtime_dispatch_mode) do
+        :unavailable -> %{event | response: {:error, :channels_unavailable}}
+        :unexpected -> %{event | response: :unexpected}
+        :raise -> raise "runtime route unavailable"
+        :exit -> exit(:runtime_route_unavailable)
+        _ -> sync(event, opts)
+      end
+    end
+
+    def dispatch(%Event{opts: opts} = event), do: record(event, opts)
+
+    defp sync(event, opts) do
       opts =
         opts
         |> Keyword.put(:runtime_module, __MODULE__)
@@ -20,10 +32,13 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
         |> Keyword.put(:data_source_runtime_module, __MODULE__)
 
       result = ChannelsApi.handle_event(%{event | opts: opts}, :connector_sync_runtime, nil)
-      if Process.get(:router_mode) == :non_event, do: result.response, else: result
-    end
 
-    def dispatch(%Event{opts: opts} = event), do: record(event, opts)
+      cond do
+        Process.get(:runtime_dispatch_mode) == :lost_reply -> :lost_reply
+        Process.get(:router_mode) == :non_event -> result.response
+        true -> result
+      end
+    end
 
     defp record(event, opts) do
       send(self(), {:channels_call, opts[:action], event.request})
@@ -285,7 +300,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     Process.put(:runtime_response, :unexpected)
     request = %{channel_config_id: config.id, provider: "disk", kind: "retrieval"}
 
-    assert {:error, {:runtime_stop_failed, {:unexpected_response, :unexpected}}} =
+    assert {:error, {:runtime_pending, :invalid_response}} =
              ConnectorLifecycle.archive(request, Process.get(:actor), router: Router)
 
     refute Repo.get!(ChannelConfig, config.id).archived_at
@@ -336,7 +351,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
 
   test "adapter disable failure preserves enablement and prevents runtime stop", %{config: config} do
     Process.put(:disable_response, {:error, :logout_failed})
-    assert {:error, {:disable_failed, :logout_failed}} = archive()
+    assert {:error, :failed} = archive()
     assert Repo.get!(ChannelConfig, config.id).enabled
     refute Repo.get!(ChannelConfig, config.id).archived_at
     refute_received {:channels_call, :connector_sync_runtime, _}
@@ -346,7 +361,7 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     config: config
   } do
     Process.put(:runtime_response, {:error, :unavailable})
-    assert {:error, {:runtime_stop_failed, :unavailable}} = archive()
+    assert {:error, {:runtime_pending, :unavailable}} = archive()
     assert_received {:channels_call, :prepare_transition, _}
     refute Repo.get!(ChannelConfig, config.id).enabled
     refute Repo.get!(ChannelConfig, config.id).archived_at
@@ -355,6 +370,22 @@ defmodule Zaq.Engine.ConnectorLifecycleTest do
     assert {:ok, %{status: :archived}} = archive()
     refute_received {:channels_call, :prepare_transition, _}
     assert Repo.get!(ChannelConfig, config.id).archived_at
+  end
+
+  test "unknown preparation outcomes retain cleanup on archive retry", %{config: config} do
+    for mode <- [:unavailable, :unexpected, :raise, :exit, :lost_reply] do
+      Process.put(:runtime_dispatch_mode, mode)
+      assert {:error, _} = archive()
+      assert Repo.get!(ChannelConfig, config.id).enabled
+      refute Repo.get!(ChannelConfig, config.id).archived_at
+    end
+
+    # A lost successful reply must not suppress cleanup on the next attempt.
+    assert_received {:channels_call, :prepare_transition, _}
+    Process.delete(:runtime_dispatch_mode)
+    assert {:ok, %{status: :archived}} = archive()
+    assert_received {:channels_call, :prepare_transition, _}
+    refute Repo.get!(ChannelConfig, config.id).enabled
   end
 
   test "editing during runtime shutdown prevents archival", %{config: config} do

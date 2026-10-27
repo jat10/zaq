@@ -74,9 +74,11 @@ Its canonical changeset also supplies and validates Jido connector reply policy;
 see [connector reply policy](channels.md#connector-reply-policy) for settings,
 compatibility, and rollout details.
 Provider startup defaults are defined in `Zaq.ConnectorConfig.Settings.defaults/1`.
-`ChannelConfig.create/2` applies them before insertion; settings projections resolve
-missing legacy values at runtime without a backfill. The generic changeset retains
-saved choices for configured default keys; adapters validate transport options.
+`ChannelConfig.create/2` applies them before insertion. The canonical changeset
+also selects an initial reply policy for direct form validation/insertion, without
+inserting transport history options. It retains saved choices for configured default
+keys during edits. Shared projections read stored settings without reconstructing
+provider defaults; adapters validate transport options and handle their own omissions.
 Linked-device confirmation and upsert creation share this API; see
 [listener settings](channels.md#connector-listener-settings).
 Multiple named connectors may share a provider; explicit ID resolution checks
@@ -93,22 +95,26 @@ Stored `jido_chat` fields include bot name/user ID, message patterns and ingress
 overrides. SMTP and IMAP lookup helpers live in `Zaq.ConnectorConfig`; bridge/listener
 normalization remains provider-local in Channels.
 
-Disable uses the original Channels runtime-sync before/after configuration contract.
-The existing runtime handlers perform optional adapter logout before teardown;
-Channels does not ask Engine to prepare or persist a separate disable command.
-Engine runs disable synchronization while credentials remain enabled, then writes the
-disabled state. Failed logout leaves enablement unchanged. Runtime failure after
-successful preparation is reported by the existing runtime-sync error handling.
+Toggle and Archive reuse confidential `:connector_sync_runtime` with exact before/desired
+configuration, revision, `phase: :before_persist | :after_persist` and generic command
+intent (`:set_enabled | :archive`). Channels alone decides provider transition semantics.
+It returns matching target scope with `transition: :confirmed`, runtime complete/pending
+and continuation none/after-persist, or `{:error, bounded_reason}`. Engine
+validates the envelope and target, not logout/cleanup stages or protocol reasons.
 
 Delete retains Engine's existing archive flow and `:connector_sync_runtime` call.
-That call performs optional logout and runtime shutdown before Engine persists
-disabled and archives. Engine rechecks the revision when persisting after runtime
-work; runtime failure leaves disabled state available for retry, while logout
-failure leaves enablement unchanged. No database row lock spans callbacks or RPC.
+Engine persists only confirmed transitions with a fresh revision check. Confirmed
+runtime-pending leaves disabled/unarchived state available for another caller invocation;
+pre-persistence errors preserve enablement so Archive cannot skip cleanup.
+After confirmed persistence, an unavailable/malformed continuation reply leaves the
+saved configuration with runtime pending, not a fictitious rollback. No database
+row lock spans callbacks or RPC.
 A successful provider logout cannot be undone if subsequent persistence fails.
 
 Saved-binding startup resolves a fresh enabled, nonarchived snapshot through
 confidential `:connector_runtime_context` with the explicit runtime capability.
+Bridge startup/restart and Jido's private ensure path share this resolver directly;
+they do not self-dispatch another Channels startup command.
 Disable confirmation reads scoped revision context through confidential
 `:connector_lifecycle` with the explicit trusted capability. Archive executes
 its existing Engine entry point directly. Database row locks remain confined to
@@ -117,16 +123,19 @@ persistence transactions; NodeRouter does not coordinate these operations.
 BO enable/disable uses the existing confidential `:connector_lifecycle` handler
 with its explicit trusted capability and `operation: :set_enabled`. The request
 contains connector ID, provider, kind, an explicit enabled boolean and the expected
-revision. `ConnectorLifecycle.execute/3` reloads the actor, validates scope, archive
-state and revision, and owns persistence and runtime synchronization. Enable rules
-are shared with BO presentation through `ConnectorConfig.Settings`; WhatsApp requires
-a current super-admin. Adapter disable preparation retains its own authorization.
+revision. `ConnectorLifecycle.execute/3` requires actor identity, validates scope, archive
+state and revision, and owns persistence and runtime synchronization. WhatsApp enablement
+requires super-admin authorization established from the authenticated BO session;
+the decision travels in trusted execution context (`skip_permissions`), never request
+fields. Neither polling nor completion reloads the BO user. Adapter disable preparation
+retains this authorization. Existing archive and OAuth entry-point checks are unchanged.
 Disable confirmation passes the original confirmed revision to Engine.
 
-Enable persists before Channels runtime synchronization; disable runs adapter
-preparation and runtime shutdown before persistence. Preparation failure leaves
-state unchanged; other runtime failures are returned alongside persisted state.
-The existing Channels communication/data-source sync handlers remain authoritative.
+For enable, Channels requests an after-persistence continuation before runtime
+credential access. The same interpreter handles both directions and Archive.
+Channels retains the existing provider disable behavior; Engine does not choose
+between stopping, logout or credential clearing. Legacy direct runtime-sync callers
+still use the same provider operations without the lifecycle outcome envelope.
 No row lock spans runtime calls, and this command does not serialize concurrent
 startup against cleanup. BO retains toggle presentation and opens pairing only
 after successful enable synchronization.
@@ -136,6 +145,13 @@ helpers, reusing Channels runtime synchronization and adapter preparation. This
 adds no separate Action, agent-tool exposure or workflow step.
 
 ### Connector credential documents
+
+`Actions.ConfirmLinkedDevice` owns its private atomic completion transaction: trusted
+session authorization and actor-derived ownership, attempt UUID validation/idempotence,
+connector defaults and encrypted batch provisioning. Repeated attempts verify saved provider/owner/account
+and retain later settings. No provider activation occurs inside the transaction.
+There is no separate public confirmation-save facade; runtime callers use the
+existing trusted completion Action. Credential document contracts remain unchanged.
 
 [`Connect.CredentialDocuments`](../../lib/zaq/engine/connect/credential_documents.ex)
 provides atomic namespaced record operations over an encrypted canonical org
@@ -985,6 +1001,13 @@ use that claim protocol.
 
 `DeviceAttempts` stores a separate encrypted `DeviceAttempt`, bound to its initiating
 Person session (or trusted org setup), credential fingerprint, provider and deadline.
+It implements the higher-level `Zaq.SignIn` begin/observe/cancel contract, projecting
+verification challenges and credential completion without changing the OAuth HTTP
+behaviour. Existing global and authenticated Person events retain their authorization
+and actor/session-derived ownership. BO consumers share `DeviceSignInPolling` for
+private async admission/timers and `DesignSystem.DeviceSignIn` for presentation with
+Channels sign-in; protocol workers, storage and durable completion remain separate.
+OAuth modal dismissal detaches presentation, not the provider worker.
 One temporary `DeviceWorker` under the Engine's `DeviceSupervisor` drives HTTP and
 timers. Provider-normalized intervals/slowdown feed the worker; no provider names,
 endpoints or error codes enter its scheduling logic. There is one in-flight poll per

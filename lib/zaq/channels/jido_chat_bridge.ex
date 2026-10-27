@@ -32,11 +32,10 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Jido.Chat.Media
   alias Jido.Chat.Thread
 
-  alias Zaq.Accounts.BOActor
+  alias Zaq.Events.TrustedContext
 
   alias Zaq.Channels.{
     Bridge,
-    CommunicationBridge,
     ConnectorRuntime,
     RetrievalChannel,
     Supervisor,
@@ -68,9 +67,12 @@ defmodule Zaq.Channels.JidoChatBridge do
   def before_disable(%{provider: provider} = config, actor, opts) do
     case logout_adapter(provider, opts) do
       {:ok, adapter} ->
-        case BOActor.current_super_admin(actor) do
-          {:ok, _user} -> logout_listener(config, adapter, opts)
-          _ -> {:error, :unauthorized}
+        case {actor, opts[:skip_permissions]} do
+          {%{user_id: id}, true} when is_integer(id) and id > 0 ->
+            logout_listener(config, adapter, opts)
+
+          _ ->
+            {:error, :unauthorized}
         end
 
       {:error, :unsupported} ->
@@ -132,7 +134,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   @doc "Delegates an authorized account authentication command to the configured adapter."
   @spec authenticate(atom() | String.t(), map(), term(), map(), keyword()) ::
           {:ok, map()} | {:error, term()}
-  def authenticate(provider, request, owner_id, actor, opts \\ []) do
+  def authenticate(provider, request, owner_id, actor, opts) do
     with {:ok, adapter} <- adapter_for(provider, opts) do
       opts =
         if request.op == :begin do
@@ -140,7 +142,10 @@ defmodule Zaq.Channels.JidoChatBridge do
             owner: request[:owner],
             supervisor: Zaq.Channels.BridgeSupervisor,
             attempt_id: Ecto.UUID.generate(),
-            context: actor,
+            context: %TrustedContext{
+              actor: actor,
+              skip_permissions: opts[:skip_permissions] == true
+            },
             sink_mfa: storage_sink(%{provider: provider})
           ]
         else
@@ -151,16 +156,21 @@ defmodule Zaq.Channels.JidoChatBridge do
     end
   end
 
-  @doc "Atomically saves package-encoded credentials through the Engine Action."
+  # Engine owns the transaction; translate its result into the adapter handoff.
   @spec persist_authentication(atom() | String.t(), map(), map()) ::
           {:ok, map()} | {:error, term()}
-  def persist_authentication(provider, actor, request) do
+  defp persist_authentication(provider, context, request) do
     response =
       request
       |> Map.put(:provider, to_string(provider))
       |> Event.new(:engine,
-        actor: actor,
-        opts: [action: :confirm_linked_device, confidential: true, linked_device_runtime: true]
+        actor: context.actor,
+        opts: [
+          action: :confirm_linked_device,
+          confidential: true,
+          linked_device_runtime: true,
+          skip_permissions: context.skip_permissions
+        ]
       )
       |> NodeRouter.dispatch()
       |> Map.fetch!(:response)
@@ -179,23 +189,6 @@ defmodule Zaq.Channels.JidoChatBridge do
       _ -> {:error, :invalid_binding}
     end
   end
-
-  @doc "Starts the saved connector through the ordinary communication runtime."
-  @spec start_authentication(atom() | String.t(), map(), map()) :: :ok | {:error, term()}
-  def start_authentication(provider, _actor, %{runtime: config, connection_options: options})
-      when is_map(config) and is_map(options) do
-    if config.provider == to_string(provider) do
-      config = if is_struct(config), do: Map.from_struct(config), else: config
-
-      config
-      |> Map.put(:authentication_connection_options, options)
-      |> then(&CommunicationBridge.sync_config_runtime(nil, &1))
-    else
-      {:error, :invalid_connector}
-    end
-  end
-
-  def start_authentication(_, _, _), do: {:error, :invalid_connector}
 
   @test_message "✅ **Zaq Connection Test**\nThis is an automated test message. If you see this, the channel is configured correctly."
 
@@ -250,27 +243,29 @@ defmodule Zaq.Channels.JidoChatBridge do
       do: from_listener(config, payload, opts)
 
   defp pairing_request(%{provider: provider}, %{
-         context: actor,
+         context: %TrustedContext{actor: %{user_id: id}, skip_permissions: true} = context,
          request: %{op: :persist} = request
-       }) do
-    case BOActor.current_super_admin(actor) do
-      {:ok, _user} ->
-        persist_authentication(provider, actor, Map.delete(request, :op))
-
-      _ ->
-        {:error, :unauthorized}
-    end
-  end
+       })
+       when is_integer(id) and id > 0,
+       do: persist_authentication(provider, context, Map.delete(request, :op))
 
   defp pairing_request(%{provider: provider}, %{
-         context: actor,
+         context: %TrustedContext{actor: %{user_id: id}, skip_permissions: true},
          request: %{op: :start, runtime: runtime}
-       }) do
-    case BOActor.current_super_admin(actor) do
-      {:ok, _user} -> start_authentication(provider, actor, runtime)
-      _ -> {:error, :unauthorized}
+       })
+       when is_integer(id) and id > 0 do
+    with %{runtime: %{provider: saved_provider} = config, connection_options: options}
+         when is_map(options) <- runtime,
+         true <- saved_provider == to_string(provider) do
+      config = if is_struct(config), do: Map.from_struct(config), else: config
+      sync_runtime(nil, Map.put(config, :authentication_connection_options, options))
+    else
+      _ -> {:error, :invalid_connector}
     end
   end
+
+  defp pairing_request(_, %{request: %{op: op}}) when op in [:persist, :start],
+    do: {:error, :unauthorized}
 
   defp pairing_request(_, _), do: {:error, :invalid_pairing_request}
 
@@ -1467,11 +1462,12 @@ defmodule Zaq.Channels.JidoChatBridge do
   defp thread_bridge_id(channel_id, thread_id), do: "#{channel_id}_#{thread_id}"
 
   defp ensure_runtime_started(config, bridge_id, runtime_opts) do
-    ConnectorRuntime.start(config, {:ensure, bridge_id, runtime_opts})
+    with {:ok, config} <- ConnectorRuntime.current_config(config) do
+      refresh_or_start_runtime(config, bridge_id, runtime_opts)
+    end
   end
 
-  @doc "Ensures the resolved bridge runtime is current inside a routed startup command."
-  def execute_start(config, bridge_id, runtime_opts) do
+  defp refresh_or_start_runtime(config, bridge_id, runtime_opts) do
     case supervisor_module().lookup_state_pid(bridge_id) do
       {:ok, state_pid} ->
         case state_module().refresh_config(state_pid, config) do
@@ -1613,9 +1609,9 @@ defmodule Zaq.Channels.JidoChatBridge do
     ]
   end
 
-  @doc "Constructs the trusted sink for private adapter pairing and storage requests."
+  # Private requests receive only connector scope, not runtime credentials.
   @spec storage_sink(map()) :: tuple()
-  def storage_sink(config),
+  defp storage_sink(config),
     do: {__MODULE__, :from_listener, [Map.take(config, [:id, :provider]), make_ref()]}
 
   defp sink_mfa_for(config) do
@@ -1624,9 +1620,10 @@ defmodule Zaq.Channels.JidoChatBridge do
       else: {__MODULE__, :from_listener, [config]}
   end
 
-  @doc "Asks the adapter for its stable profile without putting provider state in ZAQ."
+  # The lifecycle handler compares the adapter's opaque identity, not provider state.
   @spec connection_profile(map()) :: {:ok, term()} | {:error, term()}
-  def connection_profile(%{id: id, provider: provider} = config) when is_integer(id) and id > 0 do
+  defp connection_profile(%{id: id, provider: provider} = config)
+       when is_integer(id) and id > 0 do
     with {:ok, adapter} <- adapter_for(provider),
          true <-
            (Code.ensure_loaded?(adapter) and function_exported?(adapter, :connection_identity, 1)) ||
@@ -1636,7 +1633,7 @@ defmodule Zaq.Channels.JidoChatBridge do
     end
   end
 
-  def connection_profile(_), do: {:error, :invalid_connector}
+  defp connection_profile(_), do: {:error, :invalid_connector}
 
   @doc "Resolves adapter-owned delivery options for the selected connector."
   @impl Zaq.Channels.Bridge

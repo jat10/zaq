@@ -135,16 +135,20 @@ defmodule Zaq.Engine.WhatsAppThreadHistoryTest do
     assert Enum.map(projection.messages, & &1.content) == ["ROOT_A"]
   end
 
-  test "DMs retain Direct chat history and duplicate replies remain one stored message", ctx do
+  test "DM replies use child transcripts, retain root history and deduplicate stored messages",
+       ctx do
     room = "123@s.whatsapp.net"
     assert {:ok, root} = HistoryIngress.capture(incoming(ctx, "root", nil, "DM_ROOT", room))
     input = incoming(ctx, "question", "root", "Question", room)
     assert {:ok, first} = HistoryIngress.capture(input)
     assert {:ok, second} = HistoryIngress.capture(input)
     assert first.message_id == second.message_id
-    assert first.transcript_id == root.transcript_id
+    assert first.transcript_id == second.transcript_id
+    assert first.transcript_id != root.transcript_id
+    assert Repo.get!(Transcript, first.transcript_id).external_thread_id == "root"
     assert {:ok, binding} = Conversations.admit_incoming(input)
     assert {:ok, projection} = Conversations.execution_history(binding, actor(ctx))
+    assert projection.transcript_id == first.transcript_id
     assert Enum.map(projection.messages, & &1.content) == ["DM_ROOT"]
   end
 

@@ -25,10 +25,10 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   alias ZaqWeb.Live.BO.Communication.AgentRoutingOptions
   alias ZaqWeb.Live.BO.Communication.ChannelConfigPersistence
   alias ZaqWeb.Live.BO.Communication.IngressStatusUI
-  alias ZaqWeb.Live.BO.Communication.LinkedDeviceUI
   alias ZaqWeb.Live.BO.Communication.OAuthClaimState
   alias ZaqWeb.Live.BO.Communication.OAuthPopupUI
   alias ZaqWeb.Live.BO.EngineDispatch
+  alias ZaqWeb.Live.DeviceSignInPolling
 
   import Ecto.Query
 
@@ -72,6 +72,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
      |> assign(:authentication_flow, :default)
      |> assign(:linked_device, linked_device_capability?(capabilities))
      |> assign(:linked_device_modal, nil)
+     |> assign(:linked_device_status, nil)
      |> assign(:configs, configs)
      |> assign(:ingress_statuses, %{})
      |> assign(:ingress_status_loading, ingress_status_loading(configs))
@@ -129,12 +130,11 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   end
 
   @impl true
-  def handle_async({:linked_device, generation}, result, socket) do
-    socket = LinkedDeviceUI.result(socket, generation, result)
+  def handle_async({:sign_in, generation, id}, result, socket) do
+    socket = DeviceSignInPolling.result(socket, generation, id, result)
 
-    case socket.assigns.linked_device_modal do
-      %{generation: ^generation, config_id: id, status: %{phase: :connected}}
-      when is_integer(id) ->
+    case socket.assigns.linked_device_status do
+      %{status: "connected"} ->
         # Pairing can finish after the initial ingress retry budget is exhausted.
         {:noreply,
          socket
@@ -154,29 +154,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   end
 
   @impl true
-  def handle_info({:linked_device_poll, generation, tick}, socket),
-    do: {:noreply, LinkedDeviceUI.poll(socket, generation, tick)}
-
-  def handle_info({:linked_device_saved, saved}, socket) do
-    configs = list_configs(socket.assigns.provider)
-    config = Enum.find(configs, &(&1.id == saved.id))
-
-    {:noreply,
-     socket
-     |> LinkedDeviceUI.close()
-     |> assign(:configs, configs)
-     |> assign(:selected_config_id, saved.id)
-     |> assign(:retrieval_channels, load_retrieval_channels(config))
-     |> assign(:grants_by_config, grants_by_config(socket.assigns.kind, configs))
-     |> schedule_ingress_status_refresh(configs)
-     |> put_flash(
-       :info,
-       if(saved.runtime_pending,
-         do: "Account saved. Connection is pending; retry from the channel.",
-         else: "Account connected."
-       )
-     )}
-  end
+  def handle_info({:sign_in_tick, generation, tick}, socket),
+    do: {:noreply, DeviceSignInPolling.tick(socket, generation, tick)}
 
   def handle_info(:refresh_pending_ingress_statuses, socket) do
     {:noreply, retry_ingress_status_refresh(socket)}
@@ -197,8 +176,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
         %{assigns: %{linked_device_modal: %{config_id: id, cancel_connection: true}}} = socket
       )
       when is_integer(id) do
-    with {:ok, _user} <-
-           Zaq.Accounts.BOActor.current_super_admin(BOActor.build(socket.assigns.current_user)),
+    with true <- BOActor.super_admin?(socket.assigns.current_user),
          %ChannelConfig{archived_at: nil} = config <- Repo.get(ChannelConfig, id),
          true <-
            config.provider == socket.assigns.provider and
@@ -208,7 +186,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
 
       if Repo.get!(ChannelConfig, id).enabled,
         do: {:noreply, socket},
-        else: {:noreply, LinkedDeviceUI.close(socket)}
+        else: {:noreply, close_linked_device(socket)}
     else
       _ ->
         {:noreply,
@@ -218,12 +196,13 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
 
   def handle_event("cancel_linked_device_connection", _, socket), do: {:noreply, socket}
 
-  def handle_event("close_linked_device", _, socket), do: {:noreply, LinkedDeviceUI.close(socket)}
+  def handle_event("close_linked_device", _, socket), do: {:noreply, close_linked_device(socket)}
 
   def handle_event("confirm_linked_device", _, socket),
-    do: {:noreply, LinkedDeviceUI.confirm(socket)}
+    do: {:noreply, DeviceSignInPolling.request(socket, :confirm)}
 
-  def handle_event("retry_linked_device", _, socket), do: {:noreply, LinkedDeviceUI.retry(socket)}
+  def handle_event("retry_linked_device", _, socket),
+    do: {:noreply, DeviceSignInPolling.request(socket, :retry)}
 
   def handle_event("oauth_popup_result", _params, socket) do
     configs = list_configs(socket.assigns.provider)
@@ -257,12 +236,10 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   def handle_event("open_modal", %{"action" => "new"}, socket) do
     case request_capability_snapshot(socket.assigns.provider, %{scope: :provider}) do
       {:ok, %{resolved: %{authentication_flow: :linked_device}}} ->
-        case Zaq.Accounts.BOActor.current_super_admin(BOActor.build(socket.assigns.current_user)) do
-          {:ok, _user} ->
-            {:noreply, LinkedDeviceUI.new(socket)}
-
-          {:error, :unauthorized} ->
-            {:noreply, put_flash(socket, :error, "Only super admins can link a device account.")}
+        if BOActor.super_admin?(socket.assigns.current_user) do
+          {:noreply, open_linked_device(socket, nil)}
+        else
+          {:noreply, put_flash(socket, :error, "Only super admins can link a device account.")}
         end
 
       _ ->
@@ -495,7 +472,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
 
         if socket.assigns.linked_device and BOActor.super_admin?(socket.assigns.current_user) and
              not is_nil(config) do
-          {:noreply, LinkedDeviceUI.open(socket, config)}
+          {:noreply, open_linked_device(socket, config)}
         else
           status = Map.get(socket.assigns.ingress_statuses || %{}, parsed_id)
 
@@ -528,7 +505,11 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     event =
       Event.new(request, :engine,
         actor: BOActor.build(socket.assigns.current_user),
-        opts: [action: :archive_channel_connector, confidential: true]
+        opts: [
+          action: :archive_channel_connector,
+          confidential: true,
+          skip_permissions: BOActor.super_admin?(socket.assigns.current_user)
+        ]
       )
 
     case NodeRouter.dispatch(event).response do
@@ -538,44 +519,12 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
          |> delete_config_success_socket()
          |> put_archive_result_flash(result, "Channel config archived.")}
 
-      {:error, :connector_not_found} ->
-        {:noreply,
-         socket
-         |> assign(:confirm_delete, nil)
-         |> put_flash(:error, "Config not found.")}
-
-      {:error, {:ingress_teardown_failed, reason}} ->
-        {:noreply,
-         socket
-         |> assign(:confirm_delete, nil)
-         |> put_flash(
-           :error,
-           "Cannot delete config: failed to teardown webhook ingress subscription (#{inspect(reason)})."
-         )}
-
-      {:error, {:runtime_stop_failed, _reason}} ->
+      {:error, _reason} ->
         {:noreply,
          socket
          |> assign(:confirm_delete, nil)
          |> refresh_connector_configs()
-         |> put_flash(
-           :error,
-           "The configuration is disabled, but its connection could not be stopped. Retry Delete to finish."
-         )}
-
-      {:error, {:disable_failed, _reason}} ->
-        {:noreply,
-         socket
-         |> assign(:confirm_delete, nil)
-         |> refresh_connector_configs()
-         |> put_flash(:error, "Could not disable the configuration. It was not deleted.")}
-
-      {:error, reason} ->
-        {:noreply,
-         socket
-         |> assign(:confirm_delete, nil)
-         |> refresh_connector_configs()
-         |> put_flash(:error, "Cannot archive connector: #{inspect(reason)}")}
+         |> put_flash(:error, "Could not delete this configuration.")}
     end
   end
 
@@ -1148,10 +1097,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   defp enable_authorized?(_socket, %{enabled: true}), do: true
 
   defp enable_authorized?(socket, config) do
-    case Zaq.Accounts.BOActor.current_user(BOActor.build(socket.assigns.current_user)) do
-      {:ok, user} -> is_nil(Settings.enable_disabled_reason(config, user))
-      _ -> false
-    end
+    is_nil(Settings.enable_disabled_reason(config, socket.assigns.current_user))
   end
 
   defp maybe_open_enabled_connection(
@@ -1161,7 +1107,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
        ) do
     case request_capability_snapshot(config.provider, %{config_id: config.id}) do
       {:ok, %{resolved: %{connection_ui_on_enable: true}}} ->
-        LinkedDeviceUI.open(socket, config, cancel_connection: true)
+        open_linked_device(socket, config, cancel_connection: true)
 
       _ ->
         socket
@@ -1215,7 +1161,12 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   defp connector_command(socket, action, request) do
     Event.new(request, :engine,
       actor: BOActor.build(socket.assigns.current_user),
-      opts: [action: action, confidential: true, connector_lifecycle: true]
+      opts: [
+        action: action,
+        confidential: true,
+        connector_lifecycle: true,
+        skip_permissions: BOActor.super_admin?(socket.assigns.current_user)
+      ]
     )
     |> NodeRouter.dispatch()
     |> Map.get(:response)
@@ -1504,6 +1455,9 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     put_flash(socket, :info, success_message)
   end
 
+  defp maybe_put_runtime_sync_flash(socket, {:error, :invalid_response}, success_message),
+    do: maybe_put_runtime_sync_flash(socket, :invalid_response, success_message)
+
   defp maybe_put_runtime_sync_flash(socket, {:error, reason}, success_message) do
     socket
     |> put_flash(:info, success_message)
@@ -1539,7 +1493,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     NodeRouter.dispatch(event).response
   end
 
-  defp sync_channel_runtime(before_config, after_config, actor \\ nil) do
+  defp sync_channel_runtime(before_config, after_config) do
     action =
       if after_config.kind == "data_source",
         do: :sync_data_source_runtime,
@@ -1552,7 +1506,6 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
           after_config: ChannelConfig.to_runtime_config(after_config)
         },
         :channels,
-        actor: actor,
         opts: [action: action, confidential: true]
       )
 
@@ -1589,10 +1542,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
 
   defp connector_provider_label(config, label) do
     account = Settings.nested(config, "account")
-    legacy_identity = Settings.nested(config, "account_identity")
 
-    case account["external_id"] || account[:external_id] ||
-           legacy_identity["phone_number"] || legacy_identity[:phone_number] do
+    case account["external_id"] || account[:external_id] do
       id when is_binary(id) and id != "" -> "#{label} - #{id}"
       _ -> label
     end
@@ -1822,20 +1773,107 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
   end
 
   defp ingress_statuses(configs, actor) when is_list(configs) do
-    Enum.reduce(configs, %{}, fn config, acc ->
-      Map.put(acc, config.id, ingress_status(config, actor))
-    end)
+    configs
+    |> IngressStatusUI.collect(&ingress_status(&1, actor))
+    |> Map.new(fn %{id: id, status: status} -> {id, status} end)
   end
 
   defp ingress_status_loading(configs) when is_list(configs) do
     Map.new(configs, fn config -> {config.id, true} end)
   end
 
+  defp open_linked_device(socket, config, opts \\ []) do
+    provider = socket.assigns.provider
+    actor = BOActor.build(socket.assigns.current_user)
+    owner = self()
+    id = config && config.id
+
+    dispatch =
+      if id,
+        do: &saved_device_command(provider, id, actor, &1),
+        else: &pairing_command(provider, actor, &1)
+
+    params = if id, do: %{}, else: %{owner: owner}
+
+    socket
+    |> close_linked_device()
+    |> assign(:linked_device_modal, %{
+      config_id: id,
+      name:
+        if(config, do: config.name, else: "Link your #{socket.assigns.provider_label} account"),
+      cancel_connection: Keyword.get(opts, :cancel_connection, false)
+    })
+    |> DeviceSignInPolling.open(%{ref: nil, status: "pending", observe: false},
+      view_key: :linked_device_status,
+      dispatch: dispatch,
+      begin_params: params,
+      max_observations: 90,
+      on_complete: &linked_device_saved/2,
+      failure_summary: "Device connection could not be checked or restarted"
+    )
+    |> DeviceSignInPolling.request(
+      if(id, do: {:observe, {:connector, id}}, else: {:begin, params})
+    )
+  end
+
+  defp close_linked_device(socket),
+    do: socket |> DeviceSignInPolling.dismiss() |> assign(:linked_device_modal, nil)
+
+  defp pairing_command(provider, actor, command),
+    do: device_event(provider, actor, :pair_linked_device, %{command: command})
+
+  defp saved_device_command(provider, id, actor, {:begin, _}) do
+    case device_event(provider, actor, :sync_provider_runtime, %{channel_config_id: id}) do
+      :ok -> saved_device_command(provider, id, actor, {:observe, {:connector, id}})
+      error -> error
+    end
+  end
+
+  defp saved_device_command(provider, id, actor, {:observe, _}),
+    do:
+      device_event(provider, actor, :channel_ingress_status, %{
+        channel_config_id: id,
+        sign_in: true
+      })
+
+  defp device_event(provider, actor, action, request) do
+    Event.new(Map.put(request, :provider, provider), :channels,
+      actor: actor,
+      opts: [
+        action: action,
+        confidential: true,
+        skip_permissions: actor[:skip_permissions] == true
+      ]
+    )
+    |> NodeRouter.dispatch()
+    |> Map.fetch!(:response)
+  end
+
+  defp linked_device_saved(socket, saved) do
+    configs = list_configs(socket.assigns.provider)
+    config = Enum.find(configs, &(&1.id == saved.id))
+
+    socket
+    |> close_linked_device()
+    |> assign(:configs, configs)
+    |> assign(:selected_config_id, saved.id)
+    |> assign(:retrieval_channels, load_retrieval_channels(config))
+    |> assign(:grants_by_config, grants_by_config(socket.assigns.kind, configs))
+    |> schedule_ingress_status_refresh(configs)
+    |> put_flash(
+      :info,
+      if(saved.runtime_pending,
+        do: "Account saved. Connection is pending; retry from the channel.",
+        else: "Account connected."
+      )
+    )
+  end
+
   defp schedule_ingress_status_refresh(socket, configs) when is_list(configs) do
     actor = BOActor.build(socket.assigns[:current_user])
 
     socket
-    |> LinkedDeviceUI.close()
+    |> close_linked_device()
     |> assign(:ingress_statuses, %{})
     |> assign(:ingress_status_loading, ingress_status_loading(configs))
     |> assign(:ingress_status_refresh_attempts, 0)
@@ -1865,7 +1903,11 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLive do
     event =
       Event.new(%{provider: config.provider, config: runtime_config}, :channels,
         actor: actor,
-        opts: [action: :channel_ingress_status, confidential: true]
+        opts: [
+          action: :channel_ingress_status,
+          confidential: true,
+          skip_permissions: actor[:skip_permissions] == true
+        ]
       )
 
     event

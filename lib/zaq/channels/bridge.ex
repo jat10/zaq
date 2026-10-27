@@ -192,15 +192,11 @@ defmodule Zaq.Channels.Bridge do
     do:
       "#{Map.get(config, :provider) || Map.get(config, "provider")}_#{Map.get(config, :id) || Map.get(config, "id")}"
 
-  @doc "Routes runtime startup through Channels, rechecking eligibility for saved credential bindings."
+  @doc "Starts a bridge runtime after rechecking eligibility for saved credential bindings."
   @spec start_runtime(module(), runtime_target(), keyword()) :: :ok | {:error, term()}
   def start_runtime(bridge, target, opts) do
-    ConnectorRuntime.start(target, {:start, bridge, opts})
-  end
-
-  @doc "Builds and starts runtime specs for the resolved configuration inside a routed command."
-  def execute_start(bridge, target, opts) do
-    with {:ok, specs} <- runtime_specs(bridge, target, opts) do
+    with {:ok, target} <- ConnectorRuntime.current_config(target),
+         {:ok, specs} <- runtime_specs(bridge, target, opts) do
       start_runtime_specs(bridge, target, specs)
     end
   end
@@ -250,12 +246,8 @@ defmodule Zaq.Channels.Bridge do
 
   @spec restart_runtime(module(), map()) :: :ok | {:error, term()}
   def restart_runtime(bridge_module, config) when is_atom(bridge_module) and is_map(config) do
-    ConnectorRuntime.start(config, {:restart, bridge_module})
-  end
-
-  @doc "Restarts the resolved connector runtime inside a routed lifecycle command."
-  def execute_restart(bridge_module, config) do
-    with true <-
+    with {:ok, config} <- ConnectorRuntime.current_config(config),
+         true <-
            function_exported?(bridge_module, :build_runtime_specs, 1) || {:error, :unsupported},
          :ok <- stop_runtime_normalized(bridge_module, config),
          {:ok, {state_spec, listeners}} <- bridge_module.build_runtime_specs(config) do

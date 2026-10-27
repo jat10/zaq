@@ -1304,32 +1304,28 @@ defmodule Zaq.Engine.ChannelConfigTest do
            }
   end
 
-  test "legacy connectors resolve missing defaults at runtime without a database backfill" do
+  test "runtime readers project persisted defaults and explicit choices without rewriting storage" do
     assert {:ok, saved} =
              ChannelConfig.create(
                %{
                  provider: "whatsapp",
-                 name: "Legacy",
+                 name: "Stored defaults",
                  kind: "retrieval",
                  enabled: false
                },
                adapter_authentication: true
              )
 
-    # Deliberately model a record saved before these settings existed.
-    legacy = saved |> Ecto.Changeset.change(settings: %{}) |> Repo.update!()
-    assert Settings.effective(legacy) == Settings.defaults("whatsapp")
-
-    assert Settings.jido_chat_setting(legacy, "ingress") == %{
+    assert Settings.jido_chat_setting(saved, "ingress") == %{
              "sync_history" => false,
              "sync_full_history" => false
            }
 
-    assert Settings.jido_chat_room_reply_policy(legacy) == :mention_required
-    assert Repo.get!(ChannelConfig, legacy.id).settings == %{}
+    assert Settings.jido_chat_room_reply_policy(saved) == :mention_required
+    assert Repo.get!(ChannelConfig, saved.id).settings == saved.settings
 
     override = %{
-      legacy
+      saved
       | settings: %{
           "jido_chat" => %{
             "ingress" => %{"sync_history" => true},
@@ -1338,10 +1334,7 @@ defmodule Zaq.Engine.ChannelConfigTest do
         }
     }
 
-    assert Settings.jido_chat_setting(override, "ingress") == %{
-             "sync_history" => true,
-             "sync_full_history" => false
-           }
+    assert Settings.jido_chat_setting(override, "ingress") == %{"sync_history" => true}
 
     assert Settings.jido_chat_room_reply_policy(override) == :default
   end
@@ -1360,7 +1353,8 @@ defmodule Zaq.Engine.ChannelConfigTest do
 
       assert {:ok, saved} = ChannelConfig.create(attrs)
       assert saved.settings == %{"other" => true}
-      assert Settings.effective(saved) == saved.settings
+      assert Settings.jido_chat_settings(saved) == %{}
+      assert Settings.jido_chat_room_reply_policy(saved) == :default
     end
   end
 

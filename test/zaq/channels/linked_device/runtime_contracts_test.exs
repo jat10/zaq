@@ -258,8 +258,7 @@ defmodule Zaq.Channels.LinkedDevice.RestartTest do
   end
 
   defp profile(config) do
-    {:ok, profile} = JidoChatBridge.connection_profile(config)
-    profile
+    JidoChatBridge.resolve_connection_details(config, %{}).profile
   end
 
   defp phase(config, expected),
@@ -570,6 +569,7 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
   import Zaq.WhatsAppFixtures, only: [connector: 0]
   import Zaq.CredentialDocumentFixtures, only: [document: 3]
 
+  alias Jido.Chat.Authentication.Request
   alias Jido.Chat.WhatsApp.Adapter
   alias Jido.Chat.WhatsApp.Storage.{Mnesia, Split}
   alias Jido.Chat.WhatsApp.Transport.GuardedStorage
@@ -599,18 +599,18 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
 
     assert {:ok, prepared} =
              Jido.Chat.Adapter.prepare_connection(Adapter,
-               sink_mfa: JidoChatBridge.storage_sink(config),
+               sink_mfa: Zaq.WhatsAppFixtures.private_sink(config),
                ingress: config.settings["jido_chat"]["ingress"]
              )
 
     ingress = Keyword.fetch!(prepared, :ingress)
     assert ingress.mode == :linked_device
-    assert {:ok, ingress.profile} == JidoChatBridge.connection_profile(config)
+    assert ingress.profile == JidoChatBridge.resolve_connection_details(config, %{}).profile
 
     assert {:ok, [saved_spec]} =
              Adapter.listener_child_specs("connector_#{config.id}",
                ingress: ingress,
-               sink_mfa: JidoChatBridge.storage_sink(config)
+               sink_mfa: Zaq.WhatsAppFixtures.private_sink(config)
              )
 
     {_module, :start_link, [worker_opts]} = saved_spec.start
@@ -683,12 +683,17 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
     value = %{private: <<255, 0, 10>>, nested: {:paired, [1, 2]}}
 
     assert {:ok, %{runtime: _config, binding: binding}} =
-             JidoChatBridge.persist_authentication("whatsapp", actor, %{
-               attempt_id: Ecto.UUID.generate(),
-               account: %{external_id: "+15550001", display_name: nil},
-               credentials:
-                 Split.encode_records(%{{:creds, :self} => value, {:prekey, 42} => <<0, 255>>})
-             })
+             Request.call(
+               Zaq.WhatsAppFixtures.authentication_sink(),
+               %Zaq.Events.TrustedContext{actor: actor, skip_permissions: true},
+               %{
+                 op: :persist,
+                 attempt_id: Ecto.UUID.generate(),
+                 account: %{external_id: "+15550001", display_name: nil},
+                 credentials:
+                   Split.encode_records(%{{:creds, :self} => value, {:prekey, 42} => <<0, 255>>})
+               }
+             )
 
     %{profile: profile, storage: {Storage, opts}} = connection_options(binding)
     storage = Storage.new(opts)
@@ -817,7 +822,7 @@ defmodule Zaq.Channels.JidoChatBridge.StorageTest do
     do:
       Adapter.connection_options(binding,
         context: :runtime,
-        sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})
+        sink_mfa: Zaq.WhatsAppFixtures.authentication_sink()
       )
 
   defp bind(id) do

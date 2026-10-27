@@ -1,5 +1,5 @@
 defmodule Zaq.ConnectorConfig.Settings do
-  @moduledoc "Shared provider defaults, enable restrictions, settings merging and connector projections."
+  @moduledoc "Shared write-time provider defaults, enable restrictions, settings merging and stored connector projections."
 
   @doc "Returns the enable restriction shared by Engine authorization and BO presentation."
   @spec enable_disabled_reason(map(), map() | nil) :: String.t() | nil
@@ -56,30 +56,15 @@ defmodule Zaq.ConnectorConfig.Settings do
 
   defp configured_values(saved, _defaults), do: saved
 
-  @doc "Resolves provider defaults beneath saved settings without modifying the database."
-  @spec effective(map()) :: term()
-  def effective(config) do
-    provider = Map.get(config, :provider, Map.get(config, "provider"))
-    saved = Map.get(config, :settings, Map.get(config, "settings", %{}))
-    merge(defaults(provider), saved)
-  end
-
-  @doc "Returns an effective nested settings map, or an empty map for malformed input."
-  def nested(config, key) when is_map(config) do
-    case effective(config) do
-      settings when is_map(settings) -> nested_value(settings, key)
-      _ -> %{}
-    end
-  end
-
-  def nested(_config, _key), do: %{}
-
-  defp nested_value(settings, key) do
+  @doc "Returns a stored nested settings map, or an empty map for malformed input."
+  def nested(%{settings: settings}, key) when is_map(settings) do
     case Map.get(settings, key, %{}) do
       value when is_map(value) -> value
       _ -> %{}
     end
   end
+
+  def nested(_config, _key), do: %{}
 
   def jido_chat_settings(config), do: nested(config, "jido_chat")
 
@@ -89,7 +74,7 @@ defmodule Zaq.ConnectorConfig.Settings do
   @doc "Returns connector reply policy; malformed stored values conservatively require a mention."
   @spec jido_chat_room_reply_policy(map()) :: :default | :mention_required
   def jido_chat_room_reply_policy(config) do
-    with settings when is_map(settings) <- effective(config),
+    with settings when is_map(settings) <- Map.get(config, :settings, %{}),
          chat when is_map(chat) <- Map.get(settings, "jido_chat", %{}) do
       case Map.get(chat, "room_reply_policy", "default") do
         "default" -> :default

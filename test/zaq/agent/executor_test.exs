@@ -1267,7 +1267,7 @@ defmodule Zaq.Agent.ExecutorTest do
       )
 
       assert_received {:coverage_ask, question, _configured_agent, context}
-      assert [_header, "@bot Explain this"] = String.split(question, "\nMessage:\n", parts: 2)
+      assert question == "@bot Explain this\n\n[Input context: \"Unknown author\"; person 15]"
       assert context.incoming.content == "@bot Explain this"
       assert context.incoming.thread_id == "original"
     end

@@ -38,6 +38,7 @@ defmodule Zaq.Engine.Api do
   alias Zaq.Engine.Telemetry
   alias Zaq.Engine.Workflows
   alias Zaq.Event
+  alias Zaq.Events.TrustedContext
   alias Zaq.Identity.ExecutionActor
   alias Zaq.InternalBoundaries
   alias Zaq.People.IdentityResolver
@@ -67,7 +68,8 @@ defmodule Zaq.Engine.Api do
       if event.opts[:confidential] == true and event.opts[:linked_device_runtime] == true do
         case Jido.Exec.run(Zaq.Engine.Actions.ConfirmLinkedDevice, %{request: event.request}, %{
                actor: event.actor,
-               linked_device_runtime: true
+               linked_device_runtime: true,
+               skip_permissions: TrustedContext.from_event(event).skip_permissions
              }) do
           {:ok, %{result: result}} -> result
           {:error, _} = error -> error
@@ -1541,16 +1543,16 @@ defmodule Zaq.Engine.Api do
 
   defp device_request(%{op: :start, credential_id: id, attrs: attrs}, opts)
        when (is_integer(id) or is_nil(id)) and is_map(attrs),
-       do: DeviceAttempts.start_global_configuration(id, attrs, opts)
+       do: DeviceAttempts.sign_in({:begin, %{credential_id: id, attrs: attrs}}, :org, opts)
 
   defp device_request(%{op: :status, attempt_id: id}, opts),
-    do: DeviceAttempts.status(id, :org, opts)
+    do: DeviceAttempts.sign_in({:observe, id}, :org, opts)
 
   defp device_request(%{op: :current, credential_id: id}, opts) when is_integer(id),
-    do: DeviceAttempts.current(id, :org, opts)
+    do: DeviceAttempts.sign_in({:observe, {:current, id}}, :org, opts)
 
   defp device_request(%{op: :cancel, attempt_id: id}, opts),
-    do: DeviceAttempts.cancel(id, :org, opts)
+    do: DeviceAttempts.sign_in({:cancel, id}, :org, opts)
 
   defp device_request(_, _), do: {:error, :invalid_request}
 

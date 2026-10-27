@@ -3,7 +3,7 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
   use ExUnitProperties
 
   import Zaq.AccountsFixtures
-  import Zaq.WhatsAppFixtures, only: [connector: 0]
+  import Zaq.WhatsAppFixtures, only: [connector: 0, private_sink: 1, authentication_sink: 0]
 
   alias Ecto.Adapters.SQL.Sandbox
   alias Jido.Chat.Authentication.Request, as: PairingRequest
@@ -77,11 +77,6 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
   end
 
   test "invalid and disabled connectors cannot yield saved options" do
-    assert {:error, :invalid_connector} = JidoChatBridge.connection_profile(%{id: nil})
-
-    assert {:error, :invalid_connector} =
-             JidoChatBridge.connection_profile(%{id: "42"})
-
     config = connector()
     assert {:ok, {_state, [_listener]}} = JidoChatBridge.build_runtime_specs(config)
     Repo.update!(Ecto.Changeset.change(config, enabled: false))
@@ -95,18 +90,17 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
       second = first + offset
       first_binding = %{channel_config_id: first, credential_id: 1}
       second_binding = %{channel_config_id: second, credential_id: 1}
-      opts = [context: :runtime, sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})]
-      first_profile = Adapter.connection_options(first_binding, opts).profile
-      second_profile = Adapter.connection_options(second_binding, opts).profile
+      {:ok, first_profile} = Adapter.connection_identity(first_binding)
+      {:ok, second_profile} = Adapter.connection_identity(second_binding)
 
       refute first_profile == second_profile
-      assert first_profile == Adapter.connection_options(first_binding, opts).profile
+      assert {:ok, ^first_profile} = Adapter.connection_identity(first_binding)
     end
   end
 
   test "storage requests bypass listener registration and public chat ingress rejects them" do
     config = connector()
-    {_, _, [context, _]} = JidoChatBridge.storage_sink(Map.put(config, :token, "private-token"))
+    {_, _, [context, _]} = private_sink(Map.put(config, :token, "private-token"))
     assert context == %{id: config.id, provider: config.provider}
     event = %Request{binding: nil, request: %{op: :bind}}
     assert {:error, :invalid_storage_request} = JidoChatBridge.from_listener(config, event, [])
@@ -114,7 +108,7 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
     assert {:error, :invalid_storage_request} =
              JidoChatBridge.from_listener(config, nil, event, [])
 
-    {module, function, args} = JidoChatBridge.storage_sink(config)
+    {module, function, args} = private_sink(config)
     assert {:ok, binding} = apply(module, function, args ++ [event, [bridge_id: "absent_bridge"]])
     assert binding.channel_config_id == config.id
     assert {:ok, options} = Adapter.prepare_connection(sink_mfa: {module, function, args})
@@ -127,20 +121,22 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
   test "trusted sinks reject another connector's binding and another provider" do
     first = connector()
     second = connector()
-    sink = JidoChatBridge.storage_sink(first)
+    sink = private_sink(first)
     assert {:ok, binding} = Request.call(sink, nil, %{op: :bind})
 
     assert {:error, :invalid_binding} =
-             Request.call(JidoChatBridge.storage_sink(second), binding, %{
+             Request.call(private_sink(second), binding, %{
                op: :list_keys,
                namespace: "creds"
              })
 
     assert {:error, :invalid_provider} =
-             Request.call(JidoChatBridge.storage_sink(%{provider: "telegram"}), binding, %{
-               op: :list_keys,
-               namespace: "creds"
-             })
+             JidoChatBridge.from_listener(
+               %{provider: "telegram"},
+               make_ref(),
+               %Request{binding: binding, request: %{op: :list_keys, namespace: "creds"}},
+               []
+             )
   end
 
   test "a storage callback completes while the bridge State itself is handling work" do
@@ -148,7 +144,7 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
 
     assert {:ok, prepared} =
              Jido.Chat.Adapter.prepare_connection(Adapter,
-               sink_mfa: JidoChatBridge.storage_sink(config)
+               sink_mfa: private_sink(config)
              )
 
     options = Keyword.fetch!(prepared, :ingress)
@@ -177,8 +173,8 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
 
   test "one trusted sink persists idempotently and makes credentials available to storage requests" do
     admin = super_admin_fixture(%{must_change_password: false})
-    actor = %{user_id: admin.id}
-    sink = JidoChatBridge.storage_sink(%{provider: :whatsapp})
+    context = %Zaq.Events.TrustedContext{actor: %{user_id: admin.id}, skip_permissions: true}
+    sink = authentication_sink()
     credentials = Split.encode_records(%{{:creds, :self} => %{paired: true}})
 
     request = %{
@@ -188,8 +184,8 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
       credentials: credentials
     }
 
-    assert {:ok, saved} = PairingRequest.call(sink, actor, request)
-    assert {:ok, repeated} = PairingRequest.call(sink, actor, request)
+    assert {:ok, saved} = PairingRequest.call(sink, context, request)
+    assert {:ok, repeated} = PairingRequest.call(sink, context, request)
     assert saved.receipt == repeated.receipt
     assert saved.binding == repeated.binding
     assert saved.runtime.provider == "whatsapp"
@@ -203,18 +199,22 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
     mismatched = %{runtime: %{saved.runtime | provider: "telegram"}, connection_options: %{}}
 
     assert {:error, :invalid_connector} =
-             PairingRequest.call(sink, actor, %{op: :start, runtime: mismatched})
+             PairingRequest.call(sink, context, %{op: :start, runtime: mismatched})
 
     assert {:ok, %{paired: true}} = Split.get(Split.new(opts), profile, :creds, :self)
   end
 
-  test "persistence and activation reject missing and no-longer-authorized actors" do
+  test "persistence and activation require trusted session authority and actor identity" do
     admin = super_admin_fixture(%{must_change_password: false})
     actor = %{user_id: admin.id}
-    sink = JidoChatBridge.storage_sink(%{provider: :whatsapp})
-    admin |> Ecto.Changeset.change(must_change_password: true) |> Repo.update!()
+    sink = authentication_sink()
 
-    for context <- [nil, actor],
+    for context <- [
+          nil,
+          actor,
+          %Zaq.Events.TrustedContext{actor: actor},
+          %Zaq.Events.TrustedContext{skip_permissions: true}
+        ],
         request <- [%{op: :persist}, %{op: :start, runtime: %{}}] do
       assert {:error, :unauthorized} = PairingRequest.call(sink, context, request)
     end
@@ -238,5 +238,50 @@ defmodule Zaq.Channels.JidoChatBridge.SavedConnectionTest do
                %{event | request: %{op: :unknown}},
                []
              )
+  end
+
+  test "authorized activation rejects malformed handoffs without starting a runtime" do
+    admin = super_admin_fixture(%{must_change_password: false})
+    config = connector()
+    sink = private_sink(config)
+
+    for runtime <- [
+          nil,
+          %{},
+          %{runtime: nil, connection_options: %{}},
+          %{runtime: config, connection_options: []}
+        ] do
+      assert {:error, :invalid_connector} =
+               PairingRequest.call(
+                 sink,
+                 %Zaq.Events.TrustedContext{actor: %{user_id: admin.id}, skip_permissions: true},
+                 %{op: :start, runtime: runtime}
+               )
+    end
+  end
+
+  test "activation rechecks saved eligibility after the handoff was prepared" do
+    admin = super_admin_fixture(%{must_change_password: false})
+
+    for change <- [
+          %{enabled: false},
+          %{enabled: false, archived_at: DateTime.utc_now() |> DateTime.truncate(:second)}
+        ] do
+      config = connector()
+      options = JidoChatBridge.resolve_connection_details(config, %{})
+      config = Repo.get!(ChannelConfig, config.id)
+      sink = private_sink(config)
+      config |> Ecto.Changeset.change(change) |> Repo.update!()
+
+      assert {:error, :connector_unavailable} =
+               PairingRequest.call(
+                 sink,
+                 %Zaq.Events.TrustedContext{actor: %{user_id: admin.id}, skip_permissions: true},
+                 %{
+                   op: :start,
+                   runtime: %{runtime: config, connection_options: options}
+                 }
+               )
+    end
   end
 end

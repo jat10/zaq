@@ -26,10 +26,34 @@ defmodule Zaq.WhatsAppFixtures do
     }
 
   def bound_profile(id) do
-    Adapter.connection_options(%{channel_config_id: id, credential_id: 1},
-      context: :runtime,
-      sink_mfa: JidoChatBridge.storage_sink(%{provider: "whatsapp"})
-    ).profile
+    {:ok, profile} = Adapter.connection_identity(%{channel_config_id: id, credential_id: 1})
+    profile
+  end
+
+  def private_sink(config) do
+    %{storage: {_module, opts}} = JidoChatBridge.resolve_connection_details(config, %{})
+    Keyword.fetch!(opts, :sink_mfa)
+  end
+
+  def authentication_sink do
+    Code.ensure_loaded!(Zaq.WhatsAppFixtures.AuthenticationCapture)
+
+    {:ok, opts} =
+      JidoChatBridge.authenticate(:whatsapp, %{op: :begin, owner: self()}, :fixture_owner, %{},
+        config: Zaq.WhatsAppFixtures.AuthenticationCapture
+      )
+
+    Keyword.fetch!(opts, :sink_mfa)
+  end
+
+  defmodule AuthenticationCapture do
+    @moduledoc false
+    use Jido.Chat.Adapter
+    def channel_type, do: :whatsapp
+    def transform_incoming(_), do: {:error, :unused}
+    def send_message(_, _, _), do: {:error, :unused}
+    def authenticate(_, _, opts), do: {:ok, opts}
+    def get(:zaq, :channels, _, _), do: %{whatsapp: %{adapter: __MODULE__}}
   end
 
   def state_spec(bridge_id, config),

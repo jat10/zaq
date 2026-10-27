@@ -112,7 +112,10 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
            summary: "stub"
          }}
 
-      fetch_state(:channel_ingress_status, default)
+      case fetch_state(:ingress_status_fetch, nil) do
+        nil -> fetch_state(:channel_ingress_status, default)
+        fetch -> fetch.(config)
+      end
     end
 
     def delete_ingress_subscription(_config, _params) do
@@ -252,7 +255,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     refute has_element?(view, "#linked-device-pairing")
   end
 
-  test "new pairing rejects unprivileged and subsequently revoked operators", %{
+  test "new pairing checks the authenticated BO session's role", %{
     conn: conn,
     user: user
   } do
@@ -265,6 +268,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     render_hook(denied, "open_modal", %{"action" => "new"})
     refute has_element?(denied, "#linked-device-pairing")
     refute has_element?(denied, "#config-form")
+    assert render(denied) =~ "Only super admins can link a device account."
 
     admin = super_admin_fixture(%{must_change_password: false})
 
@@ -273,8 +277,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
 
     admin |> Ecto.Changeset.change(role_id: user.role_id) |> Repo.update!()
     render_hook(view, "open_modal", %{"action" => "new"})
-    refute has_element?(view, "#linked-device-pairing")
-    assert render(view) =~ "Only super admins can link a device account."
+    assert has_element?(view, "#linked-device-pairing")
+    view |> element("#linked-device-pairing button", "Close") |> render_click()
   end
 
   test "linked-device setup hides tokens and pairs only the selected configuration", %{conn: conn} do
@@ -636,7 +640,10 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       assert length(BridgeFake.calls(:sync_runtime)) == 2
     end
 
-    test "cancel connection checks current privileges", %{conn: conn, user: user} do
+    test "cancel connection uses the authenticated BO session's privileges", %{
+      conn: conn,
+      user: user
+    } do
       config = insert_channel_config(%{provider: "whatsapp", enabled: false})
       {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
       view |> element("#toggle-config-#{config.id}") |> render_click()
@@ -645,10 +652,10 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       admin |> Ecto.Changeset.change(role_id: user.role_id) |> Repo.update!()
 
       view |> element("#linked-device-pairing button", "Cancel connection") |> render_click()
-      assert has_element?(view, "#linked-device-pairing")
-      assert Repo.get!(ChannelConfig, config.id).enabled
-      assert BridgeFake.calls(:logout) == []
-      assert length(BridgeFake.calls(:sync_runtime)) == 1
+      refute has_element?(view, "#linked-device-pairing")
+      refute Repo.get!(ChannelConfig, config.id).enabled
+      assert BridgeFake.calls(:logout) == [config.id]
+      assert length(BridgeFake.calls(:sync_runtime)) == 2
     end
 
     test "cancel remains a disable when connection completes before the click arrives", %{
@@ -661,8 +668,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       assert has_element?(view, "#linked-device-pairing button", "Cancel connection")
 
       BridgeFake.put(:channel_ingress_status, {:ok, %{phase: :connected, status: :ok}})
-      timer = :sys.get_state(view.pid).socket.private.linked_device_timer
-      send(view.pid, {:linked_device_poll, timer.identity, timer.generation})
+      timer = :sys.get_state(view.pid).socket.private.sign_in_observer_timer
+      send(view.pid, {:sign_in_tick, timer.identity, timer.generation})
       render_async(view, 1_000)
       assert has_element?(view, "#linked-device-pairing button", "Close")
 
@@ -699,8 +706,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
         {:ok, %{phase: :connected, status: :ok, summary: "Profile connected"}}
       )
 
-      timer = :sys.get_state(view.pid).socket.private.linked_device_timer
-      send(view.pid, {:linked_device_poll, timer.identity, timer.generation})
+      timer = :sys.get_state(view.pid).socket.private.sign_in_observer_timer
+      send(view.pid, {:sign_in_tick, timer.identity, timer.generation})
       render_async(view, 1_000)
       render_async(view, 1_000)
 
@@ -851,7 +858,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       assert BridgeFake.calls(:sync_runtime) == []
     end
 
-    test "enable checks current privileges after the page was opened", %{conn: conn, user: user} do
+    test "enable uses the authenticated BO session's privileges", %{conn: conn, user: user} do
       config = insert_channel_config(%{provider: "whatsapp", enabled: false})
       {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
       current_user = :sys.get_state(view.pid).socket.assigns.current_user
@@ -860,9 +867,9 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
       render_hook(view, "toggle_enabled", %{"id" => to_string(config.id)})
       render_async(view, 1_000)
 
-      refute Repo.get!(ChannelConfig, config.id).enabled
-      refute has_element?(view, "#linked-device-pairing")
-      assert BridgeFake.calls(:sync_runtime) == []
+      assert Repo.get!(ChannelConfig, config.id).enabled
+      assert has_element?(view, "#linked-device-pairing")
+      assert length(BridgeFake.calls(:sync_runtime)) == 1
     end
 
     test "shared enable rejects archived and mismatched-kind profiles", %{conn: conn} do
@@ -1034,7 +1041,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
 
     assert %ChannelConfig{enabled: false, archived_at: nil} = Repo.get!(ChannelConfig, config.id)
     assert has_element?(view, "#toggle-config-#{config.id}", "Enable")
-    assert render(view) =~ "Retry Delete to finish."
+    assert render(view) =~ "Could not delete this configuration."
     assert [%{enabled: true, archived_at: nil}] = BridgeFake.calls(:stop_runtime_states)
     assert BridgeFake.calls(:logout) == []
 
@@ -1055,7 +1062,8 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     view |> element("#confirm-delete-config-#{first.id}") |> render_click()
     view |> element("#delete-config-button") |> render_click()
     assert %ChannelConfig{enabled: true, archived_at: nil} = Repo.get!(ChannelConfig, first.id)
-    assert render(view) =~ "It was not deleted."
+    assert render(view) =~ "Could not delete this configuration."
+    assert has_element?(view, "#toggle-config-#{first.id}", "Disable")
     assert BridgeFake.calls(:stop_runtime_states) == []
 
     BridgeFake.put(:logout_result, :ok)
@@ -1160,6 +1168,62 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
 
     view |> element("#ingress-status-dot-#{config.id}") |> render_click()
     assert has_element?(view, "#ingress-status-modal")
+  end
+
+  test "detail readiness checks run concurrently and isolate failed or timed-out connectors", %{
+    conn: conn
+  } do
+    admin = super_admin_fixture(%{must_change_password: false})
+    conn = init_test_session(conn, %{user_id: admin.id})
+    stub(Zaq.NodeRouterMock, :find_node, fn _ -> node() end)
+    channels = Application.fetch_env!(:zaq, :channels)
+
+    Application.put_env(
+      :zaq,
+      :channels,
+      Map.put(channels, :whatsapp, %{bridge: BridgeFake, ingress_mode: :linked_device})
+    )
+
+    [healthy, failed, crashed, slow] =
+      for name <- ~w(healthy failed crashed slow),
+          do: insert_channel_config(%{provider: "whatsapp", name: name})
+
+    observer = self()
+
+    BridgeFake.put(:ingress_status_fetch, fn config ->
+      send(observer, {:readiness_started, config.id, self()})
+
+      receive do
+        :finish ->
+          case config.name do
+            "healthy" -> {:ok, %{status: :ok, summary: "Ready", qr: "private challenge"}}
+            "failed" -> {:error, :offline}
+            "crashed" -> raise "readiness unavailable"
+          end
+      end
+    end)
+
+    {:ok, view, _html} = live(conn, ~p"/bo/channels/retrieval/whatsapp")
+
+    workers =
+      Map.new([healthy, failed, crashed, slow], fn config ->
+        id = config.id
+        assert_receive {:readiness_started, ^id, pid}, 2_000
+        {id, pid}
+      end)
+
+    monitor = Process.monitor(workers[slow.id])
+    for config <- [healthy, failed, crashed], do: send(workers[config.id], :finish)
+    render_async(view, 7_000)
+    assert_receive {:DOWN, ^monitor, :process, _, :killed}
+
+    statuses = :sys.get_state(view.pid).socket.assigns.ingress_statuses
+    assert statuses[healthy.id] == %{status: :ok, summary: "Ready"}
+    assert statuses[failed.id].reason == :offline
+    assert statuses[crashed.id].status == :unknown
+    assert statuses[slow.id].status == :unknown
+    assert has_element?(view, "#ingress-status-dot-#{healthy.id} .status-success")
+    refute render(view) =~ "private challenge"
   end
 
   test "toggles and removes retrieval channels", %{conn: conn} do
@@ -1371,7 +1435,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
     render_hook(view, "confirm_delete", %{"id" => "999999"})
     render_hook(view, "delete", %{})
 
-    assert render(view) =~ "Config not found."
+    assert render(view) =~ "Could not delete this configuration."
   end
 
   test "runs clear modal flows and error path without enabled config", %{conn: conn} do
@@ -1924,7 +1988,12 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
         Application.put_env(:zaq, :channels, previous_channels)
       end)
 
-      delete_case = fn response, expect_deleted?, expect_flash, expect_error_fragment ->
+      for {response, expect_deleted?} <- [
+            {{:ok, %{deleted: true}}, true},
+            {{:error, :unsupported}, true},
+            {{:error, :boom}, false},
+            {:weird, false}
+          ] do
         BridgeFake.put(:delete_ingress_subscription, response)
         BridgeFake.put(:channel_ingress_status, {:ok, %{status: :ok, summary: "Healthy"}})
 
@@ -1937,26 +2006,20 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsLiveTest do
         if expect_deleted? do
           assert %ChannelConfig{archived_at: %DateTime{}, enabled: false} =
                    Repo.get(ChannelConfig, config.id)
+
+          assert render(view) =~ "Channel config archived."
+          refute has_element?(view, "#config-card-#{config.id}")
         else
-          assert %ChannelConfig{archived_at: nil} = Repo.get(ChannelConfig, config.id)
+          assert %ChannelConfig{enabled: true, archived_at: nil} =
+                   Repo.get(ChannelConfig, config.id)
+
+          assert render(view) =~ "Could not delete this configuration."
+          assert has_element?(view, "#toggle-config-#{config.id}", "Disable")
         end
 
-        assert render(view) =~ expect_flash
-
-        if expect_error_fragment do
-          assert render(view) =~ expect_error_fragment
-        else
-          refute render(view) =~ "Cannot delete config"
-        end
+        refute render(view) =~ ":boom"
+        refute render(view) =~ "unexpected_response"
       end
-
-      delete_case.({:ok, %{deleted: true}}, true, "Channel config archived.", nil)
-      delete_case.({:error, :unsupported}, true, "Channel config archived.", nil)
-      delete_case.({:error, :boom}, false, "Cannot delete config", ":boom")
-
-      Repo.delete_all(ChannelConfig)
-
-      delete_case.(:weird, false, "Cannot delete config", "unexpected_response")
     end
 
     test "send_message treats bare :ok dispatch response as success", %{conn: conn} do

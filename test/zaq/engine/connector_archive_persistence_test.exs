@@ -151,7 +151,7 @@ defmodule Zaq.Engine.ConnectorArchivePersistenceTest do
     {:ok, retry_descriptor} = ConnectorLifecycle.context(config.id, config.provider, config.kind)
     Process.put(:runtime_result, {:error, :runtime_down})
 
-    assert {:error, {:runtime_stop_failed, :runtime_down}} =
+    assert {:error, {:runtime_pending, :failed}} =
              archive(descriptor_request(retry_descriptor),
                communication_bridge_module: IngressStub,
                communication_runtime_module: RuntimeStub
@@ -168,7 +168,7 @@ defmodule Zaq.Engine.ConnectorArchivePersistenceTest do
     {:ok, descriptor} = ConnectorLifecycle.context(config.id, config.provider, config.kind)
     Process.put(:runtime_result, :unexpected)
 
-    assert {:error, {:runtime_stop_failed, {:unexpected_response, :unexpected}}} =
+    assert {:error, {:runtime_pending, :invalid_response}} =
              archive(descriptor_request(descriptor),
                communication_bridge_module: IngressStub,
                communication_runtime_module: RuntimeStub

@@ -5,16 +5,16 @@ defmodule Zaq.Engine.ConnectorLifecycle do
   Engine owns connector scope, revision validation, archive persistence and
   data-source watch ordering/cleanup. Channels consumes resolved configurations
   for provider ingress teardown and runtime sync, without database access.
-  Archival follows adapter disable preparation, successful runtime shutdown and
-  persisted disablement. A shutdown failure leaves the disabled connector
-  unarchived for retry; post-archive watch cleanup may remain pending.
+  Channels owns transition semantics and returns confirmation or a bounded error.
+  One generic interpreter persists confirmed desired configurations
+  and follows requested after-persistence continuations. Runtime pending prevents
+  archival; failed pre-persistence calls leave configuration unchanged.
+  Post-archive watch cleanup may remain pending.
 
   Startup rechecks current eligibility through a confidential Engine runtime event.
   No database row lock is held across Channels or credential-storage callbacks.
   """
 
-  alias Zaq.Accounts.BOActor
-  alias Zaq.ConnectorConfig.Settings
   alias Zaq.Engine.{ChannelConfig, DataSources}
   alias Zaq.Event
   alias Zaq.NodeRouter
@@ -56,8 +56,10 @@ defmodule Zaq.Engine.ConnectorLifecycle do
 
   @doc "Executes a trusted Engine lifecycle command."
   def execute(%{operation: :context, request: request}, actor, _opts) do
-    with {:ok, _} <- BOActor.current_user(actor) do
+    if match?(%{user_id: id} when is_integer(id) and id > 0, actor) do
       context(request[:channel_config_id], request[:provider], request[:kind])
+    else
+      {:error, :unauthorized}
     end
   end
 
@@ -79,12 +81,13 @@ defmodule Zaq.Engine.ConnectorLifecycle do
        )
        when is_boolean(enabled) and is_binary(expected) and is_binary(provider) and
               is_binary(kind) do
-    with {:ok, user} <- BOActor.current_user(actor),
+    with true <-
+           match?(%{user_id: id} when is_integer(id) and id > 0, actor) || {:error, :unauthorized},
          {:ok, id} <- cast_id(id),
          %ChannelConfig{archived_at: nil} = config <- ChannelConfig.get(id),
          :ok <- validate_scope(config, provider, kind),
          :ok <- validate_revision(config, expected),
-         :ok <- authorize_enable(config, enabled, user) do
+         :ok <- authorize_enable(config, enabled, opts) do
       set_enabled_current(config, enabled, expected, actor, opts)
     else
       {:error, _} = error -> error
@@ -94,49 +97,100 @@ defmodule Zaq.Engine.ConnectorLifecycle do
 
   defp set_enabled(_, _, _), do: {:error, :invalid_request}
 
-  defp authorize_enable(config, true, user) do
-    if is_nil(Settings.enable_disabled_reason(%{config | enabled: false}, user)),
+  defp authorize_enable(%{provider: provider}, true, opts)
+       when provider in [:whatsapp, "whatsapp"] do
+    if opts[:skip_permissions] == true,
       do: :ok,
       else: {:error, :unauthorized}
   end
 
-  defp authorize_enable(_, false, _), do: :ok
+  defp authorize_enable(_, _, _), do: :ok
 
-  defp set_enabled_current(config, true, expected, actor, opts) do
-    with {:ok, saved} <- persist_enabled(config.id, expected, true) do
-      {:ok, enabled_result(saved, sync_enabled_runtime(config, saved, actor, opts))}
-    end
-  end
-
-  defp set_enabled_current(config, false, expected, actor, opts) do
-    runtime = sync_enabled_runtime(config, %{config | enabled: false}, actor, opts)
-
-    case runtime do
-      {:error, {:disable_failed, _}} = error ->
-        error
-
-      _ ->
-        with {:ok, saved} <- persist_enabled(config.id, expected, false) do
-          {:ok, enabled_result(saved, runtime)}
-        end
+  defp set_enabled_current(config, enabled, expected, actor, opts) do
+    with {:ok, saved, runtime} <- transition_config(config, enabled, expected, actor, opts) do
+      {:ok, enabled_result(saved, present_runtime(runtime))}
     end
   end
 
   defp enabled_result(config, runtime),
     do: %{channel_config_id: config.id, enabled: config.enabled, runtime: runtime}
 
-  defp sync_enabled_runtime(before, after_config, actor, opts) do
-    action =
-      if before.kind == "data_source", do: :sync_data_source_runtime, else: :sync_channel_runtime
+  defp transition_config(before, enabled, expected, actor, opts) do
+    desired = %{before | enabled: enabled}
 
-    channels_call(
-      Keyword.get(opts, :router, NodeRouter),
-      action,
-      %{before_config: runtime_config(before), after_config: runtime_config(after_config)},
-      actor,
-      opts
-    )
+    with {:ok, result} <- transition_call(before, desired, expected, :before_persist, actor, opts),
+         {:ok, saved} <- persist_enabled(before.id, expected, enabled) do
+      {:ok, saved, continue_transition(result, before, saved, actor, opts)}
+    end
   end
+
+  defp continue_transition(%{continuation: :after_persist}, before, saved, actor, opts) do
+    case transition_call(before, saved, revision(saved), :after_persist, actor, opts) do
+      {:ok, completed} -> completed.runtime
+      {:error, reason} -> {:pending, reason}
+    end
+  end
+
+  defp continue_transition(%{runtime: runtime}, _, _, _, _), do: runtime
+
+  defp transition_call(before, desired, expected, phase, actor, opts) do
+    response =
+      channels_call(
+        Keyword.get(opts, :router, NodeRouter),
+        :connector_sync_runtime,
+        %{
+          before_config: runtime_config(before),
+          after_config: runtime_config(desired),
+          revision: expected,
+          phase: phase,
+          intent: Keyword.get(opts, :transition_intent, :set_enabled)
+        },
+        actor,
+        opts
+      )
+
+    target = Map.take(desired, [:id, :provider, :kind, :enabled])
+    validate_transition(response, target, phase)
+  end
+
+  @transition_reasons [
+    :configuration_required,
+    :unavailable,
+    :failed,
+    :unsupported,
+    :unauthorized,
+    :conflict,
+    :invalid_request,
+    :invalid_response
+  ]
+
+  defp validate_transition(
+         {:ok,
+          %{transition: :confirmed, target: target, runtime: runtime, continuation: next} = result},
+         target,
+         phase
+       ) do
+    valid_runtime =
+      runtime == :complete or
+        match?({:pending, reason} when reason in @transition_reasons, runtime)
+
+    valid_next =
+      next == :none or
+        (next == :after_persist and phase == :before_persist and match?({:pending, _}, runtime))
+
+    if valid_runtime and valid_next,
+      do: {:ok, result},
+      else: {:error, :invalid_response}
+  end
+
+  defp validate_transition({:error, reason} = error, _, _) when reason in @transition_reasons,
+    do: error
+
+  defp validate_transition({:error, _}, _, _), do: {:error, :unavailable}
+  defp validate_transition(_, _, _), do: {:error, :invalid_response}
+
+  defp present_runtime(:complete), do: :ok
+  defp present_runtime({:pending, reason}), do: {:error, reason}
 
   defp do_archive(request, actor, opts) do
     router = Keyword.get(opts, :router, NodeRouter)
@@ -153,7 +207,7 @@ defmodule Zaq.Engine.ConnectorLifecycle do
          {:ok, ingress} <- teardown_ingress(before, router, actor, opts),
          %ChannelConfig{} = before <- ChannelConfig.get(id),
          :ok <- validate_revision(before, expected),
-         {:ok, disabled} <- disable_before_archive(before, expected, router, actor, opts),
+         {:ok, disabled} <- disable_before_archive(before, expected, actor, opts),
          {:ok, status, _archived} <- persist_archive(disabled, revision(disabled)) do
       archived = %{
         channel_config_id: id,
@@ -173,27 +227,19 @@ defmodule Zaq.Engine.ConnectorLifecycle do
     end
   end
 
-  defp disable_before_archive(%{archived_at: %DateTime{}} = config, _, router, actor, opts) do
-    case sync_runtime(config, config, router, actor, opts) do
-      :synced -> {:ok, config}
-      {:pending, reason} -> {:error, {:runtime_stop_failed, reason}}
-    end
-  end
-
-  defp disable_before_archive(config, expected, router, actor, opts) do
-    result = sync_runtime(config, %{config | enabled: false}, router, actor, opts)
-
-    case result do
-      {:pending, {:disable_failed, _} = reason} ->
-        {:error, reason}
-
-      :synced ->
-        persist_enabled(config.id, expected, false)
-
-      {:pending, reason} ->
-        with {:ok, _disabled} <- persist_enabled(config.id, expected, false) do
-          {:error, {:runtime_stop_failed, reason}}
-        end
+  defp disable_before_archive(config, expected, actor, opts) do
+    with {:ok, disabled, runtime} <-
+           transition_config(
+             config,
+             false,
+             expected,
+             actor,
+             Keyword.put(opts, :transition_intent, :archive)
+           ) do
+      case runtime do
+        {:pending, reason} -> {:error, {:runtime_pending, reason}}
+        :complete -> {:ok, disabled}
+      end
     end
   end
 
@@ -324,21 +370,6 @@ defmodule Zaq.Engine.ConnectorLifecycle do
     end
   end
 
-  defp sync_runtime(before, after_config, router, actor, opts) do
-    case channels_call(
-           router,
-           :connector_sync_runtime,
-           %{before_config: runtime_config(before), after_config: runtime_config(after_config)},
-           actor,
-           opts
-         ) do
-      :ok -> :synced
-      {:ok, _} -> :synced
-      {:error, reason} -> {:pending, reason}
-      other -> {:pending, {:unexpected_response, other}}
-    end
-  end
-
   defp runtime_config(config) do
     config
     |> ChannelConfig.to_runtime_config()
@@ -382,7 +413,8 @@ defmodule Zaq.Engine.ConnectorLifecycle do
       Keyword.take(opts, [
         :communication_bridge_module,
         :communication_runtime_module,
-        :data_source_runtime_module
+        :data_source_runtime_module,
+        :skip_permissions
       ])
 
     forwarded

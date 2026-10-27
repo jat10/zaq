@@ -33,7 +33,7 @@ defmodule ZaqWeb.Live.BO.Communication.WhatsAppOnboardingTest do
     :erlang.trace(view.pid, true, [:receive])
     :ok = Transport.scan(options.profile, "fixture-qr:#{options.profile}", reconnecting: true)
     view_pid = view.pid
-    assert_receive {:trace, ^view_pid, :receive, {:linked_device_poll, _, _}}, 3_000
+    assert_receive {:trace, ^view_pid, :receive, {:sign_in_tick, _, _}}, 3_000
     render_async(view, 5_000)
     assert render(view) =~ "Reconnecting with the linked account"
     refute has_element?(view, "#linked-device-pairing svg")

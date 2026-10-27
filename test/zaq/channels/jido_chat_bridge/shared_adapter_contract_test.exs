@@ -64,12 +64,58 @@ defmodule Zaq.Channels.JidoChatBridge.SharedAdapterContractTest do
     config: config
   } do
     assert {:ok, {nil, []}} = JidoChatBridge.build_runtime_specs({:provider, :review_chat}, [])
-    assert {:ok, {:review_chat, 42}} = JidoChatBridge.connection_profile(config)
     details = JidoChatBridge.resolve_connection_details(config, %{url: "", token: ""})
     assert details.scope == {:review_chat, 42}
     refute Map.has_key?(details, :profile)
     assert :ok = JidoChatBridge.send_typing("review_chat", "room", details)
     assert_received {:typing, "room", {:review_chat, 42}}
+  end
+
+  test "registered lifecycle handler accepts only the configured opaque identity", %{
+    config: config
+  } do
+    for {id, profile} <- [
+          {nil, {:review_chat, 42}},
+          {"42", {:review_chat, 42}},
+          {42, {:review_chat, 99}},
+          {42, {:review_chat, 42}}
+        ] do
+      chat =
+        JidoChatBridge.register_handlers(Jido.Chat.new(adapters: %{review_chat: Adapter}), %{
+          config
+          | id: id
+        })
+
+      lifecycle = %{
+        category: :connection_lifecycle,
+        source: self(),
+        profile: profile,
+        attempt_id: make_ref(),
+        status: :connected,
+        qr: nil,
+        presentation: %{phase: :connected, status: :ok, summary: "Connected", mode: "review"}
+      }
+
+      event = %ActionEvent{
+        action_id: "connection_update",
+        adapter: Adapter,
+        adapter_name: :review_chat,
+        metadata: lifecycle
+      }
+
+      envelope = %EventEnvelope{
+        id: "lifecycle",
+        event_type: :action,
+        adapter_name: :review_chat,
+        payload: event
+      }
+
+      assert {:ok, %{chat: updated}} = Jido.Chat.route_event(chat, :review_chat, envelope, [])
+
+      if id == 42 and profile == {:review_chat, 42},
+        do: assert(updated.metadata.connection_lifecycle.profile == profile),
+        else: refute(Map.has_key?(updated.metadata, :connection_lifecycle))
+    end
   end
 
   property "room policy captures unmentioned pattern matches without requesting a reply", %{

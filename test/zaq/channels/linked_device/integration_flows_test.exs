@@ -4,36 +4,45 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
   import Zaq.TestSupport.Eventually
   import Zaq.CredentialDocumentFixtures, only: [document: 3]
   alias Jido.Chat.WhatsApp.ConnectionWorker
+  alias Zaq.Accounts
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Engine.ChannelConfig
   alias Zaq.{Event, NodeRouter}
   alias Zaq.TestSupport.WhatsAppFlowAdapter
   alias Zaq.TestSupport.WhatsAppFlowTransport, as: Transport
+  alias ZaqWeb.Live.BO.AI.BOActor
+  alias ZaqWeb.Live.DeviceSignInPolling
 
   setup do
     Zaq.WhatsAppFixtures.configure_channels(WhatsAppFlowAdapter)
     assert :ok = JidoChatBridge.start_runtime({:provider, :whatsapp}, [])
     start_supervised!({Transport, observer: self()})
-    %{actor: %{user_id: super_admin_fixture(%{must_change_password: false}).id}}
+
+    actor =
+      super_admin_fixture(%{must_change_password: false})
+      |> Repo.preload(:role)
+      |> BOActor.build()
+
+    %{actor: actor}
   end
 
   test "scan creates no connector; confirmation saves and restores the session once", %{
     actor: actor
   } do
     count = Repo.aggregate(ChannelConfig, :count)
-    assert {:ok, %{session: session}} = call(%{op: :begin, owner: self()}, actor)
+    assert {:ok, %{ref: session}} = sign_in({:begin, %{owner: self()}}, actor)
 
     assert Enum.any?(DynamicSupervisor.which_children(Zaq.Channels.BridgeSupervisor), fn
              {_, ^session, :worker, _} -> true
              _ -> false
            end)
 
-    on_exit(fn -> call(%{op: :cancel, session: session}, actor) end)
+    on_exit(fn -> sign_in({:cancel, session}, actor) end)
     assert_receive {:whatsapp_connected_config, options}
     assert Repo.aggregate(ChannelConfig, :count) == count
 
     assert {:error, :identity_not_ready} =
-             call(%{op: :confirm, session: session, account_id: "+15550001"}, actor)
+             sign_in({:confirm, session, "+15550001"}, actor)
 
     qr = qr(session, actor)
     assert :ok = Transport.scan(options.profile, qr)
@@ -45,25 +54,25 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     assert :ok =
              Amarula.Storage.put(temporary_scope, options.profile, :sender_key, "group", "key")
 
-    assert await_phase(session, actor, :authenticated)
+    assert await_status(session, actor, "confirm")
     account_id = account_id(session, actor)
     assert Repo.aggregate(ChannelConfig, :count) == count
 
-    assert {:ok, %{receipt: saved, runtime_pending: false}} =
-             call(%{op: :confirm, session: session, account_id: account_id}, actor)
+    assert {:ok, %{status: "active", completion: %{runtime_pending: false} = saved}} =
+             sign_in({:confirm, session, account_id}, actor)
 
     assert saved.name == "Support account"
     config = Repo.get!(ChannelConfig, saved.id)
     on_exit(fn -> JidoChatBridge.stop_runtime(config) end)
 
-    assert {:ok, %{receipt: ^saved, runtime_pending: false}} =
-             call(%{op: :confirm, session: session, account_id: account_id}, actor)
+    assert {:ok, %{status: "active", completion: ^saved}} =
+             sign_in({:confirm, session, account_id}, actor)
 
     assert Repo.aggregate(ChannelConfig, :count) == count + 1
     assert_receive {:whatsapp_connected_config, restored}
     refute restored.sync_history
     refute restored.sync_full_history
-    assert {:ok, restored.profile} == JidoChatBridge.connection_profile(config)
+    assert restored.profile == JidoChatBridge.resolve_connection_details(config, %{}).profile
     restored_scope = Amarula.Storage.scope(restored.storage)
 
     assert {:ok, "ratchet"} =
@@ -88,11 +97,11 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
   end
 
   test "confirmation rejects an account changed since it was displayed", %{actor: actor} do
-    assert {:ok, %{session: session}} = call(%{op: :begin, owner: self()}, actor)
+    assert {:ok, %{ref: session}} = sign_in({:begin, %{owner: self()}}, actor)
     assert_receive {:whatsapp_connected_config, options}
     qr = qr(session, actor)
     :ok = Transport.scan(options.profile, qr)
-    assert await_phase(session, actor, :authenticated)
+    assert await_status(session, actor, "confirm")
     displayed_account_id = account_id(session, actor)
     {:ok, conn} = Transport.resolve_conn(profile: options.profile)
 
@@ -109,19 +118,21 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
     :ok = ConnectionWorker.refresh_identity(worker)
     assert identity_ready?(worker)
 
-    assert {:error, :identity_changed} =
-             call(%{op: :confirm, session: session, account_id: displayed_account_id}, actor)
+    assert {:ok, %{status: "failed", completion: nil, retry: :resume, summary: summary}} =
+             sign_in({:confirm, session, displayed_account_id}, actor)
 
-    assert {:ok, %{phase: :cancelled}} = call(%{op: :cancel, session: session}, actor)
+    assert summary =~ "The linked account changed"
+
+    assert {:ok, %{status: "cancelled"}} = sign_in({:cancel, session}, actor)
   end
 
   test "a RAM seed failure retains saved pairing and reports connection pending", %{actor: actor} do
-    assert {:ok, %{session: session}} = call(%{op: :begin, owner: self()}, actor)
-    on_exit(fn -> call(%{op: :cancel, session: session}, actor) end)
+    assert {:ok, %{ref: session}} = sign_in({:begin, %{owner: self()}}, actor)
+    on_exit(fn -> sign_in({:cancel, session}, actor) end)
     assert_receive {:whatsapp_connected_config, options}
     qr = qr(session, actor)
     assert :ok = Transport.scan(options.profile, qr)
-    assert await_phase(session, actor, :authenticated)
+    assert await_status(session, actor, "confirm")
     account_id = account_id(session, actor)
 
     # Fits provisional storage but exceeds the encoded per-record RAM limit.
@@ -134,11 +145,11 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
                String.duplicate("s", 1024 * 1024)
              )
 
-    assert {:ok, %{receipt: saved, runtime_pending: true}} =
-             call(%{op: :confirm, session: session, account_id: account_id}, actor)
+    assert {:ok, %{status: "active", completion: %{runtime_pending: true} = saved}} =
+             sign_in({:confirm, session, account_id}, actor)
 
-    assert {:ok, %{receipt: ^saved, runtime_pending: true}} =
-             call(%{op: :confirm, session: session, account_id: account_id}, actor)
+    assert {:ok, %{status: "active", completion: ^saved}} =
+             sign_in({:confirm, session, account_id}, actor)
 
     config = Repo.get!(ChannelConfig, saved.id)
     on_exit(fn -> JidoChatBridge.stop_runtime(config) end)
@@ -160,13 +171,119 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
       )
 
   test "owner scoping and cancellation remove provisional sessions", %{actor: actor} do
-    assert {:ok, %{session: session}} = call(%{op: :begin, owner: self()}, actor)
+    assert {:ok, %{ref: session}} = sign_in({:begin, %{owner: self()}}, actor)
     assert_receive {:whatsapp_connected_config, options}
-    other = %{user_id: super_admin_fixture(%{must_change_password: false}).id}
-    assert {:error, :unauthorized} = call(%{op: :status, session: session}, other)
-    assert {:ok, %{phase: :cancelled}} = call(%{op: :cancel, session: session}, actor)
+
+    other =
+      super_admin_fixture(%{must_change_password: false})
+      |> Repo.preload(:role)
+      |> BOActor.build()
+
+    assert {:error, :unauthorized} = sign_in({:observe, session}, other)
+    assert {:ok, %{status: "cancelled"}} = sign_in({:cancel, session}, actor)
     refute Process.alive?(session)
     assert {:error, :not_connected} = Transport.resolve_conn(profile: options.profile)
+  end
+
+  test "shared sign-in commands expose an opaque ref and normalized challenge without changing session ownership",
+       %{actor: actor} do
+    event =
+      Event.new(%{provider: "whatsapp", command: {:begin, %{owner: self()}}}, :channels,
+        actor: actor,
+        opts: [action: :pair_linked_device, confidential: true, skip_permissions: true]
+      )
+
+    assert {:ok, %{ref: ref, status: "pending", dismiss: :cancel, retry: :resume}} =
+             NodeRouter.dispatch(event).response
+
+    assert_receive {:whatsapp_connected_config, options}
+
+    assert {:ok, %{challenge: %{type: :qr, value: qr}, observe: true}} =
+             sign_in({:observe, ref}, actor)
+
+    assert :ok = Transport.scan(options.profile, qr)
+    assert await_status(ref, actor, "confirm")
+
+    assert {:ok, %{status: "confirm", confirmation: %{external_id: _}, observe: false}} =
+             sign_in({:observe, ref}, actor)
+
+    other =
+      super_admin_fixture(%{must_change_password: false})
+      |> Repo.preload(:role)
+      |> BOActor.build()
+
+    assert {:error, _} = sign_in({:observe, ref}, other)
+    monitor = Process.monitor(ref)
+
+    assert {:ok, %{status: "cancelled", challenge: nil, observe: false}} =
+             NodeRouter.dispatch(%{
+               event
+               | request: %{provider: "whatsapp", command: {:cancel, ref}}
+             }).response
+
+    assert_receive {:DOWN, ^monitor, :process, ^ref, :normal}, 1_000
+
+    assert {:ok, %{status: "expired", retry: :restart, observe: false}} =
+             sign_in({:observe, ref}, actor)
+  end
+
+  defp sign_in(command, actor, confidential \\ true) do
+    Event.new(%{provider: "whatsapp", command: command}, :channels,
+      actor: actor,
+      opts: [
+        action: :pair_linked_device,
+        confidential: confidential,
+        skip_permissions: actor[:skip_permissions] == true
+      ]
+    )
+    |> NodeRouter.dispatch()
+    |> Map.fetch!(:response)
+  end
+
+  test "UI cancels abandoned sessions and closes the active session without stale-result interference",
+       %{actor: actor} do
+    Mox.stub(Zaq.NodeRouterMock, :find_node, fn _ -> node() end)
+    assert {:ok, %{ref: active}} = sign_in({:begin, %{owner: self()}}, actor)
+    assert {:ok, %{ref: abandoned}} = sign_in({:begin, %{owner: self()}}, actor)
+    active_monitor = Process.monitor(active)
+    abandoned_monitor = Process.monitor(abandoned)
+    dispatch = &sign_in(&1, actor)
+
+    {:ok, active_view} =
+      Zaq.SignIn.view(active, %{dismiss: :cancel, challenge: %{type: :qr, value: "private"}})
+
+    {:ok, abandoned_view} = Zaq.SignIn.view(abandoned, %{dismiss: :cancel})
+
+    socket =
+      DeviceSignInPolling.open(
+        %Phoenix.LiveView.Socket{assigns: %{__changed__: %{}}},
+        active_view,
+        view_key: :view,
+        dispatch: dispatch
+      )
+
+    assert DeviceSignInPolling.result(
+             socket,
+             make_ref(),
+             make_ref(),
+             {:ok, {dispatch, {:ok, active_view}}}
+           ) == socket
+
+    assert DeviceSignInPolling.result(
+             socket,
+             make_ref(),
+             make_ref(),
+             {:ok, {dispatch, {:ok, abandoned_view}}}
+           ) == socket
+
+    assert_receive {:DOWN, ^abandoned_monitor, :process, ^abandoned, :normal}, 1_000
+    assert {:ok, _} = sign_in({:observe, active}, actor)
+
+    timer = socket.private.sign_in_observer_timer.timer_ref
+    closed = DeviceSignInPolling.dismiss(socket)
+    assert closed.assigns.view == nil
+    assert Process.read_timer(timer) == false
+    assert_receive {:DOWN, ^active_monitor, :process, ^active, :normal}, 1_000
   end
 
   test "expiry and browser disconnect clean up without creating a connector", %{actor: actor} do
@@ -180,7 +297,7 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
           end
         end)
 
-      assert {:ok, %{session: session}} = call(%{op: :begin, owner: owner}, actor)
+      assert {:ok, %{ref: session}} = sign_in({:begin, %{owner: owner}}, actor)
       assert_receive {:whatsapp_connected_config, options}
       monitor = Process.monitor(session)
       if reason == :expiry, do: send(session, :expire), else: send(owner, :stop)
@@ -193,41 +310,32 @@ defmodule Zaq.Channels.LinkedDevice.OnboardingTest do
   end
 
   test "unprivileged callers and non-confidential calls cannot pair", %{actor: actor} do
-    request = %{op: :begin, owner: self()}
-    assert {:error, _} = call(request, %{user_id: user_fixture().id})
-    assert {:error, _} = call(request, actor, false)
-    assert {:error, _} = call(request, nil)
-  end
-
-  defp call(request, actor, confidential \\ true) do
-    Event.new(Map.put_new(request, :provider, :whatsapp), :channels,
-      actor: actor,
-      opts: [action: :pair_linked_device, confidential: confidential]
-    )
-    |> NodeRouter.dispatch()
-    |> Map.fetch!(:response)
+    command = {:begin, %{owner: self()}}
+    assert {:error, _} = sign_in(command, %{user_id: user_fixture().id})
+    assert {:error, _} = sign_in(command, actor, false)
+    assert {:error, _} = sign_in(command, nil)
   end
 
   defp qr(session, actor) do
-    assert {:ok, %{phase: :challenge, challenge: %{type: :qr, value: qr}}} =
-             call(%{op: :status, session: session}, actor)
+    assert {:ok, %{status: "pending", challenge: %{type: :qr, value: qr}}} =
+             sign_in({:observe, session}, actor)
 
     qr
   end
 
   defp account_id(session, actor) do
-    assert {:ok, %{phase: :authenticated, account: %{external_id: id}}} =
-             call(%{op: :status, session: session}, actor)
+    assert {:ok, %{status: "confirm", confirmation: %{external_id: id}}} =
+             sign_in({:observe, session}, actor)
 
     id
   end
 
-  defp await_phase(session, actor, phase),
+  defp await_status(session, actor, status),
     do:
-      eventually(fn -> call(%{op: :status, session: session}, actor) end,
-        matches: &match?({:ok, %{phase: ^phase}}, &1),
+      eventually(fn -> sign_in({:observe, session}, actor) end,
+        matches: &match?({:ok, %{status: ^status}}, &1),
         timeout: 1_000,
-        label: "pairing phase #{phase}"
+        label: "pairing status #{status}"
       )
 end
 
@@ -236,6 +344,7 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
   import Zaq.AccountsFixtures
   alias Zaq.Channels.Api
   alias Zaq.Event
+  alias ZaqWeb.Live.BO.AI.BOActor
 
   defmodule ExampleAdapter do
     @moduledoc false
@@ -252,21 +361,33 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
 
     @impl true
     def authenticate(request, owner_id, opts) do
-      {:ok,
-       %{
-         phase: :pending,
-         session: request[:session] || self(),
-         owner_id: owner_id,
-         request: request,
-         callbacks: Keyword.take(opts, [:sink_mfa])
-       }}
+      session = request[:session] || request.owner
+      send(session, {:adapter_authentication, owner_id, request, opts})
+      {:ok, %{phase: :pending, session: session}}
     end
+  end
+
+  defmodule FiveArgumentBridge do
+    @moduledoc false
+    def authenticate(provider, request, owner_id, actor, opts) do
+      send(request.owner, {:bridge_authentication, provider, owner_id, actor, opts})
+      {:ok, %{phase: :pending, session: request.owner}}
+    end
+  end
+
+  defmodule UnauthenticatedBridge do
+    @moduledoc false
   end
 
   defmodule ExampleConfig do
     @moduledoc false
     def get(:zaq, :channels, _default, opts),
-      do: %{example: %{bridge: Zaq.Channels.JidoChatBridge, adapter: opts[:test_adapter]}}
+      do: %{
+        example: %{
+          bridge: opts[:test_bridge] || Zaq.Channels.JidoChatBridge,
+          adapter: opts[:test_adapter]
+        }
+      }
   end
 
   defmodule FailingRuntime do
@@ -283,7 +404,7 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
     event =
       Event.new(%{provider: :whatsapp, channel_config_id: config.id}, :channels,
         actor: %{user_id: admin.id},
-        opts: [confidential: true, bridge_module: FailingRuntime]
+        opts: [confidential: true, skip_permissions: true, bridge_module: FailingRuntime]
       )
 
     assert Api.handle_event(event, :sync_provider_runtime, nil).response ==
@@ -295,15 +416,23 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
     actor = %{user_id: admin.id}
     adapter = ExampleAdapter
 
-    begin_request = %{provider: :example, op: :begin, owner: self()}
-    assert {:ok, first} = authenticate(begin_request, actor, adapter)
-    assert first.owner_id == {"example", admin.id}
-    assert first.request == begin_request
+    owner = self()
+    owner_id = {"example", admin.id}
+    begin_request = %{provider: :example, command: {:begin, %{owner: owner, owner_id: "forged"}}}
 
-    assert Keyword.keys(first.callbacks) == [:sink_mfa]
+    assert {:ok, %{status: "pending", ref: ^owner} = first} =
+             authenticate(begin_request, actor, adapter)
+
+    assert_receive {:adapter_authentication, ^owner_id, %{op: :begin, owner: ^owner}, options}
+    assert options[:context] == %Zaq.Events.TrustedContext{actor: actor, skip_permissions: true}
+    refute Map.has_key?(first, :owner_id)
+    refute Map.has_key?(first, :request)
+    refute Map.has_key?(first, :callbacks)
+
+    assert Keyword.keys(Keyword.take(options, [:sink_mfa])) == [:sink_mfa]
 
     assert {Zaq.Channels.JidoChatBridge, :from_listener, [%{provider: :example}, capability]} =
-             first.callbacks[:sink_mfa]
+             options[:sink_mfa]
 
     assert is_reference(capability)
 
@@ -311,38 +440,63 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
              authenticate(
                %{
                  provider: :example,
-                 op: :confirm,
-                 session: first.session,
-                 account_id: "account-7"
+                 command: {:confirm, first.ref, "account-7"}
                },
                actor,
                adapter
              )
 
-    assert followup.owner_id == first.owner_id
-    assert followup.request.account_id == "account-7"
-    assert followup.callbacks == []
+    assert followup.ref == first.ref
+
+    assert_receive {:adapter_authentication, ^owner_id,
+                    %{op: :confirm, session: ^owner, account_id: "account-7"}, []}
 
     admin |> Ecto.Changeset.change(must_change_password: true) |> Repo.update!()
 
-    assert {:error, %{details: %{reason: :unauthorized}}} =
+    assert {:ok, _} =
              authenticate(
-               %{provider: :example, op: :status, session: first.session},
+               %{provider: :example, command: {:observe, first.ref}},
                actor,
                adapter
              )
   end
 
-  test "a legacy adapter reports unsupported through the same Action" do
+  test "an adapter without authentication reports unsupported through the same Action" do
     admin = super_admin_fixture(%{must_change_password: false})
     adapter = Jido.Chat.Telegram.Adapter
 
     assert {:error, :unsupported} =
              authenticate(
-               %{provider: :example, op: :begin, owner: self()},
+               %{provider: :example, command: {:begin, %{owner: self()}}},
                %{user_id: admin.id},
                adapter
              )
+  end
+
+  test "a five-argument-only bridge receives options through the authorized Action" do
+    actor = %{user_id: super_admin_fixture(%{must_change_password: false}).id}
+    owner = self()
+    request = %{provider: :example, command: {:begin, %{owner: owner}}}
+
+    assert {:ok, %{status: "pending", ref: ^owner}} =
+             authenticate(request, actor, ExampleAdapter, test_bridge: FiveArgumentBridge)
+
+    assert_receive {:bridge_authentication, :example, id, ^actor, opts}
+    assert id == actor.user_id
+    assert opts[:test_adapter] == ExampleAdapter
+    assert opts[:test_bridge] == FiveArgumentBridge
+
+    assert {:error, :unsupported} =
+             authenticate(request, actor, ExampleAdapter, test_bridge: UnauthenticatedBridge)
+  end
+
+  test "raw pairing requests are rejected before reaching the adapter" do
+    actor = %{user_id: super_admin_fixture(%{must_change_password: false}).id}
+
+    assert {:error, :invalid_request} =
+             authenticate(%{provider: :example, op: :begin, owner: self()}, actor, ExampleAdapter)
+
+    refute_received {:adapter_authentication, _, _, _}
   end
 
   test "pairing status and retry deny nil, unprivileged and non-confidential callers" do
@@ -363,26 +517,45 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
   test "authorized status uses exact enabled connector and never trusts a supplied config" do
     config = connector()
     admin = super_admin_fixture(%{must_change_password: false})
+    actor = BOActor.build(Repo.preload(admin, :role))
 
     assert {:ok, %{phase: :disconnected, qr: nil}} =
-             call(config, :channel_ingress_status, %{user_id: admin.id}, true)
+             call(config, :channel_ingress_status, actor, true)
 
     config |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
-    assert {:error, _} = call(config, :channel_ingress_status, %{user_id: admin.id}, true)
-    assert {:error, _} = call(config, :sync_provider_runtime, %{user_id: admin.id}, true)
+    assert {:error, _} = call(config, :channel_ingress_status, actor, true)
+    assert {:error, _} = call(config, :sync_provider_runtime, actor, true)
   end
 
-  test "status and retry revalidate an operator whose password must now change" do
+  test "status and retry use session authority without reloading the operator" do
     config = connector()
     admin = super_admin_fixture(%{must_change_password: false})
-    actor = %{user_id: admin.id}
+    actor = BOActor.build(Repo.preload(admin, :role))
 
     assert {:ok, _} = call(config, :channel_ingress_status, actor, true)
     admin |> Ecto.Changeset.change(must_change_password: true) |> Repo.update!()
 
-    for action <- [:channel_ingress_status, :sync_provider_runtime] do
-      assert {:error, :unauthorized} = call(config, action, actor, true)
-    end
+    {_, queries} =
+      Zaq.QueryRecorder.capture(fn ->
+        assert {:ok, _} = call(config, :channel_ingress_status, actor, true)
+        assert :ok = call(config, :sync_provider_runtime, actor, true)
+      end)
+
+    refute Enum.any?(queries, &String.contains?(&1.query, "FROM \"users\""))
+  end
+
+  test "pairing commands cannot grant authorization through request fields" do
+    actor = %{user_id: user_fixture().id}
+
+    request = %{
+      provider: :example,
+      command: {:begin, %{owner: self()}},
+      skip_permissions: true,
+      actor: %{skip_permissions: true}
+    }
+
+    assert {:error, _} = authenticate(request, actor, ExampleAdapter, skip_permissions: false)
+    refute_received {:adapter_authentication, _, _, _}
   end
 
   test "connector-scoped sync rejects invalid IDs instead of falling back to a supplied config" do
@@ -391,7 +564,12 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
 
     for id <- [nil, 0, -1, to_string(config.id)] do
       assert {:error, :unsupported} =
-               call(%{config | id: id}, :sync_provider_runtime, %{user_id: admin.id}, true)
+               call(
+                 %{config | id: id},
+                 :sync_provider_runtime,
+                 BOActor.build(Repo.preload(admin, :role)),
+                 true
+               )
     end
   end
 
@@ -404,21 +582,28 @@ defmodule Zaq.Channels.LinkedDevice.PairingApiTest do
       },
       :channels,
       actor: actor,
-      opts: [action: action, confidential: confidential]
+      opts: [
+        action: action,
+        confidential: confidential,
+        skip_permissions: actor && actor[:skip_permissions] == true
+      ]
     )
     |> Api.handle_event(action, nil)
     |> Map.fetch!(:response)
   end
 
-  defp authenticate(request, actor, adapter) do
+  defp authenticate(request, actor, adapter, opts \\ []) do
     Event.new(request, :channels,
       actor: actor,
-      opts: [
-        action: :pair_linked_device,
-        confidential: true,
-        config: ExampleConfig,
-        test_adapter: adapter
-      ]
+      opts:
+        opts ++
+          [
+            action: :pair_linked_device,
+            confidential: true,
+            skip_permissions: true,
+            config: ExampleConfig,
+            test_adapter: adapter
+          ]
     )
     |> Api.handle_event(:pair_linked_device, nil)
     |> Map.fetch!(:response)
@@ -488,7 +673,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppDeliveryTest do
 
     assert {:ok, %{message_id: "sent-1"}} = dispatch(outgoing, :deliver_outgoing)
     assert_received {:sent, "peer@s.whatsapp.net", "answer", opts}
-    assert {:ok, opts[:profile]} == JidoChatBridge.connection_profile(config)
+    assert opts[:profile] == JidoChatBridge.resolve_connection_details(config, %{}).profile
 
     assert {:ok, _} = dispatch(%{outgoing | metadata: %{message_id: "sent-1"}}, :deliver_outgoing)
     assert_received {:edited, _, "sent-1", "answer", edit_opts}
@@ -675,7 +860,7 @@ defmodule Zaq.Channels.LinkedDevice.WhatsAppFullFlowTest do
     end)
 
     assert :ok = JidoChatBridge.start_runtime(config)
-    {:ok, profile} = JidoChatBridge.connection_profile(config)
+    profile = JidoChatBridge.resolve_connection_details(config, %{}).profile
     %{conn: init_test_session(conn, %{user_id: admin.id}), config: config, profile: profile}
   end
 
