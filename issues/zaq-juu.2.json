@@ -11,9 +11,15 @@
   "id": "zaq-juu.2",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Module-context / Action reuse evidence: Api is Channels event orchestration: deliver_outgoing resolves Bridge/config, formats Outgoing, invokes send_reply then DeliveryConfirmation; it owns neither provider transport nor source bytes. Record is a pure canonical struct; Outgoing attachments are explicit Record structs. Materialization.materialize/4 verifies signed handles through Registry then registered handlers and normalizes nested Records (whole-content acquisition remains #875). CommunicationMedia rechecks author or canonical Engine transcript authorization; DiskDocument routes to Storage; DataSourceDocument routes fixed Channels download events. TrustedContext.from_event is the envelope identity projection; normalize drops incoming/credentials/runtime fields. Source paths and credentials must never become prepared transport data. Existing API tests assert exact text-only connection maps, so attach trusted_context only on nonempty attachment deliveries; preserve text-only behavior without changing existing tests. DeliveryFiles will expose with_prepared(records, context, consumer, opts \\\\ []), project trusted identity and explicitly supported local router dependencies separately, materialize lazy inputs exactly once, decode only declared base64, preserve raw binary bytes, and pass only content/name/mime_type/size to the scoped consumer. No files or callbacks retained and no owned paths; consumer errors/exceptions propagate; original source files untouched. Source registry/action discovery: searched registry/tools and use Jido.Action/use Zaq.Engine.Workflows.Action declarations, workflow Steps, domain APIs and materialization consumers. Existing DownloadDocument Action delegates Materialization but is model/workflow input/output orchestration, not channel resource lifetime. Reuse Materialization/registered handlers/fixed role events; local-only preparation normalizes transport bytes and invokes a synchronous consumer, inappropriate as separately exposed Action because callback lifetime is local. General EncodeBase64/DecodeBase64 Actions are standalone transforms, not file validation or scoped resource ownership. No new Action or agent exposure. Current tests prove handlers/signatures/options/auth, API routing/formatting. New tests will prove preparation exact bytes/property, malformed content/metadata, once-only acquisition, denied/revoked/source errors, trusted actor projection, consumer return/exception and original disk file preservation. Unknown: adapter tuple shape settled in .3; helper returns neutral prepared maps. Serena initial/activation succeeded; first overview calls stalled for over a minute and were cancelled; bounded source fallback used.",
+      "timestamp": "2026-10-27T12:34:13Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.2] Prepare files through existing materialization and trusted context",
   "type": "task",
-  "updated_at": "2026-10-27T12:31:48Z"
+  "updated_at": "2026-10-27T12:34:13Z"
 }
