@@ -6,9 +6,15 @@
   "description": "Found in fork PR jat10/zaq#6 native Postgres CI run40547106442, seed783897, max_cases8. test/zaq/agent/tool_steps_integration_test.exs:37 failed awaiting settled_upsert_waiting after5000ms;11707/11708 checks passed. Mailbox consumer result had tool_calls[], trace[], tool_call_count0 and no tool_started events. Existing race: BudgetProbeTool task start messages do not prove run_stream-\u003eworker-\u003eparent-\u003erequest forwarding completed before worker kill, so queued starts may be lost and StreamEvents correctly has nothing to settle. Test, BudgetProbeTool, StreamEvents, Status and mix.lock identical Git blobs to base365b3cb84; failure precedes feature Outgoing/Channels path. No baseline execution reproduction yet. Proposed repair requires explicit existing-test-behavior approval: wait for existing RecordingRouter step_upsert containing call_a and call_b both running before release/worker kill; retain all existing outcome assertions. Verify original seed in isolation and base, then approved repair plus native suite. Action reuse: test-only synchronization via existing RecordingRouter observation; no production operation changes. No test edited during zaq-juu.",
   "id": "zaq-kfg",
   "labels": [],
+  "comments": [
+    {
+      "text": "Focused unchanged test verification on feature branch: mix test test/zaq/agent/tool_steps_integration_test.exs:37 --seed783897 passed1test in2.3s, exit0. Log /tmp/zaq-juu-ci-race-targeted.log. This does not constitute baseline execution reproduction and does not remove the independently traced scheduling race. No test edits.",
+      "timestamp": "2026-10-27T18:09:45Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kfg] Synchronize tool-step worker-exit test with observed running states",
   "type": "bug",
-  "updated_at": "2026-10-27T18:06:56Z"
+  "updated_at": "2026-10-27T18:09:45Z"
 }
