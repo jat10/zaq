@@ -11,9 +11,15 @@
   "id": "zaq-juu.9",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "User explicitly requested Sol implementation. Assigned Sol High agent stub_cleanup to isolated /tmp/zaq-juu-9 fromd16711b59. Existing root docs snapshot preserved at /tmp/zaq-juu-docs-before-cleanup.patch and will be reconciled into cleanup docs. No Mix commands authorized until user confirms their running mix test has finished. Clarification pending whether then fix includes separately tracked zaq-kfg and zaq-6y2; no unrelated test edits authorized yet.",
+      "timestamp": "2026-10-27T21:30:37Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.9] Replace delivery test servers with isolated Mattermost and email stubs",
   "type": "task",
-  "updated_at": "2026-10-27T21:29:52Z"
+  "updated_at": "2026-10-27T21:30:37Z"
 }
