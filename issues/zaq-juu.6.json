@@ -6,6 +6,7 @@
   "blocks": [
     "zaq-juu.7"
   ],
+  "closed_at": "2026-10-27T14:47:21Z",
   "created": "2026-10-27T11:53:30Z",
   "description": "Parent plan: https://chatgpt.com/space/page_0d26b92b5bc8819181fab088efc0283c\n\n## Functional specifications covered with associated files to edit/add\nReview completed delivery behavior against agreed provider-outcome status semantics and direct-Outgoing E2E entry point. No new production files. Planning approval already recorded; this tracks repository final implemented UX review, not a reopening of settled decisions.\n\n## Tests to add before implementation\nReview focused regression evidence from preceding tasks and concrete success/rejection/uncertainty status examples before consolidated new E2E authoring.\n\n## Branches/paths validated\nActual provider message translation, generic fallback, success retained after cosmetic failure; no invented constraints.\n\n## Mocking plan\nNo new mocks or code.\n\n## Documentations to update for both code and docs/ related content\nKeep affected module docs accurate. Coordinate the final docs/services/channels.md update and update this issue with evidence/decisions; follow documentation hygiene.\n\n## Action reuse assessment\nNot applicable: human review only; no operation change. Keep this issue open until completed feature approval is recorded per testing handbook.\n\n## Constraints and validation\nRead parent settled decisions and applicable repository service, tool-routing, Action reuse and testing policies before implementation. Preserve current test behavior. Follow authoritative validation lifecycle; feature E2E authoring waits for final review task, but focused tests are immediate. Agent selection and #875 acquisition budgets are outside scope. No global configuration mutation.\n",
   "id": "zaq-juu.6",
@@ -26,8 +27,8 @@
     }
   ],
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "[zaq-juu.6] Record final feature presentation review for E2E",
   "type": "task",
-  "updated_at": "2026-10-27T14:47:20Z"
+  "updated_at": "2026-10-27T14:47:21Z"
 }
