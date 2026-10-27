@@ -23,11 +23,15 @@
     {
       "text": "Issue validation complete: mix q passed (formatting, compilation, hooks.verify 8 events, Credo 1673 source files no issues, docs generation). Final isolated mix test group passed 219 total (9 properties, 210 tests): new DeliveryFiles, existing Channels API plus two additive envelope-context tests, Outgoing, Materialization, Handle, Registry, DataSourceDocument/callback, CommunicationMedia/callback and DiskDocument. No existing test assertions/fixtures/scenarios changed. git diff --check clean. Self-review confirms production scope two files only (new DeliveryFiles 146 lines + API 6 additions/1 deletion), no Action/provider catalog/limits/retry/temp files/global env/credentials propagation, only scoped with_prepared public API. Authoritative materialized representation metadata wins; originals fallback. Prepared fields content/name/mime_type/actual size only; nil and binary encoding preserve bytes, declared base64 decoded strictly. Source access through existing signed registered materialization, grants revoked deny, no incoming-author fallback, explicit bypass only, original files preserved on success/error/exception. Numerical coverage and final precommit intentionally deferred to epic final phase; final service docs coordinated with parent. Ready for parent integration/push before issue close/sync.",
       "timestamp": "2026-10-27T12:43:10Z"
+    },
+    {
+      "text": "Parent reviewed API/helper production diff and requested authoritative materialized filename/MIME precedence; implemented with focused stale-source-to-PDF regression. Integrated as fd315130d7e468eac0df5aff01370a5d303ae445 (agent original 95e30f9fa). Confirmed origin/feat/channel-files exact fd315130d hash after push. mix q and commit hooks passed, 219 isolated cases passed (9 properties, 210 tests) including materialization/source handler regressions, existing assertions unchanged, git diff --check passed. Four focused files; in-memory resources only. Closing after confirmed push; service docs/coverage/final gate remain later epic phases.",
+      "timestamp": "2026-10-27T12:44:11Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.2] Prepare files through existing materialization and trusted context",
   "type": "task",
-  "updated_at": "2026-10-27T12:43:10Z"
+  "updated_at": "2026-10-27T12:44:11Z"
 }
