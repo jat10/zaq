@@ -9,9 +9,15 @@
   "id": "zaq-juu.8",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Final documentation handoff note: docs/services/engine.md Messages—Outgoing summary currently says full result map stored in metadata; update its short owner summary/link alongside Channels attachment contract to reflect excluded runtime attachments and tagged malformed-input error. docs/services/channels.md Outgoing schematic omits newer fields; keep it schematic or synchronize relevant new attachments field without copying exhaustive API docs. No docs edited prematurely; this is scoped deferred consistency work under documentation hygiene.",
+      "timestamp": "2026-10-27T12:50:26Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-juu.8] Complete docs review coverage handoff and final validation",
   "type": "task",
-  "updated_at": "2026-10-27T11:53:41Z"
+  "updated_at": "2026-10-27T12:50:26Z"
 }
