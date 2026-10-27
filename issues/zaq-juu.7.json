@@ -45,11 +45,15 @@
     {
       "text": "Implemented and reviewed; root commit d16711b59 (agent d48e9ad2d). Full disposable Mattermost 10.11.0/PostgreSQL/Mailpit startup, bootstrap, seven real-provider tests and teardown passed (7 passed in 3.9s); mix q and hooks passed; 171 focused regression checks previously passed unchanged. Push to origin/feat/channel-files rejected by GitHub: OAuth credential lacks workflow scope required for .github/workflows/elixir-ci.yml. gh auth status confirms repo scope but no workflow scope. Issue remains open pending user credential refresh: gh auth refresh -h github.com -s workflow, then retry push and verify remote before closure. Dependent zaq-juu.8 remains open; no final validation or epic completion claimed.",
       "timestamp": "2026-10-27T16:58:12Z"
+    },
+    {
+      "text": "Historical completion retained. User now explicitly supersedes real-server test acceptance with zaq-juu.9, which removes external Mattermost/Mailpit provisioning and uses stubs while retaining regression scenarios. New issue blocks .8 and epic closure.",
+      "timestamp": "2026-10-27T21:27:14Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "[zaq-juu.7] Implement both real-provider delivery E2Es and async isolation",
   "type": "task",
-  "updated_at": "2026-10-27T21:26:40Z"
+  "updated_at": "2026-10-27T21:27:14Z"
 }
