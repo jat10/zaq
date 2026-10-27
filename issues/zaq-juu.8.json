@@ -49,11 +49,15 @@
     {
       "text": "Progress refresh: all forkPR6 checks green except nativePostgres, which failed same existing worker-exit synchronization test again on retry (seed914357;11707/11708pass). zaq-kfg repair requires explicit existing-test-behavior approval. Freshcoverage20min exception remains awaitinguser approval; no acceptedreport, no finalprecommit. Two documentation files prepared but uncommitted; .8/epic remainopen.",
       "timestamp": "2026-10-27T21:10:43Z"
+    },
+    {
+      "text": "New user-directed closure prerequisite zaq-juu.9 blocks this finalization issue: replace Mattermost/Mailpit servers with isolated Mattermost HTTP and SMTP/Swoosh test boundaries, preserving internal pipeline and scenarios. Reconcile pending docs and rerun review/coverage/final validation against revised tests afterward. User explicitly approved this replacement only; unrelated existing-test fixes and coverage-timeout exception remain separate. Do not run Mix while user current mix test is active.",
+      "timestamp": "2026-10-27T21:27:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.8] Complete docs review coverage handoff and final validation",
   "type": "task",
-  "updated_at": "2026-10-27T21:26:41Z"
+  "updated_at": "2026-10-27T21:27:12Z"
 }
