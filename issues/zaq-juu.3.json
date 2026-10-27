@@ -23,11 +23,15 @@
     {
       "text": "Final validation passed: mix q (formatting, compile, hooks.verify 8 events, Credo 1673 files no issues, docs); isolated mix test group 365 passed (5 properties, 360 tests): jido_chat_bridge_test, jido_chat_delivery_test, telegram_history_delivery_test, telegram_markdown_delivery_test, jido_chat_bridge/delivery_result_test, api_test, delivery_files_test, engine/messages/outgoing_test. git diff --check clean. Parent reviewed production diff without blocking finding. Final self-review: production one existing bridge file only, 134 net added lines; shared create_message options consolidation preserves upsert/no-file behavior, adapters still own upload/post/restrictions; no limits/protocol/retries/dedupe/HTTP replacement. Safe status is constant mapping only; actual final Response.external_message_id required for file confirmation. Status/callback failures protected including exits; no bookkeeping-driven resend. Existing assertions/fixtures/scenarios unchanged and new file tests use per-call transport selection only. Caller evidence for baseline out-of-contract body map path: canonical Outgoing.body String.t; Agent.Executor.normalize_answer/1 returns binary (including inspect fallback); model notification tools require string message (NotifyUsers Zoi.string, NotifyPerson type string). No supported model tool schema accepts raw Jido payload maps. Existing file-free nonbinary map passthrough remains unchanged for unsupported internal construction; new explicit-file path rejects structured bodies to prevent additional unprepared attachments. No source credentials or actor data forwarded to transport; only locally provided transport module, URL/token and prepared FileUpload fields. Root coordinates service docs, actual Mattermost consolidated E2E after .6 approval, numerical coverage and final precommit. Current Jido core multi-file rejection is an adapter limitation to show in .6 examples; ZAQ passes full collection. Ready for commit/integration/push before close/sync.",
       "timestamp": "2026-10-27T12:58:11Z"
+    },
+    {
+      "text": "Parent reviewed complete bridge diff and supported caller/body contract, no blocking findings. Integrated agent commit 627d49636 as de0dcf9b4903a926a7097480232869aa4af3cb59. Push confirmed by exact origin/feat/channel-files ls-remote hash. mix q passed, isolated group 365 passed (5 properties, 360 tests), diff check passed. Actual adapter upload-\u003epost IDs, safe status/timeout errors, image document semantics, no resend after cosmetic/callback failures tested. Legacy unsupported internal map-body path unchanged; supported Agent/tool callers supply canonical string bodies. Closing only after confirmed push; real provider receipt E2E still awaits .6 approval/.7.",
+      "timestamp": "2026-10-27T13:01:21Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.3] Wire Jido uploads and provider outcome status",
   "type": "task",
-  "updated_at": "2026-10-27T12:58:11Z"
+  "updated_at": "2026-10-27T13:01:21Z"
 }
