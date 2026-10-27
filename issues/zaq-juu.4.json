@@ -11,9 +11,15 @@
   "id": "zaq-juu.4",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Module-context evidence: EmailBridge.send_reply/2 resolves routing_context channel_config_id to the exact enabled SMTP binding; send_reply_with_smtp owns subject and RFC threading/receipt; deliver_email_reply dispatches existing sender once. SmtpSender owns settings resolution, encrypted SMTP credentials, recipients, Swoosh composition and synchronous Mailer.deliver; DB owns connector config, caller owns prepared binary lifetime, provider owns acceptance. Invariants: prepare all before send, no raw Record paths/URLs sent, unchanged connector/recipients/headers/receipt and provider errors. Existing email_bridge, smtp_sender and threading_headers suites cover zero-file behavior; new isolated integration tests will prove attachment bytes/failure atomicity and existing receipt contract. Action reuse: extend these two boundaries, reuse DeliveryFiles.with_prepared and Swoosh.Attachment/Mailer; no new Action or resource lifecycle. Unknown: lazy trusted-context propagation needs focused integration evidence. Serena overview stalled; bounded targeted read fallback used.",
+      "timestamp": "2026-10-27T13:03:35Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.4] Wire email attachment composition",
   "type": "task",
-  "updated_at": "2026-10-27T13:02:10Z"
+  "updated_at": "2026-10-27T13:03:35Z"
 }
