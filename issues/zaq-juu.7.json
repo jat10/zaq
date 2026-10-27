@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-juu.6"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-juu.9"
+  ],
   "closed_at": "2026-10-27T17:03:20Z",
   "close_reason": "Completed as d16711b59e6aa4481cae33b96b15d360f4a91ee5; SSH push to origin/feat/channel-files succeeded and git ls-remote verified exact hash. Seven real-provider tests, provisioning/teardown, mix q and hooks passed; parent diff reviewed. Earlier OAuth workflow-scope blocker resolved using authenticated SSH. Hosted CI will be checked in fork PR.",
   "created": "2026-10-27T11:53:32Z",
@@ -49,5 +51,5 @@
   "status": "closed",
   "title": "[zaq-juu.7] Implement both real-provider delivery E2Es and async isolation",
   "type": "task",
-  "updated_at": "2026-10-27T21:26:39Z"
+  "updated_at": "2026-10-27T21:26:40Z"
 }
