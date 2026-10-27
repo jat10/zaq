@@ -19,11 +19,15 @@
     {
       "text": "User confirmed their mix test finished and clarified scope: Cleanup and its failures only. Validation may now run; unrelated zaq-kfg Agent race and zaq-6y2 property-generator repairs are explicitly outside this task. Sol High implementer notified; root not running Mix concurrently.",
       "timestamp": "2026-10-27T21:59:35Z"
+    },
+    {
+      "text": "Implemented and reviewed as root commit cec69dce8d89e66eeefa8ef26ac7223275d166ee (agent6c1927af). SSH push origin/feat/channel-files succeeded; git ls-remote verified exacthash. Removed external provider Docker/Compose/bootstrap and dedicatedCIjob; seven scenarios now untagged and run by normalmix test (no includeintegration flag). Parent review fixed missing-empty/extra upload oracles and asserted upload credentials; exactsingletonmultipart, MIME/envelope/receipt/concurrency/sourcecleanup checks retained. Finalq+43focusedtests+109regressions(2properties)+hooks passed. Production files untouched. Authorized pendingdocs included and updated; rootmatchesagenttree, workingtreeclean. ForkCIlatestheadpending; normalCIinclusion verified from removalofintegrationtag and unchangedfullsuiteworkflow. Unrelatedfailures excluded peruser.",
+      "timestamp": "2026-10-27T22:27:47Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.9] Replace delivery test servers with isolated Mattermost and email stubs",
   "type": "task",
-  "updated_at": "2026-10-27T21:59:35Z"
+  "updated_at": "2026-10-27T22:27:47Z"
 }
