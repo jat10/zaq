@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-juu.2"
   ],
+  "closed_at": "2026-10-27T12:31:07Z",
   "created": "2026-10-27T11:53:21Z",
   "description": "Parent plan: https://chatgpt.com/space/page_0d26b92b5bc8819181fab088efc0283c\n\n## Functional specifications covered with associated files to edit/add\nlib/zaq/engine/messages/outgoing.ex. Add Record list with empty default and map explicit result attachments through the existing builder; exclude runtime collection from metadata and never echo incoming attachments.\n\n## Tests to add before implementation\nExisting Outgoing suite: omitted/empty, valid explicit collection, malformed collection, no incoming echo, no runtime metadata duplication; property checks for normalization invariants.\n\n## Branches/paths validated\nLegacy text-only and supplied-file builder paths; malformed requested files must fail explicitly.\n\n## Mocking plan\nNo external service needed; real structs/builders.\n\n## Documentations to update for both code and docs/ related content\nKeep affected module docs accurate. Coordinate the final docs/services/channels.md update and update this issue with evidence/decisions; follow documentation hygiene.\n\n## Action reuse assessment\nExtend existing Outgoing.from_pipeline_result/2; no new builder or Agent selection. Inputs Incoming plus result; output normal Outgoing with attachments; no provider effects.\n\n## Constraints and validation\nRead parent settled decisions and applicable repository service, tool-routing, Action reuse and testing policies before implementation. Preserve current test behavior. Follow authoritative validation lifecycle; feature E2E authoring waits for final review task, but focused tests are immediate. Agent selection and #875 acquisition budgets are outside scope. No global configuration mutation.\n",
   "id": "zaq-juu.1",
@@ -36,8 +37,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-juu.1] Add Outgoing attachment contract",
   "type": "task",
-  "updated_at": "2026-10-27T12:31:06Z"
+  "updated_at": "2026-10-27T12:31:07Z"
 }
