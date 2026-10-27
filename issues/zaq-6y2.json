@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-27T17:21:43Z",
+  "description": "Existing test/zaq/agent/tools/people/notify_person_threading_test.exs:111 property output schema opaque metadata survives validated execution without changing keys or nested values fails before assertions with StreamData.TooManyDuplicatesError. Reproduced via mix test test/zaq/agent/tools/people/notify_person_threading_test.exs:111 --seed 890648 (exit2, 0/1 passed). File unchanged versus365b3cb84. Generator mixes arbitrary strings and three atom keys and builds recursive maps max_length4 plus outer map max_length5; uniqueness rejection can repeatedly sample the finite atom subset. Preserve opaque metadata roundtrip assertions and meaningful broad valid inputspace. Existing test behavior approval gate applies before generator changes; no such edit authorized/performed under zaq-juu.8. Separate existing debt; logs /tmp/zaq-juu-property-repro.log and /tmp/zaq-juu-coverage-second-aborted.log. Searches NotifyPersonThreading and opaque metadata found no existing issue; historical unrelated zaq-0vo addressed recipient generator exhaustion.",
+  "id": "zaq-6y2",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[BUG] NotifyPerson threading metadata property generator exhausts finite keys",
+  "type": "bug",
+  "updated_at": "2026-10-27T17:21:43Z"
+}
