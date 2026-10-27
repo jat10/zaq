@@ -1,8 +1,6 @@
 {
   "assignee": "Jad",
-  "blocked_by": [
-    "zaq-juu.7"
-  ],
+  "blocked_by": [],
   "blocks": [],
   "created": "2026-10-27T11:53:34Z",
   "description": "Parent plan: https://chatgpt.com/space/page_0d26b92b5bc8819181fab088efc0283c\n\n## Functional specifications covered with associated files to edit/add\ndocs/services/channels.md, PR evidence and Beadwork progress. Document attachment contract, adapter-owned limits, errors/status, memory limitation (#875), lifecycle and later Agent E2E extension. Audit seven-file/\u003c1500 changed-production-line target and DRY boundaries.\n\n## Tests to add before implementation\nConfirm all preceding focused/property/E2E evidence; run required validation per workflow, then post-review coverage-upper handoff and final gate at the prescribed stage. Planning task itself runs no application tests.\n\n## Branches/paths validated\nText-only regressions intact; real providers and concurrent tests verified; no secrets in metadata/confirmation/logs; no unplanned Agent or source-budget changes.\n\n## Mocking plan\nReuse prior test infrastructure; no new test-only production seams.\n\n## Documentations to update for both code and docs/ related content\nKeep affected module docs accurate. Coordinate the final docs/services/channels.md update and update this issue with evidence/decisions; follow documentation hygiene.\n\n## Action reuse assessment\nNot applicable for docs/review; verify preceding operation reuse assessments and no duplicate implementation. Final approval does not authorize commit/push/merge.\n\n## Constraints and validation\nRead parent settled decisions and applicable repository service, tool-routing, Action reuse and testing policies before implementation. Preserve current test behavior. Follow authoritative validation lifecycle; feature E2E authoring waits for final review task, but focused tests are immediate. Agent selection and #875 acquisition budgets are outside scope. No global configuration mutation.\n",
@@ -55,5 +53,5 @@
   "status": "in_progress",
   "title": "[zaq-juu.8] Complete docs review coverage handoff and final validation",
   "type": "task",
-  "updated_at": "2026-10-27T21:10:43Z"
+  "updated_at": "2026-10-27T21:26:39Z"
 }
