@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-27T21:25:54Z",
+  "description": "",
+  "id": "zaq-juu.9",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "Replace external delivery test servers with isolated stubs",
+  "type": "task",
+  "updated_at": "2026-10-27T21:25:54Z"
+}
