@@ -6,6 +6,7 @@
   "blocks": [
     "zaq-juu.3"
   ],
+  "closed_at": "2026-10-27T12:44:12Z",
   "created": "2026-10-27T11:53:23Z",
   "description": "Parent plan: https://chatgpt.com/space/page_0d26b92b5bc8819181fab088efc0283c\n\n## Functional specifications covered with associated files to edit/add\nlib/zaq/channels/api.ex and new lib/zaq/channels/delivery_files.ex. Carry TrustedContext.from_event via existing bridge map; authorize with normalized context only. Shared with_prepared preparation normalizes valid Records, uses registered Materialization, preserves binary/declared encoding and filename/MIME, and scopes resources around consumer use. Prefer existing bytes; introduce owned paths only if needed.\n\n## Tests to add before implementation\ndelivery_files_test.exs and API tests: exact non-UTF8 bytes, malformed/base64 content, metadata safety, missing/forged identity, source error, denied/revoked access, missing source, consumer error/exception and original file preservation. Property tests for exact-byte normalization. Conditional process-death cleanup test only if temp files introduced.\n\n## Branches/paths validated\nNo files bypass preparation; supplied files materialize once. Pass actor but never connector credentials to source. Validate shape, not provider acceptance limits. Existing whole-content acquisition limitation remains #875.\n\n## Mocking plan\nReal materialization/domain routes; controlled external edges and supported per-call/event opts. No global env or fake production callbacks.\n\n## Documentations to update for both code and docs/ related content\nKeep affected module docs accurate. Coordinate the final docs/services/channels.md update and update this issue with evidence/decisions; follow documentation hygiene.\n\n## Action reuse assessment\nReuse Materialization.materialize/4, handlers and NodeRouter. Local-only helper owns prepared resources, not source/provider dispatch or limits. Missing identity cannot elevate access; errors return through existing bridge contract.\n\n## Constraints and validation\nRead parent settled decisions and applicable repository service, tool-routing, Action reuse and testing policies before implementation. Preserve current test behavior. Follow authoritative validation lifecycle; feature E2E authoring waits for final review task, but focused tests are immediate. Agent selection and #875 acquisition budgets are outside scope. No global configuration mutation.\n",
   "id": "zaq-juu.2",
@@ -30,8 +31,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-juu.2] Prepare files through existing materialization and trusted context",
   "type": "task",
-  "updated_at": "2026-10-27T12:44:11Z"
+  "updated_at": "2026-10-27T12:44:12Z"
 }
