@@ -29,11 +29,15 @@
     {
       "text": "Coverage-upper first fresh mix coveralls.json run invalid: 5 environment failures from missing local .venv (Runner selected global python3; markitdown DOCX/XLSX/PPTX and opendataloader_pdf unavailable). Stopped only owned beam coverage PID after failures; SIGTERM returned 0 without completed ExUnit report, so report is rejected and mix coverup was not run. Full invalid-run log /tmp/zaq-juu-coverage-first-aborted.log. Read docs/dev-setup.md Python prerequisites; compatible sibling .venv has identical requirements and pip check passes. Reusing it read-only through ignored local .venv symlink; rerunning fresh coverage with required 600000ms timeout. No source or test edits.",
       "timestamp": "2026-10-27T17:12:22Z"
+    },
+    {
+      "text": "Fresh second coverage run uses repaired ignored local .venv, with no Python conversion failures. Native Context Mode was invoked timeout600000 but MCP host returned timeout after300s while owned beam94802 continued running. This run subsequently reports unrelated property failure at test/zaq/agent/tools/people/notify_person_threading_test.exs:111 (NotifyPersonThreadingTest output schema opaque metadata): StreamData.TooManyDuplicatesError for metadata keys [:provider,:threading,:anchor], ExUnit seed890648. No generator/test behavior edits authorized or performed. Run/report invalid; mix coverup not run. Root notified; awaiting final execution/timeout status before handoff.",
+      "timestamp": "2026-10-27T17:20:04Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.8] Complete docs review coverage handoff and final validation",
   "type": "task",
-  "updated_at": "2026-10-27T17:12:22Z"
+  "updated_at": "2026-10-27T17:20:04Z"
 }
