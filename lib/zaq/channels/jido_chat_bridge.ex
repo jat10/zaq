@@ -882,7 +882,12 @@ defmodule Zaq.Channels.JidoChatBridge do
   def upsert_message(_config, _request, _connection_details),
     do: {:error, :missing_connection_details}
 
-  @doc "Fetches a user's canonical profile from the platform API."
+  @doc """
+  Fetches a user's canonical profile from the platform API.
+
+  Optional `metadata.additional_identifiers` carries provider-verified native
+  aliases into People discovery without replacing the incoming author identifier.
+  """
   @spec fetch_profile(String.t(), map()) :: {:ok, map()} | {:error, term()}
   @impl true
   def fetch_profile(author_id, %{url: _url, token: _token, provider: provider} = details)
@@ -907,6 +912,7 @@ defmodule Zaq.Channels.JidoChatBridge do
       "phone" => profile_phone(user)
     }
     |> Map.reject(fn {_key, value} -> is_nil(value) end)
+    |> put_profile_identifiers(user)
   end
 
   defp canonical_profile(user) do
@@ -918,6 +924,16 @@ defmodule Zaq.Channels.JidoChatBridge do
       "username" => Map.get(user, :username) || Map.get(user, "username"),
       "phone" => profile_phone(user)
     }
+    |> put_profile_identifiers(user)
+  end
+
+  defp put_profile_identifiers(profile, user) do
+    metadata = Map.get(user, :metadata) || Map.get(user, "metadata") || %{}
+
+    case Map.get(metadata, :additional_identifiers, Map.get(metadata, "additional_identifiers")) do
+      nil -> profile
+      identifiers -> Map.put(profile, "additional_identifiers", identifiers)
+    end
   end
 
   defp profile_phone(user) do

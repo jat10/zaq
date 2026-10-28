@@ -87,6 +87,17 @@ At the adapter boundary, `JidoChatBridge` omits unknown (`nil`) fields from type
 `Jido.Chat.UserInfo` profiles so a partial lookup does not erase message-provided
 attributes. Explicit non-nil values and the existing map-profile mapping remain
 unchanged; People does not filter empty profile fields during merging.
+Profiles may supply optional `metadata.additional_identifiers`: a list of verified,
+normalized alternate native identifier strings for the same account. After
+`get_user/2`, `JidoChatBridge` preserves these as `additional_identifiers` in the
+existing profile enrichment input without replacing the primary identifier.
+People links each alias to the resolved Person, platform and originating connector
+inside the discovery transaction, reusing native identity ownership checks.
+Repeated results are idempotent; conflicting owners roll back all discovery writes
+without reassignment or automatic merging. Missing aliases retain existing behavior;
+malformed lists fail with `:invalid_additional_identifiers`. Alias links do not
+inherit the primary address's observed DM destination. Providers own alias evidence;
+People never constructs a native identifier from a profile phone number.
 Unsupported or failed profile lookup leaves incoming identity resolution intact.
 Incomplete profiles can receive later enrichment; explicit name and phone edits
 remain authoritative. Editing a

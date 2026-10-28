@@ -197,6 +197,9 @@ defmodule Zaq.Accounts.People do
   On miss: creates a partial entry with incomplete: true.
   `phone` participates in identity matching and conflict checks, including phones
   returned by provider profile lookups.
+  Optional `additional_identifiers` are verified native aliases supplied by the
+  provider profile. They are linked to the same Person and connector atomically;
+  another Person's ownership is never reassigned or merged by discovery.
   Connector authority remains keyed
   by the native channel identifier. A generated name equal to that identifier may
   be replaced while the person is incomplete; other stored names are preserved.
@@ -1104,8 +1107,30 @@ defmodule Zaq.Accounts.People do
     do: {:error, :invalid_merge_precedence}
 
   defp link_discovery_channels(person, platform, attrs) do
+    identifiers = additional_identifiers(attrs["additional_identifiers"])
     ensure_channel_linked(person, platform, attrs) |> linked!()
+
+    identifiers
+    |> Enum.uniq()
+    |> Enum.reject(&(&1 == attrs["channel_id"]))
+    |> Enum.each(fn identifier ->
+      # A primary address's observed DM destination is not evidence for its aliases.
+      alias_attrs = attrs |> Map.put("channel_id", identifier) |> Map.delete("dm_channel_id")
+      ensure_channel_linked(person, platform, alias_attrs) |> linked!()
+    end)
   end
+
+  defp additional_identifiers(nil), do: []
+
+  defp additional_identifiers(identifiers) when is_list(identifiers) do
+    if Enum.all?(identifiers, fn identifier ->
+         is_binary(identifier) and String.valid?(identifier) and String.trim(identifier) != ""
+       end),
+       do: identifiers,
+       else: Repo.rollback(:invalid_additional_identifiers)
+  end
+
+  defp additional_identifiers(_), do: Repo.rollback(:invalid_additional_identifiers)
 
   defp backfill_person(person, attrs) do
     updates =

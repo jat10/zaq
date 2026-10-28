@@ -134,7 +134,7 @@ defmodule Zaq.MixProject do
       #  path: "/Users/julien/Documents/Repos/Github/OSS/jido/chat/jido_chat_telegram",
       #  override: true},
       {:jido_chat_telegram, github: "agentjido/jido_chat_telegram", branch: "main"},
-      {:jido_chat_whatsapp, github: "agentjido/jido_chat_whatsapp", branch: "main"},
+      {:jido_chat_whatsapp, github: "jfayad/jido_chat_whatsapp", branch: "main"},
       {:qr_code, "~> 3.2.0"},
       {:jido_ai, github: "agentjido/jido_ai", branch: "main", override: true},
       # {:jido_ai, path: "/Users/julien/Documents/Repos/Github/OSS/jido/jido_ai", override: true},
