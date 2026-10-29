@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-29T11:21:41Z",
+  "description": "User explicitly instructed rollback after discussing proposed test contract change and running real Mattermost Channels API delivery. Restore successful create_message return to post.id, remove file-specific provider-ID guard. Update missing-ID regression to assert accepted Jido generated ID and callback behavior. Approval source: plan explicitly disclosed changing missing-ID test from unconfirmed to restored behavior; user subsequently said go ahead and do that. Preserve attachment payload construction, original errors, shared sending and failure notices. Action reuse: extend existing create_message result projection; reuse Jido SentMessage.id contract, no new Action/API. Supersedes file-only validation decision in zaq-juu.3; broader provider-ID validation deferred. Run mix q and focused delivery regressions; no production server sends.",
+  "id": "zaq-juu.13",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "[PR #876] Restore common Jido post ID handling",
+  "type": "task",
+  "updated_at": "2026-10-29T11:21:41Z"
+}
