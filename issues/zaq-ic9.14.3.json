@@ -9,7 +9,7 @@
   "parent": "zaq-ic9.14",
   "priority": 2,
   "status": "open",
-  "title": "Integrate request-scoped selection lifecycle and stream transport",
+  "title": "[zaq-ic9.14.3] Integrate request-scoped selection lifecycle and stream transport",
   "type": "task",
-  "updated_at": "2026-10-29T13:32:52Z"
+  "updated_at": "2026-10-29T13:32:53Z"
 }
