@@ -35,11 +35,15 @@
     {
       "text": "Validation review found provider-owned ACL compatibility gap: DiskBridge maps type/target_id grants and owns permission checks in Storage; Record.Authorization intentionally understands external provider principal/channel ACLs only. Generic local check therefore denies legitimate Disk users. Reopened owning issue before correction. Action reuse extension: for Records with signed provider/config identity, reuse GetDocument through validated Jido.Exec.run to refresh canonical metadata and apply existing Channels/Storage authorization (no bytes download), then validate the complete batch before selection effect. Generic signed Records without provider claims retain Record.Authorization. No new authorization Action/API, duplicated ACL rules or implicit nil bypass. Add real disk-person granted/denied integration proof; preserve all existing tests.",
       "timestamp": "2026-10-29T14:52:26Z"
+    },
+    {
+      "text": "Provider-owned ACL correction validated. For signed data-source identity, AttachDocuments runs existing GetDocument through Jido.Exec with signed provider/config/document IDs and trusted actor, returning current canonical metadata; no file bytes. Other signed Records retain generic Record.Authorization. Whole-batch validation still precedes effects. Added real Disk person/grant proof, failed mixed-batch replacement preserving B, and post-selection revocation denial at final Storage redemption. Fixtures now obtain Records through real GetDocument rather than synthesizing provider contracts. Focused Action+Registry+delivery suite 36 passed (1 property,35 tests); mix q passed. Existing tests unchanged except previously approved two Registry keys.",
+      "timestamp": "2026-10-29T14:57:23Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.2] Implement attach_documents Action and tool registration",
   "type": "task",
-  "updated_at": "2026-10-29T14:52:26Z"
+  "updated_at": "2026-10-29T14:57:23Z"
 }
