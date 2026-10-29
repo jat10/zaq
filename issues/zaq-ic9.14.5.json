@@ -4,7 +4,6 @@
     "zaq-ic9.14.4"
   ],
   "blocks": [
-    "zaq-ic9.14.6",
     "zaq-ic9.14.7"
   ],
   "created": "2026-10-29T13:32:58Z",
@@ -16,5 +15,5 @@
   "status": "open",
   "title": "[zaq-ic9.14.5] Validate attachment selection and document the implemented contract",
   "type": "task",
-  "updated_at": "2026-10-29T13:36:02Z"
+  "updated_at": "2026-10-29T13:36:05Z"
 }
