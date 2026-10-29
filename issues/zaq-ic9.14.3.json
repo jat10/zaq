@@ -27,11 +27,15 @@
     {
       "text": "User authorized patch-backed native Jido effect refactor. Reopened and started before edits. Verified baseline backups at /Users/jad/.codex/backups/zaq-native-effects-20261030-013009: zaq.patch includes 27 tracked/untracked changed files, mattermost.patch includes 4; both applied to clean base archives and compared byte-for-byte. Reuse assessment: extend existing AttachDocuments Action with native StateOp keyed mutations; preserve existing authorization, declaration-order selection, first-selected signed Record, exact replace/clear, replay-after-remove dedup, request/incarnation isolation, failure/cancel clearing, terminal private snapshot and trace redaction. No new Action/process/store. Scope Action/selection/lifecycle helpers and necessary tests/docs only; preserve removed Answering/Pipeline edits and known default-Pipeline red test. Rollback if native effects add complexity or require weaker behavior. Existing test representation changes require explicit approval before editing; experiment can use new tests outside repository first. No commit/push/sync/precommit.",
       "timestamp": "2026-10-29T23:31:02Z"
+    },
+    {
+      "text": "User explicitly approved representation-only test adaptations through async reply; no existing tests changed. Implemented a narrow native-effect candidate in AttachDocuments using SetState/SetPath/DeletePath keyed by signed provider/config/document identity. Executed actual Action plus Jido.StateOps against shared tool snapshots in a temporary 4-case suite. Initial no-start probe lacked Endpoint ETS and was corrected to MIX_ENV=test mix run. Final candidate result: 2 pass (distinct additions; within-call first projection dedup), 2 fail (across-call first projection overwritten; same-batch remove A/add A leaves A absent because additions were computed from stale snapshot). Native stock operations lack conditional put-if-absent/update against current owner state; restoring full order/replay/privacy requires runtime coordination, so candidate does not establish a smaller behavior-preserving replacement. Applied rollback criterion: saved candidate patch/test/log beside verified baseline backups, restored only Action file, then verified exact ZAQ and Mattermost baseline patch SHA256 checksums. No application changes retained from experiment, no existing test behavior altered, no dependency edits, no precommit/commit/push/sync. Pending restored validation; do not claim native refactor complete.",
+      "timestamp": "2026-10-29T23:39:25Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.3] Integrate request-scoped selection lifecycle and stream transport",
   "type": "task",
-  "updated_at": "2026-10-29T23:31:02Z"
+  "updated_at": "2026-10-29T23:39:25Z"
 }
