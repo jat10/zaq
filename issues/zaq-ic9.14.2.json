@@ -15,11 +15,15 @@
     {
       "text": "Paused and returned to open because discovery reopened on a proven shared-provenance authorization mismatch. Removed only this turn’s provisional Action, Registry entry and unfinished Action tests; retained passing native Jido characterization. No existing tests or unrelated code changed. Latest draft Action tests had 4/5 passing; remaining new scope-argument assertion exposed schema conversion stripping unknown keys (future test must assert trusted scope wins rather than expecting rejection). No production selection implementation is being represented as complete. Human security-contract decision requested before resolving .1 and resuming dependency order.",
       "timestamp": "2026-10-29T13:49:24Z"
+    },
+    {
+      "text": "Implemented new AttachDocuments Action using existing Record.zoi_type provenance validation, OpaqueAliases schema paths and Record.Authorization; no download/delete/delivery. Input bounds 100 Records, add/remove/replace, scope from trusted context only, nil identity denied unless explicit bypass. New focused tests 5 passed including property; Registry suite has 2 expected failures in exact list assertions because new key is missing. Requested explicit approval to add only message.attach_documents to the two lists, preserving all existing entries/assertions. Existing tests untouched pending response; issue stays in_progress.",
+      "timestamp": "2026-10-29T13:59:01Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.2] Implement attach_documents Action and tool registration",
   "type": "task",
-  "updated_at": "2026-10-29T13:58:11Z"
+  "updated_at": "2026-10-29T13:59:01Z"
 }
