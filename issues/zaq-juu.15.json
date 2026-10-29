@@ -7,9 +7,15 @@
   "id": "zaq-juu.15",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Removed extra_opts parameter and transport forwarding from edit_message; shared handler no longer passes create/file options into edits. Existing tests now route normal edit calls through real Mattermost ReqClient to per-test loopback HTTP stub, asserting PUT path, auth, message ID and text. Existing expected outcomes retained. Returned edit failure tested as HTTP400; exceptions/exits remain at dedicated test adapter boundary. Property shares one local server per test; servers supervised with unique IDs, adapter registry remains synchronous/restored. Explicitly load real adapter in setup so isolated rejection test does not depend on prior test loading. mix q passed; full delivery module 24 passed (2 properties, 22 tests). No production test hooks added. Changes uncommitted; final PR gate remains after outstanding review work.",
+      "timestamp": "2026-10-29T12:13:55Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[PR #876] Remove edit transport override and test default HTTP edits",
   "type": "task",
-  "updated_at": "2026-10-29T12:12:31Z"
+  "updated_at": "2026-10-29T12:13:55Z"
 }
