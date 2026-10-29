@@ -7,9 +7,15 @@
   "id": "zaq-juu.12",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Diagnostic artifact /tmp/zaq_pr876_delivery_id_probe_test.exs uses real ZAQ bridge, Jido Thread/adapter/Req HTTP and actual Oban enqueuing, with only provider HTTP stubbed. Current: 3 tests pass. Isolated test-VM mutation replacing only file-specific ID selection with message_id=post.id: 2 pass, 1 fails as expected. Normal success is identical in both variants. Controlled HTTP201 missing id causes Jido to generate jch_* ID; current returns unconfirmed_delivery with no callback; old ID selection returns confirmed with generated ID and queues on_reply carrying that same generated ID. Logs /tmp/zaq-pr876-id-current.log and /tmp/zaq-pr876-id-original.log. Initial mutant run failed to locate the target due heredoc indentation; fixed probe regex and reran successfully. No repository source or existing test changes made. Evidence proves conditional defense against malformed/incomplete adapter success, not occurrence in normal provider operation or necessity for attachment support. Broader text/file inconsistency remains a design question.",
+      "timestamp": "2026-10-29T10:30:18Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[PR #876] Prove message-ID validation behavior with a controlled test",
   "type": "task",
-  "updated_at": "2026-10-29T10:29:11Z"
+  "updated_at": "2026-10-29T10:30:18Z"
 }
