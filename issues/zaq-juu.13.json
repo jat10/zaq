@@ -7,9 +7,15 @@
   "id": "zaq-juu.13",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Restored create_message success to post.id for every payload; removed file-dependent ID selection and missing-provider-ID guard. Updated regression per disclosed and user-approved rollback: generated ID remains confirmed and reaches on_reply, with one upload/post and no status edit. Normal provider ID regression retained. Module/service docs now reflect Jido fallback semantics. mix q passed; focused Mattermost delivery, Telegram history/markdown and disk integration: 46 passed (2 properties, 44 tests). git diff --check passed. Supersedes zaq-juu.3 file-only ID requirement; no live sends or commits. PR-wide final gate deferred until remaining review work is complete.",
+      "timestamp": "2026-10-29T11:22:55Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[PR #876] Restore common Jido post ID handling",
   "type": "task",
-  "updated_at": "2026-10-29T11:21:56Z"
+  "updated_at": "2026-10-29T11:22:55Z"
 }
