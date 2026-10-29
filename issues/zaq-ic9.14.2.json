@@ -27,11 +27,15 @@
     {
       "text": "User explicitly approved the two existing Registry list expectation updates (yes). Added only message.attach_documents to those lists, keeping all prior keys and exact assertions. Continuing issue validation; uncommitted work is authorized by original delivery instructions.",
       "timestamp": "2026-10-29T14:24:40Z"
+    },
+    {
+      "text": "Approved Registry expectations updated. Focused Action+Registry suite 31 passed (1 property,30 tests); mix q passed. Action schema/authorization/alias/atomic invalid-batch behavior and enablement verified. Commands remain inert until owning runtime integration in .3; no early delivery or source deletion. Acceptance criteria satisfied at the Action boundary.",
+      "timestamp": "2026-10-29T14:26:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.2] Implement attach_documents Action and tool registration",
   "type": "task",
-  "updated_at": "2026-10-29T14:24:40Z"
+  "updated_at": "2026-10-29T14:26:18Z"
 }
