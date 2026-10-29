@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-29T10:28:25Z",
+  "description": "User requests evidence that file-specific provider-ID validation is necessary. Run real Jido Thread, Mattermost adapter and HTTP transport against controlled valid and missing-ID success responses. Compare current production code to an in-memory mutant restoring post.id, checking callback/confirmation consequence. No permanent production changes or existing-test expectation changes. Distinguish demonstrated behavior under malformed success from evidence that a real provider emits it. Action reuse: reuse existing OpenAIStub, DataCase, real bridge/Jido and Oban testing helpers; temporary diagnostic tests only, no new Action.",
+  "id": "zaq-juu.12",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "[PR #876] Prove message-ID validation behavior with a controlled test",
+  "type": "task",
+  "updated_at": "2026-10-29T10:28:25Z"
+}
