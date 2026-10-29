@@ -23,11 +23,15 @@
     {
       "text": "Latest validation: new AttachDocuments suite 5 passed (1 property,4 tests); mix q passed after fixing new-test alias style. Remaining issue acceptance blocker is explicit approval for two existing Registry exact-list expectations, currently failing solely because they exclude new message.attach_documents. Requested narrowly scoped approval through session question; no existing test changed. .3 not started because dependency order must be preserved. Retained all implementation uncommitted; no precommit/commit/push/merge/bw sync.",
       "timestamp": "2026-10-29T14:00:56Z"
+    },
+    {
+      "text": "User explicitly approved the two existing Registry list expectation updates (yes). Added only message.attach_documents to those lists, keeping all prior keys and exact assertions. Continuing issue validation; uncommitted work is authorized by original delivery instructions.",
+      "timestamp": "2026-10-29T14:24:40Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.2] Implement attach_documents Action and tool registration",
   "type": "task",
-  "updated_at": "2026-10-29T14:00:56Z"
+  "updated_at": "2026-10-29T14:24:40Z"
 }
