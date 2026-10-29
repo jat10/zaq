@@ -11,9 +11,15 @@
   "id": "zaq-ic9.14.5",
   "labels": [],
   "parent": "zaq-ic9.14",
+  "comments": [
+    {
+      "text": "Agent service documentation now covers Action semantics, trusted native scope, deterministic replay/order, freeze/discard, privacy and snapshot/result ownership, source-authorized metadata refresh and final Channels redemption, plus provenance reissuance. Final implementation integration/privacy/source-ACL regression run pending. No full feature E2E authored; .7 explicit UX gate and .8 remain required. Consolidated precommit deferred until E2E and post-review coverage complete per user instruction.",
+      "timestamp": "2026-10-29T14:57:26Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.5] Validate attachment selection and document the implemented contract",
   "type": "task",
-  "updated_at": "2026-10-29T14:49:45Z"
+  "updated_at": "2026-10-29T14:57:26Z"
 }
