@@ -23,11 +23,15 @@
     {
       "text": "Read-only epic minimality review requests changes: all 21 changed files inventoried (412 production additions, 1221 tests/support, 53 docs). Four medium findings: disabled-tool requests unnecessarily enter attachment event filtering; synthetic checkpoint/direct sink/terminal seq rewriting couples selection to native protocol; Factory owns inline feature policy beyond thin hooks; signed-identity test uses invalid signatures and only verifies fallback identity. Required Action/registration/propagation and approved provenance fix remain justified. Report /tmp/zaq-ic9.14-minimality-review.txt. No source/tests changed or validation rerun. UX acceptance still pending; no issue closed.",
       "timestamp": "2026-10-29T17:08:10Z"
+    },
+    {
+      "text": "Authorized cleanup completed and validated; attached updated review evidence supersedes prior implementation fingerprint. Four review findings addressed. Factory additions 176 -\u003e 25, focused adapter added, disabled requests unaffected, private snapshot uses existing sink without synthetic event or sequence rewriting, signed identity test corrected and unsigned fallback removed. 307 checks and mix q pass. Human UX acceptance remains pending; cleanup approval is not UX acceptance. No .8 E2E authored, no precommit/commit/push/sync. Review steps and limitations in attachment.",
+      "timestamp": "2026-10-29T19:36:33Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.7] Approve completed Mattermost and email attachment UX for E2E",
   "type": "task",
-  "updated_at": "2026-10-29T17:08:10Z"
+  "updated_at": "2026-10-29T19:36:33Z"
 }
