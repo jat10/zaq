@@ -9,7 +9,7 @@
   "parent": "zaq-ic9.14",
   "priority": 2,
   "status": "open",
-  "title": "Verify trusted Record and Jido request-effect integration",
+  "title": "[zaq-ic9.14.1] Verify trusted Record and Jido request-effect integration",
   "type": "task",
-  "updated_at": "2026-10-29T13:32:47Z"
+  "updated_at": "2026-10-29T13:32:48Z"
 }
