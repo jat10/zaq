@@ -52,11 +52,15 @@
     {
       "text": "User authorized outgoing history attachment correction. Reuse assessment: extend normalized adapter receipt metadata with delivered media and provider author identity using existing normalize_file_media; bridge reuses ingress media_records then Record.attachment_metadata; Engine History.Delivery forwards confirmed descriptors, HistoryIngress and TranscriptHistory persist them on existing canonical answer/replicated capture. Do not rerun ingress or copy Disk source handles into shared history. No new Action: transport normalization/canonical capture already have existing domain APIs. Reuse existing in_progress .4, no new issue. Add regressions for descriptor persistence, no bytes/handles, same message, replay/conflict and canonical history hydration. Keep publication/pinning and human UX gates open.",
       "timestamp": "2026-10-29T23:07:21Z"
+    },
+    {
+      "text": "Applied outgoing Mattermost history attachment correction uncommitted. Adapter exposes normalized uploaded media and confirmed post author; bridge reuses ingress media_records and Record.attachment_metadata; Engine Delivery forwards only receipt descriptors; canonical answer and replicated capture persist sanitized attachments, fingerprint detects conflicting replay. No incoming-handler replay, Disk handle persistence, migration, Factory or UI changes. New tests cover real create/edit receipts, content-free descriptors, canonical hydration, Engine Delivery persistence on existing assistant, idempotent replay and conflicting file rejection. Initial new-code routing Access and test constructor errors fixed; mix q alias fixed. Broader run 273/274 passed with existing HTTP fixture eaddrinuse; isolated failing test then passed. Adapter suite 66 passed; final mix q and both diff checks passed. Logs /tmp/zaq-outgoing-history-{regression,port-recheck,adapter,q}.log. Refreshed dependency patch /tmp/zaq-ic9.14-mattermost-attachment-edit.patch; dev/test adapter compiled. No existing test behaviors changed for this correction. No commits, pushes, sync or precommit. .4 stays open pending dependency publication/pin; .7 human UX acceptance, .8 E2E and .6 review/coverage remain pending. Historical messages with empty attachments were not backfilled; manual review requires a new send after server reload.",
+      "timestamp": "2026-10-29T23:15:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T23:07:21Z"
+  "updated_at": "2026-10-29T23:15:03Z"
 }
