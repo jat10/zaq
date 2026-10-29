@@ -27,11 +27,15 @@
     {
       "text": "Authorized cleanup completed and validated; attached updated review evidence supersedes prior implementation fingerprint. Four review findings addressed. Factory additions 176 -\u003e 25, focused adapter added, disabled requests unaffected, private snapshot uses existing sink without synthetic event or sequence rewriting, signed identity test corrected and unsigned fallback removed. 307 checks and mix q pass. Human UX acceptance remains pending; cleanup approval is not UX acceptance. No .8 E2E authored, no precommit/commit/push/sync. Review steps and limitations in attachment.",
       "timestamp": "2026-10-29T19:36:33Z"
+    },
+    {
+      "text": "Human UX investigation (read-only): transcript b4ea1d44-9901-4448-a7de-3cf2cffd0731 persisted execution evidence shows list_documents first guessed provider gdrive/path / -\u003e no_bridge gdrive; correction produced no tool call; later disk listing passed host-relative file path priv/documents/test_image.png -\u003e volume_required. Enabled Disk config10 has documents and archives volumes. Correct folder listing contract is provider disk/config_id 10/path documents; actual Storage split_parent recognizes configured volume names. HelpMe agent2 has list_documents/download_document/attach_documents enabled, but no get_document; job only generic answer instruction. This is provider/path selection and guidance evidence, not an attachment-selection execution failure (attach_documents never called). Supplied explicit wording; no config/code mutation, no UX acceptance inferred. .8 remains blocked.",
+      "timestamp": "2026-10-29T22:33:17Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.7] Approve completed Mattermost and email attachment UX for E2E",
   "type": "task",
-  "updated_at": "2026-10-29T19:36:33Z"
+  "updated_at": "2026-10-29T22:33:17Z"
 }
