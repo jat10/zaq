@@ -31,11 +31,15 @@
     {
       "text": "Approved Registry expectations updated. Focused Action+Registry suite 31 passed (1 property,30 tests); mix q passed. Action schema/authorization/alias/atomic invalid-batch behavior and enablement verified. Commands remain inert until owning runtime integration in .3; no early delivery or source deletion. Acceptance criteria satisfied at the Action boundary.",
       "timestamp": "2026-10-29T14:26:18Z"
+    },
+    {
+      "text": "Validation review found provider-owned ACL compatibility gap: DiskBridge maps type/target_id grants and owns permission checks in Storage; Record.Authorization intentionally understands external provider principal/channel ACLs only. Generic local check therefore denies legitimate Disk users. Reopened owning issue before correction. Action reuse extension: for Records with signed provider/config identity, reuse GetDocument through validated Jido.Exec.run to refresh canonical metadata and apply existing Channels/Storage authorization (no bytes download), then validate the complete batch before selection effect. Generic signed Records without provider claims retain Record.Authorization. No new authorization Action/API, duplicated ACL rules or implicit nil bypass. Add real disk-person granted/denied integration proof; preserve all existing tests.",
+      "timestamp": "2026-10-29T14:52:26Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.2] Implement attach_documents Action and tool registration",
   "type": "task",
-  "updated_at": "2026-10-29T14:52:25Z"
+  "updated_at": "2026-10-29T14:52:26Z"
 }
