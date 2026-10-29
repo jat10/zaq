@@ -17,11 +17,15 @@
     {
       "text": "Validation: mix q passed. Discovery resolved native hooks (on_before_cmd/on_after_cmd and ToolInterceptor) without dependency changes. Checkpoint token payload includes model tool context, so selection-enabled requests must redact tokens before native trace storage. Preserve model-private context needed for aliases, redact selection tool arguments/results from parent stream/thread projections. Reuse scope: .2 new validated Action only, .3 local-only AttachmentSelection reducer and Factory lifecycle hooks (runtime ownership, not another business operation), .4 extend existing result maps and Outgoing; .5 docs/verification not applicable to Action reuse. Real context/effect and existing alias round-trip characterizations are passing. Application changes remain uncommitted per explicit user override.",
       "timestamp": "2026-10-29T13:44:56Z"
+    },
+    {
+      "text": "Reopened: downstream authorization inspection disproved the initial discovery-complete assessment. Concrete temporary proof /tmp/zaq_attachment_provenance_probe_test.exs passes against current source: original Record denies attacker; editing only permissions[0].attributes.principal.identifier to attacker email preserves original provenance_ref, Provenance.verify returns ok, and Record.Authorization.can? returns true. Provenance.principal/1 signs flat principal_type/key while Authorization.principal/1 prioritizes nested principal.channel/identifier (and nested type/key). This violates forged-Record rejection required by attach_documents. Source owners: lib/zaq/contracts/record/provenance.ex and authorization.ex. Global provenance contract affects existing consumers outside Agent. Escalating security-contract change per WORKFLOW_AGENT before implementing it; .2 remains open and blocked. Proposed fix: sign the effective nested principal using the same precedence as Authorization, preserve flat-field behavior, add forgery regression/property coverage. Existing nested-principal tokens would need refetch/reissuance; never allow fallback verification that accepts an altered principal. No commits, pushes, sync or precommit.",
+      "timestamp": "2026-10-29T13:48:44Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.1] Verify trusted Record and Jido request-effect integration",
   "type": "task",
-  "updated_at": "2026-10-29T13:48:42Z"
+  "updated_at": "2026-10-29T13:48:44Z"
 }
