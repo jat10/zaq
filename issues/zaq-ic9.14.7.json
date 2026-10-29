@@ -31,11 +31,15 @@
     {
       "text": "Human UX investigation (read-only): transcript b4ea1d44-9901-4448-a7de-3cf2cffd0731 persisted execution evidence shows list_documents first guessed provider gdrive/path / -\u003e no_bridge gdrive; correction produced no tool call; later disk listing passed host-relative file path priv/documents/test_image.png -\u003e volume_required. Enabled Disk config10 has documents and archives volumes. Correct folder listing contract is provider disk/config_id 10/path documents; actual Storage split_parent recognizes configured volume names. HelpMe agent2 has list_documents/download_document/attach_documents enabled, but no get_document; job only generic answer instruction. This is provider/path selection and guidance evidence, not an attachment-selection execution failure (attach_documents never called). Supplied explicit wording; no config/code mutation, no UX acceptance inferred. .8 remains blocked.",
       "timestamp": "2026-10-29T22:33:17Z"
+    },
+    {
+      "text": "Human UX evidence: after granting public read, execution a2f49858-1d80-4e8a-ab68-3c862f6d3526 for and now successfully listed config10/documents (count1 test_image.png) and attach_documents succeeded. One execution/one canonical answer69f239e5-302c-4df2-8047-f6d4cb5d2a64, but metadata.external_message_id=x9kym69t3td1zqfnuh48k33rca differs from external_message_id/delivery receipt4irgqimq83bftj1e35ux9m41qc. User reports two responses. Code confirms JidoChatBridge.send_mode attachments clause unconditionally :create, bypassing existing streamed-message update; final file post repeats answer body. This is a delivery UX defect, not duplicate agent execution. Native provider posts not directly fetched; conclusion supported by saved IDs + delivery branch + user observation. UX gate remains unsatisfied; no E2E authorization inferred, no source/config changes during diagnosis. Resolve streamed answer plus final attachment duplication before acceptance.",
+      "timestamp": "2026-10-29T22:38:45Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.7] Approve completed Mattermost and email attachment UX for E2E",
   "type": "task",
-  "updated_at": "2026-10-29T22:33:17Z"
+  "updated_at": "2026-10-29T22:38:45Z"
 }
