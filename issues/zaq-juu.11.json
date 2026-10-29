@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-29T09:57:44Z",
+  "description": "Implement user-approved common preparation/send flow for text and attachments. Success adds no status text or edit. Failure preserves LLM body and appends safe reason; use existing placeholder if available, otherwise text-only notice, no upload retry. Keep original delivery result and canonical provider ID/callback semantics. Reuse DeliveryFiles.with_prepared, send_mode, create_and_dispatch_reply, edit_message and Thread.post. Local-only projection/orchestration, no new Action. File posts still require create because current adapters cannot edit attachments. Jad approved existing test changes explicitly via async response: no success edit, preserve answer/reason on failure, text-only notice without placeholder. Validate mix q and focused bridge/delivery tests; document upstream shared error contract debt. No history persistence or upstream adapter changes.",
+  "id": "zaq-juu.11",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "[PR #876] Unify outgoing chat delivery and preserve answers on file failure",
+  "type": "task",
+  "updated_at": "2026-10-29T09:57:44Z"
+}
