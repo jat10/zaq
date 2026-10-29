@@ -11,9 +11,15 @@
   "id": "zaq-ic9.14.4",
   "labels": [],
   "parent": "zaq-ic9.14",
+  "comments": [
+    {
+      "text": "Reuse recheck: Outgoing already copies result.attachments and excludes it from metadata; Channels.DeliveryFiles and existing email/Jido bridges own redemption/delivery. Adding only final snapshot propagation to Executor and Pipeline. Default Answering currently exposes only KB tools, so enabling the same attach_documents Action in its existing tool list is necessary to exercise selection on that supported path; no separate runtime or delivery implementation. New tests before production edits reproduce Executor attachment loss, exercise real default Pipeline/Executor/Jido/Action and actual Storage-backed lazy materialization/email output. Existing exact Registry expectations were approved; no further existing test changes planned.",
+      "timestamp": "2026-10-29T14:44:16Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T14:40:56Z"
+  "updated_at": "2026-10-29T14:44:16Z"
 }
