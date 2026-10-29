@@ -1,0 +1,265 @@
+diff --git a/lib/jido/chat/mattermost/adapter.ex b/lib/jido/chat/mattermost/adapter.ex
+index 0cb3bd5..789b36d 100644
+--- a/lib/jido/chat/mattermost/adapter.ex
++++ b/lib/jido/chat/mattermost/adapter.ex
+@@ -54,6 +54,7 @@ defmodule Jido.Chat.Mattermost.Adapter do
+       send_file: :native,
+       post_message: :fallback,
+       edit_message: :native,
++      edit_attachments: :native,
+       delete_message: :native,
+       start_typing: :native,
+       fetch_metadata: :native,
+@@ -178,10 +179,8 @@ defmodule Jido.Chat.Mattermost.Adapter do
+     o = SendOptions.new(opts)
+     transport_opts = SendOptions.transport_opts(o)
+ 
+-    with {:ok, upload_input} <- upload_input(upload),
+-         {:ok, upload_result} <-
+-           transport(o).upload_file(channel_id, upload_input, transport_opts),
+-         {:ok, file_ids} <- uploaded_file_ids_result(upload_result),
++    with {:ok, upload_result, file_ids} <-
++           upload_file(channel_id, upload, transport(o), transport_opts),
+          {:ok, post_result} <-
+            transport(o).send_message(
+              channel_id,
+@@ -192,16 +191,45 @@ defmodule Jido.Chat.Mattermost.Adapter do
+     end
+   end
+ 
++  @doc """
++  Edits a post, optionally attaching one prepared file through `files: [upload]`.
++  Text-only edits preserve attachments. File edits reuse the upload path and patch
++  the existing post; upload/edit errors never fall back to creating another post.
++  As with send_file, an upload can remain stored if the subsequent edit fails.
++  """
+   @impl true
+   def edit_message(channel_id, post_id, text, opts \\ []) do
+     o = EditOptions.new(opts)
+ 
+-    with {:ok, result} <-
+-           transport(o).edit_message(channel_id, post_id, text, EditOptions.transport_opts(o)) do
++    with {:ok, transport_opts} <- edit_file_opts(channel_id, o),
++         {:ok, result} <- transport(o).edit_message(channel_id, post_id, text, transport_opts),
++         :ok <- confirm_edited_files(result, transport_opts[:file_ids]) do
+       {:ok, response_from_post(result, channel_id, :edited, post_id)}
+     end
+   end
+ 
++  defp edit_file_opts(_channel_id, %EditOptions{files: []} = o),
++    do: {:ok, EditOptions.transport_opts(o)}
++
++  defp edit_file_opts(channel_id, %EditOptions{files: [file]} = o) do
++    opts = EditOptions.transport_opts(o)
++
++    with {:ok, _upload_result, ids} <-
++           upload_file(channel_id, FileUpload.normalize(file), transport(o), opts) do
++      {:ok, Keyword.put(opts, :file_ids, ids)}
++    end
++  end
++
++  defp edit_file_opts(_channel_id, _o), do: {:error, :multiple_attachments_unsupported}
++
++  defp confirm_edited_files(_result, nil), do: :ok
++
++  defp confirm_edited_files(result, ids) do
++    if Enum.all?(ids, &(&1 in (map_get(result, ["file_ids", :file_ids]) || []))),
++      do: :ok,
++      else: {:error, :unconfirmed_delivery}
++  end
++
+   @impl true
+   def delete_message(channel_id, post_id, opts \\ []) do
+     o = DeleteOptions.new(opts)
+@@ -404,7 +432,11 @@ defmodule Jido.Chat.Mattermost.Adapter do
+ 
+   defp normalize_file_media(file) when is_map(file) do
+     file_id = map_get(file, ["id", :id])
+-    url = get_non_blank(file, ["link", :link, "permalink", :permalink]) || media_reference_url(file_id)
++
++    url =
++      get_non_blank(file, ["link", :link, "permalink", :permalink]) ||
++        media_reference_url(file_id)
++
+     filename = get_non_blank(file, ["name", :name])
+     extension = get_non_blank(file, ["extension", :extension])
+ 
+@@ -463,7 +495,9 @@ defmodule Jido.Chat.Mattermost.Adapter do
+     reference
+     |> map_get([:file_id, "file_id", :id, "id"])
+     |> Kernel.||(map_get(metadata, [:file_id, "file_id"]))
+-    |> file_id_or_reference(map_get(reference, [:url, "url", :link, "link", :permalink, "permalink"]))
++    |> file_id_or_reference(
++      map_get(reference, [:url, "url", :link, "link", :permalink, "permalink"])
++    )
+   end
+ 
+   defp media_file_id(reference) when is_binary(reference), do: parse_media_reference(reference)
+@@ -514,6 +548,14 @@ defmodule Jido.Chat.Mattermost.Adapter do
+ 
+   defp media_reference_url(_file_id), do: nil
+ 
++  defp upload_file(channel_id, upload, transport, opts) do
++    with {:ok, input} <- upload_input(upload),
++         {:ok, result} <- transport.upload_file(channel_id, input, opts),
++         {:ok, ids} <- uploaded_file_ids_result(result) do
++      {:ok, result, ids}
++    end
++  end
++
+   defp upload_input(%FileUpload{path: path} = upload) when is_binary(path) and path != "" do
+     {:ok,
+      %{
+diff --git a/lib/jido/chat/mattermost/edit_options.ex b/lib/jido/chat/mattermost/edit_options.ex
+index 858ed41..049aff2 100644
+--- a/lib/jido/chat/mattermost/edit_options.ex
++++ b/lib/jido/chat/mattermost/edit_options.ex
+@@ -1,9 +1,10 @@
+ defmodule Jido.Chat.Mattermost.EditOptions do
+   @moduledoc "Options for editing a Mattermost post."
+ 
+-  defstruct token: nil, transport: nil, url: nil
++  defstruct files: [], token: nil, transport: nil, url: nil
+ 
+   @type t :: %__MODULE__{
++          files: [Jido.Chat.FileUpload.t()],
+           token: String.t() | nil,
+           transport: module() | nil,
+           url: String.t() | nil
+@@ -13,6 +14,7 @@ defmodule Jido.Chat.Mattermost.EditOptions do
+   @spec new(keyword()) :: t()
+   def new(opts \\ []) do
+     %__MODULE__{
++      files: Keyword.get(opts, :files, []),
+       token: opts[:token],
+       transport: opts[:transport],
+       url: opts[:url]
+diff --git a/lib/jido/chat/mattermost/transport/req_client.ex b/lib/jido/chat/mattermost/transport/req_client.ex
+index d982a46..8617e56 100644
+--- a/lib/jido/chat/mattermost/transport/req_client.ex
++++ b/lib/jido/chat/mattermost/transport/req_client.ex
+@@ -23,7 +23,8 @@ defmodule Jido.Chat.Mattermost.Transport.ReqClient do
+   def upload_file(channel_id, %{path: path} = file, opts)
+       when is_binary(path) and path != "" do
+     file_part =
+-      {File.stream!(path, 2048), multipart_file_options(file, Map.get(file, :filename) || Path.basename(path))}
++      {File.stream!(path, 2048),
++       multipart_file_options(file, Map.get(file, :filename) || Path.basename(path))}
+ 
+     post_multipart("/api/v4/files", [channel_id: channel_id, files: file_part], opts)
+   end
+@@ -50,7 +51,13 @@ defmodule Jido.Chat.Mattermost.Transport.ReqClient do
+ 
+   @impl true
+   def edit_message(_channel_id, post_id, text, opts) do
+-    put("/api/v4/posts/#{post_id}", %{"id" => post_id, "message" => text}, opts)
++    body = %{"id" => post_id, "message" => text}
++
++    if Keyword.has_key?(opts, :file_ids) do
++      put("/api/v4/posts/#{post_id}/patch", Map.put(body, "file_ids", opts[:file_ids]), opts)
++    else
++      put("/api/v4/posts/#{post_id}", body, opts)
++    end
+   end
+ 
+   @impl true
+diff --git a/test/jido/chat/mattermost/attachment_edit_test.exs b/test/jido/chat/mattermost/attachment_edit_test.exs
+new file mode 100644
+index 0000000..45339f4
+--- /dev/null
++++ b/test/jido/chat/mattermost/attachment_edit_test.exs
+@@ -0,0 +1,94 @@
++defmodule Jido.Chat.Mattermost.AttachmentEditTest do
++  use ExUnit.Case, async: true
++
++  alias Jido.Chat.FileUpload
++  alias Jido.Chat.Mattermost.Adapter
++  alias Jido.Chat.Mattermost.Test.RecordingTransport
++
++  setup do
++    Process.put({RecordingTransport, :upload_file}, {:ok, %{"file_infos" => [%{"id" => "file"}]}})
++
++    Process.put(
++      {RecordingTransport, :edit_message},
++      {:ok, %{"id" => "post", "file_ids" => ["file"]}}
++    )
++
++    :ok
++  end
++
++  test "capability matrix is coherent" do
++    assert :ok = Jido.Chat.Adapter.validate_capabilities(Adapter)
++    assert Adapter.capabilities().edit_attachments == :native
++  end
++
++  test "uploads exact bytes then edits the original post without creating another" do
++    assert {:ok, response} = Adapter.edit_message("room", "post", "Answer", opts())
++    assert response.external_message_id == "post"
++    assert response.status == :edited
++    assert_received {:transport_call, :upload_file, ["room", upload, upload_opts]}
++    assert upload == %{body: <<0, 255>>, filename: "file.png", content_type: "image/png"}
++    assert upload_opts[:token] == "test-token"
++    assert_received {:transport_call, :edit_message, ["room", "post", "Answer", edit_opts]}
++    assert edit_opts[:file_ids] == ["file"]
++    refute_received {:transport_call, :send_message, _}
++  end
++
++  test "upload failure or missing ID cannot edit or create a post" do
++    for {result, error} <- [
++          {{:error, :timeout}, :timeout},
++          {{:ok, %{"file_infos" => []}}, :missing_uploaded_file_id}
++        ] do
++      Process.put({RecordingTransport, :upload_file}, result)
++      assert {:error, ^error} = Adapter.edit_message("room", "post", "Answer", opts())
++      assert_received {:transport_call, :upload_file, _}
++      refute_received {:transport_call, :edit_message, _}
++      refute_received {:transport_call, :send_message, _}
++    end
++  end
++
++  test "edit failure never retries an upload or creates another post" do
++    Process.put({RecordingTransport, :edit_message}, {:error, :timeout})
++    assert {:error, :timeout} = Adapter.edit_message("room", "post", "Answer", opts())
++    assert_received {:transport_call, :upload_file, _}
++    assert_received {:transport_call, :edit_message, _}
++    refute_received {:transport_call, _, _}
++  end
++
++  test "a successful edit that omits the uploaded file is not confirmed" do
++    Process.put({RecordingTransport, :edit_message}, {:ok, %{"id" => "post", "file_ids" => []}})
++
++    assert {:error, :unconfirmed_delivery} =
++             Adapter.edit_message("room", "post", "Answer", opts())
++  end
++
++  test "text-only edits omit file IDs and multiple files fail before uploading" do
++    assert {:ok, _} =
++             Adapter.edit_message("room", "post", "Answer", Keyword.delete(opts(), :files))
++
++    assert_received {:transport_call, :edit_message, ["room", "post", "Answer", edit_opts]}
++    refute Keyword.has_key?(edit_opts, :file_ids)
++    refute_received {:transport_call, :upload_file, _}
++
++    [file] = opts()[:files]
++
++    assert {:error, :multiple_attachments_unsupported} =
++             Adapter.edit_message(
++               "room",
++               "post",
++               "Answer",
++               Keyword.put(opts(), :files, [file, file])
++             )
++
++    refute_received {:transport_call, _, _}
++  end
++
++  defp opts do
++    [
++      transport: RecordingTransport,
++      token: "test-token",
++      files: [
++        %FileUpload{kind: :file, data: <<0, 255>>, filename: "file.png", media_type: "image/png"}
++      ]
++    ]
++  end
++end
