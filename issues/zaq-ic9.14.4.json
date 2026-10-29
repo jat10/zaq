@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-ic9.14.3"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-ic9.14",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T13:33:00Z"
+  "updated_at": "2026-10-29T14:40:56Z"
 }
