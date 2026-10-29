@@ -35,11 +35,15 @@
     {
       "text": "Restored baseline validation: 17 focused checks passed (2 properties,15 tests) across selection, native runtime, stream, Action and characterization suites; mix q passed. Logs /tmp/zaq-native-effects-restored-tests.log and /tmp/zaq-native-effects-restored-q.log. Native-effect simplification not achieved; leave issue open for design decision rather than close to unblock downstream. Previously known default-Pipeline attachment test remains outside this refactor and unchanged after user-requested rollback of Answering/Pipeline. Backup directory /Users/jad/.codex/backups/zaq-native-effects-20261030-013009 contains verified baseline and rejected experimental patches.",
       "timestamp": "2026-10-29T23:39:40Z"
+    },
+    {
+      "text": "User now authorizes reusable request-effects refactor after rejected native-map prototype. Extend existing AttachDocuments: it owns init/reduce callbacks and all signed-document ordering/authorization rules. Replace attachment-specific reducer/runtime files with one RequestEffects module owning request/PID/sequence lifecycle, per-tool state, invocation dedup, trusted handler binding, generic private-effect redaction and final snapshot map. Discover opt-in handlers only from current configured tool modules; no registry/process/global state. Factory generic hooks; StreamEvents selects AttachDocuments result for delivery. Reuse existing SetPath effect envelope, no new Action. Explicit earlier approval covers representation-only test updates while preserving behavior; add a second test-only Action proving handler reuse/isolation. Backups verified at /Users/jad/.codex/backups/zaq-native-effects-20261030-013009. Keep known default-Pipeline failure from user-requested rollback unchanged. Preserve all other work and gates; no precommit/commit/push/sync.",
+      "timestamp": "2026-10-29T23:44:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.3] Integrate request-scoped selection lifecycle and stream transport",
   "type": "task",
-  "updated_at": "2026-10-29T23:39:40Z"
+  "updated_at": "2026-10-29T23:44:28Z"
 }
