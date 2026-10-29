@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-29T11:52:49Z",
+  "description": "Address comment 6 by merging file_post_body/3 and build_post_body/2 into one build_post_body/3 implementation. Preserve text-only structured-body passthrough, explicit-file binary-body validation and complete payload metadata. Action reuse: extend existing private payload builder; no new Action or public interface. Existing tests retain expectations. Validate mix q and focused delivery regressions.",
+  "id": "zaq-juu.14",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "[PR #876] Consolidate posting payload construction",
+  "type": "task",
+  "updated_at": "2026-10-29T11:52:49Z"
+}
