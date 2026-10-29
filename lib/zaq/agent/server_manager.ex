@@ -58,6 +58,7 @@ defmodule Zaq.Agent.ServerManager do
   @jido_registry Jido.registry_name(@jido_instance)
 
   @type state :: %{
+          optional(:drain_timeouts) => %{optional(String.t()) => non_neg_integer()},
           fingerprints: %{optional(String.t()) => binary()},
           agent_servers: %{optional(integer()) => MapSet.t(String.t())},
           server_to_agent: %{optional(String.t()) => integer()},
@@ -122,6 +123,11 @@ defmodule Zaq.Agent.ServerManager do
   `:missing_execution_actor` rather than raising or starting an unbound server.
   A live runtime's immutable `execution_actor` must match before touch or replacement;
   request tool context and mutable actor metadata do not establish that binding.
+
+  A custom `:config` provider resolves `:agent_server_drain_timeout_ms` at cold
+  start. Its value belongs to that runtime incarnation and survives warm reuse
+  and later credential-triggered stops. Without a custom provider, draining
+  continues to read application configuration when shutdown begins.
   """
   @spec ensure_server(ConfiguredAgent.t(), String.t(), AIContext.t() | nil, keyword()) ::
           {:ok, GenServer.server()} | {:error, term()}
@@ -689,6 +695,7 @@ defmodule Zaq.Agent.ServerManager do
           state
           |> put_in([:fingerprints, server_id], fingerprint)
           |> track_server(configured_agent.id, server_id, credential_dependency)
+          |> configure_drain_timeout(server_id, opts)
           |> monitor_server(server_id)
           |> schedule_authentication_expiry(server_id, credential_dependency)
           |> initialize_history_cursor(server_id, opts)
@@ -1077,8 +1084,28 @@ defmodule Zaq.Agent.ServerManager do
   defp agent_idle_ttl_ms(_),
     do: Application.get_env(:zaq, :agent_server_idle_ttl_ms, 1_800_000)
 
-  defp drain_timeout_ms do
-    Application.get_env(:zaq, :agent_server_drain_timeout_ms, 1_500)
+  defp drain_timeout_ms(opts) do
+    Zaq.Config.get(:zaq, :agent_server_drain_timeout_ms, 1_500, opts)
+  end
+
+  defp configure_drain_timeout(state, server_id, opts) do
+    timeouts = Map.get(state, :drain_timeouts, %{})
+
+    timeouts =
+      case Keyword.get(opts, :config) do
+        config when config in [nil, Zaq.Config] -> Map.delete(timeouts, server_id)
+        _config -> Map.put(timeouts, server_id, drain_timeout_ms(opts))
+      end
+
+    if map_size(timeouts) == 0,
+      do: Map.delete(state, :drain_timeouts),
+      else: Map.put(state, :drain_timeouts, timeouts)
+  end
+
+  defp runtime_drain_timeout_ms(state, server_id) do
+    state
+    |> Map.get(:drain_timeouts, %{})
+    |> Map.get_lazy(server_id, fn -> drain_timeout_ms([]) end)
   end
 
   defp force_drain_enabled? do
@@ -1095,12 +1122,26 @@ defmodule Zaq.Agent.ServerManager do
 
       force_drain_enabled?() ->
         ref = make_ref()
-        _ = Process.send_after(self(), {:force_stop_server, server_id, ref}, drain_timeout_ms())
+
+        _ =
+          Process.send_after(
+            self(),
+            {:force_stop_server, server_id, ref},
+            runtime_drain_timeout_ms(state, server_id)
+          )
+
         %{state | draining: Map.put(state.draining, server_id, ref)}
 
       in_flight_requests?(server_id) ->
         ref = make_ref()
-        _ = Process.send_after(self(), {:force_stop_server, server_id, ref}, drain_timeout_ms())
+
+        _ =
+          Process.send_after(
+            self(),
+            {:force_stop_server, server_id, ref},
+            runtime_drain_timeout_ms(state, server_id)
+          )
+
         %{state | draining: Map.put(state.draining, server_id, ref)}
 
       true ->
@@ -1293,6 +1334,7 @@ defmodule Zaq.Agent.ServerManager do
           draining: Map.delete(state.draining, server_id)
       }
       |> delete_credential_dependency(server_id)
+      |> configure_drain_timeout(server_id, [])
 
     case agent_id do
       nil ->

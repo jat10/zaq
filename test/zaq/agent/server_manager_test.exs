@@ -2499,12 +2499,22 @@ defmodule Zaq.Agent.ServerManagerTest do
       end
     end)
 
+    owner = self()
+
     handler = fn conn, body ->
       payload = Jason.decode!(body)
       content = extract_request_content(payload)
 
       if String.contains?(content, "SLOW_REQUEST") do
-        Process.sleep(10_000)
+        owner_ref = Process.monitor(owner)
+        send(owner, {:slow_request_started, self()})
+
+        receive do
+          :release_slow_request -> Process.demonitor(owner_ref, [:flush])
+          {:DOWN, ^owner_ref, :process, ^owner, _reason} -> :ok
+        after
+          30_000 -> flunk("slow request was never released")
+        end
       end
 
       {200, streamed_reply(conn.request_path, "ok", "gpt-4.1-mini")}
@@ -2568,7 +2578,7 @@ defmodule Zaq.Agent.ServerManagerTest do
         send(parent, {:slow_result, result})
       end)
 
-    Process.sleep(50)
+    assert_receive {:slow_request_started, slow_handler}, 15_000
 
     assert :ok = ServerManager.stop_server(configured_agent, server_id)
 
@@ -2577,6 +2587,7 @@ defmodule Zaq.Agent.ServerManagerTest do
 
     assert_receive {:slow_result, slow_result}, 21_000
     assert match?({:error, _}, slow_result) or match?({:exit, _}, slow_result)
+    send(slow_handler, :release_slow_request)
 
     assert {:ok, server_ref_after} =
              ServerManager.ensure_server(configured_agent, server_id, nil,

@@ -6,10 +6,12 @@ defmodule Zaq.Agent.RequestInspectionTest do
   alias Zaq.Accounts.People
   alias Zaq.Agent.{Factory, RequestControl, ServerManager, StreamEvents}
   alias Zaq.Engine.Messages.Incoming
-  alias Zaq.TestSupport.{MultiAgentOpenAIStub, OpenAIStub}
+  alias Zaq.TestSupport.{AgentConfig, MultiAgentOpenAIStub, OpenAIStub}
 
   setup tags do
     if tags[:native] do
+      Code.ensure_loaded!(AgentConfig)
+
       handler = fn _conn, body ->
         request = Jason.decode!(body)
         question = MultiAgentOpenAIStub.latest_user_message(request)
@@ -47,7 +49,13 @@ defmodule Zaq.Agent.RequestInspectionTest do
         })
 
       scope = "native-inspection:#{Ecto.UUID.generate()}"
-      assert {:ok, server} = ServerManager.ensure_server(agent, scope, nil, actor: actor)
+
+      assert {:ok, server} =
+               ServerManager.ensure_server(agent, scope, nil,
+                 actor: actor,
+                 config: AgentConfig
+               )
+
       on_exit(fn -> ServerManager.stop_server(agent, scope) end)
       %{agent: agent, actor: actor, scope: scope, server: server, pid: GenServer.whereis(server)}
     else

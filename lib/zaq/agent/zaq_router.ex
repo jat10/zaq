@@ -166,16 +166,19 @@ defmodule Zaq.Agent.ZAQRouter do
   their default catalog metadata, including context limits and capabilities.
   Unknown models retain the chat + tools fallback since the LiteLLM gateway
   handles capability negotiation at runtime; their context limit is unknown.
+
+  Loader options such as `:snapshot_source` may be supplied for a scoped load.
+  The ZAQ Router model overlay is always built from `model_ids`.
   """
-  @spec reload([String.t()]) :: {:ok, map()} | {:error, term()}
-  def reload(model_ids) when is_list(model_ids) do
+  @spec reload([String.t()], keyword()) :: {:ok, map()} | {:error, term()}
+  def reload(model_ids, loader_opts \\ []) when is_list(model_ids) do
     models =
       Map.new(model_ids, fn id ->
         {id,
          Map.get(@default_models, id, %{capabilities: %{chat: true, tools: %{enabled: true}}})}
       end)
 
-    LLMDB.load(build_opts(models))
+    LLMDB.load(Keyword.merge(loader_opts, build_opts(models)))
   end
 
   defp build_opts(models) do

@@ -4,6 +4,7 @@ defmodule Zaq.Agent.ZAQRouterTest do
 
   alias Zaq.Agent.ProviderModels
   alias Zaq.Agent.ZAQRouter
+  alias Zaq.TestSupport.ModelCatalogFixture
 
   @catalog_metadata %{
     "openai/gpt-oss-120b" => {131_072, true},
@@ -22,9 +23,18 @@ defmodule Zaq.Agent.ZAQRouterTest do
     "openai/text-embedding-3-large" => {8192, false}
   }
 
-  setup do
-    on_exit(fn -> LLMDB.load() end)
-    :ok
+  setup tags do
+    snapshot = LLMDB.Store.snapshot()
+    opts = LLMDB.Store.last_opts()
+
+    on_exit(fn ->
+      if snapshot, do: LLMDB.Store.put!(snapshot, opts), else: LLMDB.Store.clear!()
+    end)
+
+    catalog_opts =
+      if tags[:reload_fixture], do: ModelCatalogFixture.minimal_source_opts!(), else: []
+
+    {:ok, catalog_opts: catalog_opts}
   end
 
   describe "llmdb_opts/0" do
@@ -41,8 +51,11 @@ defmodule Zaq.Agent.ZAQRouterTest do
       end
     end
 
-    test "exposes new model metadata through the agent model lookup" do
-      assert {:ok, _snapshot} = LLMDB.load(ZAQRouter.llmdb_opts())
+    @tag :reload_fixture
+    test "exposes new model metadata through the agent model lookup", %{
+      catalog_opts: catalog_opts
+    } do
+      assert {:ok, _snapshot} = LLMDB.load(ZAQRouter.llmdb_opts() ++ catalog_opts)
 
       for id <- ["moonshotai/kimi-k3", "deepseek/deepseek-v4.1-flash"] do
         model = ProviderModels.model("zaq_router", id)
@@ -56,12 +69,19 @@ defmodule Zaq.Agent.ZAQRouterTest do
   end
 
   describe "reload/1" do
-    property "reload keeps exactly the requested IDs and their known metadata" do
+    @describetag :reload_fixture
+
+    property "reload keeps exactly the requested IDs and their known metadata", %{
+      catalog_opts: catalog_opts
+    } do
       check all(
               ids <- list_of(member_of(Map.keys(@catalog_metadata) ++ ["unknown-model"])),
               max_runs: 10
             ) do
-        assert {:ok, _snapshot} = ZAQRouter.reload(ids)
+        assert {:ok, _snapshot} = ZAQRouter.reload(ids, catalog_opts)
+
+        assert {:ok, %LLMDB.Model{id: "gpt-4.1-mini", provider: :openai}} =
+                 LLMDB.model(:openai, "gpt-4.1-mini")
 
         models = LLMDB.models(:zaq_router)
         assert Enum.sort(Enum.map(models, & &1.id)) == Enum.sort(Enum.uniq(ids))
@@ -74,11 +94,14 @@ defmodule Zaq.Agent.ZAQRouterTest do
       end
     end
 
-    test "preserves the full default metadata for known models in a mixed list" do
-      assert {:ok, _snapshot} = LLMDB.load(ZAQRouter.llmdb_opts())
+    test "preserves the full default metadata for known models in a mixed list", %{
+      catalog_opts: catalog_opts
+    } do
+      assert {:ok, _snapshot} = LLMDB.load(ZAQRouter.llmdb_opts() ++ catalog_opts)
       defaults = Map.new(LLMDB.models(:zaq_router), &{&1.id, &1})
 
-      assert {:ok, _snapshot} = ZAQRouter.reload(Map.keys(defaults) ++ ["unknown-model"])
+      assert {:ok, _snapshot} =
+               ZAQRouter.reload(Map.keys(defaults) ++ ["unknown-model"], catalog_opts)
 
       for {id, expected} <- defaults do
         assert {:ok, actual} = LLMDB.model(:zaq_router, id)
@@ -91,8 +114,10 @@ defmodule Zaq.Agent.ZAQRouterTest do
       assert is_nil(unknown.limits) or is_nil(unknown.limits[:context])
     end
 
-    test "non-empty list returns {:ok, _} and registers models in LLMDB" do
-      assert {:ok, _snapshot} = ZAQRouter.reload(["model-a", "model-b"])
+    test "non-empty list returns {:ok, _} and registers models in LLMDB", %{
+      catalog_opts: catalog_opts
+    } do
+      assert {:ok, _snapshot} = ZAQRouter.reload(["model-a", "model-b"], catalog_opts)
 
       model_ids = LLMDB.models(:zaq_router) |> Enum.map(& &1.id)
       assert Enum.sort(model_ids) == Enum.sort(["model-a", "model-b"])
@@ -103,15 +128,19 @@ defmodule Zaq.Agent.ZAQRouterTest do
       end
     end
 
-    test "empty list returns {:ok, _} and results in no models for :zaq_router" do
-      assert {:ok, _snapshot} = ZAQRouter.reload([])
+    test "empty list returns {:ok, _} and results in no models for :zaq_router", %{
+      catalog_opts: catalog_opts
+    } do
+      assert {:ok, _snapshot} = ZAQRouter.reload([], catalog_opts)
 
       assert LLMDB.models(:zaq_router) == []
     end
 
-    test "second reload replaces previous catalog — does not append" do
-      assert {:ok, _} = ZAQRouter.reload(["old-model"])
-      assert {:ok, _} = ZAQRouter.reload(["new-model"])
+    test "second reload replaces previous catalog — does not append", %{
+      catalog_opts: catalog_opts
+    } do
+      assert {:ok, _} = ZAQRouter.reload(["old-model"], catalog_opts)
+      assert {:ok, _} = ZAQRouter.reload(["new-model"], catalog_opts)
 
       model_ids = LLMDB.models(:zaq_router) |> Enum.map(& &1.id)
       assert model_ids == ["new-model"]
