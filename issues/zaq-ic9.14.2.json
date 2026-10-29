@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-ic9.14.1"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-ic9.14",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-ic9.14.2] Implement attach_documents Action and tool registration",
   "type": "task",
-  "updated_at": "2026-10-29T13:32:54Z"
+  "updated_at": "2026-10-29T13:44:58Z"
 }
