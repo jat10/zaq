@@ -15,11 +15,15 @@
     {
       "text": "Ready for explicit human UX acceptance. Attached zaq-ic9.14-review.txt contains exact implementation fingerprint, all 21 changed files, validation evidence, local reproduction command, expected Mattermost/email observations, human channel review steps and local adversarial review. Current review fingerprint c5ea516210973b1de3b9fe971158e4c28bee7a7d881139675d7ac139694fc78f at base HEAD ee510663c plus uncommitted files. Evidence: real Agent/tool iteration -\u003e only B; real Mattermost HTTP upload/post correct bytes/name/type/channel/thread; email MIME only B with body; replace/clear, cancellation/failure, fresh requests, steering and source revocation tests. Combined 376 checks and mix q passed. Focused protocol integration is explicitly distinguished from deployed full E2E; no .8 journeys authored. Human acceptance is pending; gate stays open. Final precommit deferred until .8 and .6 complete.",
       "timestamp": "2026-10-29T15:04:34Z"
+    },
+    {
+      "text": "Human acceptance remains withheld pending explanation of Factory complexity. Read-only module-context review: Factory is the native Jido callback adapter; Action validates Records, AttachmentSelection owns pure mutation/replay, Jido agent.state owns request-local selection, StreamEvents observes final snapshot, Channels owns delivery. Factory gained roughly 176 lines because parent-owned serial mutation and redaction must precede Jido native trace/stream/thread capture (pinned strategy processes those before applying generic effects). Maintainability concerns: feature-specific event dispatch/redaction/transport live inline beside generic runtime assembly; selection tracking/filtering currently touches requests with the tool disabled; synthetic checkpoint plus terminal sequence rewriting couples the feature to native stream mechanics. Smallest proposed simplification is thin Factory callback delegation to a cohesive attachment runtime adapter, retaining the existing pure reducer and owning Jido process; narrow unrelated-runtime effects and separately reassess snapshot transport rather than merely moving its complexity. Preserve native request/PID binding, deterministic order/replay, freeze/discard, privacy, busy/cancel acknowledgement handling and final delivery. Existing runtime/stream/delivery/property tests are the regression surface. No production code or tests modified during this inspection; .8 stays blocked. Refactor implementation is not being inferred from this explanatory question.",
+      "timestamp": "2026-10-29T16:01:30Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.7] Approve completed Mattermost and email attachment UX for E2E",
   "type": "task",
-  "updated_at": "2026-10-29T15:04:34Z"
+  "updated_at": "2026-10-29T16:01:30Z"
 }
