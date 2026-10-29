@@ -11,9 +11,15 @@
   "id": "zaq-ic9.14.8",
   "labels": [],
   "parent": "zaq-ic9.14",
+  "comments": [
+    {
+      "text": "Implementation ready for .7 acceptance; authoring remains blocked. Reuse candidates now include attachment_selection_delivery_test.exs, attachment_selection_runtime_test.exs and AttachmentSelectionLLMStub plus MattermostHistoryFixture. Current integrations prove real Jido selection and separate actual adapter delivery; .8 must still add complete ingress/Engine/admission/Agent/tool/finalization/delivery journeys and run against controlled deployed Mattermost/email services. Preserve planned scenarios: B-only multi-turn retrieval/add/remove, replace/clear, no early/duplicate files, cancellation/failure, native request isolation/steering, authorization revocation and privacy. Planning/local fixture success is not human UX approval or full E2E success.",
+      "timestamp": "2026-10-29T15:04:35Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-ic9.14.8] Expand Mattermost and email Agent-turn and full E2E coverage",
   "type": "task",
-  "updated_at": "2026-10-29T13:36:04Z"
+  "updated_at": "2026-10-29T15:04:35Z"
 }
