@@ -40,11 +40,15 @@
     {
       "text": "Discovery/reuse decision: extend existing Jido.Chat.Mattermost.Adapter.edit_message and its EditOptions/ReqClient transport; reuse FileUpload normalization, upload_input/uploaded_file_ids validation and transport upload_file. No new Action: this is adapter-owned delivery mechanics used through existing Channels boundary, not model-visible operation. Bridge gates attachment edits on explicit adapter capability and preserves create fallback for other providers. Mattermost official posts.yaml supports file_ids on PUT /posts/:id/patch, not documented PUT /posts/:id; new regression endpoint will be corrected to patch while preserving one-post/receipt/file assertions. Keep existing multiple-file rejection and failure notice behavior. Adapter edits remain uncommitted in deps/jido_chat_mattermost (clean separate Git checkout), capture patch for review; dependency publication/pinning requires later authorization.",
       "timestamp": "2026-10-29T22:44:20Z"
+    },
+    {
+      "text": "Explicit approval received for four additional existing test scenario updates (async reply Approve these four test updates). Preserve failure/timeout/no-retry assertions on attachment edits, and preserve generated ID/no-status-edit assertions on no-existing-post creation. No unrelated expectations changed.",
+      "timestamp": "2026-10-29T22:46:33Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T22:44:20Z"
+  "updated_at": "2026-10-29T22:46:33Z"
 }
