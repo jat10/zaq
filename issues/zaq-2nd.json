@@ -3,12 +3,12 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-29T16:35:15Z",
-  "description": "Create a GitHub issue with the complete docs/operations/test-warning-audit.md contents using gh, then remove the document and update its docs index reference. Action reuse assessment: not applicable; documentation relocation only, no executable operations change. Application tests, E2E, and coverage expansion are not applicable.",
+  "description": "Created https://github.com/www-zaq-ai/zaq/issues/894 using gh --body-file and verified its full body matches the retired audit. Removed docs/operations/test-warning-audit.md and redirected docs/README.md to the issue. Action reuse: not applicable; documentation relocation only. mix q and git diff --check passed. Coverage and E2E not applicable; final precommit running.",
   "id": "zaq-2nd",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Move test warning audit from documentation to GitHub",
   "type": "task",
-  "updated_at": "2026-10-29T16:35:15Z"
+  "updated_at": "2026-10-29T16:36:38Z"
 }
