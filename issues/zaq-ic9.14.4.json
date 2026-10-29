@@ -15,11 +15,15 @@
     {
       "text": "Reuse recheck: Outgoing already copies result.attachments and excludes it from metadata; Channels.DeliveryFiles and existing email/Jido bridges own redemption/delivery. Adding only final snapshot propagation to Executor and Pipeline. Default Answering currently exposes only KB tools, so enabling the same attach_documents Action in its existing tool list is necessary to exercise selection on that supported path; no separate runtime or delivery implementation. New tests before production edits reproduce Executor attachment loss, exercise real default Pipeline/Executor/Jido/Action and actual Storage-backed lazy materialization/email output. Existing exact Registry expectations were approved; no further existing test changes planned.",
       "timestamp": "2026-10-29T14:44:16Z"
+    },
+    {
+      "text": "Completed final attachment propagation: Executor success results include StreamEvents.attachments; Pipeline preserves successful Outgoing.attachments and discards error/suppressed files; existing Outgoing builder remains unchanged. Default Answering uses same registered selection Action. New integration tests execute real configured Executor and default Pipeline/Jido/Action, add A/add B/remove A -\u003e only B, clear/error paths and no incoming echo. Real Storage-backed lazy handles enforce authorization at delivery; denied context never invokes consumer. EmailBridge test observes exactly B.txt/B bytes plus intact body; real Mattermost adapter against local HTTP fixture observes only B upload, correct MIME/channel/root/file_ids and answer. These are focused integrations, not claimed deployed full channel E2E. Relevant regression suite 109 passed (6 doctests,2 properties,101 tests); mix q passed. No commits or precommit.",
+      "timestamp": "2026-10-29T14:49:43Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T14:44:16Z"
+  "updated_at": "2026-10-29T14:49:43Z"
 }
