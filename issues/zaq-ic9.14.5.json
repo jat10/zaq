@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-ic9.14.4"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-ic9.14.6"
+  ],
   "created": "2026-10-29T13:32:58Z",
   "description": "Parent: zaq-ic9.14. Read the parent contract and inherited policies before work. This task stays blocked until its recorded prerequisite is complete.\n\nFunctional specifications covered with associated files to edit/add:\nUpdate docs/services/agent.md and relevant module docs with verified Action/lifecycle/result contracts. Run required issue and final validation, inspect privacy/security boundaries and complete review. Preserve agreed behavior and record failures rather than weakening tests. Confirm E2E assessment remains valid; create human approval and E2E issues if deployed-interface coverage is required.\n\nTests to add before implementation:\nRun focused Action, runtime, stream, Executor/Pipeline and existing delivery tests plus required quality/precommit checks under docs/WORKFLOW_AGENT.md. Verify all planned invariants and no sensitive Record leakage. No new E2E authoring without explicit UX approval.\n\nBranches/paths validated:\nCover success, invalid input/authorization, lifecycle and propagation paths relevant to this step; preserve the parent's add/remove/replace, atomicity, request isolation and privacy invariants.\n\nMocking plan:\nKeep internal ZAQ and Jido boundaries real where supported; mock only external model/provider/network edges. No shared global test configuration. Discovery must identify any hard constraint before test-only abstractions are added.\n\nDocumentations to update for both code and docs/ related content:\nRecord evidence, decisions and validation in this issue. Update affected module docs and docs/services/agent.md with implementation; final documentation consistency is checked by the validation task. Do not describe proposed behavior as shipped.\n\nAction reuse assessment:\nNo new operation; validate reuse from implementation children and document actual shared paths. Documentation-only changes are not applicable to Action implementation. Any discovered behavior fix must have an updated reuse assessment.\n\nGates:\nFollow docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/exec-plans/PLAN_STRATEGY.md and docs/testing-approach.md. Discovery must resolve unknown contracts and finalize this step before coding. Existing test behavior changes require explicit human approval. No commit/push/merge implied.",
   "id": "zaq-ic9.14.5",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-ic9.14.5] Validate attachment selection and document the implemented contract",
   "type": "task",
-  "updated_at": "2026-10-29T13:33:00Z"
+  "updated_at": "2026-10-29T13:33:03Z"
 }
