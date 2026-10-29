@@ -20,11 +20,15 @@
     {
       "text": "Completed final attachment propagation: Executor success results include StreamEvents.attachments; Pipeline preserves successful Outgoing.attachments and discards error/suppressed files; existing Outgoing builder remains unchanged. Default Answering uses same registered selection Action. New integration tests execute real configured Executor and default Pipeline/Jido/Action, add A/add B/remove A -\u003e only B, clear/error paths and no incoming echo. Real Storage-backed lazy handles enforce authorization at delivery; denied context never invokes consumer. EmailBridge test observes exactly B.txt/B bytes plus intact body; real Mattermost adapter against local HTTP fixture observes only B upload, correct MIME/channel/root/file_ids and answer. These are focused integrations, not claimed deployed full channel E2E. Relevant regression suite 109 passed (6 doctests,2 properties,101 tests); mix q passed. No commits or precommit.",
       "timestamp": "2026-10-29T14:49:43Z"
+    },
+    {
+      "text": "Validation review added a real non-bypass Disk user scenario: GetDocument issues real canonical signed Records, Storage grants authorize selection, a denied replacement batch keeps existing B, and permission revocation prevents subsequent delivery. Existing configured/default, email and Mattermost integration cases still pass with those canonical Records.",
+      "timestamp": "2026-10-29T14:57:25Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T14:49:44Z"
+  "updated_at": "2026-10-29T14:57:25Z"
 }
