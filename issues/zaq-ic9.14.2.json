@@ -19,11 +19,15 @@
     {
       "text": "Implemented new AttachDocuments Action using existing Record.zoi_type provenance validation, OpaqueAliases schema paths and Record.Authorization; no download/delete/delivery. Input bounds 100 Records, add/remove/replace, scope from trusted context only, nil identity denied unless explicit bypass. New focused tests 5 passed including property; Registry suite has 2 expected failures in exact list assertions because new key is missing. Requested explicit approval to add only message.attach_documents to the two lists, preserving all existing entries/assertions. Existing tests untouched pending response; issue stays in_progress.",
       "timestamp": "2026-10-29T13:59:01Z"
+    },
+    {
+      "text": "Latest validation: new AttachDocuments suite 5 passed (1 property,4 tests); mix q passed after fixing new-test alias style. Remaining issue acceptance blocker is explicit approval for two existing Registry exact-list expectations, currently failing solely because they exclude new message.attach_documents. Requested narrowly scoped approval through session question; no existing test changed. .3 not started because dependency order must be preserved. Retained all implementation uncommitted; no precommit/commit/push/merge/bw sync.",
+      "timestamp": "2026-10-29T14:00:56Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.2] Implement attach_documents Action and tool registration",
   "type": "task",
-  "updated_at": "2026-10-29T13:59:01Z"
+  "updated_at": "2026-10-29T14:00:56Z"
 }
