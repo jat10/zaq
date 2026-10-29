@@ -3,12 +3,12 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-29T17:00:37Z",
-  "description": "Rebased seven PR commits onto upstream/main 87e31535f. Single conflict: notify_person_threading_test.exs generator fix duplicated main commit f13118532 (#883). Both use list_of tuple pairs then Map.new to avoid map_of uniqueness exhaustion; retained main private metadata_map/3 helper and original assertions, discarded equivalent inline closure. No production conflict or contract change. Action reuse: not applicable — redundant test fixture reconciliation only. Backup branch backup/pr-873-before-rebase-20261029 preserves original commits. Validate range-diff, mix q, focused tests and precommit.",
+  "description": "Rebased seven commits onto upstream/main 87e31535f and pushed 24c4e8d8a with explicit force-with-lease against previous PR head 6354351cc after user requested push. Single conflict in notify_person_threading_test.exs: main #883 already implemented equivalent metadata generator fix as private helper; retained main helper and unchanged assertions. Range-diff confirms all other PR patches unchanged; nested integration rollback preserved. Action reuse: not applicable — redundant test fixture reconciliation. mix q passed; focused suites passed 16 tests (1 property, 15 tests) with seed 0; diff check and push format hook passed. Full precommit not rerun after rebase. Backup branch backup/pr-873-before-rebase-20261029 retained. Awaiting PR merge.",
   "id": "zaq-gc3",
   "labels": [],
   "priority": 2,
   "status": "in_progress",
   "title": "[#873] Rebase runtime test improvements onto main",
   "type": "task",
-  "updated_at": "2026-10-29T17:01:21Z"
+  "updated_at": "2026-10-29T17:02:56Z"
 }
