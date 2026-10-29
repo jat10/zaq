@@ -24,11 +24,15 @@
     {
       "text": "Validation review added a real non-bypass Disk user scenario: GetDocument issues real canonical signed Records, Storage grants authorize selection, a denied replacement batch keeps existing B, and permission revocation prevents subsequent delivery. Existing configured/default, email and Mattermost integration cases still pass with those canonical Records.",
       "timestamp": "2026-10-29T14:57:25Z"
+    },
+    {
+      "text": "Reopened/started for user-authorized failing regression only: real Mattermost bridge/adapter + HTTP fixture, create streamed answer then finalize same answer with selected file; assert one visible answer with file and original post receipt. No production fix this turn, no existing test behavior changes. Existing jido_chat_delivery_test explicitly expects files to create a new post despite placeholder metadata; preserve it and report that conflicting expectation for approval before a later fix. Reuse OpenAIStub and file fixture, mock external HTTP only. This is a narrow integration regression, not expanded .8 E2E. Issue stays open while red.",
+      "timestamp": "2026-10-29T22:39:57Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T22:39:45Z"
+  "updated_at": "2026-10-29T22:39:57Z"
 }
