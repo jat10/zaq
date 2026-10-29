@@ -9,9 +9,15 @@
   "id": "zaq-ic9.14.1",
   "labels": [],
   "parent": "zaq-ic9.14",
+  "comments": [
+    {
+      "text": "Characterization passed: real Factory/Jido request_effect_characterization_test and existing materialization_alias_integration_test (2 passed). Native context contains exact request.id/run_id, agent module, state snapshot and Factory execution_root; emitted SetPath reaches owning Agent state and raw tool_completed stream. Pinned runner executes tools concurrently but emits completions in declaration order. Generic effects apply after trace/thread/stream projection, so selection effects must be consumed and removed in Factory before native worker-event processing. Checkpoints carry signed full model context and must be stripped from projected selection-bearing runs. Canonical selection will live in Jido Agent state, initialized using super-generated native request id plus runtime PID; no global catalog. Action emits a private SetPath command, Factory binds native invocation id in after_tool_call and folds commands serially before projections. Seen invocation IDs fence replay; native event seq/request/incarnation fence stale events. Complete freezes and sends a private final snapshot only to request stream; failure/cancel discards. New request resets. StreamEvents returns snapshot only on successful terminal. Source authorization reuses Record.Authorization.can?/3; schema/provenance/alias conversion reuse Record.zoi_type/from_map and OpaqueAliases. GetDocument unchanged; Channels retains final materialization authorization. Exact downstream scope: new tools/messages/attach_documents.ex and attachment_selection.ex; extend Factory, StreamEvents, Registry, Executor, Pipeline; focused Action/property/runtime/privacy/result tests and Agent service docs. No source deletion, no materialization or delivery in selection.",
+      "timestamp": "2026-10-29T13:43:42Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.1] Verify trusted Record and Jido request-effect integration",
   "type": "task",
-  "updated_at": "2026-10-29T13:39:54Z"
+  "updated_at": "2026-10-29T13:43:42Z"
 }
