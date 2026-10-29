@@ -15,11 +15,15 @@
     {
       "text": "Agent service documentation now covers Action semantics, trusted native scope, deterministic replay/order, freeze/discard, privacy and snapshot/result ownership, source-authorized metadata refresh and final Channels redemption, plus provenance reissuance. Final implementation integration/privacy/source-ACL regression run pending. No full feature E2E authored; .7 explicit UX gate and .8 remain required. Consolidated precommit deferred until E2E and post-review coverage complete per user instruction.",
       "timestamp": "2026-10-29T14:57:26Z"
+    },
+    {
+      "text": "Combined regression run: 375/376 passed; all 357 tests and 6 doctests passed. One newly authored provenance property generated owner h@example.test vs attacker H@example.test, which are the same identity under established case-insensitive authorization. Corrected only this new property generator to require different normalized identities; all forgery assertions retained. No existing repository test behavior changed. Final combined validation rerun follows this generator correction.",
+      "timestamp": "2026-10-29T15:00:04Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.5] Validate attachment selection and document the implemented contract",
   "type": "task",
-  "updated_at": "2026-10-29T14:57:26Z"
+  "updated_at": "2026-10-29T15:00:04Z"
 }
