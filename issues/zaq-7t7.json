@@ -3,12 +3,12 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-29T16:48:43Z",
-  "description": "Remove only the newly introduced shared setup drain-timeout application environment override, as explicitly requested by the user and reviewer. Preserve all tests and assertions. Create a GitHub follow-up for scoped provider propagation and reply to the review thread. Action reuse: not applicable — test setup rollback only; no executable production operation changes. Validate with mix q and the isolated integration module.",
+  "description": "User explicitly authorized removal of the new shared drain timeout override, preserving existing tests and assertions. Removed exactly 10 lines; file matches origin/main. Action reuse: not applicable — test setup rollback only, no production operations changed. mix q passed; targeted suite: 7 passed. GitHub follow-up: https://github.com/www-zaq-ai/zaq/issues/895. Review reply posted with issue link and accurate pending commit/push status. Final precommit running. No new property tests, E2E or numerical coverage needed for setup rollback. Commit/push not requested.",
   "id": "zaq-7t7",
   "labels": [],
   "priority": 2,
   "status": "in_progress",
   "title": "[#873] Remove shared nested-agent drain timeout override",
   "type": "task",
-  "updated_at": "2026-10-29T16:48:53Z"
+  "updated_at": "2026-10-29T16:51:50Z"
 }
