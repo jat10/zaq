@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-29T16:35:15Z",
+  "description": "Create a GitHub issue with the complete docs/operations/test-warning-audit.md contents using gh, then remove the document and update its docs index reference. Action reuse assessment: not applicable; documentation relocation only, no executable operations change. Application tests, E2E, and coverage expansion are not applicable.",
+  "id": "zaq-2nd",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Move test warning audit from documentation to GitHub",
+  "type": "task",
+  "updated_at": "2026-10-29T16:35:15Z"
+}
