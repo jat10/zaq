@@ -25,11 +25,15 @@
     {
       "text": "Handoff validation after removing provisional .2 implementation: mix q exit 0; focused native request-effect + existing materialization alias integration tests 2 passed; temporary exploit characterization 1 passed, confirming current vulnerability. Retained uncommitted files: test/support/request_effect_probe.ex and test/zaq/agent/request_effect_characterization_test.exs. .1 in_progress; .2 and subsequent tasks open/blocked. No child currently complete. Security-contract approval pending. No mix precommit, application commits, pushes, merges or bw sync run.",
       "timestamp": "2026-10-29T13:50:14Z"
+    },
+    {
+      "text": "User authorized extending shared provenance signing (2026-10-29: go ahead and extend it). Scope: authenticate the principal consumed by Record.Authorization, preserve existing flat principal behavior, add new forgery regression/property tests; existing nested-principal tokens require reissuance. Reuse assessment: extend existing Provenance canonical permission projection; Authorization remains authoritative for access decisions. No new Action or alternate authorization path. Continuing .1 before .2.",
+      "timestamp": "2026-10-29T13:55:02Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.1] Verify trusted Record and Jido request-effect integration",
   "type": "task",
-  "updated_at": "2026-10-29T13:50:14Z"
+  "updated_at": "2026-10-29T13:55:02Z"
 }
