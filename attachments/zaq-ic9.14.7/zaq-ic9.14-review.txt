@@ -1,0 +1,85 @@
+zaq-ic9.14 — implementation review and UX acceptance handoff
+
+Status
+Completed: zaq-ic9.14.1, .2, .3, .4, .5.
+Active gate: zaq-ic9.14.7, awaiting explicit human acceptance of completed Mattermost/email UX.
+Pending: .8 expanded full E2E; .6 post-review coverage; one consolidated mix precommit.
+The epic remains open. All application changes remain uncommitted.
+No commit, push, merge, or bw sync was run.
+
+Review revision
+Base HEAD: ee510663c (feat/channel-files).
+SHA-256 over sorted changed paths and their current file bytes:
+c5ea516210973b1de3b9fe971158e4c28bee7a7d881139675d7ac139694fc78f
+
+Validation evidence
+Combined affected/regression suite across 22 test files:
+376 passed: 6 doctests, 13 properties, 357 tests; seed 911385.
+mix q: exit 0 (formatting, hook verification, Credo, docs and compilation).
+git diff --check: exit 0.
+Logs: /tmp/zaq-ic9-14-final-test.log and /tmp/zaq-ic9-14-final-q.log.
+No mix precommit has been run; its single consolidated run follows E2E and coverage.
+
+Concrete local review
+Run from this worktree:
+mix test test/zaq/agent/attachment_selection_delivery_test.exs test/zaq/agent/attachment_selection_runtime_test.exs test/zaq/agent/attachment_selection_stream_test.exs
+
+Inspect attachment_selection_delivery_test.exs:
+- Real configured Executor/Jido/Action executes add A, add B, remove A.
+- EmailBridge sends only B.txt, B bytes, and the intact answer. No prior or duplicate email is observed.
+- The real Mattermost adapter uploads only B.txt/B bytes/text/plain to shared-room, then posts Here is B. under root-bot with that file ID. No second upload is observed.
+- Default Pipeline executes real retrieval/answering and the same selection Action, retaining B.
+- A real Person selects a permitted Disk Record without skip_permissions. A denied mixed replacement preserves B. Revocation blocks subsequent materialization.
+- Clear/error results contain no selected files; incoming files are not auto-echoed.
+
+Inspect attachment_selection_runtime_test.exs and attachment_selection_stream_test.exs:
+- Parallel declarations apply deterministically; replace/clear are exact.
+- Accepted steering revises the same request. Busy requests do not inherit its selection.
+- Cancellation/provider failure discards selection; the next request starts empty.
+- Replay after removal, foreign requests and post-terminal events cannot resurrect files.
+- Private final snapshots match native request and runtime PID. Incomplete/error streams expose no files.
+- Native traces/thread and public tool steps omit selection Records/effects and checkpoint tokens.
+
+Human channel review steps
+1. Use an isolated Mattermost channel/thread and email mailbox with two small readable documents A and B. Enable message.attach_documents plus the needed document retrieval tools on the selected channel agent.
+2. In EACH channel, ask: Retrieve A and select it for this response; retrieve B and add it; remove A; finish with a short answer. Expect only B with correct name/type/bytes, alongside the answer, after completion. A must not be uploaded or emailed.
+3. Ask the agent to select A then replace the selection with an empty list before finishing. Expect text only. Also inspect replacement with a different document.
+4. Review active-request cancellation/steering and privacy against the executable cases above; verify a subsequent request starts with no prior selection.
+5. Explicitly accept the completed Mattermost AND email behavior for zaq-ic9.14.7 before .8 authoring. This acceptance does not authorize application commits or pushes.
+
+Evidence limits
+The delivery tests use real internal ZAQ/Jido/Storage paths and real Mattermost adapter HTTP, with controlled external model/provider/SMTP edges. They are focused integrations, not deployed-service E2E success. .8 still requires controlled deployed Mattermost/email services and complete ingress-to-delivery journeys after acceptance. .6 additionally requires human code review before coverage; this local inspection does not satisfy that prerequisite.
+
+Adversarial review record
+A. Invariants: atomic authorized mutation; native request/incarnation isolation; deterministic order/replay; terminal freeze/discard; no early/duplicate files; private Record/effect projection; final source authorization.
+B. Paths: validated Action -> native effect -> Factory state/redaction -> exact stream snapshot -> Executor/Pipeline/Outgoing -> Storage redemption -> Mattermost upload/post or email MIME. Request failure/cancellation, late acknowledgements, mixed authorized/denied batches and revoked grants were inspected through final owners. Native tracing/thread, Status publication, Pipeline hooks, Outgoing metadata and delivery consumers were considered after each transition.
+C. Unresolved introduced findings: none reproduced in tested paths.
+D. Pre-existing defect: provenance omitted the nested principal used by authorization; initial proof reproduced before changes. Authorized fix binds the effective principal and preserves compatible provider projection fields. Incompatible prior signatures require fresh Records.
+E. Disproved concerns: old add replay after remove, concurrent conflicting mutations, successful late worker acknowledgement after cancellation, sibling valid Records masking unauthorized replacement, and selection bypassing final revocation.
+F. Gaps: deployed-service E2E, true multi-node failure, human UX/code review and dedicated coverage remain pending.
+G. Earlier findings: provenance mismatch and Disk ACL compatibility resolved with real authorization and downstream delivery evidence.
+H. Hygiene: no unrelated files changed; only existing-test edits are the approved two Registry list additions. A new property's generator was corrected to distinguish case-normalized identities without weakening assertions.
+I. Verdict: comment — implementation is ready for the .7 UX review, while feature completion remains gated by .8, .6 and consolidated final validation.
+
+Changed files (21)
+docs/services/agent.md
+lib/zaq/agent/answering.ex
+lib/zaq/agent/attachment_selection.ex
+lib/zaq/agent/executor.ex
+lib/zaq/agent/factory.ex
+lib/zaq/agent/pipeline.ex
+lib/zaq/agent/stream_events.ex
+lib/zaq/agent/tools/messages/attach_documents.ex
+lib/zaq/agent/tools/registry.ex
+lib/zaq/contracts/record/authorization.ex
+lib/zaq/contracts/record/provenance.ex
+test/support/attachment_selection_llm_stub.ex
+test/support/request_effect_probe.ex
+test/zaq/agent/attachment_selection_delivery_test.exs
+test/zaq/agent/attachment_selection_runtime_test.exs
+test/zaq/agent/attachment_selection_stream_test.exs
+test/zaq/agent/attachment_selection_test.exs
+test/zaq/agent/request_effect_characterization_test.exs
+test/zaq/agent/tools/messages/attach_documents_test.exs
+test/zaq/agent/tools/registry_test.exs
+test/zaq/contracts/record/provenance_principal_test.exs
