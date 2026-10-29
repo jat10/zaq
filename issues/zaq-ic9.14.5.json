@@ -24,11 +24,15 @@
     {
       "text": "Final issue validation passed: combined 22-file affected/regression suite 376 passed (6 doctests,13 properties,357 tests), mix q exit 0, git diff --check exit 0. Logs: /tmp/zaq-ic9-14-final-test.log and /tmp/zaq-ic9-14-final-q.log. Reviewed invariant ownership across Jido Action/effects/runner, native trace/thread, StreamEvents, Executor/Pipeline/Outgoing, Storage and both channel delivery consumers. No additional reproduced unresolved implementation defect found in tested paths. GetDocument unchanged; all source-backed authorization reuses it through validated execution. Only existing test edits are the two explicitly approved Registry list additions. .5 documentation and implementation validation complete; final feature E2E/coverage/consolidated precommit remain deferred as authorized.",
       "timestamp": "2026-10-29T15:04:30Z"
+    },
+    {
+      "text": "Refreshed documentation and evidence after authorized minimality cleanup. Agent guide and Runtime module document enabled-only lifecycle, native sink/private message ordering and exact request/PID consumption; synthetic event/sequence behavior removed. New review artifact /tmp/zaq-ic9.14-cleanup-review.txt supersedes prior fingerprint/transport description, lists eight cleanup files, preserved contracts, concrete code/UX review steps, and current validation. 307 checks + mix q + git diff --check passed. Fingerprint e4a3eb6a6d0b242c8ef4802dc916cc5ab4c363a563286d2e9c3da8a0c85051fc. No final validation claim: .7 acceptance, .8 E2E, .6 coverage and consolidated precommit pending.",
+      "timestamp": "2026-10-29T19:36:29Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.5] Validate attachment selection and document the implemented contract",
   "type": "task",
-  "updated_at": "2026-10-29T19:25:28Z"
+  "updated_at": "2026-10-29T19:36:29Z"
 }
