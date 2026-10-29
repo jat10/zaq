@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-29T12:12:18Z",
+  "description": "User explicitly requested removing comment-7 transport forwarding and fixing tests. Remove extra_opts argument and forwarding from edit_message. Preserve existing failure-notice assertions and scenario intent by observing default ReqClient HTTP requests against local OpenAIStub; keep exception/exit coverage at adapter boundary without a production test seam. Reuse existing adapter transport and HTTP stub; no new Action or public API. Tests remain synchronous with scoped/restored adapter registry. Run mix q and focused tests including standalone rejection case. No real provider sends.",
+  "id": "zaq-juu.15",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "[PR #876] Remove edit transport override and test default HTTP edits",
+  "type": "task",
+  "updated_at": "2026-10-29T12:12:18Z"
+}
