@@ -19,11 +19,15 @@
     {
       "text": "Combined regression run: 375/376 passed; all 357 tests and 6 doctests passed. One newly authored provenance property generated owner h@example.test vs attacker H@example.test, which are the same identity under established case-insensitive authorization. Corrected only this new property generator to require different normalized identities; all forgery assertions retained. No existing repository test behavior changed. Final combined validation rerun follows this generator correction.",
       "timestamp": "2026-10-29T15:00:04Z"
+    },
+    {
+      "text": "Final issue validation passed: combined 22-file affected/regression suite 376 passed (6 doctests,13 properties,357 tests), mix q exit 0, git diff --check exit 0. Logs: /tmp/zaq-ic9-14-final-test.log and /tmp/zaq-ic9-14-final-q.log. Reviewed invariant ownership across Jido Action/effects/runner, native trace/thread, StreamEvents, Executor/Pipeline/Outgoing, Storage and both channel delivery consumers. No additional reproduced unresolved implementation defect found in tested paths. GetDocument unchanged; all source-backed authorization reuses it through validated execution. Only existing test edits are the two explicitly approved Registry list additions. .5 documentation and implementation validation complete; final feature E2E/coverage/consolidated precommit remain deferred as authorized.",
+      "timestamp": "2026-10-29T15:04:30Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.5] Validate attachment selection and document the implemented contract",
   "type": "task",
-  "updated_at": "2026-10-29T15:00:04Z"
+  "updated_at": "2026-10-29T15:04:30Z"
 }
