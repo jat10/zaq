@@ -21,11 +21,15 @@
     {
       "text": "Reopened: downstream authorization inspection disproved the initial discovery-complete assessment. Concrete temporary proof /tmp/zaq_attachment_provenance_probe_test.exs passes against current source: original Record denies attacker; editing only permissions[0].attributes.principal.identifier to attacker email preserves original provenance_ref, Provenance.verify returns ok, and Record.Authorization.can? returns true. Provenance.principal/1 signs flat principal_type/key while Authorization.principal/1 prioritizes nested principal.channel/identifier (and nested type/key). This violates forged-Record rejection required by attach_documents. Source owners: lib/zaq/contracts/record/provenance.ex and authorization.ex. Global provenance contract affects existing consumers outside Agent. Escalating security-contract change per WORKFLOW_AGENT before implementing it; .2 remains open and blocked. Proposed fix: sign the effective nested principal using the same precedence as Authorization, preserve flat-field behavior, add forgery regression/property coverage. Existing nested-principal tokens would need refetch/reissuance; never allow fallback verification that accepts an altered principal. No commits, pushes, sync or precommit.",
       "timestamp": "2026-10-29T13:48:44Z"
+    },
+    {
+      "text": "Handoff validation after removing provisional .2 implementation: mix q exit 0; focused native request-effect + existing materialization alias integration tests 2 passed; temporary exploit characterization 1 passed, confirming current vulnerability. Retained uncommitted files: test/support/request_effect_probe.ex and test/zaq/agent/request_effect_characterization_test.exs. .1 in_progress; .2 and subsequent tasks open/blocked. No child currently complete. Security-contract approval pending. No mix precommit, application commits, pushes, merges or bw sync run.",
+      "timestamp": "2026-10-29T13:50:14Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.1] Verify trusted Record and Jido request-effect integration",
   "type": "task",
-  "updated_at": "2026-10-29T13:48:44Z"
+  "updated_at": "2026-10-29T13:50:14Z"
 }
