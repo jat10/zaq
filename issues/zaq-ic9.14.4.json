@@ -48,11 +48,15 @@
     {
       "text": "Local fix validated green. JidoChatBridge gates attachment edits on native edit_attachments, forwards prepared files/transport to existing edit path, retains original receipt and reply callback ID. Local deps/jido_chat_mattermost extends existing adapter/EditOptions/ReqClient: reuse upload validation, patch original post via documented /posts/:id/patch, require uploaded file IDs in successful response, preserve text-only behavior and existing multi-file rejection. Initial broad run exposed four old-contract tests; explicit user approval obtained before adapting them. New callback test fixture used wrong atom-key metadata; corrected to existing string-key contract without weakening assertion. Final 244 ZAQ checks (4 properties,240 tests), 66 adapter checks, mix q and both Git diff checks pass. No outstanding test failures. No precommit. Dependency base93025d5205e070eebbecf89e539d32bdf1fde3ff remains uncommitted/unpinned in separate checkout; patch /tmp/zaq-ic9.14-mattermost-attachment-edit.patch captures tracked+new adapter files. Keep .4 open until dependency review/publication/pin is authorized and complete; no application/dependency commits, pushes, merge or bw sync performed.",
       "timestamp": "2026-10-29T22:51:19Z"
+    },
+    {
+      "text": "User authorized outgoing history attachment correction. Reuse assessment: extend normalized adapter receipt metadata with delivered media and provider author identity using existing normalize_file_media; bridge reuses ingress media_records then Record.attachment_metadata; Engine History.Delivery forwards confirmed descriptors, HistoryIngress and TranscriptHistory persist them on existing canonical answer/replicated capture. Do not rerun ingress or copy Disk source handles into shared history. No new Action: transport normalization/canonical capture already have existing domain APIs. Reuse existing in_progress .4, no new issue. Add regressions for descriptor persistence, no bytes/handles, same message, replay/conflict and canonical history hydration. Keep publication/pinning and human UX gates open.",
+      "timestamp": "2026-10-29T23:07:21Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T22:51:19Z"
+  "updated_at": "2026-10-29T23:07:21Z"
 }
