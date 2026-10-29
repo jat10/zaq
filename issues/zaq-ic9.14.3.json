@@ -23,11 +23,15 @@
     {
       "text": "Cleanup complete: Factory additions reduced from 176 to 25 lines; attachment-specific hooks delegated to AttachmentSelection.Runtime, no state initialized or worker-event filtering for disabled requests. Removed synthetic checkpoint/ID construction and terminal sequence rewriting; exact request/PID tagged final message is consumed by StreamEvents at termination using existing sink and sender ordering. Signed reducer tests now use valid provenance, distinguish providers/configs; unsigned identity fallback removed. New real disabled-tool regression retains native checkpoint tokens, two fresh requests, no selection state. Existing cancellation/replay/steering/privacy/delivery assertions preserved; native contiguous event sequences asserted. Focused 21 checks passed; broader 18-file regression 307 passed (6 doctests,11 properties,290 tests), seed592963; mix q and diff check passed. New unused-variable compile warning fixed before q/broader regression; only preexisting license_manager configuration warning remains. No precommit/commit/push/merge/sync. UX acceptance remains pending.",
       "timestamp": "2026-10-29T19:25:25Z"
+    },
+    {
+      "text": "User authorized patch-backed native Jido effect refactor. Reopened and started before edits. Verified baseline backups at /Users/jad/.codex/backups/zaq-native-effects-20261030-013009: zaq.patch includes 27 tracked/untracked changed files, mattermost.patch includes 4; both applied to clean base archives and compared byte-for-byte. Reuse assessment: extend existing AttachDocuments Action with native StateOp keyed mutations; preserve existing authorization, declaration-order selection, first-selected signed Record, exact replace/clear, replay-after-remove dedup, request/incarnation isolation, failure/cancel clearing, terminal private snapshot and trace redaction. No new Action/process/store. Scope Action/selection/lifecycle helpers and necessary tests/docs only; preserve removed Answering/Pipeline edits and known default-Pipeline red test. Rollback if native effects add complexity or require weaker behavior. Existing test representation changes require explicit approval before editing; experiment can use new tests outside repository first. No commit/push/sync/precommit.",
+      "timestamp": "2026-10-29T23:31:02Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.3] Integrate request-scoped selection lifecycle and stream transport",
   "type": "task",
-  "updated_at": "2026-10-29T23:30:12Z"
+  "updated_at": "2026-10-29T23:31:02Z"
 }
