@@ -29,11 +29,15 @@
     {
       "text": "User authorized extending shared provenance signing (2026-10-29: go ahead and extend it). Scope: authenticate the principal consumed by Record.Authorization, preserve existing flat principal behavior, add new forgery regression/property tests; existing nested-principal tokens require reissuance. Reuse assessment: extend existing Provenance canonical permission projection; Authorization remains authoritative for access decisions. No new Action or alternate authorization path. Continuing .1 before .2.",
       "timestamp": "2026-10-29T13:55:02Z"
+    },
+    {
+      "text": "Authorized provenance extension implemented: Authorization.principal/1 exposes the existing effective-principal normalization for reuse by Provenance; no access-decision semantics changed. Provenance retains provider/legacy projection and signs authorization_principal when effective identity differs, including unmatched nil, so nested/flat overrides cannot forge access. Existing standard flat principal claims stay identical. New property proves actual unauthorized-to-authorized nested forgery is rejected for channel/identifier, type/key and atom-key forms; override/invalid-map regression tests added. Existing Record tests initially exposed a projection shape compatibility concern, resolved in production code without changing existing assertions. Focused suite 51 passed (2 properties,49 tests); mix q passed. Native request-effect and alias integration remain passing. Discovery and authorized prerequisite are now satisfied.",
+      "timestamp": "2026-10-29T13:58:08Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.1] Verify trusted Record and Jido request-effect integration",
   "type": "task",
-  "updated_at": "2026-10-29T13:55:02Z"
+  "updated_at": "2026-10-29T13:58:08Z"
 }
