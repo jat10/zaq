@@ -3,12 +3,12 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-29T16:48:43Z",
-  "description": "User explicitly authorized removing the shared drain timeout override while preserving tests/assertions. Removed exactly 10 lines; file matches origin/main. Action reuse: not applicable — test setup rollback only. mix q passed; targeted suite: 7 passed; git diff --check passed. Follow-up: https://github.com/www-zaq-ai/zaq/issues/895. Reply: https://github.com/www-zaq-ai/zaq/pull/873#discussion_r4415298661. mix precommit result unavailable: Context Mode transport timed out after 300 seconds despite requested 900-second timeout; orphaned validation processes stopped. Final validation remains incomplete. No production changes or new property/E2E/coverage tests. Working-tree change remains uncommitted and unpushed.",
+  "description": "Authorized test setup rollback complete locally: removed exactly 10 shared drain-timeout override lines; file matches origin/main; all tests/assertions preserved. Action reuse: not applicable — no production operations changed. mix q passed, targeted suite 7 passed, git diff --check passed. Follow-up https://github.com/www-zaq-ai/zaq/issues/895; review reply https://github.com/www-zaq-ai/zaq/pull/873#discussion_r4415298661. Final mix precommit result unavailable: tool transport timed out after 300 seconds despite requested 900 seconds; process subsequently exited before cleanup, result not captured. Final validation incomplete. Working tree uncommitted/unpushed. No production changes or new coverage/E2E/property tests needed.",
   "id": "zaq-7t7",
   "labels": [],
   "priority": 2,
   "status": "in_progress",
   "title": "[#873] Remove shared nested-agent drain timeout override",
   "type": "task",
-  "updated_at": "2026-10-29T16:55:39Z"
+  "updated_at": "2026-10-29T16:55:55Z"
 }
