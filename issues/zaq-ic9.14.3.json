@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-ic9.14.2"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-ic9.14.4"
+  ],
   "created": "2026-10-29T13:32:52Z",
   "description": "Parent: zaq-ic9.14. Read the parent contract and inherited policies before work. This task stays blocked until its recorded prerequisite is complete.\n\nFunctional specifications covered with associated files to edit/add:\nWire trusted actual Jido request ID/runtime incarnation into selection effects and maintain one authoritative collection in execution state. Extend Factory/context only if discovery proves required; StreamEvents transports accepted changes/final snapshot. Serialize conflicting operations deterministically, deduplicate invocation replay, reject stale effects and clear failed/cancelled requests. Keep sensitive effects and Records outside public projections and persisted traces.\n\nTests to add before implementation:\nReal runtime integration/property tests for add A/add B/remove A across iterations, same-request steering, new/queued-request isolation, runtime replacement, replayed add after remove, concurrent conflicts, stale events, terminal freezing, cancellation/failure, and trace/history/public projection privacy.\n\nBranches/paths validated:\nCover success, invalid input/authorization, lifecycle and propagation paths relevant to this step; preserve the parent's add/remove/replace, atomicity, request isolation and privacy invariants.\n\nMocking plan:\nKeep internal ZAQ and Jido boundaries real where supported; mock only external model/provider/network edges. No shared global test configuration. Discovery must identify any hard constraint before test-only abstractions are added.\n\nDocumentations to update for both code and docs/ related content:\nRecord evidence, decisions and validation in this issue. Update affected module docs and docs/services/agent.md with implementation; final documentation consistency is checked by the validation task. Do not describe proposed behavior as shipped.\n\nAction reuse assessment:\nExtend supported Jido lifecycle and StreamEvents integration; reuse native context/effects rather than inventing a second catalog or global state. Private lifecycle helpers are local-only because they enforce execution ownership rather than expose independent business operations. No model-controlled request IDs.\n\nGates:\nFollow docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/exec-plans/PLAN_STRATEGY.md and docs/testing-approach.md. Discovery must resolve unknown contracts and finalize this step before coding. Existing test behavior changes require explicit human approval. No commit/push/merge implied.",
   "id": "zaq-ic9.14.3",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-ic9.14.3] Integrate request-scoped selection lifecycle and stream transport",
   "type": "task",
-  "updated_at": "2026-10-29T13:32:54Z"
+  "updated_at": "2026-10-29T13:32:57Z"
 }
