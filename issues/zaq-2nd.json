@@ -3,12 +3,12 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-29T16:35:15Z",
-  "description": "Created https://github.com/www-zaq-ai/zaq/issues/894 using gh --body-file and verified its full body matches the retired audit. Removed docs/operations/test-warning-audit.md and redirected docs/README.md to the issue. Action reuse: not applicable; documentation relocation only. mix q and git diff --check passed. Coverage and E2E not applicable; final precommit running.",
+  "description": "Completed documentation relocation: issue https://github.com/www-zaq-ai/zaq/issues/894 preserves the full audit, verified against the original. Removed the file and redirected the docs index. Committed b7faf23b3 and pushed origin test/remove-warnings at user request; replied to the review thread on PR #874. mix q, git diff --check, commit hooks and push formatting check passed. Earlier mix precommit invocation was interrupted while tests were running; no final pass claimed. Action reuse, E2E and coverage not applicable for documentation relocation.",
   "id": "zaq-2nd",
   "labels": [],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Move test warning audit from documentation to GitHub",
   "type": "task",
-  "updated_at": "2026-10-29T16:36:38Z"
+  "updated_at": "2026-10-29T16:41:31Z"
 }
