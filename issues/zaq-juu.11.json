@@ -7,9 +7,15 @@
   "id": "zaq-juu.11",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Implemented common DeliveryFiles preparation and handle_send_with_adapter flow for text/files; removed separate send_files_with_adapter. send_mode retains required create behavior for attachments. Success performs no status edit. Failure routes answer plus safe reason through same text handler, preserving original error and suppressing on_reply callbacks for fallback notices. Existing status edit or single text-only fallback; no upload retry. Added failure-notice exception/exit tests and answer-preservation property (including empty body). User explicitly approved updated existing expectations. mix q passed after final test addition. Broad bridge/confirmation/Telegram group: 230 passed (2 properties, 228 tests), with asynchronous Agent/Sandbox teardown error logs. Final delivery plus disk/email integration group: 31 passed (2 properties, 29 tests). git diff --check passed. Documented temporary upstream contract debt zaq-2v9 in code/service docs/debt tracker. Production remains one existing bridge module for this issue. No new feature E2E authored; existing integrations executed. PR-wide coverage/precommit remains in zaq-juu.8 after remaining review fixes. Changes uncommitted.",
+      "timestamp": "2026-10-29T10:02:39Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[PR #876] Unify outgoing chat delivery and preserve answers on file failure",
   "type": "task",
-  "updated_at": "2026-10-29T09:59:01Z"
+  "updated_at": "2026-10-29T10:02:39Z"
 }
