@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-29T16:48:43Z",
+  "description": "Remove only the newly introduced shared setup drain-timeout application environment override, as explicitly requested by the user and reviewer. Preserve all tests and assertions. Create a GitHub follow-up for scoped provider propagation and reply to the review thread. Action reuse: not applicable — test setup rollback only; no executable production operation changes. Validate with mix q and the isolated integration module.",
+  "id": "zaq-7t7",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[#873] Remove shared nested-agent drain timeout override",
+  "type": "task",
+  "updated_at": "2026-10-29T16:48:43Z"
+}
