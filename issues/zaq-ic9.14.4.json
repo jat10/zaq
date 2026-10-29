@@ -9,7 +9,7 @@
   "parent": "zaq-ic9.14",
   "priority": 2,
   "status": "open",
-  "title": "Preserve final attachments through Executor and Pipeline",
+  "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T13:32:55Z"
+  "updated_at": "2026-10-29T13:32:56Z"
 }
