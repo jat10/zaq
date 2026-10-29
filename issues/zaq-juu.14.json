@@ -7,9 +7,15 @@
   "id": "zaq-juu.14",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Consolidated file_post_body/3 and build_post_body/2 into build_post_body/3. Single binary payload construction; omit files key for empty collection as before; retain nonbinary passthrough only without explicit files and invalid_postable otherwise. No public API, dependencies, test expectations or documentation contracts changed. mix q passed; focused delivery validation result recorded in session. git diff --check passed. Changes remain uncommitted; final PR gate remains deferred until remaining review work completes.",
+      "timestamp": "2026-10-29T11:54:02Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[PR #876] Consolidate posting payload construction",
   "type": "task",
-  "updated_at": "2026-10-29T11:53:02Z"
+  "updated_at": "2026-10-29T11:54:02Z"
 }
