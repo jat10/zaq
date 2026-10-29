@@ -7,9 +7,15 @@
   "id": "zaq-juu.10",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Implemented content-only clearing in DeliveryConfirmation, preserving complete Records including handles. Updated approved property contract (arbitrary binary content, lazy and materialized Records, original outgoing unchanged), and same attachment expectation in real chat delivery lifecycle test; all other assertions preserved. Updated Channels contract with explicit limitation: Engine history capture still ignores these Records; no stored preview support added. Validation: mix q passed, 25 focused checks passed (2 properties, 23 tests), git diff --check passed. No new E2E required for this internal projection; existing real transport lifecycle regression passed. PR-wide final coverage/precommit remains in zaq-juu.8 after remaining review fixes. Changes remain uncommitted for review.",
+      "timestamp": "2026-10-29T09:28:56Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[PR #876] Preserve content-free attachment Records in delivery confirmation",
   "type": "task",
-  "updated_at": "2026-10-29T09:27:26Z"
+  "updated_at": "2026-10-29T09:28:56Z"
 }
