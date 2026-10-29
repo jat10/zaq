@@ -56,11 +56,15 @@
     {
       "text": "Applied outgoing Mattermost history attachment correction uncommitted. Adapter exposes normalized uploaded media and confirmed post author; bridge reuses ingress media_records and Record.attachment_metadata; Engine Delivery forwards only receipt descriptors; canonical answer and replicated capture persist sanitized attachments, fingerprint detects conflicting replay. No incoming-handler replay, Disk handle persistence, migration, Factory or UI changes. New tests cover real create/edit receipts, content-free descriptors, canonical hydration, Engine Delivery persistence on existing assistant, idempotent replay and conflicting file rejection. Initial new-code routing Access and test constructor errors fixed; mix q alias fixed. Broader run 273/274 passed with existing HTTP fixture eaddrinuse; isolated failing test then passed. Adapter suite 66 passed; final mix q and both diff checks passed. Logs /tmp/zaq-outgoing-history-{regression,port-recheck,adapter,q}.log. Refreshed dependency patch /tmp/zaq-ic9.14-mattermost-attachment-edit.patch; dev/test adapter compiled. No existing test behaviors changed for this correction. No commits, pushes, sync or precommit. .4 stays open pending dependency publication/pin; .7 human UX acceptance, .8 E2E and .6 review/coverage remain pending. Historical messages with empty attachments were not backfilled; manual review requires a new send after server reload.",
       "timestamp": "2026-10-29T23:15:03Z"
+    },
+    {
+      "text": "User reports Mattermost manual test passes and will check Telegram. Explicitly requested removing Answering and Pipeline changes first. Removed only epic additions in lib/zaq/agent/answering.ex and pipeline.ex; both now match HEAD exactly. Configured Executor and channel/history changes preserved. Local-only rollback, no new operation or Action. Focused Answering/Pipeline/attachment delivery suite: 41/42 passed; default Pipeline attachment selection test at attachment_selection_delivery_test.exs:87 fails as expected because removed behavior produces no attachments. Test kept unchanged under existing-test approval gate; do not claim green or close issue. mix q and git diff --check passed. Logs /tmp/zaq-remove-default-attachments-{tests,q}.log. No commits, sync or precommit. Mattermost success is recorded, not treated as acceptance of email/Telegram or full .7 gate.",
+      "timestamp": "2026-10-29T23:18:54Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T23:15:03Z"
+  "updated_at": "2026-10-29T23:18:54Z"
 }
