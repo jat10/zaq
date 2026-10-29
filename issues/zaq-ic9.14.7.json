@@ -19,11 +19,15 @@
     {
       "text": "Human acceptance remains withheld pending explanation of Factory complexity. Read-only module-context review: Factory is the native Jido callback adapter; Action validates Records, AttachmentSelection owns pure mutation/replay, Jido agent.state owns request-local selection, StreamEvents observes final snapshot, Channels owns delivery. Factory gained roughly 176 lines because parent-owned serial mutation and redaction must precede Jido native trace/stream/thread capture (pinned strategy processes those before applying generic effects). Maintainability concerns: feature-specific event dispatch/redaction/transport live inline beside generic runtime assembly; selection tracking/filtering currently touches requests with the tool disabled; synthetic checkpoint plus terminal sequence rewriting couples the feature to native stream mechanics. Smallest proposed simplification is thin Factory callback delegation to a cohesive attachment runtime adapter, retaining the existing pure reducer and owning Jido process; narrow unrelated-runtime effects and separately reassess snapshot transport rather than merely moving its complexity. Preserve native request/PID binding, deterministic order/replay, freeze/discard, privacy, busy/cancel acknowledgement handling and final delivery. Existing runtime/stream/delivery/property tests are the regression surface. No production code or tests modified during this inspection; .8 stays blocked. Refactor implementation is not being inferred from this explanatory question.",
       "timestamp": "2026-10-29T16:01:30Z"
+    },
+    {
+      "text": "Read-only epic minimality review requests changes: all 21 changed files inventoried (412 production additions, 1221 tests/support, 53 docs). Four medium findings: disabled-tool requests unnecessarily enter attachment event filtering; synthetic checkpoint/direct sink/terminal seq rewriting couples selection to native protocol; Factory owns inline feature policy beyond thin hooks; signed-identity test uses invalid signatures and only verifies fallback identity. Required Action/registration/propagation and approved provenance fix remain justified. Report /tmp/zaq-ic9.14-minimality-review.txt. No source/tests changed or validation rerun. UX acceptance still pending; no issue closed.",
+      "timestamp": "2026-10-29T17:08:10Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.7] Approve completed Mattermost and email attachment UX for E2E",
   "type": "task",
-  "updated_at": "2026-10-29T16:01:30Z"
+  "updated_at": "2026-10-29T17:08:10Z"
 }
