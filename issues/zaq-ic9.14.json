@@ -9,7 +9,7 @@
   "parent": "zaq-ic9",
   "priority": 2,
   "status": "open",
-  "title": "Implement request-scoped attach_documents selection",
+  "title": "[zaq-ic9.14] Implement request-scoped attach_documents selection",
   "type": "epic",
-  "updated_at": "2026-10-29T13:31:45Z"
+  "updated_at": "2026-10-29T13:31:46Z"
 }
