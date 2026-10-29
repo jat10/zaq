@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-29T17:00:37Z",
+  "description": "Rebase onto freshly fetched upstream/main. Inspect conflicting commits, base and both sides before resolution; preserve test assertions and production contracts. User authorized rebase and conflict resolution. Action reuse assessment pending conflict inspection; no new operations intended. Validate affected tests and repository gates.",
+  "id": "zaq-gc3",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[#873] Rebase runtime test improvements onto main",
+  "type": "task",
+  "updated_at": "2026-10-29T17:00:37Z"
+}
