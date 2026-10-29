@@ -7,9 +7,15 @@
   "id": "zaq-juu.16",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Implemented locally: Outgoing.from_pipeline_result/2 copies explicit attachments unchanged and defaults omission to []; removed redundant builder validation and error return. Updated approved test contract and service docs. Added pipeline-to-Mattermost delivery regression proving malformed attachments preserve answer with failure notice and no upload. Validation: mix q passed; focused outgoing, delivery and confirmation suite passed (38 total: 5 properties, 33 tests); git diff --check passed. Changes remain uncommitted; final PR validation remains tracked separately.",
+      "timestamp": "2026-10-29T12:29:14Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[PR #876] Preserve outgoing answers without redundant attachment validation",
   "type": "task",
-  "updated_at": "2026-10-29T12:24:51Z"
+  "updated_at": "2026-10-29T12:29:14Z"
 }
