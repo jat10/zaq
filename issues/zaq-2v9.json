@@ -6,9 +6,15 @@
   "description": "Follow-up from PR #876 review: jido_chat should define shared delivery error categories, failure stage and delivery certainty; Mattermost/Discord/Telegram adapters translate SDK/provider errors. Current successes normalize to Response while errors mix atoms, HTTP tuples and SDK structures. Preserve diagnostics separately from safe user-facing explanations. Replace ZAQ temporary error-shape matching after adopting upstream contract. Do not infer provider limits from Jido common multiple-attachment rejection. Requires work in upstream libraries; not prerequisite to current minimal user-facing fallback.",
   "id": "zaq-2v9",
   "labels": [],
+  "comments": [
+    {
+      "text": "Created GitHub issue https://github.com/www-zaq-ai/zaq/issues/893 using gh at user request. Removed the added debt-tracker entry and linked the Channels guide to the issue. Documentation-only; Action reuse not applicable. git diff --check passed.",
+      "timestamp": "2026-10-29T12:45:51Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[jido_chat] Standardize adapter delivery failure contract",
   "type": "task",
-  "updated_at": "2026-10-29T09:57:45Z"
+  "updated_at": "2026-10-29T12:45:51Z"
 }
