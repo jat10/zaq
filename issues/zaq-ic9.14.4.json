@@ -32,11 +32,15 @@
     {
       "text": "Added new regression only in test/zaq/channels/jido_chat_delivery_test.exs:149. Real public upsert_message creates streamed-post, then send_reply finalizes same caption + attachment with metadata.message_id. HTTP-only stub confirms upload and captures an unexpected second POST /api/v4/posts with caption/file_ids/root_id. Focused run exit2, 1 expected failing test, 25 excluded, seed145901; fails specifically on refute_received second post, not setup. Remaining assertions require original post update with file_ids and original confirmed receipt. Log /tmp/zaq-ic9-14-duplicate-reply-red.log. Production code and existing tests untouched. Deliberately stopping red per user; keep issue and UX gate open. Existing separate-post expectation still needs explicit approval before changing it during future fix.",
       "timestamp": "2026-10-29T22:41:03Z"
+    },
+    {
+      "text": "User authorized production fix and explicitly approved replacing the existing separate-placeholder/final-post expectation with one updated existing post carrying answer+attachment (async question reply 2026-10-30). Reusing reopened in_progress issue. Inspecting adapter transport support before implementation; no changes to unrelated existing test contracts authorized.",
+      "timestamp": "2026-10-29T22:42:46Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T22:41:03Z"
+  "updated_at": "2026-10-29T22:42:46Z"
 }
