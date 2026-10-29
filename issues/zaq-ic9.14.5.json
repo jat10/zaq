@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-ic9.14.4"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-ic9.14",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-ic9.14.5] Validate attachment selection and document the implemented contract",
   "type": "task",
-  "updated_at": "2026-10-29T13:36:05Z"
+  "updated_at": "2026-10-29T14:49:45Z"
 }
