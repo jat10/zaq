@@ -11,9 +11,15 @@
   "id": "zaq-ic9.14.3",
   "labels": [],
   "parent": "zaq-ic9.14",
+  "comments": [
+    {
+      "text": "Implemented one authoritative selection in Jido Agent state, scoped by native super-generated request ID and owning runtime PID. Native effects bind invocation ID in Factory.after_tool_call; ordered completions fold add/remove/replace, deduplicate replay after removal, fence request/incarnation/sequence, freeze completion and discard failures/cancellation. Cancelled worker terminal acknowledgement (including racing completion) still reaches native lifecycle cleanup while selection stays failed. Factory strips sensitive selection args/results/effects and checkpoint tokens before native traces/thread projection; direct private checkpoint snapshot reaches only matching StreamEvents request/PID and only successful completed results expose files. New model-edge scripts execute real Factory/Jido/Action; tests cover B-only, parallel conflicts, replace/clear, active steering, busy request isolation, real provider failure, cancellation/fresh requests, replay and foreign/stale/post-terminal events, privacy and incomplete/error stream snapshots. Focused regression suite 108 passed; latest additional focused suite 10 passed (1 property,9 tests); mix q passed. Reuse assessment unchanged: local-only pure transition helper for runtime ownership, existing native hooks/transport and no global catalog or delivery implementation.",
+      "timestamp": "2026-10-29T14:40:54Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.3] Integrate request-scoped selection lifecycle and stream transport",
   "type": "task",
-  "updated_at": "2026-10-29T14:26:20Z"
+  "updated_at": "2026-10-29T14:40:54Z"
 }
