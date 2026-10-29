@@ -1,0 +1,66 @@
+zaq-ic9.14 cleanup review — 2026-10-29
+
+This supersedes the implementation fingerprint and runtime transport description
+in zaq-ic9.14-review.txt. It does not record human UX acceptance.
+Base: ee510663c. All application changes remain uncommitted.
+Current 22-file fingerprint:
+e4a3eb6a6d0b242c8ef4802dc916cc5ab4c363a563286d2e9c3da8a0c85051fc
+
+Cleanup changes (8 files):
+lib/zaq/agent/factory.ex — thin native callbacks; additions reduced 176 -> 25.
+lib/zaq/agent/attachment_selection/runtime.ex — cohesive native adapter, enabled
+requests only, owns invocation binding, redaction and lifecycle integration.
+lib/zaq/agent/attachment_selection.ex — removed private? flag and unsigned fallback.
+lib/zaq/agent/stream_events.ex — consumes exact request/PID private message at
+termination; exposes files only on success. No synthetic stream events or rewritten
+native sequences. The stream consumer runs in the existing request-sink process,
+as required by Jido's mailbox-backed stream. Snapshots are not replayable events.
+test/zaq/agent/attachment_selection_test.exs — genuine signed fixtures, distinct
+providers/configurations, fresh projections of one identity deduplicate.
+test/zaq/agent/attachment_selection_runtime_test.exs — retains lifecycle/privacy
+assertions, verifies native contiguous sequences and disabled-tool requests.
+test/zaq/agent/attachment_selection_stream_test.exs — matching message consumption,
+foreign request/PID exclusion, incomplete result withholding, failure cleanup.
+docs/services/agent.md — updated owner and private-message handoff contract.
+
+This is primarily an ownership and coupling cleanup, not a claim that total source
+lines decreased: the dedicated adapter adds a file and explicit documentation.
+It removes unrelated event filtering, synthetic checkpoint construction, native
+sequence mutation, an unnecessary state flag and unsigned fallback behavior.
+No delivery implementation, extra process/state store, generic framework or E2E
+journey was added. Shared provenance security changes remain intact.
+
+Validation:
+- Initial focused suite: 21 passed, including two properties.
+- Broader 18-file regression suite: 307 passed (6 doctests, 11 properties,
+  290 tests), seed 592963, 56.2 seconds.
+- mix q: passed. git diff --check: passed.
+- Logs: /tmp/zaq-ic9-14-cleanup-tests.log,
+  /tmp/zaq-ic9-14-cleanup-regression.log, /tmp/zaq-ic9-14-cleanup-q.log.
+- An unused-variable warning in the new adapter was corrected before q and the
+  broader suite. Existing license_manager configuration warning remains.
+- No consolidated mix precommit run, application commit, push, merge or bw sync.
+
+Code review steps:
+1. Inspect Factory's four thin native hooks and Runtime.start/accept_event.
+2. Confirm disabled-tool requests retain native checkpoint tokens/no selection.
+3. Inspect Runtime.send_snapshot/take_snapshot and StreamEvents terminal handling:
+   same-runtime send precedes native completion; exact request/PID match; failures
+   discard; no read of later mutable runtime state and no synthetic event.
+4. Inspect signed identity test: all signatures verify, fresh projection collapses,
+   different provider/configuration remains separate.
+
+UX acceptance steps (still required before .8):
+Use isolated configured Mattermost/email agents with document retrieval and
+message.attach_documents enabled. Ask to load/select A, load/add B, remove A,
+then answer. Confirm only B is delivered with the answer, correct filename/content,
+correct Mattermost channel/thread, and correct email recipient/body. Ask to clear
+selection: text only. Cancel after selection and start fresh: no carried-over file.
+Check public steps and stored traces contain no selected Records/private handles.
+Local tests exercise real runtime/Action/Storage and channel protocol/MIME paths;
+they do not replace the required deployed channel E2E journeys.
+
+Tracking: .3 reopened/started and reclosed after cleanup validation; .5 reopened
+for refreshed documentation/evidence. .7 stays open awaiting human acceptance;
+.8 and .6 remain blocked. Final precommit remains deferred until E2E and coverage
+are complete. No final epic completion claimed.
