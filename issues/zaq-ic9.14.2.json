@@ -9,7 +9,7 @@
   "parent": "zaq-ic9.14",
   "priority": 2,
   "status": "open",
-  "title": "Implement attach_documents Action and tool registration",
+  "title": "[zaq-ic9.14.2] Implement attach_documents Action and tool registration",
   "type": "task",
-  "updated_at": "2026-10-29T13:32:49Z"
+  "updated_at": "2026-10-29T13:32:50Z"
 }
