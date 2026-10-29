@@ -7,9 +7,15 @@
   "id": "zaq-ic9.14",
   "labels": [],
   "parent": "zaq-ic9",
+  "comments": [
+    {
+      "text": "Implementation order (linear DAG; only discovery is initially unblocked):\n\n```mermaid\ngraph LR\n  zaq-ic9_14_1 --\u003e zaq-ic9_14_2\n  zaq-ic9_14_2 --\u003e zaq-ic9_14_3\n  zaq-ic9_14_3 --\u003e zaq-ic9_14_4\n  zaq-ic9_14_4 --\u003e zaq-ic9_14_5\n  zaq-ic9_14_5 --\u003e zaq-ic9_14_6\n```\n\nChild issues: zaq-ic9.14.1 — Verify trusted Record and Jido request-effect integration; zaq-ic9.14.2 — Implement attach_documents Action and tool registration; zaq-ic9.14.3 — Integrate request-scoped selection lifecycle and stream transport; zaq-ic9.14.4 — Preserve final attachments through Executor and Pipeline; zaq-ic9.14.5 — Validate attachment selection and document the implemented contract; zaq-ic9.14.6 — Complete post-review attachment selection coverage handoff.",
+      "timestamp": "2026-10-29T13:33:12Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-ic9.14] Implement request-scoped attach_documents selection",
   "type": "epic",
-  "updated_at": "2026-10-29T13:31:46Z"
+  "updated_at": "2026-10-29T13:33:12Z"
 }
