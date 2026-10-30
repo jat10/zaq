@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [
     "zaq-aa6.2"
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-aa6",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-aa6.1] Approve privacy contract and existing-test changes",
   "type": "task",
-  "updated_at": "2026-10-30T22:07:28Z"
+  "updated_at": "2026-10-30T22:08:29Z"
 }
