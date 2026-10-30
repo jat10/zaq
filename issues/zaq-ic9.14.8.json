@@ -19,11 +19,15 @@
     {
       "text": "Jad explicitly accepts current Mattermost/email UX and requests real-path stubbed LLM tool-turn coverage. .7 closed with acceptance evidence; .8 started for authorized test work, remains incomplete while .4 and live-service requirements remain. Plan: new channel attachment journey integration tests reuse MattermostHistoryFixture ingress/HTTP, EmailBridge real IMAP normalization/listener ingress, FileDeliverySmtpStub MIME boundary, IntegrationAgent, existing LLM SSE builders, real GetDocument and AttachDocuments. Extend external model fixture with generic tool calls and response-dependent script steps, no internal Agent mocks or prebuilt Outgoing. Preserve all existing tests. Default Pipeline rollback blocker explicitly pending user direction. No production credentials/messages, new service setup or dependency publication authorized.",
       "timestamp": "2026-10-30T10:07:41Z"
+    },
+    {
+      "text": "User rejects Application.put_env in new tests and directs Zaq.Config. Isolation audit: existing production registry already has real Mattermost/email/Disk adapters; override was unnecessary. Removed entire environment mutation/restoration setup instead of adding a config abstraction. New journeys use production dependency configuration, per-test DB configs/ports/resources, real GetDocument and AttachDocuments with transient aliases returned through actual LLM tool results. Both ingress-to-delivery journeys and approved legacy-Pipeline contract now pass (7 tests). mix q initially flagged new LLM fixture nested conditional; extracted resolve_step heads, revalidation pending. .8 remains open for remaining scenario matrix and live-service evidence.",
+      "timestamp": "2026-10-30T10:15:26Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.8] Expand Mattermost and email Agent-turn and full E2E coverage",
   "type": "task",
-  "updated_at": "2026-10-30T10:10:59Z"
+  "updated_at": "2026-10-30T10:15:26Z"
 }
