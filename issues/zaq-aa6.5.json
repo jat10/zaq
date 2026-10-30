@@ -11,9 +11,15 @@
   "id": "zaq-aa6.5",
   "labels": [],
   "parent": "zaq-aa6",
+  "comments": [
+    {
+      "text": "Implementation and regression validation complete for review; human implementation-review approval remains pending, so this child stays in_progress and zaq-aa6.6 stays blocked.\n\nChanges:\n- AttachDocuments returns validated {operation, records}; native pending-request context replaces custom handler-state requirement. Existing GetDocument/Jido.Exec/Record read authorization and explicit bypass remain authoritative.\n- OpaqueAliases.expand_tool_output reuses schema traversal/scoped store. Executor passes canonical server_id scope. StreamEvents validates/expands output before JSON trace serialization and applies pure selection rules after invocation duplicate suppression. Filtering uses actual native handle identity when supplied, preserving legacy handle-free streams.\n- Successful terminal results alone expose files; failure/cancel/incomplete/alias-resolution errors expose none. Existing declaration order, steering, parallel mutations and next-request isolation are preserved.\n- Removed RequestEffects (244 production lines), its Factory hooks and mailbox snapshots. Native StateOp characterization retained in native_tool_effect_test.exs. Tests now check observable selection/delivery and approved private trace/public projection contract.\n- Updated docs/services/agent.md and docs/e2e-testing.md. Public history/tool-step tests still exclude Records/IDs/bytes/handles; authorized private traces follow ordinary document-tool handling.\n\nValidation on the final working tree:\n- mix q passed (formatting, event hooks, strict Credo, compilation and docs); /tmp/zaq-aa6-q.log.\n- 227 checks passed, 15 properties and 212 tests, seed143679; /tmp/zaq-aa6-regressions.log. Included Agent selection/Action/alias/stream tests, native tool effects, media integration, tool steps, request inspection, all18 existing Mattermost/email ingress journeys, transport/confirmation tests and execution-history/reservation regressions.\n- SMTP validation used a disposable BEAM VM with current-host -\u003e127.0.0.1 mapping via inet_db and file lookup to avoid the known local FQDN-resolution stall. No application env override, repository/machine configuration edit or fixture assertion relaxation. Separate SMTP transport test file also passed3/3 under this resolver setup.\n- git diff --check passed. Production diff reviewed for operation reuse, authorization, alias lifetime/error handling, event ordering, public projection safety and unintended scope.\n\nPer docs/WORKFLOW_AGENT.md, reserve coverage-upper and final mix precommit (900000ms timeout) for zaq-aa6.6 after implementation review approval. No final human approval requested yet. No application commit, push, GitHub comment or bw sync performed.",
+      "timestamp": "2026-10-30T22:19:47Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-aa6.5] Validate channel journeys, update documentation and obtain review",
   "type": "task",
-  "updated_at": "2026-10-30T22:16:10Z"
+  "updated_at": "2026-10-30T22:19:47Z"
 }
