@@ -9,7 +9,7 @@
   "parent": "zaq-aa6",
   "priority": 2,
   "status": "open",
-  "title": "Move attachment accumulation into StreamEvents",
+  "title": "[zaq-aa6.3] Move attachment accumulation into StreamEvents",
   "type": "task",
-  "updated_at": "2026-10-30T22:04:25Z"
+  "updated_at": "2026-10-30T22:07:23Z"
 }
