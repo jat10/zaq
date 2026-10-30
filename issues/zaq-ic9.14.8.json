@@ -35,11 +35,15 @@
     {
       "text": "Scope amendment explicitly authorized by Jad in chat: no isolated live Mattermost/email services exist; use the stub boundaries and remove the requirement to run against deployed services. Real ingress/Engine/Agent/Jido/GetDocument/AttachDocuments/Streams/Channels execution with external protocol/LLM stubs is the accepted .8 delivery evidence. Remaining recorded scenario matrix still being completed; no production messages or live-service configuration required. This supersedes the deployed-service-only closure wording in this issue and parent epic.",
       "timestamp": "2026-10-30T12:09:20Z"
+    },
+    {
+      "text": "Completed accepted stubbed scope (Jad explicitly removed live-service prerequisite in this chat). Expanded test/zaq/channels/attachment_agent_journey_test.exs from 8 to 18 real ingress/Engine/configured Agent/Jido/GetDocument/AttachDocuments/Channels journeys. Both Mattermost and email cover A/B add-remove, replace/clear, repeated calls, no early/duplicate file delivery, next-request isolation, failure after selection, cancellation with retired runtime, native steering/removal in the same request, permission revocation before materialization, visible-step/persisted-history privacy. External collaborators only: scripted LLM, Mattermost HTTP and SMTP MIME; real ACL grants and revocation. New assertions verify error/no-file outcomes, distinct next request IDs, empty next selection, native input_injected evidence, exact recipient/thread/bytes/name/type, and sanitized Mattermost history descriptors. Existing lower-level replay/fencing tests included in regression run. Added query/failed-dispatch observation and writer monitors to await final delivery/history completion before sandbox rollback. Corrected local fixture to assign distinct Mattermost post IDs for separate replies and one SMTP connection for revoked-delivery follow-up. Existing behavioral expectations preserved; no production code changes. docs/e2e-testing.md documents command, boundaries and prerequisites. Initial new assertions were corrected for runtime retirement, unpersisted failed answer reservations, asynchronous final edits and gen_smtp default text/plain MIME; all now pass. Regression suite: 96 passed (5 properties,91 tests), /tmp/zaq-ic9-14-8-regression.log. After final SMTP cleanup: 18/18 journeys passed, seed962525, /tmp/zaq-ic9-14-8-final-journeys.log, no background cleanup errors. Final mix q and git diff --check passed (/tmp/zaq-ic9-14-8-q.log). No mix precommit repeat, no ZAQ commit/push or bw sync. .6 post-review coverage and epic remain open.",
+      "timestamp": "2026-10-30T12:25:29Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.8] Expand Mattermost and email Agent-turn and full E2E coverage",
   "type": "task",
-  "updated_at": "2026-10-30T12:22:30Z"
+  "updated_at": "2026-10-30T12:25:29Z"
 }
