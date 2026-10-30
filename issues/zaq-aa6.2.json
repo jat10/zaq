@@ -11,9 +11,15 @@
   "id": "zaq-aa6.2",
   "labels": [],
   "parent": "zaq-aa6",
+  "comments": [
+    {
+      "text": "Action now returns the validated operation and authorized Records, with native pending-request context checks. Added schema-based OpaqueAliases output expansion; tests cover missing, foreign and retired scopes. Initial TDD failures confirmed the old effect contract; round-trip test now checks signed identity/provenance rather than incidental Record attribute representation. Atomic stream switch follows; no intermediate commit will be made.",
+      "timestamp": "2026-10-30T22:11:21Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-aa6.2] Prepare validated attachment instruction results and alias expansion",
   "type": "task",
-  "updated_at": "2026-10-30T22:10:00Z"
+  "updated_at": "2026-10-30T22:11:21Z"
 }
