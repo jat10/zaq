@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-aa6.4"
+  ],
   "blocks": [],
   "created": "2026-10-30T22:07:06Z",
   "description": "Specification: adapt existing Mattermost/email journeys and selection tests to assert final selection and delivery rather than removed Jido-state/mailbox internals. Retain exact bytes, MIME/name, recipient/thread IDs, source preservation, no early/duplicate delivery, revocation before delivery, failure/cancellation, steering and request isolation. Preserve public ToolStep restrictions; assert the approved private trace contract.\nFiles: test/zaq/agent/attachment_selection_test.exs, tools/data_source/attach_documents_test.exs, stream_events tests, test/zaq/channels/attachment_agent_journey_test.exs and affected support fixtures; docs/services/agent.md, docs/e2e-testing.md and relevant moduledocs.\nTests before implementation: map every removed internal assertion to an existing observable invariant or an explicitly approved policy change; add missing public-projection and alias-lifetime regression cases before final cleanup.\nAction reuse: existing real ingress/Engine/Factory/GetDocument/StreamEvents/Outgoing/Materialization/Channels paths; reuse approved external LLM/Mattermost/SMTP fixtures. No new operational logic or test-only production seams.\nMocking: external protocol collaborators only; per-test resources, no async global Application env mutation.\nE2E: preserve accepted existing scenarios; no new feature UX or substantially rewritten E2E authorized by this tracking request. If scope expands, obtain the handbook's UX/UI approval before authoring that expansion.\nValidation: isolated affected suites plus mix q per docs/WORKFLOW_AGENT.md. Distinguish observed SMTP hostname-resolution environment failures from refactor regressions; do not mask them with longer timeouts.\nAcceptance: behavior matrix passes, documentation matches implementation, reviewer ownership/privacy concern is resolved and review approval is recorded before coverage.\n\nRequired policies: docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/services/agent.md, docs/testing-approach.md; documentation edits additionally follow docs/documentation.md. No implementation authorized yet.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-aa6.5] Validate channel journeys, update documentation and obtain review",
   "type": "task",
-  "updated_at": "2026-10-30T22:07:25Z"
+  "updated_at": "2026-10-30T22:07:31Z"
 }
