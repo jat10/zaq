@@ -60,11 +60,15 @@
     {
       "text": "User reports Mattermost manual test passes and will check Telegram. Explicitly requested removing Answering and Pipeline changes first. Removed only epic additions in lib/zaq/agent/answering.ex and pipeline.ex; both now match HEAD exactly. Configured Executor and channel/history changes preserved. Local-only rollback, no new operation or Action. Focused Answering/Pipeline/attachment delivery suite: 41/42 passed; default Pipeline attachment selection test at attachment_selection_delivery_test.exs:87 fails as expected because removed behavior produces no attachments. Test kept unchanged under existing-test approval gate; do not claim green or close issue. mix q and git diff --check passed. Logs /tmp/zaq-remove-default-attachments-{tests,q}.log. No commits, sync or precommit. Mattermost success is recorded, not treated as acceptance of email/Telegram or full .7 gate.",
       "timestamp": "2026-10-29T23:18:54Z"
+    },
+    {
+      "text": "User authorized steps 1 and 2: remove test-driven edit transport forwarding, consolidate receipt handling while preserving common send flow and post.id; run focused delivery/history tests and mix q. Reuse adapter edit and incoming-media conversion, local-only plumbing, no new Action. Preserve failure, timeout, no-retry and history test contracts. No commit or precommit; issue stays open for upstream adapter publication/pin.",
+      "timestamp": "2026-10-30T09:45:10Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-29T23:18:54Z"
+  "updated_at": "2026-10-30T09:45:10Z"
 }
