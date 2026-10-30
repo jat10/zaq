@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-aa6.1"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-aa6.3"
+  ],
   "created": "2026-10-30T22:04:23Z",
   "description": "Specification: extend AttachDocuments output schema to carry the validated operation and authorized Records; retain add/remove/replace ordering and signed-identity deduplication in a small pure reducer. Preserve batch atomicity, provenance/current source read checks, nil-identity denial and literal trusted bypass. Plan trusted native request checks without introducing a replacement request registry. Keep existing delivery behavior functional until the atomic consumer switch in the next child; do not leave an intermediate revision that silently drops files.\nFiles: lib/zaq/agent/tools/data_source/attach_documents.ex; lib/zaq/agent/opaque_aliases.ex if a schema-based output-expansion helper is needed; corresponding tests. Keep GetDocument and registry key unchanged.\nTests before implementation: operation/Record round trips, real GetDocument authorization, invalid or forged batch, absent actor/context, explicit bypass, same-identity refresh, malformed/missing/foreign aliases. Verify output-schema conversion does not lose validated Records.\nAction reuse: extend existing Action and OpaqueAliases; call GetDocument through Jido.Exec, reuse Record provenance/authorization. Input operation+Records; output authorized instruction; errors mutate no selection and perform no delivery/deletion. Alias expansion is local-only and shares existing scoped store/schema traversal; no new Action or token store.\nBranches: add/remove/replace/clear, authorized/denied, valid/invalid provenance and aliases.\nMocking: external provider edges only; keep internal validation and dispatch real.\nDocs: update Action/helper moduledocs for the final contract as part of the consumer switch; track interim staging honestly.\nAcceptance: tested instruction/reducer and alias expansion ready for StreamEvents, no current-flow regression.\n\nRequired policies: docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/services/agent.md, docs/testing-approach.md; documentation edits additionally follow docs/documentation.md. No implementation authorized yet.",
   "id": "zaq-aa6.2",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-aa6.2] Prepare validated attachment instruction results and alias expansion",
   "type": "task",
-  "updated_at": "2026-10-30T22:07:28Z"
+  "updated_at": "2026-10-30T22:07:29Z"
 }
