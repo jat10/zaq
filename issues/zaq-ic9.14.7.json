@@ -43,11 +43,15 @@
     {
       "text": "User reports Mattermost is working and wants to test email next. Telegram fix explicitly deferred by user to a later issue; no Telegram issue created here. This is partial manual evidence, not acceptance of all Mattermost/email lifecycle scenarios. Email UX gate remains open. Prior two bridge-test expected-value approvals remain pending.",
       "timestamp": "2026-10-30T09:55:28Z"
+    },
+    {
+      "text": "Email pre-review check: existing email_file_delivery_integration_test.exs plus email_bridge/outgoing_attachments_test.exs passed, 1 property and 8 tests. Actual loopback SMTP/MIME coverage; no live email sent. Log /tmp/zaq-email-review-focused.log. This validates delivery, not the unresolved default Pipeline attachment propagation after user-requested Answering/Pipeline revert. Manual email review must verify actual attachment arrival, single reply, threading, filename/content, and fresh-turn isolation.",
+      "timestamp": "2026-10-30T09:55:48Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.7] Approve completed Mattermost and email attachment UX for E2E",
   "type": "task",
-  "updated_at": "2026-10-30T09:55:28Z"
+  "updated_at": "2026-10-30T09:55:48Z"
 }
