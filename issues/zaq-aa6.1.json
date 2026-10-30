@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-aa6.2"
+  ],
   "created": "2026-10-30T22:04:22Z",
   "description": "Specification: compare get_document and attach_documents fields across model output, native events/checkpoints, private trace persistence and public ToolStep projections. Identify any actual new audience; distinguish full signed tokens from scoped aliases. Define the new normal Action output {operation, records}, error behavior, trusted active-request requirement, standalone/workflow rejection semantics and alias lifetime through terminal consumption. Explicitly approve removal of blanket selection-metadata absence from private traces/checkpoints; retain public privacy protections. Creating this epic is not that approval.\nFiles: inspect agent/request_effects.ex, tools/data_source/attach_documents.ex, stream_events.ex, factory.ex, executor.ex, opaque_aliases.ex, contracts/tool_step.ex and related tests. Record decisions in this issue; update docs/services/agent.md only with implementation.\nTests before implementation: classify existing assertions as behavior, privacy policy or internal-state coupling; specify replacement assertions, including missing/foreign aliases and trusted-context rejection. Do not change expectations without explicit approval.\nAction reuse: audit existing GetDocument/Jido.Exec, Record authorization, OpaqueAliases schema projection and StreamEvents completion deduplication. Choose extension/local-only adaptation, no new operation.\nMocking: none; read code and test contracts.\nAcceptance: concrete field/audience matrix, exact approved test-contract delta, verified alias scope/lifetime and ordering, named approving human and evidence recorded. Only this gate is initially unblocked.\n\nRequired policies: docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/services/agent.md, docs/testing-approach.md; documentation edits additionally follow docs/documentation.md. No implementation authorized yet.",
   "id": "zaq-aa6.1",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-aa6.1] Approve privacy contract and existing-test changes",
   "type": "task",
-  "updated_at": "2026-10-30T22:07:21Z"
+  "updated_at": "2026-10-30T22:07:28Z"
 }
