@@ -27,11 +27,15 @@
     {
       "text": "Isolation correction complete: no Application.put_env/delete_env or global registry override in new journey tests. Production configuration supplies the real adapters, so no additional Zaq.Config override is needed. Expanded new journeys for BOTH Mattermost/email: retrieve A, add A, retrieve B, add B, remove/replace/repeated-add/clear; pause before final response proves no early upload/delivery; actual Mattermost HTTP and SMTP MIME verify B-only or text-only; second real ingress in same thread verifies fresh empty selection. 8 journey tests plus existing 3 SMTP integration tests passed (11 total), mix q passed. Earlier configured selection + corrected legacy Pipeline suite passed 7 tests. Existing SMTP stub default remains one connection; optional connections used only by new journeys. Remaining .8: failure/cancellation/revocation/active steering at channel boundaries, privacy persistence assertions, and controlled live-service E2E evidence. No precommit or commits.",
       "timestamp": "2026-10-30T10:20:21Z"
+    },
+    {
+      "text": "Resumed by Jad: finish .8. Issue already in_progress; .4 publication/pin blocker closed. Reuse existing AttachmentAgentJourneyTest for real ingress/Engine/Jido/GetDocument/AttachDocuments/final Channels boundaries with external LLM, Mattermost HTTP and SMTP collaborators. Add new tests for failure/cancel after selection and next-request isolation, active native steering, revoked delivery permission, persisted-history privacy. Preserve existing assertions/expectations; no production operation or new Action planned. Live service discovery: Docker daemon unavailable, no dedicated live configuration found; asked Jad for isolated Mattermost channel/email mailbox config locations while continuing independent test work. Do not close without live-service evidence or explicit scope revision. No precommit, commits or push authorized for ZAQ.",
+      "timestamp": "2026-10-30T12:08:51Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.8] Expand Mattermost and email Agent-turn and full E2E coverage",
   "type": "task",
-  "updated_at": "2026-10-30T10:20:21Z"
+  "updated_at": "2026-10-30T12:08:51Z"
 }
