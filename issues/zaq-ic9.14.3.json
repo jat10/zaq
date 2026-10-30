@@ -43,11 +43,15 @@
     {
       "text": "Reusable request-effects refactor completed and validated. Removed lib/zaq/agent/attachment_selection.ex and attachment_selection/runtime.ex. New RequestEffects behaviour/handler owns trusted configured-tool discovery, isolated per-Action values, request/PID/sequence fencing, invocation dedup, failure/cancel clearing, private effect redaction and final snapshot map. AttachDocuments owns init/reduce document logic and authorization; Factory has generic hooks and no attachment-specific module dependency; StreamEvents selects AttachDocuments result. Explicitly approved representation changes applied to existing tests without removing semantic coverage. New Labels/Counter test Actions prove reuse, independent state, fresh requests, rejection of cross-handler commands and privacy through real Factory/Jido. Added real concurrent regression proving first signed projection wins and same-batch remove/add ordering (both failed in rejected native-map prototype). Final focused suite 21 passed (2 properties,19 tests), mix q and diff check passed. Broader regression 77/78 passed: sole failure is unchanged default-Pipeline attachment expectation after user-requested Answering/Pipeline rollback; no new regression. Initial q alias warnings and new stub history-immutability mismatch corrected, no outstanding refactor failures. Docs reflect generic callbacks and current configured-only selection support. Baseline backup remains verified; incremental request-effects-refactor.patch in /Users/jad/.codex/backups/zaq-native-effects-20261030-013009 applies forward to baseline and reverse-checks current tree. No dependency edits, commits, push, sync or precommit. .3 lifecycle acceptance satisfied; .4 remains open for dependency publication/pin and known default-Pipeline contract; UX/E2E/coverage gates remain.",
       "timestamp": "2026-10-29T23:52:56Z"
+    },
+    {
+      "text": "User requests relocating AttachDocuments from tools/messages to tools/data_source before .8. Reuse existing Action unchanged; update module namespace, references and test location; retain configured message.attach_documents key and public attach_documents tool name. Mechanical rename preserves test behavior. Serena references returned unrelated Event symbols, so use exact bounded reference replacement. Validate focused selection tests plus mix q; no commits/precommit.",
+      "timestamp": "2026-10-30T10:04:31Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.3] Integrate request-scoped selection lifecycle and stream transport",
   "type": "task",
-  "updated_at": "2026-10-30T10:04:30Z"
+  "updated_at": "2026-10-30T10:04:31Z"
 }
