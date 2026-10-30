@@ -11,9 +11,15 @@
   "id": "zaq-aa6.3",
   "labels": [],
   "parent": "zaq-aa6",
+  "comments": [
+    {
+      "text": "StreamEvents now owns per-consume selection, reduces successful output before trace serialization, ignores foreign request IDs, uses completion deduplication and exposes attachments only on successful termination. Executor passes canonical runtime alias scope. Focused stream/Action tests: 13 passed, including atomic invalid-instruction and missing/foreign/retired-alias rejection. Factory no longer intercepts worker events; obsolete RequestEffects implementation/tests removed in the same uncommitted atomic switch. Native StateOp characterization retained separately. Runtime/channel parity adaptation and mix q pending.",
+      "timestamp": "2026-10-30T22:14:04Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-aa6.3] Move attachment accumulation into StreamEvents",
   "type": "task",
-  "updated_at": "2026-10-30T22:12:16Z"
+  "updated_at": "2026-10-30T22:14:04Z"
 }
