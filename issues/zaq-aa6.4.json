@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-aa6.5"
   ],
+  "closed_at": "2026-10-30T22:16:09Z",
+  "close_reason": "Duplicate state/effect infrastructure removed; native behavior preserved and focused checks plus mix q passed.",
   "created": "2026-10-30T22:04:26Z",
   "description": "Specification: audit all RequestEffects consumers, then remove the module, reserved StateOp envelope, handler callbacks, request/PID state, native invocation binding, private snapshot sends/receives, Factory hooks and attachment-specific argument/result/checkpoint redaction. Retain independent factory budgeting/interceptor/lifecycle behavior. Do not delete generic test helpers until references are checked.\nFiles: lib/zaq/agent/request_effects.ex, factory.ex, stream_events.ex, tools/data_source/attach_documents.ex; test/zaq/agent/request_effects_test.exs, test/support/request_effect_probe.ex and affected selection tests.\nTests before implementation: ordinary native checkpoint/event behavior, no-tool requests, reusable runtime next turn, duplicate/cross-request/failure isolation and alias projection with actual Factory; retain observable behavior formerly exercised by generic RequestEffects tests in the appropriate owner tests.\nAction reuse: remove duplicate lifecycle owner; reuse native runtime handling plus StreamEvents. No business operation or agent exposure added.\nBranches: enabled/disabled attachment tool, success/error/cancel, stale/late events and runtime retirement.\nMocking: existing external LLM boundary; keep runtime real.\nDocs: remove active RequestEffects references from module/service docs; preserve historical plan records.\nAcceptance: no production or active-test dependencies on RequestEffects, no private mailbox transport, no broad redaction regression, no loss of lifecycle coverage. Approval from child 1 governs changed privacy expectations.\n\nRequired policies: docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/services/agent.md, docs/testing-approach.md; documentation edits additionally follow docs/documentation.md. No implementation authorized yet.",
   "id": "zaq-aa6.4",
@@ -18,8 +20,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-aa6.4] Remove RequestEffects and restore ordinary Factory event handling",
   "type": "task",
-  "updated_at": "2026-10-30T22:16:08Z"
+  "updated_at": "2026-10-30T22:16:09Z"
 }
