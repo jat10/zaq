@@ -47,11 +47,15 @@
     {
       "text": "User requests relocating AttachDocuments from tools/messages to tools/data_source before .8. Reuse existing Action unchanged; update module namespace, references and test location; retain configured message.attach_documents key and public attach_documents tool name. Mechanical rename preserves test behavior. Serena references returned unrelated Event symbols, so use exact bounded reference replacement. Validate focused selection tests plus mix q; no commits/precommit.",
       "timestamp": "2026-10-30T10:04:31Z"
+    },
+    {
+      "text": "Move complete: DataSource.AttachDocuments and test now under tools/data_source, aliases/registry module/docs updated; tool key message.attach_documents unchanged. Focused 43 passed (2 properties,41 tests), mix q passed. Logs /tmp/zaq-move-tests.log and /tmp/zaq-move-q.log. Mechanical namespace move only; prior lifecycle criteria remain satisfied.",
+      "timestamp": "2026-10-30T10:05:57Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.3] Integrate request-scoped selection lifecycle and stream transport",
   "type": "task",
-  "updated_at": "2026-10-30T10:04:31Z"
+  "updated_at": "2026-10-30T10:05:57Z"
 }
