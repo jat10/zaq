@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-ic9.14.8"
   ],
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-ic9.14",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-ic9.14.6] Complete post-review attachment selection coverage handoff",
   "type": "task",
-  "updated_at": "2026-10-29T13:36:05Z"
+  "updated_at": "2026-10-30T12:30:59Z"
 }
