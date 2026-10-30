@@ -19,11 +19,15 @@
     {
       "text": "Jad explicitly revised .8 acceptance in chat: use stubbed Mattermost/email service boundaries; no live services exist and live-service E2E is no longer a closure prerequisite. .8 retains real Agent/tool turns and production internal path plus its scenario assertions. Full test-suite success alone does not replace remaining .6 review/coverage work.",
       "timestamp": "2026-10-30T12:09:21Z"
+    },
+    {
+      "text": "Completed all eight children and final validation. Scope amendments explicitly accepted by Jad: configured-agent path owns selection (legacy Answering/Pipeline excluded), registry key data_source.attach_document, Mattermost/email end-to-end journeys use external stubs with real internal paths. Mattermost adapter published at jat10/jido_chat_mattermost fix/attachment-edit-history and pinned to01647b9. Both channels18 journeys passed, full fresh coverage11806 passed at97.1% overall, four additive coverage tests passed; combined identical-source evidence RequestEffects100%,AttachDocuments97.4% with documented unreachable line42. Final single mix precommit run11810 checks passed,1 skipped,155 excluded. No outstanding child or validation failure. User authorized closing, committing and pushing after this result; proceeding without merge or bw sync.",
+      "timestamp": "2026-10-30T13:10:10Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14] Implement request-scoped attach_documents selection",
   "type": "epic",
-  "updated_at": "2026-10-30T12:22:31Z"
+  "updated_at": "2026-10-30T13:10:10Z"
 }
