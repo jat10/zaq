@@ -72,11 +72,15 @@
     {
       "text": "Jad explicitly approved correcting legacy default Pipeline test in chat: Pipeline is legacy and will be removed; do not update it. Update existing test to assert attachment tool absent from model tools and outgoing attachments empty, preserve successful text/no-send checks. Configured-agent full-path coverage is the supported replacement. No Answering/Pipeline production edits.",
       "timestamp": "2026-10-30T10:10:58Z"
+    },
+    {
+      "text": "Jad authorized pinning ZAQ to published jat10/jido_chat_mattermost branch fix/attachment-edit-history (commit 01647b9). Applying dependency-only mix.exs/mix.lock change; no new operation or Action. Adapter suite passed 159 tests and mix q before publication. Preserve existing work; validate fetched dependency with delivery/history/selection suites and mix q, no precommit repeat or ZAQ commit/push.",
+      "timestamp": "2026-10-30T12:04:04Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-30T10:10:58Z"
+  "updated_at": "2026-10-30T12:04:04Z"
 }
