@@ -68,11 +68,15 @@
     {
       "text": "Bridge cleanup applied: removed edit transport injection and file-dependent raw-response receipt fields; create/edit now convert normalized adapter media directly into history descriptors. Focused delivery/history run: 89/91 passed; two existing tests expect stub-only :upload_failed and need explicit approval for real HTTP 400 expectations and corresponding safe notice. Approval requested; not changed yet. mix q passed. Logs /tmp/zaq-bridge-cleanup-focused.log and /tmp/zaq-bridge-cleanup-q.log. No precommit or commits.",
       "timestamp": "2026-10-30T09:47:38Z"
+    },
+    {
+      "text": "Jad explicitly approved correcting legacy default Pipeline test in chat: Pipeline is legacy and will be removed; do not update it. Update existing test to assert attachment tool absent from model tools and outgoing attachments empty, preserve successful text/no-send checks. Configured-agent full-path coverage is the supported replacement. No Answering/Pipeline production edits.",
+      "timestamp": "2026-10-30T10:10:58Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-30T09:47:38Z"
+  "updated_at": "2026-10-30T10:10:58Z"
 }
