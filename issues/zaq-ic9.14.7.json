@@ -6,6 +6,7 @@
   "blocks": [
     "zaq-ic9.14.8"
   ],
+  "closed_at": "2026-10-30T10:06:00Z",
   "created": "2026-10-29T13:35:25Z",
   "description": "Functional specifications covered with associated files to edit/add:\nObtain explicit human UX acceptance of the completed attach_documents feature for Mattermost and email before authoring new or substantially expanded E2E journeys. Planning authorization on 2026-10-29 is not acceptance of the finished implementation. No application files change in this gate.\n\nTests to add before implementation:\nNone in this approval task. Keep immediate unit/integration/property tests and existing E2E execution in implementation tasks. Review demonstrations and expected outcomes for both channels: multi-iteration select A, select B, remove A, final text plus B; replace/clear; no premature file delivery; failed/cancelled requests; fresh subsequent requests.\n\nBranches/paths validated:\nHuman review of final observable text/file delivery and relevant failure behavior in both channels.\n\nMocking plan:\nNo mocks or test authoring in this gate; downstream E2E records external fixture boundaries.\n\nDocumentations to update:\nRecord approving human, date, source message/review, approved scenarios and implementation revision in this issue. Remain open until explicit approval; reopen if material behavior changes.\n\nAction reuse assessment:\nNot applicable — human acceptance tracking only.\n\nOwner policies: docs/testing-approach.md#feature-e2e-approval-gate, docs/e2e-testing.md, docs/WORKFLOW_AGENT.md. Depends on implementation and validation; blocks consolidated E2E authoring.",
   "id": "zaq-ic9.14.7",
@@ -54,8 +55,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ic9.14.7] Approve completed Mattermost and email attachment UX for E2E",
   "type": "task",
-  "updated_at": "2026-10-30T10:05:59Z"
+  "updated_at": "2026-10-30T10:06:00Z"
 }
