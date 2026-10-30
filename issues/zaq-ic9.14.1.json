@@ -33,11 +33,15 @@
     {
       "text": "Authorized provenance extension implemented: Authorization.principal/1 exposes the existing effective-principal normalization for reuse by Provenance; no access-decision semantics changed. Provenance retains provider/legacy projection and signs authorization_principal when effective identity differs, including unmatched nil, so nested/flat overrides cannot forge access. Existing standard flat principal claims stay identical. New property proves actual unauthorized-to-authorized nested forgery is rejected for channel/identifier, type/key and atom-key forms; override/invalid-map regression tests added. Existing Record tests initially exposed a projection shape compatibility concern, resolved in production code without changing existing assertions. Focused suite 51 passed (2 properties,49 tests); mix q passed. Native request-effect and alias integration remain passing. Discovery and authorized prerequisite are now satisfied.",
       "timestamp": "2026-10-29T13:58:08Z"
+    },
+    {
+      "text": "User requested correcting misleading legacy naming. Reopened/started for scoped naming-only correction: legacy_principal/1 -\u003e provider_principal_projection/1 and legacy local -\u003e provider_projection in provenance.ex; renamed one test title to flat provider principal projection remains unchanged. No signature payload, authorization, compatibility or test assertion changes. Action reuse not applicable: private helper rename only, no operation added. Focused suite 3 passed (1 property,2 tests); mix q and diff check passed. Existing epic gates/failures unchanged. No commits/push/sync/precommit.",
+      "timestamp": "2026-10-30T09:18:52Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.1] Verify trusted Record and Jido request-effect integration",
   "type": "task",
-  "updated_at": "2026-10-30T09:17:55Z"
+  "updated_at": "2026-10-30T09:18:52Z"
 }
