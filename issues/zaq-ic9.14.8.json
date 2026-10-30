@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-ic9.14.7"
   ],
@@ -18,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-ic9.14.8] Expand Mattermost and email Agent-turn and full E2E coverage",
   "type": "task",
-  "updated_at": "2026-10-29T15:04:35Z"
+  "updated_at": "2026-10-30T10:06:01Z"
 }
