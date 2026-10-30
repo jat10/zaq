@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-aa6.2"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-aa6.4"
+  ],
   "created": "2026-10-30T22:04:25Z",
   "description": "Specification: initialize an empty selection per consume/3; apply only successful validated attachment instructions inside the existing completion path after duplicate suppression, before json_safe/trace externalization. Use returned operation, never unvalidated model input. Thread existing runtime alias scope from Executor, expand full Records while scope is live, and fail closed on resolution/validation errors without partial mutations. Explicitly settle whether malformed instructions fail the request; implement the contract approved in child 1.\nPreserve declaration order for parallel completions; verify native ordering rather than assuming public first-observation sequence is sufficient. Keep actual request/runtime stream isolation and ignore foreign/stale evidence. Expose selection only on successful terminal completion; failed, cancelled and incomplete streams expose []. Steering applies to the same accumulator; next request starts empty.\nFiles: lib/zaq/agent/stream_events.ex, executor.ex, and minimum Factory/AttachDocuments changes needed for an atomic switch. Existing Executor result and Outgoing attachment contracts stay unchanged.\nTests before implementation: add A/add B/remove A, replace/clear, replayed add after remove, duplicate/late starts/completions, parallel conflicting operations, foreign request/runtime evidence, alias cleanup race, cancellation/failure/incomplete stream, steering, next request and no-tool behavior.\nAction reuse: extend existing request accumulator, native invocation tracking and completion deduplication; reuse pure Action reducer and schema alias expansion. No external calls beyond existing authorization; no materialization or delivery while reducing.\nMocking: real Jido/Factory with existing scripted external LLM stub, no internal runtime mock.\nDocs: StreamEvents/Executor moduledocs and docs/services/agent.md ownership statements.\nAcceptance: one authoritative stream-owned selection; current channel journeys retain identical observable results.\n\nRequired policies: docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/services/agent.md, docs/testing-approach.md; documentation edits additionally follow docs/documentation.md. No implementation authorized yet.",
   "id": "zaq-aa6.3",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-aa6.3] Move attachment accumulation into StreamEvents",
   "type": "task",
-  "updated_at": "2026-10-30T22:07:29Z"
+  "updated_at": "2026-10-30T22:07:30Z"
 }
