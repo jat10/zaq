@@ -39,11 +39,15 @@
     {
       "text": "Duplicate Mattermost reply locally fixed and red regression now green; 244 application regression checks,66 adapter checks,mix q pass. Requires local dev server reload/restart to load modified dependency before manual retry. Re-review: existing documents/config10 readable file -\u003e select/attach -\u003e one streamed post updated with same answer+image, no second caption/post. Check original post/thread unchanged. New and existing source changes remain uncommitted; separate adapter checkout patch attached to .4, dependency publication/pinning still pending explicit authorization. This is not human UX acceptance; .7/.8/.6/final precommit remain gated.",
       "timestamp": "2026-10-29T22:51:21Z"
+    },
+    {
+      "text": "User reports Mattermost is working and wants to test email next. Telegram fix explicitly deferred by user to a later issue; no Telegram issue created here. This is partial manual evidence, not acceptance of all Mattermost/email lifecycle scenarios. Email UX gate remains open. Prior two bridge-test expected-value approvals remain pending.",
+      "timestamp": "2026-10-30T09:55:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.7] Approve completed Mattermost and email attachment UX for E2E",
   "type": "task",
-  "updated_at": "2026-10-29T22:51:21Z"
+  "updated_at": "2026-10-30T09:55:28Z"
 }
