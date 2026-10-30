@@ -76,11 +76,15 @@
     {
       "text": "Jad authorized pinning ZAQ to published jat10/jido_chat_mattermost branch fix/attachment-edit-history (commit 01647b9). Applying dependency-only mix.exs/mix.lock change; no new operation or Action. Adapter suite passed 159 tests and mix q before publication. Preserve existing work; validate fetched dependency with delivery/history/selection suites and mix q, no precommit repeat or ZAQ commit/push.",
       "timestamp": "2026-10-30T12:04:04Z"
+    },
+    {
+      "text": "Resolved publication/pinning blocker: Mattermost fix committed and pushed with Jad authorization to jat10/jido_chat_mattermost fix/attachment-edit-history, 01647b9f763383e70c236a00318285416bcd1355. ZAQ mix.exs now uses that GitHub fork/branch and mix.lock pins that exact revision. Fetched deps checkout is clean; original local edits preserved in its stash. Adapter validation: 159 tests passed (15 excluded), mix q passed. ZAQ validation against fetched commit: delivery, history ingress, consolidated selection, and Mattermost/email Agent journeys all pass, 77 checks (4 properties,73 tests), seed968323; mix q and git diff --check passed. Logs /tmp/zaq-mattermost-branch-tests.log and /tmp/zaq-mattermost-branch-q.log. Previously approved HTTP delivery failure fixtures and legacy default Pipeline exclusion are green. Supported final propagation is configured Executor; Answering/Pipeline remain unchanged by explicit Jad direction. No ZAQ commit/push or mix precommit repeat. .8 full E2E and .6 post-review coverage remain open; epic not closed.",
+      "timestamp": "2026-10-30T12:06:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.4] Preserve final attachments through Executor and Pipeline",
   "type": "task",
-  "updated_at": "2026-10-30T12:04:04Z"
+  "updated_at": "2026-10-30T12:06:18Z"
 }
