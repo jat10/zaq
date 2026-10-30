@@ -15,11 +15,15 @@
     {
       "text": "Implementation ready for .7 acceptance; authoring remains blocked. Reuse candidates now include attachment_selection_delivery_test.exs, attachment_selection_runtime_test.exs and AttachmentSelectionLLMStub plus MattermostHistoryFixture. Current integrations prove real Jido selection and separate actual adapter delivery; .8 must still add complete ingress/Engine/admission/Agent/tool/finalization/delivery journeys and run against controlled deployed Mattermost/email services. Preserve planned scenarios: B-only multi-turn retrieval/add/remove, replace/clear, no early/duplicate files, cancellation/failure, native request isolation/steering, authorization revocation and privacy. Planning/local fixture success is not human UX approval or full E2E success.",
       "timestamp": "2026-10-29T15:04:35Z"
+    },
+    {
+      "text": "Jad explicitly accepts current Mattermost/email UX and requests real-path stubbed LLM tool-turn coverage. .7 closed with acceptance evidence; .8 started for authorized test work, remains incomplete while .4 and live-service requirements remain. Plan: new channel attachment journey integration tests reuse MattermostHistoryFixture ingress/HTTP, EmailBridge real IMAP normalization/listener ingress, FileDeliverySmtpStub MIME boundary, IntegrationAgent, existing LLM SSE builders, real GetDocument and AttachDocuments. Extend external model fixture with generic tool calls and response-dependent script steps, no internal Agent mocks or prebuilt Outgoing. Preserve all existing tests. Default Pipeline rollback blocker explicitly pending user direction. No production credentials/messages, new service setup or dependency publication authorized.",
+      "timestamp": "2026-10-30T10:07:41Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.8] Expand Mattermost and email Agent-turn and full E2E coverage",
   "type": "task",
-  "updated_at": "2026-10-30T10:06:01Z"
+  "updated_at": "2026-10-30T10:07:41Z"
 }
