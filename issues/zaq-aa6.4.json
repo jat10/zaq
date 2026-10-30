@@ -11,9 +11,15 @@
   "id": "zaq-aa6.4",
   "labels": [],
   "parent": "zaq-aa6",
+  "comments": [
+    {
+      "text": "Removed RequestEffects module, Factory event interception/request state/settlement/invocation binding, and private mailbox snapshots. Native StateOp characterization remains in native_tool_effect_test.exs. Existing behavior tests now assert selected results and real native evidence; no RequestEffects consumers remain in lib/test. Same final source passed 76 focused checks and mix q, with no additional changes after validation.",
+      "timestamp": "2026-10-30T22:16:08Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-aa6.4] Remove RequestEffects and restore ordinary Factory event handling",
   "type": "task",
-  "updated_at": "2026-10-30T22:16:06Z"
+  "updated_at": "2026-10-30T22:16:08Z"
 }
