@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-30T15:03:16Z",
+  "description": "User requested remembering this proposed approach on 2026-10-30; no implementation authorized. Approach 1: generate three complementary queries (direct intent, supporting context, alternative terminology/perspective), retrieve concurrently using existing hybrid multilingual search, merge/deduplicate/rerank evidence while preserving sources, generate one draft, then verify question coverage, claim support, citations, contradictions and temporal applicability. Missing evidence triggers targeted follow-up retrieval within a fixed budget; exhausted budgets produce explicit limitations, never a completeness claim. User is currently comparing a second approach addressing distant historical evidence excluded before reranking. Action reuse: not applicable to this recording-only task; future implementation should assess reuse of SearchKnowledgeBase and Ingestion retrieval.",
+  "id": "zaq-0qk",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Preserve RAG approach 1 for later evaluation",
+  "type": "task",
+  "updated_at": "2026-10-30T15:03:16Z"
+}
