@@ -47,11 +47,15 @@
     {
       "text": "Email pre-review check: existing email_file_delivery_integration_test.exs plus email_bridge/outgoing_attachments_test.exs passed, 1 property and 8 tests. Actual loopback SMTP/MIME coverage; no live email sent. Log /tmp/zaq-email-review-focused.log. This validates delivery, not the unresolved default Pipeline attachment propagation after user-requested Answering/Pipeline revert. Manual email review must verify actual attachment arrival, single reply, threading, filename/content, and fresh-turn isolation.",
       "timestamp": "2026-10-30T09:55:48Z"
+    },
+    {
+      "text": "Explicit UX acceptance received from Jad in chat 2026-10-30: Mattermost working, then email working; requests proceeding to final test issue with real LLM tool turns and stubbed external services. Accepts current Mattermost/email UX for .8 authoring. This does not assert unexecuted lifecycle cases passed or waive .4 Pipeline/upstream blockers, pending test behavior approvals, coverage/final validation. Namespace-only move subsequently passed 43 checks plus mix q.",
+      "timestamp": "2026-10-30T10:05:59Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.7] Approve completed Mattermost and email attachment UX for E2E",
   "type": "task",
-  "updated_at": "2026-10-30T09:55:48Z"
+  "updated_at": "2026-10-30T10:05:59Z"
 }
