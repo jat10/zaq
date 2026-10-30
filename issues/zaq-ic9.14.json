@@ -25,11 +25,15 @@
     {
       "text": "Completed all eight children and final validation. Scope amendments explicitly accepted by Jad: configured-agent path owns selection (legacy Answering/Pipeline excluded), registry key data_source.attach_document, Mattermost/email end-to-end journeys use external stubs with real internal paths. Mattermost adapter published at jat10/jido_chat_mattermost fix/attachment-edit-history and pinned to01647b9. Both channels18 journeys passed, full fresh coverage11806 passed at97.1% overall, four additive coverage tests passed; combined identical-source evidence RequestEffects100%,AttachDocuments97.4% with documented unreachable line42. Final single mix precommit run11810 checks passed,1 skipped,155 excluded. No outstanding child or validation failure. User authorized closing, committing and pushing after this result; proceeding without merge or bw sync.",
       "timestamp": "2026-10-30T13:10:10Z"
+    },
+    {
+      "text": "Delivery complete under explicit Jad authorization: commit32a2c1edb (feat(agent): add request-scoped attachment selection), pushed to origin/feat/channel-files. Earlier user-authorized rebase required force-with-lease pinned to expected remoteee510663c92be3787ddbb937b89b491f6408fb2f; push succeeded without overwriting unexpected remote work. Commit qf/message hooks and push formatting hook passed. Worktree clean and branch synchronized with origin. All eight children and epic closed; no bw sync or merge performed.",
+      "timestamp": "2026-10-30T13:11:26Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "[zaq-ic9.14] Implement request-scoped attach_documents selection",
   "type": "epic",
-  "updated_at": "2026-10-30T13:10:11Z"
+  "updated_at": "2026-10-30T13:11:26Z"
 }
