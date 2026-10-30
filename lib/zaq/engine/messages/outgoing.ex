@@ -10,6 +10,10 @@ defmodule Zaq.Engine.Messages.Outgoing do
   Nothing inside ZAQ should depend on adapter-specific envelope types — all outbound
   delivery flows through this struct.
 
+  `attachments` contains explicitly requested `Zaq.Contracts.Record` values. Incoming
+  attachments are never automatically echoed, and runtime attachment collections
+  are excluded from metadata.
+
   `thread_anchor` is the opaque prior-thread anchor resolved by the notification
   center (string keys: `"message_id"`, `"references"`, `"thread_id"`). It is
   interpreted only by the provider bridge; bridges that do not thread ignore it.
@@ -17,6 +21,7 @@ defmodule Zaq.Engine.Messages.Outgoing do
   For cross-node routing, this struct is typically carried in `%Zaq.Event.response`.
   """
 
+  alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Engine.Messages.Incoming.RoutingContext
 
@@ -31,6 +36,7 @@ defmodule Zaq.Engine.Messages.Outgoing do
     :provider,
     :in_reply_to,
     :thread_anchor,
+    attachments: [],
     routing_context: %RoutingContext{},
     metadata: %{}
   ]
@@ -44,6 +50,7 @@ defmodule Zaq.Engine.Messages.Outgoing do
           provider: atom() | String.t(),
           in_reply_to: String.t() | integer() | nil,
           thread_anchor: map() | nil,
+          attachments: [Record.t()],
           routing_context: RoutingContext.t() | nil,
           metadata: map()
         }
@@ -52,8 +59,12 @@ defmodule Zaq.Engine.Messages.Outgoing do
   Builds an `%Outgoing{}` from an `%Incoming{}` and the pipeline result map.
 
   Copies routing fields (channel_id, thread_id, author_id, author_name, provider) from
-  the incoming message, sets `body` from `result.answer`, and stores the full result map
-  in `metadata` (answer, confidence_score, latency_ms, tokens, error).
+  the incoming message, sets `body` from `result.answer`, and merges result metadata
+  (answer, confidence_score, latency_ms, tokens, error).
+
+  Copies atom-keyed `result.attachments` unchanged, defaulting to `[]` when omitted.
+  Producers own the Record contract; Channels validates attachments during delivery.
+  Attachment keys are excluded from merged metadata, including any incoming values.
   """
   @spec from_pipeline_result(Incoming.t(), map()) :: t()
   def from_pipeline_result(%Incoming{} = incoming, result) when is_map(result) do
@@ -65,10 +76,12 @@ defmodule Zaq.Engine.Messages.Outgoing do
       author_name: incoming.author_name,
       provider: incoming.provider,
       in_reply_to: incoming.message_id,
+      attachments: Map.get(result, :attachments, []),
       routing_context: incoming.routing_context,
       metadata:
         incoming.metadata
         |> Map.merge(result)
+        |> Map.drop([:attachments, "attachments"])
         |> put_person(incoming.person)
     }
   end
