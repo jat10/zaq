@@ -15,11 +15,15 @@
     {
       "text": "E2E scope correction authorized 2026-10-29: full Mattermost and email journeys are required, with real Agent/tool iterations and final channel delivery. The earlier no-new-E2E assessment and six-step dependency diagram are superseded. zaq-ic9.14.7 records future completed-feature UX acceptance; zaq-ic9.14.8 owns both channels' consolidated test expansion. Current planning approval does not close that gate.\n\nUpdated sequence:\n```mermaid\ngraph LR\n  discovery --\u003e action --\u003e lifecycle --\u003e propagation --\u003e validation --\u003e human_UX_approval --\u003e Mattermost_and_email_E2E --\u003e post_review_coverage\n```\n\nActual issue order: zaq-ic9.14.1 -\u003e zaq-ic9.14.2 -\u003e zaq-ic9.14.3 -\u003e zaq-ic9.14.4 -\u003e zaq-ic9.14.5 -\u003e zaq-ic9.14.7 -\u003e zaq-ic9.14.8 -\u003e zaq-ic9.14.6. No new E2E tests authored during this planning update.",
       "timestamp": "2026-10-29T13:36:06Z"
+    },
+    {
+      "text": "Jad explicitly revised .8 acceptance in chat: use stubbed Mattermost/email service boundaries; no live services exist and live-service E2E is no longer a closure prerequisite. .8 retains real Agent/tool turns and production internal path plus its scenario assertions. Full test-suite success alone does not replace remaining .6 review/coverage work.",
+      "timestamp": "2026-10-30T12:09:21Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14] Implement request-scoped attach_documents selection",
   "type": "epic",
-  "updated_at": "2026-10-29T13:39:52Z"
+  "updated_at": "2026-10-30T12:09:21Z"
 }
