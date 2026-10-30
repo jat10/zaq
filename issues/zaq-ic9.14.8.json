@@ -31,11 +31,15 @@
     {
       "text": "Resumed by Jad: finish .8. Issue already in_progress; .4 publication/pin blocker closed. Reuse existing AttachmentAgentJourneyTest for real ingress/Engine/Jido/GetDocument/AttachDocuments/final Channels boundaries with external LLM, Mattermost HTTP and SMTP collaborators. Add new tests for failure/cancel after selection and next-request isolation, active native steering, revoked delivery permission, persisted-history privacy. Preserve existing assertions/expectations; no production operation or new Action planned. Live service discovery: Docker daemon unavailable, no dedicated live configuration found; asked Jad for isolated Mattermost channel/email mailbox config locations while continuing independent test work. Do not close without live-service evidence or explicit scope revision. No precommit, commits or push authorized for ZAQ.",
       "timestamp": "2026-10-30T12:08:51Z"
+    },
+    {
+      "text": "Scope amendment explicitly authorized by Jad in chat: no isolated live Mattermost/email services exist; use the stub boundaries and remove the requirement to run against deployed services. Real ingress/Engine/Agent/Jido/GetDocument/AttachDocuments/Streams/Channels execution with external protocol/LLM stubs is the accepted .8 delivery evidence. Remaining recorded scenario matrix still being completed; no production messages or live-service configuration required. This supersedes the deployed-service-only closure wording in this issue and parent epic.",
+      "timestamp": "2026-10-30T12:09:20Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.8] Expand Mattermost and email Agent-turn and full E2E coverage",
   "type": "task",
-  "updated_at": "2026-10-30T12:08:51Z"
+  "updated_at": "2026-10-30T12:09:20Z"
 }
