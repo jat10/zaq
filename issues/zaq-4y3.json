@@ -2,13 +2,14 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-30T15:12:59Z",
   "created": "2026-10-30T15:11:02Z",
   "description": "Read-only evaluation requested by user. Inspect ingestion ownership, chunk/context derivation, retrieval expansion, indexing lifecycle, temporal metadata and regression tests. Recommend prioritized enhancements beyond query rewriting and iterative retrieval/reranking. Action reuse: not applicable to this assessment; no executable changes. Existing context: zaq-0qk records approach 1; zaq-rft tracks multilingual retrieval evaluation; repository retrieval-evaluation guide defers bounded section expansion to GitHub #810.",
   "id": "zaq-4y3",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Evaluate ingestion enhancements beyond RAG approaches 1 and 2",
   "type": "task",
-  "updated_at": "2026-10-30T15:11:02Z"
+  "updated_at": "2026-10-30T15:12:59Z"
 }
