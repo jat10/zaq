@@ -44,11 +44,15 @@
     {
       "text": "Jad requested renaming the configured-agent registry key after the Action moved into DataSource, including all references/tests. Interpreting attach_documnet as attach_document, stated in commentary. Rename message.attach_documents to data_source.attach_document; reuse the existing bulk AttachDocuments Action/model tool attach_documents without changing selection behavior. Existing test key expectations explicitly authorized by the request. No new Action, compatibility alias, ZAQ commit/push, or precommit repeat.",
       "timestamp": "2026-10-30T12:28:56Z"
+    },
+    {
+      "text": "Registry rename complete: data_source.attach_document now resolves to Zaq.Agent.Tools.DataSource.AttachDocuments. Updated all code references, Agent guide and four affected test files; retained the bulk Jido tool name attach_documents and selection behavior. No old message.attach_documents or misspelled data_source.attach_documnet references remain under lib/test/docs/config/priv. Registry, Action, selection and both channel journey suites passed: 62 checks (2 properties,60 tests), seed712548 (/tmp/zaq-attachment-key-tests.log). mix q and git diff --check passed (/tmp/zaq-attachment-key-q.log). All ZAQ changes remain uncommitted; no push or precommit repeat.",
+      "timestamp": "2026-10-30T12:29:39Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.2] Implement attach_documents Action and tool registration",
   "type": "task",
-  "updated_at": "2026-10-30T12:28:56Z"
+  "updated_at": "2026-10-30T12:29:39Z"
 }
