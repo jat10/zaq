@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-aa6.1"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-aa6",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-aa6.2] Prepare validated attachment instruction results and alias expansion",
   "type": "task",
-  "updated_at": "2026-10-30T22:07:29Z"
+  "updated_at": "2026-10-30T22:10:00Z"
 }
