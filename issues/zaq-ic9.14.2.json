@@ -40,11 +40,15 @@
     {
       "text": "Provider-owned ACL correction validated. For signed data-source identity, AttachDocuments runs existing GetDocument through Jido.Exec with signed provider/config/document IDs and trusted actor, returning current canonical metadata; no file bytes. Other signed Records retain generic Record.Authorization. Whole-batch validation still precedes effects. Added real Disk person/grant proof, failed mixed-batch replacement preserving B, and post-selection revocation denial at final Storage redemption. Fixtures now obtain Records through real GetDocument rather than synthesizing provider contracts. Focused Action+Registry+delivery suite 36 passed (1 property,35 tests); mix q passed. Existing tests unchanged except previously approved two Registry keys.",
       "timestamp": "2026-10-29T14:57:23Z"
+    },
+    {
+      "text": "Jad requested renaming the configured-agent registry key after the Action moved into DataSource, including all references/tests. Interpreting attach_documnet as attach_document, stated in commentary. Rename message.attach_documents to data_source.attach_document; reuse the existing bulk AttachDocuments Action/model tool attach_documents without changing selection behavior. Existing test key expectations explicitly authorized by the request. No new Action, compatibility alias, ZAQ commit/push, or precommit repeat.",
+      "timestamp": "2026-10-30T12:28:56Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ic9.14.2] Implement attach_documents Action and tool registration",
   "type": "task",
-  "updated_at": "2026-10-30T12:28:55Z"
+  "updated_at": "2026-10-30T12:28:56Z"
 }
