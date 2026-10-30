@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-30T22:07:07Z",
+  "description": "Specification: after implementation review approval, invoke coverage-upper for changed code using fresh successful coverage evidence. Add meaningful uncovered-branch tests without weakening assertions; document justified exceptions. Re-run affected issue checks after changes, then final mix precommit with the required 900000 ms execution timeout under docs/WORKFLOW_AGENT.md. Obtain final human approval before closing this epic.\nFiles: relevant tests and documentation only as evidence warrants; production fixes return to their owning child and re-review.\nTests before implementation: plan uncovered authorization, alias-error, ordering and terminal-state branches from current reports, not stale percentages. Preserve property tests over mutation sequences and permission defaults.\nAction reuse: no new operation; verify consumers still share existing Action/alias/stream/delivery implementation and no replacement state framework slipped in.\nBranches: meaningful uncovered branches from the actual final diff; no implementation-mirroring tests.\nMocking: existing external stubs only; preserve isolated configuration and resources.\nDocs: record exact tested commit/source state, fresh coverage result, exceptions, review approval and final validation in this issue; correct service docs if the contract changed.\nAcceptance: coverage handoff complete, final checks passed, no unresolved behavioral regression, final human approval recorded. No commit, push, merge, GitHub reply or bw sync is authorized merely by epic creation.\n\nRequired policies: docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/services/agent.md, docs/testing-approach.md; documentation edits additionally follow docs/documentation.md. No implementation authorized yet.",
+  "id": "zaq-aa6.6",
+  "labels": [],
+  "parent": "zaq-aa6",
+  "priority": 2,
+  "status": "open",
+  "title": "Complete post-review coverage and final validation",
+  "type": "task",
+  "updated_at": "2026-10-30T22:07:07Z"
+}
