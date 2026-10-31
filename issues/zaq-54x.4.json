@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-31T22:45:32Z",
+  "description": "Blocked consumer integration. Add real preparation Action node after ExtractRows, Batch delivery item dispatch each job to W2 using trusted actor inherited. No machine privilege bypass. Match event to W2 trigger and ranges/row options. Validate end-to-end dispatch only after prerequisite implemented.",
+  "id": "zaq-54x.4",
+  "labels": [],
+  "parent": "zaq-54x",
+  "priority": 2,
+  "status": "open",
+  "title": "Integrate W1 preparation and dispatch after prerequisite Action",
+  "type": "task",
+  "updated_at": "2026-10-31T22:45:32Z"
+}
