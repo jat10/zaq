@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-31T22:45:28Z",
+  "description": "Missing Action: PrepareRagEvaluationJobs. Existing GetSheet returns Record; ExtractRows returns rows+header metadata; Concat preserves/concatenates but cannot filter/transpose arbitrary rows into per-agent jobs; FactLookup cannot index lists. Inputs rows, metadata, spreadsheet_id, tab_name, first_row, last_row, column_agents (D onward). Outputs jobs, each carrying agent_id, spreadsheet_id, target_range and questions_by_row.row_N with only question text. Exclude B expected answer, C result, Overall; validate row bounds, nonblank questions, headers/columns, unique columns, positive integer IDs, escaped A1 tab; reject malformed/ambiguous mapping. Pure deterministic no actor elevation or side effects. Workflow-only initially. Verify properties preserving rows and excluding expected answers; unknown/blank header, bad row count, missing/malformed questions tests. No existing matching Action issue found. Implement outside create-workflow skill scope only with expanded authorization.",
+  "id": "zaq-54x.2",
+  "labels": [],
+  "parent": "zaq-54x",
+  "priority": 2,
+  "status": "open",
+  "title": "Propose sheet-to-agent-jobs preparation Action",
+  "type": "task",
+  "updated_at": "2026-10-31T22:45:28Z"
+}
