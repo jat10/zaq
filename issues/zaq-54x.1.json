@@ -9,7 +9,7 @@
   "parent": "zaq-54x",
   "priority": 2,
   "status": "open",
-  "title": "Generate W2 with isolated question calls and one bulk column update",
+  "title": "[zaq-54x.1] Generate W2 with isolated question calls and one bulk column update",
   "type": "task",
-  "updated_at": "2026-10-31T22:45:26Z"
+  "updated_at": "2026-10-31T22:45:27Z"
 }
