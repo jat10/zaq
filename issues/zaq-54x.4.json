@@ -1,6 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [
+    "zaq-54x.1",
     "zaq-54x.2",
     "zaq-54x.3"
   ],
@@ -14,5 +15,5 @@
   "status": "open",
   "title": "[zaq-54x.4] Integrate W1 preparation and dispatch after prerequisite Action",
   "type": "task",
-  "updated_at": "2026-10-31T22:45:59Z"
+  "updated_at": "2026-10-31T22:46:00Z"
 }
