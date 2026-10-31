@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-31T22:45:30Z",
+  "description": "Reuse GetSheet and ExtractRows for read prefix; Batch+DispatchEvent are downstream reuse candidates after PrepareRagEvaluationJobs supplies jobs. No guessed module node. Generate draft, missing_tools schema and required wiring; create must return missing_tools error without DB writes so incomplete W1 cannot activate. Trace expected job contract to W2.",
+  "id": "zaq-54x.3",
+  "labels": [],
+  "parent": "zaq-54x",
+  "priority": 2,
+  "status": "open",
+  "title": "Generate W1 dispatcher draft and missing tool diagnostic",
+  "type": "task",
+  "updated_at": "2026-10-31T22:45:30Z"
+}
