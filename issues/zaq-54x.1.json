@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [
     "zaq-54x.4"
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-54x",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-54x.1] Generate W2 with isolated question calls and one bulk column update",
   "type": "task",
-  "updated_at": "2026-10-31T22:46:00Z"
+  "updated_at": "2026-10-31T22:46:01Z"
 }
