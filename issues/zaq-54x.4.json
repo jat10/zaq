@@ -7,9 +7,15 @@
   "id": "zaq-54x.4",
   "labels": [],
   "parent": "zaq-54x",
+  "comments": [
+    {
+      "text": "Eight inline checks passed (7 tests + answer-order property, 30 generated cases): real W1 DAG dispatches D/E/F IDs; feeding actual emitted payloads through W2 produces exactly one ordered RAW column write each; blank middle header preserves F; trusted actor preserved through JSON normalization; worker question failures/blank cells prevent write; Z/AA bounds and escaped tab; create APIs install matching triggers. No existing tests changed. Registration reuse: Workflows.import_workflow already owns atomic workflow/trigger creation; MapUtils.stringify_keys handles input normalization. Generated modules call these existing APIs instead of copying transaction glue. This is a justified update from the skill historical template.",
+      "timestamp": "2026-11-01T06:54:06Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-54x.4] Wire configured agent columns using existing workflow Actions",
   "type": "task",
-  "updated_at": "2026-11-01T06:47:18Z"
+  "updated_at": "2026-11-01T06:54:06Z"
 }
