@@ -9,9 +9,15 @@
   "id": "zaq-54x.2",
   "labels": [],
   "parent": "zaq-54x",
+  "comments": [
+    {
+      "text": "Superseded by user-provided last-agent-column contract and graph expansion over known columns. No RAG-specific preparation Action is necessary; individual header reads retain column identity using existing Actions.",
+      "timestamp": "2026-11-01T06:46:22Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-54x.2] Propose sheet-to-agent-jobs preparation Action",
   "type": "task",
-  "updated_at": "2026-10-31T22:45:58Z"
+  "updated_at": "2026-11-01T06:46:22Z"
 }
