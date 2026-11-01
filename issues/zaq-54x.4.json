@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-01T06:55:59Z",
+  "close_reason": "Implemented and validated in working tree; no commit or live installation requested.",
   "created": "2026-10-31T22:45:32Z",
   "description": "User authorized update: last_agent_column F/Z identifies actual agent IDs in D1 through last column. Keep skill restriction: only two example modules. Reuse GetSheet+ExtractRows+Batch+Condition+DispatchEvent per configured column; definition-time expansion preserves destination column because Batch does not expose index to tools. Cost: one header read per column, disclosed to user. W2 reuses GetSheet+Concat to read each question cell without normalized text loss, RunAgent per question, Concat matrix then single RAW UpdateSheetValues. Fixed row bounds default 2..6. No new Actions or registry changes; missing-tool proposal superseded. Local-only helpers build static graph and A1 columns/ranges, no runtime operations. Actor inherited, no machine bypass. Test inline thin integration of real DAG plus boundary capture, invalid bounds, blanks/failures, Z/AA positions and answer-order property. No existing test behaviors changed; no UI/E2E necessary.",
   "id": "zaq-54x.4",
@@ -18,8 +20,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-54x.4] Wire configured agent columns using existing workflow Actions",
   "type": "task",
-  "updated_at": "2026-11-01T06:55:56Z"
+  "updated_at": "2026-11-01T06:55:59Z"
 }
