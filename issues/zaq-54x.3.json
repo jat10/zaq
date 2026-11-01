@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-01T06:55:58Z",
+  "close_reason": "Implemented and validated in working tree; no commit or live installation requested.",
   "created": "2026-10-31T22:45:30Z",
   "description": "Reuse GetSheet and ExtractRows for read prefix; Batch+DispatchEvent are downstream reuse candidates after PrepareRagEvaluationJobs supplies jobs. No guessed module node. Generate draft, missing_tools schema and required wiring; create must return missing_tools error without DB writes so incomplete W1 cannot activate. Trace expected job contract to W2.",
   "id": "zaq-54x.3",
@@ -14,8 +16,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-54x.3] Generate W1 dispatcher draft and missing tool diagnostic",
   "type": "task",
-  "updated_at": "2026-11-01T06:47:16Z"
+  "updated_at": "2026-11-01T06:55:58Z"
 }
