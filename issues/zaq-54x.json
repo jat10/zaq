@@ -2,6 +2,8 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-01T06:56:00Z",
+  "close_reason": "Both configurable workflow modules implemented using existing Actions; all required checks passed.",
   "created": "2026-10-31T22:45:25Z",
   "description": "User requested reusable W1 dispatcher and W2 agent worker via .claude/skills/create-workflow/SKILL.md, with one bulk write after collecting answers. Only example module files may be written. W3 scoring is excluded. No commit/push/deployment requested.",
   "id": "zaq-54x",
@@ -17,8 +19,8 @@
     }
   ],
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "RAG Google Sheets workflow modules",
   "type": "epic",
-  "updated_at": "2026-10-31T23:03:23Z"
+  "updated_at": "2026-11-01T06:56:00Z"
 }
