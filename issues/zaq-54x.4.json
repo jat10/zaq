@@ -1,7 +1,6 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-54x.1",
     "zaq-54x.3"
   ],
   "blocks": [],
@@ -14,5 +13,5 @@
   "status": "open",
   "title": "[zaq-54x.4] Wire configured agent columns using existing workflow Actions",
   "type": "task",
-  "updated_at": "2026-11-01T06:47:14Z"
+  "updated_at": "2026-11-01T06:47:15Z"
 }
