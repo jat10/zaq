@@ -11,11 +11,15 @@
     {
       "text": "Eight inline checks passed (7 tests + answer-order property, 30 generated cases): real W1 DAG dispatches D/E/F IDs; feeding actual emitted payloads through W2 produces exactly one ordered RAW column write each; blank middle header preserves F; trusted actor preserved through JSON normalization; worker question failures/blank cells prevent write; Z/AA bounds and escaped tab; create APIs install matching triggers. No existing tests changed. Registration reuse: Workflows.import_workflow already owns atomic workflow/trigger creation; MapUtils.stringify_keys handles input normalization. Generated modules call these existing APIs instead of copying transaction glue. This is a justified update from the skill historical template.",
       "timestamp": "2026-11-01T06:54:06Z"
+    },
+    {
+      "text": "Final validation passed: mix q; 82 existing Action tests (including one property); 8 inline workflow checks (7 tests and one property); mix precommit exit 0 in 35.3s (no stale tests). Log /tmp/zaq-rag-precommit-1793516065995/output.log. Only the two example module files changed; no workflows installed outside sandbox, no commits/push. Final implementation reads D1..last column using one branch/header read per column; W2 reads questions per row and writes one RAW matrix after all answers. Missing Action requirement is removed.",
+      "timestamp": "2026-11-01T06:55:56Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-54x.4] Wire configured agent columns using existing workflow Actions",
   "type": "task",
-  "updated_at": "2026-11-01T06:54:06Z"
+  "updated_at": "2026-11-01T06:55:56Z"
 }
