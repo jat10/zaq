@@ -4,14 +4,16 @@
   "blocks": [
     "zaq-78p.2"
   ],
+  "closed_at": "2026-11-02T09:11:18Z",
+  "close_reason": "W1 snapshot payload implemented. mix q and 58 focused checks passed, including actual DAG dispatch, blank header and literal-text preservation.",
   "created": "2026-11-02T09:06:57Z",
   "description": "Action reuse assessment: GetSheet reads one A-range snapshot and per-column headers; Concat assembles typed job maps; DispatchEvent dispatches through trusted NodeRouter actor. Extend FactLookup with zero-based list access (existing map-only descent cannot select a Sheets cell). Extend DispatchEvent with opt-in literal payload mode, preserving existing cascade/substitution defaults; literal data must not interpret question templates. W1 builds question list in configured row order and validates nonblank questions/positive agent IDs. No new Actions/registry entries. Verify exact event payloads, D/E and later columns, blank headers, actor preservation and literal braces/formulas; existing lookup/dispatch tests unchanged.",
   "id": "zaq-78p.1",
   "labels": [],
   "parent": "zaq-78p",
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-78p.1] Prepare W1 snapshot and typed event payload",
   "type": "task",
-  "updated_at": "2026-11-02T09:07:11Z"
+  "updated_at": "2026-11-02T09:11:18Z"
 }
