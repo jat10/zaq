@@ -11,9 +11,15 @@
   "id": "zaq-78p.2",
   "labels": [],
   "parent": "zaq-78p",
+  "comments": [
+    {
+      "text": "Implementation narrowed: opt-in inherit_context carries the parent cascade and resolves only whole-string top-level body params. Nested Action templates remain owned by the Action, avoiding double interpretation of literal question/answer text. RunAgent captures returned errors through an opt-in on_error option; StepRunner failure defaults and agent lifecycle stay unchanged. No new Actions or registry changes.",
+      "timestamp": "2026-11-02T09:11:20Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-78p.2] Support Batch references and handled agent failures",
   "type": "task",
-  "updated_at": "2026-11-02T09:11:19Z"
+  "updated_at": "2026-11-02T09:11:20Z"
 }
