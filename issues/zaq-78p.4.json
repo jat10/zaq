@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-78p.3"
+  ],
   "blocks": [],
   "created": "2026-11-02T09:07:05Z",
   "description": "Run mix q and isolated tests for each step; final actual DAG integration tests plus unit/property tests and mix precommit. Keep existing expectations unchanged. Review minimal surface, permission propagation and run-scoped shared context. No browser UI changes; E2E authoring not needed.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-78p.4] Validate RAG workflow integration and regressions",
   "type": "task",
-  "updated_at": "2026-11-02T09:07:06Z"
+  "updated_at": "2026-11-02T09:07:09Z"
 }
