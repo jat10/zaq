@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-78p.3"
   ],
+  "closed_at": "2026-11-02T09:17:52Z",
+  "close_reason": "mix q and 105 focused checks passed. Fixed Batch parameters, opt-in inherited cascade, literal questions and returned RunAgent errors implemented; existing Batch/RunAgent tests preserved.",
   "created": "2026-11-02T09:07:00Z",
   "description": "Action reuse assessment: extend existing Batch/Action input-field detection to exclude fixed body params. Carry parent cascade into each fork, resolve authored parameter references through shared FactLookup template resolver extracted from Concat, and retain local body aliases. Extend RunAgent with opt-in returned error data and literal input, preserving default behavior and trusted actor/context. Engine owns iteration plumbing, not an Action. No lifecycle changes. Verify typed start.agent_id, no cross-item alias leakage, success/error/success, existing batch strategies/resume and literal questions.",
   "id": "zaq-78p.2",
@@ -18,8 +20,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-78p.2] Support Batch references and handled agent failures",
   "type": "task",
-  "updated_at": "2026-11-02T09:11:20Z"
+  "updated_at": "2026-11-02T09:17:52Z"
 }
