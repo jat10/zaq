@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-02T11:26:43Z",
+  "description": "Detailed specification: https://chatgpt.com/space/page_fa28a6b2fe70819199a0a178f96c7fb6\nStep 17; planning only until prerequisite approval is recorded.\n\n## Functional specifications covered with associated files to edit/add\nComplete PR review and fixes, then run the required `coverage-upper` phase against the final implementation. Review coverage changes and record exceptions/follow-ups. No commit, push, merge, or publication beyond this requested Page is implied.\nFiles: Reviewed changed files and focused coverage tests; use coverage-upper after review approval, record exceptions.\n\n## Tests to add before implementation\nRun relevant regression/isolated tests for review fixes; fresh coverage per coverage-upper; never weaken existing expectations.\nImmediate unit/integration/property/LiveView tests apply to implementation issues. Feature E2E scenarios are defined early but authoring waits for the human UX approval issue. Existing test behavior changes require explicit human approval.\n\n## Branches/paths validated\nRun relevant regression/isolated tests for review fixes; fresh coverage per coverage-upper; never weaken existing expectations.\nPreserve agreed lifecycle: stable document ID/manual document values; deleted/replaced chunks lose every old assignment; configured dedicated text Labeling model and per-target automatic settings gate inference.\n\n## Mocking plan\nUse real Repo, permissions, domain contexts, Action validation and dispatch wherever practical. Control only external LLM/embedding/conversion/provider HTTP and genuine nondeterministic boundaries. Runtime opts use Zaq.Config.get/4. No broad global mocks or sleep-based coordination. Review/approval-only steps need no mocks.\n\n## Documentations to update for both code and docs/ related content\ndocs/services/ingestion.md and affected module docs; docs/architecture.md for approved cross-role/generation boundaries. Keep this Page's final specification aligned; progress remains in Beadwork.\n\n## Action reuse assessment\nReview and coverage verification only. Recheck reuse and no exposure/permission regressions. Any newly discovered operation change must receive its own assessment.\n\n## Validation and prerequisites\nFollow docs/WORKFLOW_AGENT.md validation lifecycle, docs/testing-approach.md and docs/exec-plans/PLAN_STRATEGY.md. All cross-service BO calls use NodeRouter.dispatch/1 and explicit Event action. No commit/push/merge authorized. Dependencies are the serial reviewable delivery sequence; only the architecture gate should initially be ready.",
+  "id": "zaq-kw0.17",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "Review and coverage handoff",
+  "type": "task",
+  "updated_at": "2026-11-02T11:26:43Z"
+}
