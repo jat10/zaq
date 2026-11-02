@@ -4,6 +4,8 @@
     "zaq-78p.3"
   ],
   "blocks": [],
+  "closed_at": "2026-11-02T09:35:48Z",
+  "close_reason": "Final validation passed: mix q; 363 focused checks (9 properties, 354 tests); mix precommit passed 10485 checks (17 doctests, 217 properties, 10251 tests), 1 skipped, 147 excluded. Final runner /tmp/zaq-rag-final-wqPVkz/status.json reports exit 0, precommit 376583 ms with 900000 ms timeout. Diff reviewed and git diff --check clean. No external spreadsheet or live agent calls, commits, pushes, or application workflow installation.",
   "created": "2026-11-02T09:07:05Z",
   "description": "Run mix q and isolated tests for each step; final actual DAG integration tests plus unit/property tests and mix precommit. Keep existing expectations unchanged. Review minimal surface, permission propagation and run-scoped shared context. No browser UI changes; E2E authoring not needed.",
   "id": "zaq-78p.4",
@@ -16,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-78p.4] Validate RAG workflow integration and regressions",
   "type": "task",
-  "updated_at": "2026-11-02T09:28:56Z"
+  "updated_at": "2026-11-02T09:35:48Z"
 }
