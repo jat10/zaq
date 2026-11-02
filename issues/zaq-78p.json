@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-02T09:06:25Z",
+  "description": "User authorizes W1 payload first, then W2 fixes after discussing Batch references, error answers and collection. This later instruction authorizes the supporting changes needed beyond the earlier skill-only draft. Keep shared managed agent context, one event per agent and one RAW bulk write including errors. No deployment/commit/push. Reuse existing Actions; no new agent tools. Validation: focused unit/property/DAG integration tests, mix q, final mix precommit. No UI changes; browser E2E not applicable.",
+  "id": "zaq-78p",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "RAG workflow question snapshots and runtime iteration",
+  "type": "epic",
+  "updated_at": "2026-11-02T09:06:25Z"
+}
