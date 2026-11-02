@@ -9,7 +9,7 @@
   "parent": "zaq-78p",
   "priority": 2,
   "status": "open",
-  "title": "Validate RAG workflow integration and regressions",
+  "title": "[zaq-78p.4] Validate RAG workflow integration and regressions",
   "type": "task",
-  "updated_at": "2026-11-02T09:07:05Z"
+  "updated_at": "2026-11-02T09:07:06Z"
 }
