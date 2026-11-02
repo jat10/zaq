@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-02T10:17:10Z",
+  "description": "User explicitly requests reverting all supporting production changes and retaining only dispatch_rag_evaluation.ex and run_rag_evaluation_agent.ex. Remove newly authored extension tests as part of requested revert; do not modify existing tests. Reuse existing Sheets, Batch, Condition, Concat, RunAgent and DispatchEvent contracts. Verify actual runtime feasibility without engine extensions; document confirmed limitations using the create-workflow skill rather than implementing hidden operations. No commit, push or deployment. Validate examples with temporary isolated tests, mix q and final precommit. No UI/E2E scope.",
+  "id": "zaq-t2z",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Restore RAG examples to existing Action contracts",
+  "type": "task",
+  "updated_at": "2026-11-02T10:17:10Z"
+}
