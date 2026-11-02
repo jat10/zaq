@@ -11,9 +11,15 @@
   "id": "zaq-78p.3",
   "labels": [],
   "parent": "zaq-78p",
+  "comments": [
+    {
+      "text": "Actual W2 DAG tests exposed Runic scheduling items out of input order despite serial fork execution. Because the user explicitly keeps shared agent context, W2 needs input-order execution as well as aligned sheet cells. Add an opt-in ordered Batch chain reusing the same run_fork/StepRunner and collector, preserving existing default fan-out. Keep the strict new integration assertions; do not weaken order checks.",
+      "timestamp": "2026-11-02T09:23:16Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-78p.3] Wire W2 iteration and bulk answer collection",
   "type": "task",
-  "updated_at": "2026-11-02T09:17:53Z"
+  "updated_at": "2026-11-02T09:23:16Z"
 }
