@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-78p.4"
   ],
+  "closed_at": "2026-11-02T09:27:41Z",
+  "close_reason": "W2 now uses ordered Batch with shared run context, Condition error inspection, literal Concat matrices and one RAW bulk write. Full workflow checks pass: 66 tests/properties including W1 event compatibility, ordered success/error/success, all failures, runtime counts and trigger creation.",
   "created": "2026-11-02T09:07:02Z",
   "description": "Action reuse assessment: reuse RunAgent -\u003e Condition -\u003e Concat in Batch. Condition records error presence; Concat selects populated output/error text as a cell matrix. Extend FactLookup wildcard list projection for results.*.result.matrix, reuse Concat to join matrices. W2 rejects unexpected uncaptured errors before writing. One UpdateSheetValues RAW write with actor and event config. Runtime question count, no compile-time unrolling. Verify integrated W1/W2 payload contract, agent errors in correct cells, all-error run, varying question counts, no real external calls.",
   "id": "zaq-78p.3",
@@ -18,8 +20,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-78p.3] Wire W2 iteration and bulk answer collection",
   "type": "task",
-  "updated_at": "2026-11-02T09:23:16Z"
+  "updated_at": "2026-11-02T09:27:41Z"
 }
