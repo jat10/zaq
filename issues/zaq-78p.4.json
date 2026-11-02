@@ -9,9 +9,15 @@
   "id": "zaq-78p.4",
   "labels": [],
   "parent": "zaq-78p",
+  "comments": [
+    {
+      "text": "Self-review: changes remain in workflow examples, existing Actions, resolver and Batch DAG plumbing; no registry, agent lifecycle or permission changes. Literal-data options prevent interpreting user questions/answers as templates. Existing test files are unchanged; new tests cover ordered calls/cells, handled and unexpected errors, event/actor contracts, column offsets, empty iteration and alias isolation. Numerical coverage handoff is not applicable to this local task without a PR review; no UI work or new browser E2E.",
+      "timestamp": "2026-11-02T09:28:56Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-78p.4] Validate RAG workflow integration and regressions",
   "type": "task",
-  "updated_at": "2026-11-02T09:27:43Z"
+  "updated_at": "2026-11-02T09:28:56Z"
 }
