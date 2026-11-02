@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-78p.1"
+  ],
   "blocks": [],
   "created": "2026-11-02T09:07:00Z",
   "description": "Action reuse assessment: extend existing Batch/Action input-field detection to exclude fixed body params. Carry parent cascade into each fork, resolve authored parameter references through shared FactLookup template resolver extracted from Concat, and retain local body aliases. Extend RunAgent with opt-in returned error data and literal input, preserving default behavior and trusted actor/context. Engine owns iteration plumbing, not an Action. No lifecycle changes. Verify typed start.agent_id, no cross-item alias leakage, success/error/success, existing batch strategies/resume and literal questions.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-78p.2] Support Batch references and handled agent failures",
   "type": "task",
-  "updated_at": "2026-11-02T09:07:01Z"
+  "updated_at": "2026-11-02T09:07:07Z"
 }
