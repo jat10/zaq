@@ -2,14 +2,16 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-03T12:20:14Z",
+  "close_reason": "Selected labels now use existing Table :selected variant matching ingestion cyan background. Bulk delete uses DSButton tertiary danger matching ingestion classes and Delete (N), hidden when no selection. Added regression; 12 LabelsLive tests and mix q passed. No existing expectations changed.",
   "created": "2026-11-03T12:20:05Z",
   "description": "Use existing Table selected variant and tertiary danger Button matching ingestion; show Delete (N) only with selection. Local UI composition, no new operation or Action. Add regression for highlight, clear state and button classes/visibility. Validate mix q and LabelsLive tests; existing expectations preserved.",
   "id": "zaq-kw0.27",
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Match label selection styling to ingestion",
   "type": "task",
-  "updated_at": "2026-11-03T12:20:05Z"
+  "updated_at": "2026-11-03T12:20:14Z"
 }
