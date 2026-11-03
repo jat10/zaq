@@ -4,14 +4,16 @@
     "zaq-kw0.23"
   ],
   "blocks": [],
+  "closed_at": "2026-11-03T12:07:32Z",
+  "close_reason": "Added shared trash icon on catalog rows and Delete label in edit modal. Shared confirmation shows active document/chunk counts; usage/version changes require reconfirmation; Cancel preserves staged edits. LiveView tests passed in 33-check scoped suite and mix q passed. BO docs updated. Final feature E2E and PR precommit remain tracked by existing parent validation tasks.",
   "created": "2026-11-03T11:59:40Z",
   "description": "## Functional specifications covered with associated files to edit/add\nLabelsLive trash action in table and edit modal; use existing hero-trash and BOModal.confirm_dialog. Preview usage before confirmation, show resource counts and preserve pending form on cancel. Refresh usage and require reconfirmation if it changes.\n## Tests to add before implementation\nTable and modal entry points, used-label counts, cancel preservation, successful cleanup, changed usage second confirmation, staff cannot delete.\n## Branches/paths validated\nManager-only controls; authorization remains in backend; staged edit form preserved behind confirmation and restored on cancel; successful delete closes forms and resets pagination safely.\n## Mocking plan\nReal LiveView and Event dispatch, no backend mocks.\n## Documentations to update for both code and docs/ related content\nBO component guide and ongoing consolidated E2E scenario tracking; author new E2E only after existing UX gate.\n## Action reuse assessment\nReuse Labels deletion Action through LabelEvents/NodeRouter, DesignSystem.Button hero-trash, BOModal.confirm_dialog. No duplicate mutation or new modal shell. Depends on backend deletion task.",
   "id": "zaq-kw0.24",
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Add label deletion controls and usage-aware confirmation UI",
   "type": "task",
-  "updated_at": "2026-11-03T12:07:31Z"
+  "updated_at": "2026-11-03T12:07:32Z"
 }
