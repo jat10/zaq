@@ -13,11 +13,15 @@
     {
       "text": "Implemented one deletion snapshot (kind, previews, error), shared preview/confirm/success orchestration, preserved single/bulk Action dispatch and specific stale/usage/not-found handling. Render derives existing modal assigns, keeping DOM IDs/text intact. Removed constant selected argument from private active label choice. mix q passes; focused suite 74/75 passes, only unchanged catalog text assertion fails. All 75 test/property ASTs match baseline after helper rename normalization. No existing assertions or scenarios changed. Final precommit running with durable log and 900-second process timeout.",
       "timestamp": "2026-11-03T19:01:17Z"
+    },
+    {
+      "text": "Final precommit completed: 11820/11821 passed (48 doctests, 303 properties); sole failure is the unchanged catalog text assertion now at test/zaq_web/live/bo/data/labels_live_test.exs:387. Earlier Python failures did not recur in this run. mix q and diff check pass; focused labels suite 74/75 with the same failure. AST comparison preserves all 75 tests/properties allowing only shared helper renames; catalog HEEx unchanged. No commits or pushes. Refactoring implemented; final green validation remains blocked by the separate assertion correction tracked under zaq-kw0.37 / zaq-kw0.19.",
+      "timestamp": "2026-11-03T19:07:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.39] Unify label deletion UI state and simplify active choice",
   "type": "task",
-  "updated_at": "2026-11-03T19:01:17Z"
+  "updated_at": "2026-11-03T19:07:12Z"
 }
