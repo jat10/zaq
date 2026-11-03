@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-kw0.6"
+  ],
   "blocks": [
     "zaq-kw0.7"
   ],
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-kw0.21] Add generic post-ingestion processing infrastructure",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:53Z"
+  "updated_at": "2026-11-03T07:21:56Z"
 }
