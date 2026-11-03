@@ -6,9 +6,15 @@
   "description": "Resolve credential-option and attachment delivery overlaps while preserving both contracts. Action reuse: reuse AdapterOptions.build and existing delivery operations; no new operations.",
   "id": "zaq-nii",
   "labels": [],
+  "comments": [
+    {
+      "text": "Rebased all ten branch commits onto origin/main 1d543d5bb. Three replay conflicts in JidoChatBridge resolved by preserving main AdapterOptions.build credential routing and branch attachment preparation, failure notices, and attachment-aware receipts. Validation currently waiting on new main llm_db dependency fetch.",
+      "timestamp": "2026-11-03T06:34:41Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "Rebase channel files onto latest main",
   "type": "task",
-  "updated_at": "2026-11-03T06:32:13Z"
+  "updated_at": "2026-11-03T06:34:41Z"
 }
