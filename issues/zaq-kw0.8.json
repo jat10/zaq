@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-kw0.7"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-kw0.9"
   ],
@@ -15,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.8] PR 1 Add assignment editing Action",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:27Z"
+  "updated_at": "2026-11-03T07:21:45Z"
 }
