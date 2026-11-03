@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Add label deletion controls and usage-aware confirmation UI",
   "type": "task",
-  "updated_at": "2026-11-03T11:59:41Z"
+  "updated_at": "2026-11-03T12:07:31Z"
 }
