@@ -11,9 +11,15 @@
   "id": "zaq-kw0.36",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "Implemented catalog Values / usage counts and LabelValueManager using existing DSM Table/Input/Button and viewport-bounded BOModal shell. Values page searchable; resource selection limited to current 50-row page, readonly rows disabled, explicit selected-count confirmation for replacement or clearing, errors retain proposal and provide reload. Formatted and lint clean. Existing catalog/table regression tests and new real LiveView tests passed in combined 57-check run. No local BO server on port 4000, so browser visual verification not performed. Final feature UX/E2E gate remains separate; no commit authorized.",
+      "timestamp": "2026-11-03T17:31:36Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Add label values and selected-resource management UI",
   "type": "task",
-  "updated_at": "2026-11-03T17:31:34Z"
+  "updated_at": "2026-11-03T17:31:36Z"
 }
