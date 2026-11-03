@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-03T15:27:15Z",
+  "description": "Shared SearchableSelect only filtered server-search input in updated(); repeated empty suggestions produce no DOM diff and no Add action. Filter/reposition immediately on input; retain asynchronous server suggestions. Add hook regressions for first value and successive queries with no patch. Reuse existing hook, no new operation. Validate Node tests and mix q.",
+  "id": "zaq-kw0.33",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "Fix first-time value creation when suggestions are unchanged",
+  "type": "task",
+  "updated_at": "2026-11-03T15:27:15Z"
+}
