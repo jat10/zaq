@@ -19,11 +19,15 @@
     {
       "text": "Precommit completed despite Context Mode transport timeout: 11815/11821 passed; 6 failures (five previously documented Python conversion/image-dedup environment failures and the existing catalog text assertion mismatch). 48 doctests and 303 properties pass. Final log /tmp/zaq-label-cleanup-precommit.log. Cleanup implementation complete; task remains open for pending explicit test assertion approval/final validation. No commits or pushes.",
       "timestamp": "2026-11-03T17:59:53Z"
+    },
+    {
+      "text": "Final precommit completed: 11820/11821 passed (48 doctests, 303 properties); sole failure is the unchanged catalog text assertion now at test/zaq_web/live/bo/data/labels_live_test.exs:387. Earlier Python failures did not recur in this run. mix q and diff check pass; focused labels suite 74/75 with the same failure. AST comparison preserves all 75 tests/properties allowing only shared helper renames; catalog HEEx unchanged. No commits or pushes. Refactoring implemented; final green validation remains blocked by the separate assertion correction tracked under zaq-kw0.37 / zaq-kw0.19.",
+      "timestamp": "2026-11-03T19:07:13Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Clean up labeling iteration leftovers",
   "type": "task",
-  "updated_at": "2026-11-03T17:59:53Z"
+  "updated_at": "2026-11-03T19:07:13Z"
 }
