@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-03T16:30:37Z",
+  "description": "Backend step: add Values projection/mutation module and validated UpdateLabelValues Action, API events and Labels delegates. Reuse Access, Permissions.grants_query, ResourceLabels.resolve/edit, AssignmentValue normalization. Move readable document query into Access for shared discovery; no new value table. Contract: usage over readable selected assignments incl nil, bounded 51-row value/resource pages, page-size 50 selections; atomic per-resource expected versions, only selected resource IDs changed, clearing retains selected=true. Fresh actor and per-document read/update rights required, no implicit bypass. Lock all parent documents in ID order before invoking existing edit. Tests before implementation: aggregate empty/nonempty/doc/chunk values, permission filtering incl nil and forged bypass, selected-only mutation, stale rollback, invalid value/batch and idempotent normalization property. Real SQL sandbox, no mocks. Update ingestion service docs; ExUnit and mix q; UI/E2E in next step.",
+  "id": "zaq-kw0.35",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-kw0] Add authorized label value usage and bulk assignment editing",
+  "type": "task",
+  "updated_at": "2026-11-03T16:30:37Z"
+}
