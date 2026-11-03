@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [
     "zaq-kw0.39"
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-kw0.38] Consolidate label tests and shared fixtures",
   "type": "task",
-  "updated_at": "2026-11-03T18:55:55Z"
+  "updated_at": "2026-11-03T18:55:57Z"
 }
