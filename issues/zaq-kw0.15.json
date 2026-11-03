@@ -1,7 +1,8 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-kw0.14"
+    "zaq-kw0.14",
+    "zaq-kw0.36"
   ],
   "blocks": [
     "zaq-kw0.16"
@@ -15,5 +16,5 @@
   "status": "open",
   "title": "[zaq-kw0.15] PR 3 Obtain human UX approval",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:34Z"
+  "updated_at": "2026-11-03T16:30:50Z"
 }

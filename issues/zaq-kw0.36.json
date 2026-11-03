@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-kw0.35"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-kw0.15"
+  ],
   "created": "2026-11-03T16:30:38Z",
   "description": "UI step after backend: Labels page Values \u0026 usage entry, shared modal/component with bounded searchable values including Empty value, usage counts, matching document/chunk rows, current-page selection and explicit selected-count update/clear confirmation. Reuse DSM Table/Input/Button, BOModal, LabelEvents NodeRouter; no direct domain calls or new styling system. Tests before implementation: real LiveView open usage/select value/resources/save/clear/cancel, pagination resets selection, errors retain state, readonly no mutation. Existing test contracts preserved. Update BO docs and Storybook if reusable presentation extracted. Deferred feature E2E scenarios in zaq-kw0.16 after zaq-kw0.15 approval; no new journey specs now. All operations consume backend prerequisite Action through ingestion events.",
   "id": "zaq-kw0.36",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-kw0] Add label values and selected-resource management UI",
   "type": "task",
-  "updated_at": "2026-11-03T16:30:49Z"
+  "updated_at": "2026-11-03T16:30:50Z"
 }
