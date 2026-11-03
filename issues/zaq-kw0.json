@@ -18,11 +18,15 @@
     {
       "text": "Research update 2026-11-02: checked live OpenRouter decisions catalog (33 entries including aliases/free variants) and official API/model documentation. No documented arbitrary text-span extraction found in Decisions contract; choice/noul/score, plus model-specific outputs, remain typed judgments. Found specialized scaledown/extract: description-driven NER, matching text spans/confidence/offsets; catalog text output and Responses/Chat API, not Decisions endpoint. Sources: https://openrouter.ai/scaledown/extract ; https://openrouter.ai/docs/cookbook/evaluate-and-optimize/extract-invoice-fields-with-scaledown ; https://docs.scaledown.ai/api-reference/extract-overview . Candidate for Labeling model instead of general-purpose generation; requires provider-specific entities options, multiple-match policy and output normalization. Documentation research only; no inference benchmark and no Page/implementation changes.",
       "timestamp": "2026-11-02T12:07:23Z"
+    },
+    {
+      "text": "PR 1 local implementation complete. Final results: mix q passes; 446 scoped tests pass including 12 properties; migration rollback/reapply passes; Chromium catalog/editor/save/chip inspection succeeds. Full precommit: 11,750 of 11,763 pass, with 13 failures confined to unchanged Python conversion/pipeline tests and local crawler fixtures. Existing browser journeys: 141 pass, 2 existing skips, 1 WebKit System Config navigation timeout; Firefox absent. Gate zaq-kw0.19 remains in progress for validation/review/coverage. No final approval, commit or push requested/performed.",
+      "timestamp": "2026-11-03T09:01:48Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0] Implement document and chunk labeling",
   "type": "epic",
-  "updated_at": "2026-11-03T09:00:03Z"
+  "updated_at": "2026-11-03T09:01:48Z"
 }
