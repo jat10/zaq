@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-kw0.39"
   ],
+  "closed_at": "2026-11-03T18:58:38Z",
   "created": "2026-11-03T18:55:51Z",
   "description": "Test ownership: group six ingestion suites into labels/catalog, resource_labels, value_management and lifecycle; combine catalog LiveView suites using describe-local setup. Preserve every scenario, assertion, fixture values and async boundary. Reuse existing AccountsFixtures; add label fixture/event helpers only for repeated identical setup. Action reuse not applicable: test organization only. No new tests required before mechanical moves; inventory scenario names and compare before/after. Validate focused suites and mix q; preserve known stale catalog text assertion. No E2E authoring.",
   "id": "zaq-kw0.38",
@@ -16,8 +17,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-kw0.38] Consolidate label tests and shared fixtures",
   "type": "task",
-  "updated_at": "2026-11-03T18:58:37Z"
+  "updated_at": "2026-11-03T18:58:38Z"
 }
