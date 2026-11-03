@@ -2,14 +2,16 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-03T14:00:53Z",
+  "close_reason": "Replaced datalist with shared SearchableSelect; optional component target/event context and disabled/maxlength support preserve existing defaults. Label value create/search routed by label ID; selection and creation remain staged, No value preserves clearing. Permission query shared via Permissions.grants_query and reused by effective-grants path; SQL filters visibility, unions typed values, deduplicates/orders/limits to20. User approved picker expectation changes; cancel test plumbing changed mechanically. mix q passed; backend/permissions/UI suite 74 passed, final selector/editor suite12 passed and3 Node hook tests passed. Docs and E2E tracking updated; full PR gate remains separate.",
   "created": "2026-11-03T13:54:27Z",
   "description": "Extend SearchableSelect with optional component target, event context and disabled/maxlength support while retaining existing defaults. Replace label datalist with shared picker and stage new values via existing edit path. Move permission filtering, distinct values and limit into SQL using reusable Permissions grant query; preserve existing principal/right policies. Tests: existing selector consumers, targeted events, pick/create/save, private values, limit/ordering. User explicitly approved updating native-datalist picker test to shared selector on this turn. No new mutation Action; reuse EditResourceLabels. Docs/Storybook update; existing final UX/E2E gate retained.",
   "id": "zaq-kw0.32",
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Reuse SearchableSelect for label values and bound suggestion queries",
   "type": "task",
-  "updated_at": "2026-11-03T13:58:29Z"
+  "updated_at": "2026-11-03T14:00:53Z"
 }
