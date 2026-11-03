@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-03T12:09:01Z",
+  "description": "Specifications: add current-page selection and bulk confirmation in LabelsLive; extend Labels deletion through validated bulk Action/Event. Tests: selection, select-all, search reset, cancellation, usage changes, atomic rollback, resource preservation and authorization. Paths: reuse sorted definition locks and single deletion helpers. Mocking: real sandbox and LiveView. Documentation: ingestion and BO guides. Action reuse: extend existing deletion domain with atomic batch orchestration; new bulk Action reuses confirmed deletion contract, no agent exposure.",
+  "id": "zaq-kw0.25",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "Bulk label selection and atomic deletion",
+  "type": "task",
+  "updated_at": "2026-11-03T12:09:01Z"
+}
