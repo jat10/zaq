@@ -9,9 +9,15 @@
   "id": "zaq-kw0.38",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "Consolidation implemented: six ingestion suites -\u003e four under labels/, two catalog UI suites -\u003e one. Shared label_definition and label_event helpers preserve inputs/results. mix q passes; 52/53 consolidated tests pass with only the previously reproduced catalog text mismatch, unchanged by moves. Scenario AST comparison verifies preserved tests; no expectations changed.",
+      "timestamp": "2026-11-03T18:58:37Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.38] Consolidate label tests and shared fixtures",
   "type": "task",
-  "updated_at": "2026-11-03T18:55:57Z"
+  "updated_at": "2026-11-03T18:58:37Z"
 }
