@@ -79,11 +79,15 @@
     {
       "text": "Approved compact label display implemented: shared document chips show first two labels plus +N overflow button invoking existing editor; long names truncate with full title, row stays nowrap, Add label retains hover/focus/touch behavior. Reuses existing open_label_editor event; no domain change. mix q and 41 targeted component/editor tests passed.",
       "timestamp": "2026-11-03T11:19:32Z"
+    },
+    {
+      "text": "Long-description UX correction: shared two-line ellipsis preview with anywhere wrapping across catalog descriptions/names, selected label cards and search results. Full stored descriptions remain intact and editable. Catalog uses fixed table layout with reserved name/resource/action widths and horizontal overflow on narrow screens. No domain/action change. mix q and nine catalog/editor tests passed; isolated Chromium checks passed long paragraph and 4,000-character unbroken-string clamps with full text retained.",
+      "timestamp": "2026-11-03T11:23:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T11:19:32Z"
+  "updated_at": "2026-11-03T11:23:18Z"
 }
