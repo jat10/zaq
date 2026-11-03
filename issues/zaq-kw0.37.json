@@ -7,9 +7,15 @@
   "id": "zaq-kw0.37",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "Implemented return_projection: false for bulk updates while preserving default editor output and shared permissions/locking. Removed test-only resolver delegate; property now calls ResourceLabels.resolve with identical assertion/generator. Restored .serena/project.yml to HEAD and reconciled zaq-kw0 scope. mix q passes. Label suite 62/63 passes after provisioning the missing dynamic chunks table in branch test DB through Chunk.create_table(1536). Remaining existing UI assertion expects 1 value while current LabelsLive renders 1 / 2; reproduced alone. Explicit approval requested asynchronously before changing existing test expectations. Final precommit running.",
+      "timestamp": "2026-11-03T17:54:12Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Clean up labeling iteration leftovers",
   "type": "task",
-  "updated_at": "2026-11-03T17:50:46Z"
+  "updated_at": "2026-11-03T17:54:12Z"
 }
