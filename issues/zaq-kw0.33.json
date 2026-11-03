@@ -2,14 +2,16 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-03T15:27:52Z",
+  "close_reason": "Shared hook now filters and positions immediately on input, independent of LiveView updated callback. Fixes repeated empty results on new labels; updated callback also filters before positioning. All5 hook tests pass including first value without DOM update and successive queries. mix q passed. Existing expectations preserved.",
   "created": "2026-11-03T15:27:15Z",
   "description": "Shared SearchableSelect only filtered server-search input in updated(); repeated empty suggestions produce no DOM diff and no Add action. Filter/reposition immediately on input; retain asynchronous server suggestions. Add hook regressions for first value and successive queries with no patch. Reuse existing hook, no new operation. Validate Node tests and mix q.",
   "id": "zaq-kw0.33",
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Fix first-time value creation when suggestions are unchanged",
   "type": "task",
-  "updated_at": "2026-11-03T15:27:15Z"
+  "updated_at": "2026-11-03T15:27:52Z"
 }
