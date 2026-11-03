@@ -20,11 +20,15 @@
     {
       "text": "Follow-up visual correction: usage metrics are separate non-wrapping spans in a wrapping flex container, so count and noun stay together; resources moves to its own line when needed. Removed dot separator to avoid a stranded separator on wrap. Correct singular resource wording. Action reuse not applicable: presentation-only. mix q passed.",
       "timestamp": "2026-11-03T17:36:37Z"
+    },
+    {
+      "text": "User requested compact counts: changed header to Values / Resources and cell to values / resources numbers, e.g. 1 / 2, with explanatory tooltip. Action reuse not applicable, presentation only. Existing LiveView text expectations require update; explicit test expectation approval requested under testing handbook, pending. Production edit complete.",
+      "timestamp": "2026-11-03T17:38:46Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "[zaq-kw0] Add label values and selected-resource management UI",
   "type": "task",
-  "updated_at": "2026-11-03T17:36:37Z"
+  "updated_at": "2026-11-03T17:38:46Z"
 }
