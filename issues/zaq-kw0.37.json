@@ -15,11 +15,15 @@
     {
       "text": "Final precommit has reproduced the catalog text mismatch plus Python conversion/image-dedup failures already recorded under zaq-kw0.19 (RecordSourceTest, ImageDedupCrawlerTest, OfflineConversionContractTest). No assertions weakened or unrelated production paths changed. Cleanup-only E2E/coverage expansion not applicable; existing labeling feature approval/coverage gates remain open.",
       "timestamp": "2026-11-03T17:59:00Z"
+    },
+    {
+      "text": "Precommit completed despite Context Mode transport timeout: 11815/11821 passed; 6 failures (five previously documented Python conversion/image-dedup environment failures and the existing catalog text assertion mismatch). 48 doctests and 303 properties pass. Final log /tmp/zaq-label-cleanup-precommit.log. Cleanup implementation complete; task remains open for pending explicit test assertion approval/final validation. No commits or pushes.",
+      "timestamp": "2026-11-03T17:59:53Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Clean up labeling iteration leftovers",
   "type": "task",
-  "updated_at": "2026-11-03T17:59:00Z"
+  "updated_at": "2026-11-03T17:59:53Z"
 }
