@@ -2,14 +2,16 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-03T12:12:21Z",
+  "close_reason": "Implemented current-page row/select-all checkboxes using shared ingestion table controls, compact Delete selected toolbar, per-label usage confirmation, atomic batch Action/Event with sorted locks and existing deletion checks. Search/pagination/reload clear selection. Missing labels refresh selection; changed usage/version reconfirms. mix q passed; 20 focused backend and LiveView tests passed. Existing test expectations preserved. Ingestion and BO docs updated. Final PR validation and feature UX/E2E remain tracked under parent.",
   "created": "2026-11-03T12:09:01Z",
   "description": "Specifications: add current-page selection and bulk confirmation in LabelsLive; extend Labels deletion through validated bulk Action/Event. Tests: selection, select-all, search reset, cancellation, usage changes, atomic rollback, resource preservation and authorization. Paths: reuse sorted definition locks and single deletion helpers. Mocking: real sandbox and LiveView. Documentation: ingestion and BO guides. Action reuse: extend existing deletion domain with atomic batch orchestration; new bulk Action reuses confirmed deletion contract, no agent exposure.",
   "id": "zaq-kw0.25",
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Bulk label selection and atomic deletion",
   "type": "task",
-  "updated_at": "2026-11-03T12:10:58Z"
+  "updated_at": "2026-11-03T12:12:21Z"
 }
