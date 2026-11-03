@@ -2,6 +2,7 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-03T17:23:18Z",
   "created": "2026-11-03T17:22:04Z",
   "description": "Declare and forward disabled on shared table_checkbox to fix label value manager compiler warnings and honor native disabled behavior. Action reuse: not applicable, UI attribute contract only; extend existing DS checkbox. Add focused rendering regression without changing existing expectations; compile and run component tests. No new UX flow or E2E required.",
   "id": "zaq-zyz",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Support disabled table checkboxes",
   "type": "task",
-  "updated_at": "2026-11-03T17:23:17Z"
+  "updated_at": "2026-11-03T17:23:18Z"
 }
