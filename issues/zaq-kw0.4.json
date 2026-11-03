@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-kw0.3"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-kw0.5"
   ],
@@ -15,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.4] PR 1 Add definition management Action",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:22Z"
+  "updated_at": "2026-11-03T07:21:42Z"
 }
