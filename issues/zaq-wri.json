@@ -6,9 +6,15 @@
   "description": "Apply verified action-first private dispatch behind unchanged handle_event/3 callback. Preserve clause order, guards, bodies, fallback, actor context and Jido.Exec.run. Action reuse: local-only dispatcher helper; existing Actions and public operations reused unchanged. Validate isolated compilation memory and existing API/label tests, mix q, final precommit. No E2E: behavior-preserving internal refactor. No existing test expectations change.",
   "id": "zaq-wri",
   "labels": [],
+  "comments": [
+    {
+      "text": "Applied action-first private dispatch_event/3 behind unchanged handle_event/3 public callback. Only lib/zaq/ingestion/api.ex changed by this fix. AST comparison verifies all 20 original clauses preserve order, patterns, guards and bodies after argument permutation. Isolated fixed module compiles in 2.25s, sampled peak 274 MiB (original exceeded 2118 MiB and was stopped). Application compilation now completes. API, label events and deletion tests: 25 passed. Broader value-management test blocked by pre-existing Ecto.Query.update/3 macro collision at line 40. mix q blocked by pre-existing labeling lint issues; final mix precommit blocked by pre-existing formatting in unrelated pending files. Preserved original formatting outside api.ex. No existing tests changed. No commit made.",
+      "timestamp": "2026-11-03T17:20:55Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Fix ingestion API compiler memory growth",
   "type": "task",
-  "updated_at": "2026-11-03T17:18:37Z"
+  "updated_at": "2026-11-03T17:20:55Z"
 }
