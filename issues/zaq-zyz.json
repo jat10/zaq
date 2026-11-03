@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-03T17:22:04Z",
@@ -7,8 +7,8 @@
   "id": "zaq-zyz",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Support disabled table checkboxes",
   "type": "task",
-  "updated_at": "2026-11-03T17:22:04Z"
+  "updated_at": "2026-11-03T17:22:16Z"
 }
