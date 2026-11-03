@@ -27,11 +27,15 @@
     {
       "text": "Final scoped regression suite passes 446 tests (12 properties), including all labeling, API, Chunk, FTS, DocumentProcessor, BOLayout, Roles and ingestion LiveView tests. Migration rollback/reapply succeeds. Chromium manual inspection confirms catalog/form, shared editor, saved document chip. Screenshots /tmp/pr1-label-definition.png, /tmp/pr1-labels-catalog.png, /tmp/pr1-label-editor.png, /tmp/pr1-ingestion-labels.png. Full precommit rerun pending completion; unrelated Python fixture failures persist. Gate stays in progress for final validation, independent review and coverage.",
       "timestamp": "2026-11-03T09:00:04Z"
+    },
+    {
+      "text": "Final precommit rerun completed with only pre-existing Python conversion/pipeline fixture/environment failures; label, chunk lifecycle, FTS fixture and document processor failures resolved. Final scoped suite: 446 passed (12 properties), migration roundtrip passed, mix q clean. Temporary Python environment link removed after validation. No final approval requested because full gate is not green; independent PR review and coverage remain pending. No commits or pushes.",
+      "timestamp": "2026-11-03T09:00:58Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T09:00:04Z"
+  "updated_at": "2026-11-03T09:00:58Z"
 }
