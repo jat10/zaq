@@ -23,11 +23,15 @@
     {
       "text": "Final precommit completed: 11820/11821 passed (48 doctests, 303 properties); sole failure is the unchanged catalog text assertion now at test/zaq_web/live/bo/data/labels_live_test.exs:387. Earlier Python failures did not recur in this run. mix q and diff check pass; focused labels suite 74/75 with the same failure. AST comparison preserves all 75 tests/properties allowing only shared helper renames; catalog HEEx unchanged. No commits or pushes. Refactoring implemented; final green validation remains blocked by the separate assertion correction tracked under zaq-kw0.37 / zaq-kw0.19.",
       "timestamp": "2026-11-03T19:07:13Z"
+    },
+    {
+      "text": "User authorized commit and push. Commit fa4a5b7cb68649eef80603833f18f3e5900be348 (feat(ingestion): add resource labels and value management) pushed to jat10/zaq feat/labeling using existing gh HTTPS credentials after SSH authentication failed. GitHub branch SHA verified equal to local HEAD. Working tree clean. Remaining catalog text assertion failure disclosed in commit body; no test expectations changed.",
+      "timestamp": "2026-11-03T19:10:23Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Clean up labeling iteration leftovers",
   "type": "task",
-  "updated_at": "2026-11-03T19:07:13Z"
+  "updated_at": "2026-11-03T19:10:23Z"
 }
