@@ -55,11 +55,15 @@
     {
       "text": "Simplified editor per user: always-visible search acts as picker; only selected labels render outside results, two per row. Nonempty query reveals matching unselected name/description buttons directly below input; selection stages label and clears search/results. Existing editor tests receive mechanical search navigation updates preserving every prior assertion and scenario, with extra assertions for initial/results visibility and cleared query. Reuses existing toggle/save Events; no new domain operation. mix q passed after transient unrelated module availability compiler failure resolved on retry.",
       "timestamp": "2026-11-03T10:52:13Z"
+    },
+    {
+      "text": "Label picker results now float in a fixed panel anchored to input, without modal layout shift or scroll-container clipping. Local LabelPicker hook repositions on LiveView updates, resize and scroll and cleans up listeners/observer. Existing SearchableSelect hook inspected: its trigger/hidden-input/filter contract does not match this always-visible server-filtered input; narrow presentation hook justified, no domain Action. Chromium isolated component inspection passed unchanged modal geometry, alignment, overflow and resize. Four existing editor tests passed; mix q and asset build passed.",
+      "timestamp": "2026-11-03T10:55:31Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T10:52:13Z"
+  "updated_at": "2026-11-03T10:55:31Z"
 }
