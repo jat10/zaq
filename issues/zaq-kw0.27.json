@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-03T12:20:05Z",
+  "description": "Use existing Table selected variant and tertiary danger Button matching ingestion; show Delete (N) only with selection. Local UI composition, no new operation or Action. Add regression for highlight, clear state and button classes/visibility. Validate mix q and LabelsLive tests; existing expectations preserved.",
+  "id": "zaq-kw0.27",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "Match label selection styling to ingestion",
+  "type": "task",
+  "updated_at": "2026-11-03T12:20:05Z"
+}
