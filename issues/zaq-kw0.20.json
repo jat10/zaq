@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-kw0.10"
+  ],
   "created": "2026-11-03T07:18:56Z",
   "description": "PR 2 completion gate for the three-PR labeling plan.\n\n## Functional specifications covered with associated files to edit/add\nReview this PR's implemented scope, fix findings, run coverage-upper after review approval, then final mix precommit before final human approval. Record deployment/migration compatibility and obtain separate Git authorization before merge. Files: changed source/tests and owning guides in this PR; validation receipts in Beadwork.\n\n## Tests to add before implementation\nEach implementation issue runs mix q and isolated relevant tests. This gate runs fresh required coverage and final checks; fixes receive targeted regression tests.\n\n## Branches/paths validated\nPR 2 enables generic scheduling and automatic labels for new documents/chunks; one automatic chunk label and a configured compatible Decision model are sufficient. Missing configuration skips safely.\n\n## Mocking plan\nReal application boundaries; only external provider/conversion/embedding fixtures as applicable. No mocks for review-only work.\n\n## Documentations to update for both code and docs/ related content\nUpdate relevant service/component guides alongside code and record this PR's remaining feature scenarios. Page stays aligned.\n\n## Action reuse assessment\nNot applicable: review and validation gate adds no executable operation. Recheck implementation reuse evidence.\n\n## Feature E2E and approval tracking\nPersistent feature E2E is zaq-kw0.16, gated by completed-feature UX approval zaq-kw0.15 in PR 3. Earlier PRs retain immediate unit/integration/LiveView coverage and explicitly record deferred E2E scope. No new feature browser tests before that approval. Apply docs/WORKFLOW_AGENT.md multi-PR validation lifecycle; downstream PR implementation is not a prerequisite for this gate.",
   "id": "zaq-kw0.20",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.20] PR 2 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T07:18:57Z"
+  "updated_at": "2026-11-03T07:21:52Z"
 }
