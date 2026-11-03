@@ -2,14 +2,16 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-03T12:28:46Z",
+  "close_reason": "Single confirmation now matches bulk width and shares the same deletion-details table/error presentation. Existing deletion behavior preserved. mix q and all 12 LabelsLive tests passed.",
   "created": "2026-11-03T12:28:35Z",
   "description": "Reuse local deletion-details component for both confirmations: same width, structured usage table and separate errors. Existing domain behavior and tests unchanged. Local-only UI composition, no new Actions. Validate mix q and label page suite.",
   "id": "zaq-kw0.29",
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Unify single and bulk label deletion presentation",
   "type": "task",
-  "updated_at": "2026-11-03T12:28:35Z"
+  "updated_at": "2026-11-03T12:28:46Z"
 }
