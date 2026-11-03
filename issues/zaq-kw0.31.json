@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-kw0.30"
+  ],
   "blocks": [],
   "created": "2026-11-03T12:52:57Z",
   "description": "Depends on assignment values domain. Extend existing LabelEditor staging with per-label values and permission-filtered suggestions via Events. Reuse DS input/datalist, existing Save/Cancel flow and chip component. Add LiveView tests for entering, selecting, changing and canceling values; preserve current tests. Update BO documentation and existing E2E scenario tracking.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "Add value picking and entry to the shared label modal",
   "type": "task",
-  "updated_at": "2026-11-03T12:52:57Z"
+  "updated_at": "2026-11-03T12:54:04Z"
 }

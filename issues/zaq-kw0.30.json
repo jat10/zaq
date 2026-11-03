@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-kw0.31"
+  ],
   "created": "2026-11-03T12:52:27Z",
   "description": "Specifications: nullable normalized value on typed assignments; value-only edits retain optimistic concurrency; chips display key/value; assignment modal accepts new text and permitted existing suggestions. Add migration, extend ResourceLabels and editor UI. Tests: distinct values per resource, normalization/length, rollback/stale, suggestions read permissions, legacy assignments, chips, modal value editing. Mocking: real Repo and LiveView. Documentation: ingestion and BO guides; shared feature E2E task remains gated. Action reuse: extend existing EditResourceLabels Action with optional value in edits; reuse existing authorization and read Event path for suggestions, no new mutation Action or agent tool. Suggestions are read-only domain projection through confidential Ingestion Event; not a separately exposed agent operation.",
   "id": "zaq-kw0.30",
@@ -11,5 +13,5 @@
   "status": "in_progress",
   "title": "Support values on document and chunk label assignments",
   "type": "task",
-  "updated_at": "2026-11-03T12:52:56Z"
+  "updated_at": "2026-11-03T12:54:04Z"
 }
