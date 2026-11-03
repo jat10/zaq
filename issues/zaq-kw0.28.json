@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-03T12:26:31Z",
+  "description": "Reuse confirmation modal with optional structured details slot and shared bounded scroll table. Show one label per row, Not assigned for unused labels, usage for assigned labels, short destructive explanation and separate error. No operation changes. Validate mix q and existing LabelsLive tests; no expectation changes. Update BO guide.",
+  "id": "zaq-kw0.28",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "Improve bulk label deletion confirmation layout",
+  "type": "task",
+  "updated_at": "2026-11-03T12:26:31Z"
+}
