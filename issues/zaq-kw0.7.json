@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-kw0.6"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-kw0.8"
   ],
@@ -15,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.7] PR 2 Schedule and persist automatic labels",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:26Z"
+  "updated_at": "2026-11-03T07:21:44Z"
 }
