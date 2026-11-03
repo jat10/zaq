@@ -4,14 +4,16 @@
   "blocks": [
     "zaq-kw0.24"
   ],
+  "closed_at": "2026-11-03T12:07:30Z",
+  "close_reason": "Implemented manager-only usage preview and validated deletion Action/Event. Transaction checks version and usage, clears assignments and targets, preserves resources. Scoped suite: 30 tests and 3 properties passed; mix q passed. Ingestion docs updated.",
   "created": "2026-11-03T11:59:38Z",
   "description": "## Functional specifications covered with associated files to edit/add\nLabels deletion preview and transactional delete; validated DeleteLabelDefinition Action and Ingestion Events. Count selected document/chunk assignments; require matching definition version and confirmed usage counts. Remove all assignments and target settings with definition, preserve resources.\n## Tests to add before implementation\nUnused and assigned deletion, exclusions cleanup, document/chunk preservation, staff denial, stale version, changed usage rejection, malformed requests and validated Event path.\n## Branches/paths validated\nExisting assignment mutations lock label rows; deletion takes same label lock, checks usage, and deletes assignments plus definition atomically. Usage preview is manager-only. Counts are informational scope of whole-label deletion, never permission bypass.\n## Mocking plan\nReal Repo sandbox and Jido execution; no persistence mocks.\n## Documentations to update for both code and docs/ related content\nIngestion guide: preview/delete Events, destructive semantics and confirmation preconditions.\n## Action reuse assessment\nExisting SaveLabelDefinition and EditResourceLabels cover update/assignment changes but not deleting a definition with all assignments. New focused DeleteLabelDefinition Action delegates to Labels; existing Access.manager, version lock and schemas reused. No agent tool exposure. UI consumer follows as dependent task.",
   "id": "zaq-kw0.23",
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Add authorized label deletion with usage confirmation",
   "type": "task",
-  "updated_at": "2026-11-03T11:59:42Z"
+  "updated_at": "2026-11-03T12:07:30Z"
 }
