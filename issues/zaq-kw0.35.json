@@ -9,9 +9,15 @@
   "id": "zaq-kw0.35",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "Initial focused backend/LiveView verification passed (14 checks incl 1 property). Explicit Ecto string typing fixes union resource discriminator for aggregate filters. Read access and update rights both checked; stale or unselected assignments roll back batch. Expanding pagination/revocation checks before closure.",
+      "timestamp": "2026-11-03T17:26:52Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Add authorized label value usage and bulk assignment editing",
   "type": "task",
-  "updated_at": "2026-11-03T16:30:51Z"
+  "updated_at": "2026-11-03T17:26:52Z"
 }
