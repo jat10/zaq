@@ -35,11 +35,15 @@
     {
       "text": "User UX correction: replace Size column with Labels in ingestion list; show size beside file/folder name with smaller muted text. Reuses existing LabelChips and editor unchanged; no domain operations added. mix q passed. Final PR gate remains open as previously recorded.",
       "timestamp": "2026-11-03T10:18:48Z"
+    },
+    {
+      "text": "UX feedback applied: filename underline scoped to name only; size uses body-sm tertiary text in parentheses. Shared chips expose hover/focus remove controls and compact + Add label on row/card hover or focus, always visible on touch. Removal reuses get_resource_labels and versioned edit_resource_labels Events with permission enforcement and manual exclusion. No new Action required; BO helper composes existing Actions. mix q passed. Existing final validation/E2E approval blockers remain.",
+      "timestamp": "2026-11-03T10:24:02Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T10:18:48Z"
+  "updated_at": "2026-11-03T10:24:02Z"
 }
