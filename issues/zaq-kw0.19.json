@@ -59,11 +59,15 @@
     {
       "text": "Label picker results now float in a fixed panel anchored to input, without modal layout shift or scroll-container clipping. Local LabelPicker hook repositions on LiveView updates, resize and scroll and cleans up listeners/observer. Existing SearchableSelect hook inspected: its trigger/hidden-input/filter contract does not match this always-visible server-filtered input; narrow presentation hook justified, no domain Action. Chromium isolated component inspection passed unchanged modal geometry, alignment, overflow and resize. Four existing editor tests passed; mix q and asset build passed.",
       "timestamp": "2026-11-03T10:55:31Z"
+    },
+    {
+      "text": "Catalog typography aligned with ingestion table using existing Table.table_text: 14px body names; 12px secondary descriptions and tertiary resource/header text. Replaces inherited oversized bare cell text; no new styling API or domain operation. mix q and four LabelsLive tests passed.",
+      "timestamp": "2026-11-03T10:57:15Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T10:55:31Z"
+  "updated_at": "2026-11-03T10:57:15Z"
 }
