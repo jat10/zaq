@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-kw0.9"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-kw0.11"
   ],
@@ -15,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.10] PR 3 Complete source locator contract",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:29Z"
+  "updated_at": "2026-11-03T07:21:46Z"
 }
