@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-kw0.9"
+  ],
   "blocks": [
     "zaq-kw0.13"
   ],
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-kw0.12] PR 1 Build Labels catalog UI",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:39Z"
+  "updated_at": "2026-11-03T07:21:59Z"
 }
