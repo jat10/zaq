@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-03T17:13:11Z",
@@ -7,8 +7,8 @@
   "id": "zaq-1gp",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Investigate ingestion API compiler memory growth",
   "type": "task",
-  "updated_at": "2026-11-03T17:13:11Z"
+  "updated_at": "2026-11-03T17:15:43Z"
 }
