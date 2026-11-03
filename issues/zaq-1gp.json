@@ -6,9 +6,15 @@
   "description": "Read-only diagnosis of Elixir 1.20.4 type inference memory growth in Zaq.Ingestion.Api. Compare HEAD and working-tree source in temporary standalone compile probes; isolate new label clauses and verify a minimal reproducer. Action reuse: not applicable — no application operations or production code changes.",
   "id": "zaq-1gp",
   "labels": [],
+  "comments": [
+    {
+      "text": "Confirmed compile-time regression in Zaq.Ingestion.Api on Elixir 1.20.4. Isolated Code.compile_file with HEAD source: 1.04s/89 MiB RSS; current: \u003e2118 MiB, stopped. All handle_event bodies replaced with :ok still exceeds 1556 MiB. Dependency-free event struct + clause heads reproduces \u003e1562 MiB; action-first heads compile in 0.85s/90 MiB. Full temporary module with unchanged public handle_event(event,action,context) delegating to private dispatch_event(action,event,context) compiles in 1.39s/261 MiB. Confirms type inference complexity from overlapping first-argument event/request patterns; exact upstream algorithmic defect not established. Runtime traces identify Module.Types.Descr BDD operations. Source unchanged; compilation-only workaround validated, runtime equivalence not tested. Probes and results: /tmp/zaq-api-memory-xktjqbc2. Action reuse not applicable: diagnosis only.",
+      "timestamp": "2026-11-03T17:16:24Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Investigate ingestion API compiler memory growth",
   "type": "task",
-  "updated_at": "2026-11-03T17:15:43Z"
+  "updated_at": "2026-11-03T17:16:24Z"
 }
