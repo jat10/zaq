@@ -9,9 +9,15 @@
   "id": "zaq-kw0.39",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "Implemented one deletion snapshot (kind, previews, error), shared preview/confirm/success orchestration, preserved single/bulk Action dispatch and specific stale/usage/not-found handling. Render derives existing modal assigns, keeping DOM IDs/text intact. Removed constant selected argument from private active label choice. mix q passes; focused suite 74/75 passes, only unchanged catalog text assertion fails. All 75 test/property ASTs match baseline after helper rename normalization. No existing assertions or scenarios changed. Final precommit running with durable log and 900-second process timeout.",
+      "timestamp": "2026-11-03T19:01:17Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.39] Unify label deletion UI state and simplify active choice",
   "type": "task",
-  "updated_at": "2026-11-03T18:58:40Z"
+  "updated_at": "2026-11-03T19:01:17Z"
 }
