@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-03T17:18:18Z",
+  "description": "Apply verified action-first private dispatch behind unchanged handle_event/3 callback. Preserve clause order, guards, bodies, fallback, actor context and Jido.Exec.run. Action reuse: local-only dispatcher helper; existing Actions and public operations reused unchanged. Validate isolated compilation memory and existing API/label tests, mix q, final precommit. No E2E: behavior-preserving internal refactor. No existing test expectations change.",
+  "id": "zaq-wri",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Fix ingestion API compiler memory growth",
+  "type": "task",
+  "updated_at": "2026-11-03T17:18:18Z"
+}
