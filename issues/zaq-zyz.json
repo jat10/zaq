@@ -6,9 +6,15 @@
   "description": "Declare and forward disabled on shared table_checkbox to fix label value manager compiler warnings and honor native disabled behavior. Action reuse: not applicable, UI attribute contract only; extend existing DS checkbox. Add focused rendering regression without changing existing expectations; compile and run component tests. No new UX flow or E2E required.",
   "id": "zaq-zyz",
   "labels": [],
+  "comments": [
+    {
+      "text": "User requested reverting the warning fix. Removed disabled attribute support and the new test. Verified both files have no Git diff. Interrupted mix q completed and unrelated formatter changes were restored. Compiler-memory fix remains intact.",
+      "timestamp": "2026-11-03T17:23:17Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Support disabled table checkboxes",
   "type": "task",
-  "updated_at": "2026-11-03T17:22:16Z"
+  "updated_at": "2026-11-03T17:23:17Z"
 }
