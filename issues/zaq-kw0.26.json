@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-03T12:16:42Z",
+  "description": "Reuse table border, row-click and hover-action controls. Refresh streamed rows from cache on selection changes. Add regression tests for row checkbox states, edit navigation and action styling. No operations added; existing Action contracts reused. Update BO guide; scoped tests and mix q.",
+  "id": "zaq-kw0.26",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "Fix label table selection rendering and row interactions",
+  "type": "task",
+  "updated_at": "2026-11-03T12:16:42Z"
+}
