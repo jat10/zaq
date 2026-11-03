@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-kw0.2"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-kw0.4"
   ],
@@ -15,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.3] PR 2 Resolve the existing Decision model runtime",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:21Z"
+  "updated_at": "2026-11-03T07:21:41Z"
 }
