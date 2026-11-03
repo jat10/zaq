@@ -2,6 +2,7 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-03T17:16:25Z",
   "created": "2026-11-03T17:13:11Z",
   "description": "Read-only diagnosis of Elixir 1.20.4 type inference memory growth in Zaq.Ingestion.Api. Compare HEAD and working-tree source in temporary standalone compile probes; isolate new label clauses and verify a minimal reproducer. Action reuse: not applicable — no application operations or production code changes.",
   "id": "zaq-1gp",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Investigate ingestion API compiler memory growth",
   "type": "task",
-  "updated_at": "2026-11-03T17:16:24Z"
+  "updated_at": "2026-11-03T17:16:25Z"
 }
