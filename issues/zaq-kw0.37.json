@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-03T17:50:45Z",
+  "description": "User authorized the four review cleanups. Action reuse: extend ResourceLabels.edit with a default-preserving return_projection option; UpdateLabelValues still uses ValueManagement and the same ResourceLabels mutation/authorization/locking implementation. No new Action or tool exposure. Remove test-only Labels.resolve_resource delegate and mechanically retarget its existing property to ResourceLabels.resolve without changing generators/assertions. Remove unrelated Serena generated defaults and reconcile epic scope with assignment values. Validate mix q, existing isolated label tests and final precommit; E2E unnecessary for behavior-preserving internal cleanup.",
+  "id": "zaq-kw0.37",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-kw0] Clean up labeling iteration leftovers",
+  "type": "task",
+  "updated_at": "2026-11-03T17:50:45Z"
+}
