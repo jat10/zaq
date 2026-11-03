@@ -11,11 +11,15 @@
     {
       "text": "Context analysis complete. Public Query entrypoint has trusted person/team identity and explicit bypass; query serialization is allowlisted. Private document grants use resource_permissions read rights including Everyone, matching current label resource checks. Label records have no independent ACL, so user explicitly chose visibility via selected assignments on readable documents, with trusted context bypass. Existing exact describe-type assertion update approved. Implementing now; DB writes/global state out of scope.",
       "timestamp": "2026-11-03T11:34:01Z"
+    },
+    {
+      "text": "Implemented label/document descriptors, schema and tool catalog entries. Label discovery inherits selected document assignments and existing read-authorized query; explicit trusted context bypass sees all. DocumentFilters validates up to 100 positive bigint IDs and any/all, deduplicates, matches selected document-only assignments via subquery, and keeps empty IDs fail-closed. Documents support filtered get/search, metadata-only projection and stable ID tie-breaker. Existing resources unchanged. User-approved exact allowlist expectation updated in Action describe and Registry tests. Added real validated Jido execution, ACL/person/team/Everyone/update-only, get filters, field restrictions, paging, malformed IDs and matching property coverage. Agent guide documents contracts. Self-review found no additional correctness issues. mix q completed (existing LabelEditor disabled-attribute warning remains); targeted suite 130 passed (3 properties, 127 tests). Full PR review/coverage/precommit remains tracked by zaq-kw0.19; no commit or push.",
+      "timestamp": "2026-11-03T11:40:02Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Extend QueryResources with labels and document label filters",
   "type": "task",
-  "updated_at": "2026-11-03T11:34:01Z"
+  "updated_at": "2026-11-03T11:40:02Z"
 }
