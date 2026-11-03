@@ -19,11 +19,15 @@
     {
       "text": "Validation findings: full precommit reported 85 failures. Most came from the default test DB retaining the early experimental chunks table without embedding; dedicated freshly migrated partition passed. Repairing that test-only schema via canonical Chunk.reset_table. Two FTS fresh-install fixture sites directly DROP chunks and now collide with real FK ownership; mechanically use Chunk.drop_table, preserving fresh-install scenario and every assertion. No test behavioral expectations changed. Local .venv links the already-installed main ZAQ environment (no packages installed). Other Python Pipeline tests remain unchanged. Existing browser result: 141 passed, 2 existing skips, 1 WebKit navigation timeout before an unchanged System Config test; Firefox executable absent. Gate remains open.",
       "timestamp": "2026-11-03T08:51:38Z"
+    },
+    {
+      "text": "Review finding corrected: batch chip reads now use Permissions.list_effective_many with explicit :read access. Regression proved update-only grant leakage before fix and passes after. Scoped expanded run: 280/289 tests pass including all label, chunk, FTS and document-processor tests; 9 failures remain in unchanged Python conversion/pipeline tests (stub-like converted output for real fixtures; nonexistent-path error handling). No assertions weakened. mix q passes. Full precommit needs rerun after mechanical FTS cleanup and table component styling; independent coverage/review approval still pending.",
+      "timestamp": "2026-11-03T08:54:30Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T08:51:38Z"
+  "updated_at": "2026-11-03T08:54:30Z"
 }
