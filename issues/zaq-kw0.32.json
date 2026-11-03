@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-03T13:54:27Z",
+  "description": "Extend SearchableSelect with optional component target, event context and disabled/maxlength support while retaining existing defaults. Replace label datalist with shared picker and stage new values via existing edit path. Move permission filtering, distinct values and limit into SQL using reusable Permissions grant query; preserve existing principal/right policies. Tests: existing selector consumers, targeted events, pick/create/save, private values, limit/ordering. User explicitly approved updating native-datalist picker test to shared selector on this turn. No new mutation Action; reuse EditResourceLabels. Docs/Storybook update; existing final UX/E2E gate retained.",
+  "id": "zaq-kw0.32",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "Reuse SearchableSelect for label values and bound suggestion queries",
+  "type": "task",
+  "updated_at": "2026-11-03T13:54:27Z"
+}
