@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-03T11:32:25Z",
+  "description": "## Functional specifications covered with associated files to edit/add\nExtend Resources.Registry, QueryResources schema and Query, tool catalog, and owning Agent guide. Expose label definitions and document metadata; document filters label_ids plus label_match any/all. Preserve existing resources and permission filtering before count/page. Label discovery access policy awaiting user answer.\n## Tests to add before implementation\nValidated Jido execution for new types; descriptions and field allowlists; document grants including person/team/Everyone/update-only; any/all, duplicates, unknown IDs, removed assignments, invalid filters, stable pagination and ID behavior; property tests for matching invariants.\n## Branches/paths validated\nAbsent filters preserve existing listing; default match any; empty list matches no documents; nonempty positive integer IDs capped at 100; unknown IDs never broaden results; selected assignments only. Raw content, metadata and operational internals excluded from document outputs.\n## Mocking plan\nReal Repo sandbox, real permissions and Jido.Exec. No production dependency mocking.\n## Documentations to update for both code and docs/ related content\nAgent service guide owns resources.query extension contract. Module docs and registry/tool descriptions updated. Beadwork owns progress.\n## Action reuse assessment\nExtend existing QueryResources workflow Action: it already owns resource discovery, read filtering, field validation, serialization, count, sort and pagination. Provider List/SearchDocuments operate on external providers and cannot query local category assignments. Registry is allowlist owner; Query is read orchestrator; Ingestion owns category rows/assignments. New query helper only if needed for cohesive relationship validation, never a duplicate Action. No mutations, new tool key or new global state.\n## Context and invariants\nFlow: validated Action -\u003e allowlisted descriptor -\u003e read-authorized Ecto query -\u003e filters -\u003e count/page -\u003e serialization. DB owns records and grants; execution context owns trusted identity/bypass. Resource filter values currently assume schema fields; virtual label filters require explicit validation and query handling. Existing get ignores search/filters; new document label filters must not silently bypass on get. Existing describe test exact type list needs approved update; user approved it in this conversation. Existing direct read-grant query includes Everyone and is reusable for documents. No broad refactor.",
+  "id": "zaq-kw0.22",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "Extend QueryResources with labels and document label filters",
+  "type": "task",
+  "updated_at": "2026-11-03T11:32:25Z"
+}
