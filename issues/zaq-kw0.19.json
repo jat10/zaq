@@ -99,11 +99,15 @@
     {
       "text": "Implemented optional shared clear-value x using DSM ghost icon button and existing form change events; enabled for resource label values, preserving label assignment until Save. Added Storybook clearable example. Fixed Enter creation for opt-in no-exact-match mode while retaining exact/default selection. Validation: 9 Node hook tests passed; 19 ExUnit checks (18 tests, 1 property) passed; mix q passed. New rendering test corrected to repository LazyHTML dependency after initial missing-Floki failure. No existing expectations changed. Browser visual check and final feature gate not performed in this iteration.",
       "timestamp": "2026-11-03T16:14:56Z"
+    },
+    {
+      "text": "User requested upstream draft PR. Created https://github.com/www-zaq-ai/zaq/pull/918 via gh, main \u003c- jat10:feat/labeling, commit fa4a5b7cb. PR describes manual-labeling scope, Action reuse, migrations, 11820/11821 precommit result, preserved catalog assertion mismatch, and pending review/coverage/UX/E2E gates.",
+      "timestamp": "2026-11-03T19:12:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T16:14:56Z"
+  "updated_at": "2026-11-03T19:12:12Z"
 }
