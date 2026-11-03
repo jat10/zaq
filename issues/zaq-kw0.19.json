@@ -43,11 +43,15 @@
     {
       "text": "UX correction: chip remove control now positioned absolutely at top-right with compact 16px circular surface, eliminating reserved inline space. CSS-only change; existing hover/focus/touch behavior retained. mix q passed.",
       "timestamp": "2026-11-03T10:25:44Z"
+    },
+    {
+      "text": "Editor UX refinement per user: selected labels only in main two-column area (single column on narrow screens), explicit standard body/default and tertiary description colors, accent selected surface; + Add labels expandable searchable list of unassigned labels searches name/description case-insensitively. Removed unavailable automatic controls. Reused BOModal, DS text input/buttons/table checkbox; native details avoids new dropdown hook or component API. Search is local presentation state; persistence still existing Actions. Storybook updated. mix q and 6 focused tests passed, including new search/staging scenario; existing assertions preserved. Final UX/E2E approval and PR validation gates remain open.",
+      "timestamp": "2026-11-03T10:34:53Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T10:25:44Z"
+  "updated_at": "2026-11-03T10:34:53Z"
 }
