@@ -75,11 +75,15 @@
     {
       "text": "Added always-visible catalog search by name/description with 250ms debounce, empty state, page reset on query changes and retained edit access. Reuse/extend: existing list_labels Event and Labels.list now accept optional query; server filters before pagination, preserves authorization and treats SQL wildcard characters literally via bound strpos search. Existing list arities remain compatible; no new Action/tool. Local presentation query capped at 200 chars; backend normalizes trim/NFC. mix q and 15 targeted checks passed (2 properties, 13 tests), including cross-page discovery/editing, clear/no-results, literal wildcard, invalid input and unauthorized search.",
       "timestamp": "2026-11-03T11:05:10Z"
+    },
+    {
+      "text": "Approved compact label display implemented: shared document chips show first two labels plus +N overflow button invoking existing editor; long names truncate with full title, row stays nowrap, Add label retains hover/focus/touch behavior. Reuses existing open_label_editor event; no domain change. mix q and 41 targeted component/editor tests passed.",
+      "timestamp": "2026-11-03T11:19:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T11:05:10Z"
+  "updated_at": "2026-11-03T11:19:32Z"
 }
