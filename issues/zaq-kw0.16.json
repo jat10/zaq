@@ -11,9 +11,15 @@
   "id": "zaq-kw0.16",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "PR 1 implementation is present. Keep consolidated label feature E2E authoring blocked by zaq-kw0.15. Current browser coverage uses unchanged ingestion/system/knowledge journeys: 141 pass, 2 pre-existing skips, 1 WebKit setup navigation timeout; Firefox unavailable. Manual Chromium inspection covers catalog/form and shared document editor, including saving and visible document chips. Future consolidated scenarios still include automatic labels and inline chunk entry points after PR 2/3.",
+      "timestamp": "2026-11-03T08:57:08Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.16] PR 3 Implement consolidated feature E2E",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:36Z"
+  "updated_at": "2026-11-03T08:57:08Z"
 }
