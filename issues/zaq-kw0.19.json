@@ -23,11 +23,15 @@
     {
       "text": "Review finding corrected: batch chip reads now use Permissions.list_effective_many with explicit :read access. Regression proved update-only grant leakage before fix and passes after. Scoped expanded run: 280/289 tests pass including all label, chunk, FTS and document-processor tests; 9 failures remain in unchanged Python conversion/pipeline tests (stub-like converted output for real fixtures; nonexistent-path error handling). No assertions weakened. mix q passes. Full precommit needs rerun after mechanical FTS cleanup and table component styling; independent coverage/review approval still pending.",
       "timestamp": "2026-11-03T08:54:30Z"
+    },
+    {
+      "text": "Final scoped regression suite passes 446 tests (12 properties), including all labeling, API, Chunk, FTS, DocumentProcessor, BOLayout, Roles and ingestion LiveView tests. Migration rollback/reapply succeeds. Chromium manual inspection confirms catalog/form, shared editor, saved document chip. Screenshots /tmp/pr1-label-definition.png, /tmp/pr1-labels-catalog.png, /tmp/pr1-label-editor.png, /tmp/pr1-ingestion-labels.png. Full precommit rerun pending completion; unrelated Python fixture failures persist. Gate stays in progress for final validation, independent review and coverage.",
+      "timestamp": "2026-11-03T09:00:04Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-03T08:57:06Z"
+  "updated_at": "2026-11-03T09:00:04Z"
 }
