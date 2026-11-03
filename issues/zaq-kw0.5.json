@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-kw0.4"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-kw0.6"
   ],
@@ -15,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.5] PR 2 Add resource classification Action",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:24Z"
+  "updated_at": "2026-11-03T07:21:43Z"
 }
