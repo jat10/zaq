@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-kw0.11"
+  ],
   "blocks": [
     "zaq-kw0.15"
   ],
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-kw0.14] PR 3 Integrate chunk editing and complete feature documentation",
   "type": "task",
-  "updated_at": "2026-11-03T07:21:40Z"
+  "updated_at": "2026-11-03T07:21:48Z"
 }
