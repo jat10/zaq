@@ -9,9 +9,15 @@
   "id": "zaq-kw0.1",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "User authorized PR 1 implementation. Contracts resolved: admin/super_admin definition management; read/update resource grants checked against parent document; bypass derived only from current super_admin record. Name max 80, description max 4000, NFC/case-insensitive uniqueness. Block target removal while any typed assignments exist, including manual exclusions. PR 1 rejects automation/reset server-side. Decision fixtures/threshold and chunk-marker precision are PR 2/3 work, not PR 1 blockers. Reuse evidence confirmed: Teams name/description interaction; Roles changesets; Share modal staged selection; transactional assignment mutation pattern. No existing assertions need behavior changes. Dynamic chunk-table lifecycle requires FK attach/detach with a no-assignments constraint while chunks are unavailable; this integration is necessary for existing embedding reset behavior.",
+      "timestamp": "2026-11-03T08:25:01Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.1] PR 1 Approve labeling contracts and decision policy",
   "type": "task",
-  "updated_at": "2026-11-03T08:13:29Z"
+  "updated_at": "2026-11-03T08:25:01Z"
 }
