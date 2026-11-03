@@ -11,9 +11,15 @@
   "id": "zaq-kw0.13",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "PR 1 implemented locally. Manual category schema and assignment Actions, trusted actor/parent-document permission checks, stale revisions and atomic exclusions, paginated catalog, Share-style staged shared editor, and document list/grid chips are present. Evaluation/generation fields are deliberately deferred to PR 2; only manual origin/selected/version fields are persisted now. Dynamic chunk-table lifecycle is covered with FK detach/restore and unavailable guard. Teams/Roles/Share interaction references reused through existing DS primitives without modifying those consumers. Quality passes; isolated suite currently 279 tests incl 2 properties passes against dedicated migrated test partition. Final integration and review checks ongoing; no Git mutation.",
+      "timestamp": "2026-11-03T08:39:44Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.13] PR 1 Build shared editor and document chips",
   "type": "task",
-  "updated_at": "2026-11-03T08:11:38Z"
+  "updated_at": "2026-11-03T08:39:44Z"
 }
