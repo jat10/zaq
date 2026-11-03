@@ -7,9 +7,15 @@
   "id": "zaq-kw0.22",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "Context analysis complete. Public Query entrypoint has trusted person/team identity and explicit bypass; query serialization is allowlisted. Private document grants use resource_permissions read rights including Everyone, matching current label resource checks. Label records have no independent ACL, so user explicitly chose visibility via selected assignments on readable documents, with trusted context bypass. Existing exact describe-type assertion update approved. Implementing now; DB writes/global state out of scope.",
+      "timestamp": "2026-11-03T11:34:01Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Extend QueryResources with labels and document label filters",
   "type": "task",
-  "updated_at": "2026-11-03T11:34:00Z"
+  "updated_at": "2026-11-03T11:34:01Z"
 }
