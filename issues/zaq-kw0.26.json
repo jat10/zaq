@@ -2,14 +2,16 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-03T12:17:35Z",
+  "close_reason": "Added same zaq-border-default table shell treatment as ingestion. Selection now refreshes cached stream rows, with regression checks for select-all/select-none and individual checked states. Removed standalone Edit button; row click and accessible name button open edit. Trash uses shared hover/focus action reveal. Existing tests unchanged; 11 LabelsLive tests and mix q passed. BO guide updated. Browser/E2E final feature gate remains on parent.",
   "created": "2026-11-03T12:16:42Z",
   "description": "Reuse table border, row-click and hover-action controls. Refresh streamed rows from cache on selection changes. Add regression tests for row checkbox states, edit navigation and action styling. No operations added; existing Action contracts reused. Update BO guide; scoped tests and mix q.",
   "id": "zaq-kw0.26",
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Fix label table selection rendering and row interactions",
   "type": "task",
-  "updated_at": "2026-11-03T12:17:22Z"
+  "updated_at": "2026-11-03T12:17:35Z"
 }
