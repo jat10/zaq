@@ -2,14 +2,16 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-03T15:36:40Z",
+  "close_reason": "Extended existing resources.query Action with document labels field returning selected {id,name,value}, batched after authorized page/get. Shared selected-label query reused by ingestion chips. Added validated label_values exact normalized pair filters, any/all, null/empty handling and combined ID-filter semantics; preserved document permissions and pagination counts. Updated tool/schema and agent docs. Existing tests unchanged; mix q and75 checks passed (72 tests,3 properties). Full PR validation remains separate.",
   "created": "2026-11-03T15:32:37Z",
   "description": "Extend existing QueryResources Action/registry/document filters with labels output and label_values pairs, reusing AssignmentValue normalization and shared selected-document-label query. Preserve authorization before filtering/projection and batching after page. Tests: values in get/list, matching pairs, any/all, nil/empty/malformed, legacy ID filters, private labels excluded and pagination. Add property safety test. Existing assertions preserved. Update agent docs and tool descriptions. No new tool or mutation path.",
   "id": "zaq-kw0.34",
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Expose and filter document label values in QueryResources",
   "type": "task",
-  "updated_at": "2026-11-03T15:35:27Z"
+  "updated_at": "2026-11-03T15:36:40Z"
 }
