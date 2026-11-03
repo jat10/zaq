@@ -19,11 +19,15 @@
     {
       "text": "Pending approved feature E2E scope includes clear-value x (retains label, Save persists null, Cancel preserves value) and Enter creation when an existing value is a partial match. Current change uses component/hook tests; final feature UX approval remains required before journey authoring.",
       "timestamp": "2026-11-03T16:12:13Z"
+    },
+    {
+      "text": "Add deferred scenarios: Labels Values / usage -\u003e filter value -\u003e matching documents/chunks -\u003e select current-page resources -\u003e confirm replace or clear. Verify empty group, page selection reset, read-only rows, stale reload and only selected resources change. New tests authored this iteration are ExUnit integration/LiveView only; final UX approval still required for feature E2E authoring.",
+      "timestamp": "2026-11-03T17:31:38Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.16] PR 3 Implement consolidated feature E2E",
   "type": "task",
-  "updated_at": "2026-11-03T16:12:13Z"
+  "updated_at": "2026-11-03T17:31:38Z"
 }
