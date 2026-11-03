@@ -13,11 +13,15 @@
     {
       "text": "Initial focused backend/LiveView verification passed (14 checks incl 1 property). Explicit Ecto string typing fixes union resource discriminator for aggregate filters. Read access and update rights both checked; stale or unselected assignments roll back batch. Expanding pagination/revocation checks before closure.",
       "timestamp": "2026-11-03T17:26:52Z"
+    },
+    {
+      "text": "Implemented assignment-derived usage summaries and value/resource pages plus UpdateLabelValues Action through existing ingestion dispatch. Bulk batches use sorted parent-document locks and reuse ResourceLabels.edit; selected-only expected versions, read/update rechecks, atomic rollback, empty clearing retained. No new tables, global options, or agent tool exposure. Tests cover mixed doc/chunk usage, nil values, selected-only edits, removal/stale/revoked-access rollback, literal searches, paging and generated subsets. Focused combined suites: 57 passed (55 tests, 2 properties). mix q and diff checks passed. Service contract documented. No commit authorized.",
+      "timestamp": "2026-11-03T17:31:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Add authorized label value usage and bulk assignment editing",
   "type": "task",
-  "updated_at": "2026-11-03T17:26:52Z"
+  "updated_at": "2026-11-03T17:31:32Z"
 }
