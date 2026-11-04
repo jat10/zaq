@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-04T12:34:23Z",
+  "description": "User authorized implementation after red regression tests zaq-juu.19. Add bounded attachment_error separate from stream error; propagate via Executor and Outgoing; Channels uses existing notice orchestration for selection failures. Later valid selection clears the error. Reuse AttachDocuments validation/reducer and DeliveryFiles error mapping; extend existing Channels delivery policy, local-only stream bookkeeping and result propagation (no standalone Action or new tool). No authorization changes. Add unit/property coverage and delivery/executor contract tests; preserve existing test behavior. E2E unnecessary: no browser change. Run focused suites and mix q; full PR coverage/precommit remains zaq-juu.8.",
+  "id": "zaq-juu.20",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "Preserve completed answers when attachment selection fails",
+  "type": "bug",
+  "updated_at": "2026-11-04T12:34:23Z"
+}
