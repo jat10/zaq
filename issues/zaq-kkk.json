@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-04T10:31:23Z",
+  "description": "Add one documentation line for JSON Lua return modes on the existing PR branch, validate, and push to retrigger missing PR checks. Action reuse assessment: not applicable; documentation only, no executable operation changes.",
+  "id": "zaq-kkk",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Clarify Lua return modes and retrigger PR 910 CI",
+  "type": "task",
+  "updated_at": "2026-11-04T10:31:23Z"
+}
