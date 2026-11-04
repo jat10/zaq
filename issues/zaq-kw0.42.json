@@ -19,11 +19,15 @@
     {
       "text": "User requested stash/rebase/reapply after PR1 fixes. Fetched latest origin/feat/labeling via HTTPS after SSH authentication failed, preserving remote configuration. Stashed all tracked/untracked workspace changes including generated Serena config and local E2E dependency symlink as 758af087663d964fac54b4bd3be4b925502e239f. Rebased feature/labeling-pr2 onto b051fc3cf (PR1 fixes 3a3ae7b49 dynamic chunk test setup, b051fc3cf LabelPicker browser hook expectation). Stash apply --index succeeded without conflicts; all 72 pre-rebase files verified byte-identical by SHA256 manifest /tmp/zaq-pr2-rebase-1793788077237/manifest.json. All application work remains unstaged/uncommitted; stash retained as recovery backup. No push/merge/PR. Prior user approvals for the RAG browser caption expectation update and Firefox download remain valid; hook expectation addition is now supplied by PR1 itself. PR2 .42.10 integration is ongoing; review/coverage/final precommit still pending, no premature epic closure.",
       "timestamp": "2026-11-04T10:28:42Z"
+    },
+    {
+      "text": "Post-rebase validation on b051fc3cf: real labeling lifecycle and stale-generation regression 2 passed; existing value-management and registry suite 31 passed (1 property); mix q passed across 1768 source files. PR2 stash remains retained, all application changes uncommitted.",
+      "timestamp": "2026-11-04T10:36:52Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42] PR2 generic classification and automatic labeling",
   "type": "epic",
-  "updated_at": "2026-11-04T10:28:42Z"
+  "updated_at": "2026-11-04T10:36:52Z"
 }
