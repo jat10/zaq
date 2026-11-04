@@ -1,8 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-kw0.42.1",
-    "zaq-kw0.5"
+    "zaq-kw0.42.1"
   ],
   "blocks": [
     "zaq-kw0.6"
@@ -16,5 +15,5 @@
   "status": "open",
   "title": "[zaq-kw0.42.4] PR2 Add automation state and generation upgrade migrations",
   "type": "task",
-  "updated_at": "2026-11-04T08:29:42Z"
+  "updated_at": "2026-11-04T08:29:43Z"
 }
