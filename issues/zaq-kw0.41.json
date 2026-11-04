@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-04T02:42:15Z",
@@ -8,8 +8,8 @@
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Consolidate unpublished label migrations",
   "type": "task",
-  "updated_at": "2026-11-04T02:42:15Z"
+  "updated_at": "2026-11-04T02:42:42Z"
 }
