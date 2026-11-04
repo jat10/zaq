@@ -2,6 +2,7 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-04T08:59:16Z",
   "created": "2026-11-04T08:21:32Z",
   "description": "Fix full mix test failures after MIX_ENV=test mix ecto.reset on PR1 branch feat/labeling. User explicitly requested run full suite and fix failures. Reproduce baseline; audit chunks schema ownership; preserve assertions and async isolation; reuse existing schema helpers. Action reuse: not applicable to test setup repair, production operations unchanged unless diagnosis proves otherwise. Run targeted isolated tests and full mix test, then required quality/final checks. Do not commit or push. PR2 implementation in another worktree must remain untouched.",
   "id": "zaq-kw0.43",
@@ -38,8 +39,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-kw0.43] Fix PR1 clean-database test failures",
   "type": "bug",
-  "updated_at": "2026-11-04T08:59:14Z"
+  "updated_at": "2026-11-04T08:59:16Z"
 }
