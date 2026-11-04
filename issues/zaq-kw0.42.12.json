@@ -11,9 +11,15 @@
   "id": "zaq-kw0.42.12",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Coverage started after implementation review approval with fresh mix coveralls.json, enforced 600000ms timeout, log /tmp/zaq-pr2-coveralls.log. Will run mix coverup only after successful report completion. Inspection found current coverup alias compares main and tracked changes but omits untracked new modules; supplement its output with fresh-report analysis against b051fc3cf and git ls-files --others, without staging or changing the alias/threshold. PR2 adds 39 touched production files; application changes remain uncommitted. No stale coverage reused.",
+      "timestamp": "2026-11-04T10:57:57Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.12] PR2 Complete post-review PR2 coverage handoff",
   "type": "task",
-  "updated_at": "2026-11-04T10:57:10Z"
+  "updated_at": "2026-11-04T10:57:57Z"
 }
