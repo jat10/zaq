@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-04T10:54:40Z",
+  "description": "Existing Storybook smoke failure discovered during zaq-kw0.42 validation: person_profile story raises TypeError Cannot read properties of null (reading document), including isolated reproduction. Playwright trace /tmp/zaq-pr2-storybook-isolated-results/stories-Storybook-smoke-st-19872-esign-system-person-profile-storybook/trace.zip records inline callback at person_profile:3591:36. Phoenix Storybook 1.3.0 deps/phoenix_storybook/lib/phoenix_storybook/live/story/variations.ex:222-230 schedules a 100ms callback dereferencing o.contentWindow.document without checking iframe lifetime. Story, component, assets/js and mix.lock are byte-identical to PR1 base b051fc3cf; this is outside PR2 changed paths. Preserve iframe isolation required by page IDs/hooks and all existing smoke assertions; investigate supported dependency/container extension to guard detached frames. Read AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, testing-approach.md, DESIGN.md and bo-components.md before implementation. No production or dependency edits made for this finding. Full smoke:103 passed/3 failed; person_header timeout passes isolated, missing button route repaired preserving all assertions, remaining profile callback is tracked here.",
+  "id": "zaq-z90",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Fix Storybook iframe resize callback after iframe detachment",
+  "type": "bug",
+  "updated_at": "2026-11-04T10:54:40Z"
+}
