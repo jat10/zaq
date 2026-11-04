@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-04T04:17:41Z",
@@ -18,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-kw0.42] PR2 generic classification and automatic labeling",
   "type": "epic",
-  "updated_at": "2026-11-04T08:15:55Z"
+  "updated_at": "2026-11-04T09:34:49Z"
 }
