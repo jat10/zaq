@@ -5,6 +5,7 @@
     "zaq-kw0.42.3"
   ],
   "blocks": [
+    "zaq-kw0.42.4",
     "zaq-kw0.6"
   ],
   "created": "2026-11-02T11:26:05Z",
@@ -16,5 +17,5 @@
   "status": "open",
   "title": "[zaq-kw0.5] PR2 Build reusable general.classify tool and routed contract",
   "type": "task",
-  "updated_at": "2026-11-04T04:18:36Z"
+  "updated_at": "2026-11-04T04:18:37Z"
 }
