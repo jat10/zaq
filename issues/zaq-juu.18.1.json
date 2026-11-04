@@ -9,9 +9,15 @@
   "id": "zaq-juu.18.1",
   "labels": [],
   "parent": "zaq-juu.18",
+  "comments": [
+    {
+      "text": "Implemented DeliveryError as data-only struct after user requested consolidation; DeliveryFiles.delivery_error/1 owns shared preparation mapping. EmailBridge maps SMTP error fields and JidoChatBridge maps transport errors conservatively, preserving original reason. mix q passed; 85 email/preparation checks passed plus targeted Jido error mapping regression passed. Initial test fixture and double-wrapping defects corrected; contract tests assert exact raw reasons. No commits authorized.",
+      "timestamp": "2026-11-04T12:09:37Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.18] Add delivery error contract and bridge mappings",
   "type": "task",
-  "updated_at": "2026-11-04T12:00:34Z"
+  "updated_at": "2026-11-04T12:09:37Z"
 }
