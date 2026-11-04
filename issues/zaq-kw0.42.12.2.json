@@ -7,9 +7,15 @@
   "id": "zaq-kw0.42.12.2",
   "labels": [],
   "parent": "zaq-kw0.42.12",
+  "comments": [
+    {
+      "text": "Stopped by user; agent interrupted. Four additive worker coverage tests remain only in /tmp/zaq-pr2-cov-worker/test/zaq/ingestion/post_processing_test.exs; not integrated into root. Last worker validation process ended; final results not reviewed by root. Preserve edits, leave task incomplete, do not resume commands without instruction.",
+      "timestamp": "2026-11-04T11:14:46Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Cover post-processing worker recovery and terminal outcomes",
   "type": "task",
-  "updated_at": "2026-11-04T11:08:49Z"
+  "updated_at": "2026-11-04T11:14:46Z"
 }
