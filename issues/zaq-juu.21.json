@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-04T12:42:25Z",
+  "description": "Comment 5 authorized by user. Inspected Factory.ask_with_config -\u003e native ask_stream, Executor.consume_or_queue, and deps/jido_ai Request.Stream receive_event selective matching by Handle.id. Remove duplicate native_request_id and matching_request? from reducer; retain canonical request_id for lifecycle correlation. Action reuse: reuse upstream Request.Stream contract; reducer state bookkeeping local-only, no new Action. Add scoped-stream property with interleaved foreign attachment and terminal events; preserve existing test expectations. Update owner docs, run focused stream/Executor/native selection suites and mix q. No E2E needed for reducer refactor.",
+  "id": "zaq-juu.21",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "Remove redundant native request filtering from StreamEvents",
+  "type": "task",
+  "updated_at": "2026-11-04T12:42:25Z"
+}
