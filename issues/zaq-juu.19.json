@@ -2,14 +2,15 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-04T12:27:31Z",
   "created": "2026-11-04T12:26:34Z",
   "description": "Completed user-requested red-test reproduction only. Added two new StreamEvents.consume regression cases: rejected operation and malformed output, both followed by valid completed answer. Control without attachment instruction succeeds. Both added tests fail specifically with :invalid_attachment_selection instead of success. Full stream_events_test.exs: 47/49 passed; only two new tests fail. mix q passed. Production code unchanged; existing test expectations unchanged. Logs /tmp/zaq-comment3-tests.log and /tmp/zaq-comment3-quality.log. Action reuse not applicable (test-only); E2E unnecessary for pure reducer boundary. Implementation intentionally deferred per user request.",
   "id": "zaq-juu.19",
   "labels": [],
   "parent": "zaq-juu",
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Reproduce PR comment 3 attachment selection failing completed answers",
   "type": "task",
-  "updated_at": "2026-11-04T12:27:30Z"
+  "updated_at": "2026-11-04T12:27:31Z"
 }
