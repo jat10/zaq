@@ -7,9 +7,15 @@
   "id": "zaq-kw0.42.12.1",
   "labels": [],
   "parent": "zaq-kw0.42.12",
+  "comments": [
+    {
+      "text": "Per-file plan: (1) classify_test.exs: add only new tests for malformed category records and nonbinary required fields, UTF-8/field/serialized-size boundaries, proving invalid_classification_input before provider inference; add per-call HTTP adapter exception test through public Classify.run, with real saved runtime, asserting sanitized classification_failed and no provider requests. (2) classification_run_test.exs: add trusted per-call Config that raises only while resolving :node_router; run real Ingestion.ingest_records interactive/unattended paths, asserting confirmation creates no jobs and unattended creates skipped job with decision_unavailable, no provider call. No NodeRouter/domain stubs, globals, altered existing tests or production changes. Action reuse not applicable: tests reuse existing Actions, no operations added. E2E not applicable to test-only change. Branch53 routed-unconfigured requires config change between local and agent reads or divergent remote config; retain documented defensive gap rather than fabricate domain outcome. Root owns final integration/precommit/issue closure.",
+      "timestamp": "2026-11-04T11:08:59Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Cover classification Action and run-preflight error branches",
   "type": "task",
-  "updated_at": "2026-11-04T11:07:22Z"
+  "updated_at": "2026-11-04T11:08:59Z"
 }
