@@ -31,11 +31,15 @@
     {
       "text": "Isolation audit final:\n| Resource | Writer/reader | Logical owner and lifetime | Resolution |\n| chunks schema/FK | Chunk.create_table; chunk insert/value queries | Shared DB schema, owned by this test sandbox transaction | Direct creation before usage, async:false; rollback verified |\n| compatible catalog model identities | with_compatible_provider_catalog; ProviderModels.find_model | Synthetic fixture identities, existing serialized catalog swap/on_exit restore | Fixed template and explicit model/id/aliases remove unrelated inherited lookup identities |\n| queued steering submission | Engine receipt writer then Factory.steer; LLM refresh | Async submission task and blocked HTTP fixture | Commit is intermediate; monitor submitter completion before releasing LLM |\nDependency map: Repo Sandbox -\u003e Chunk.create_table real DDL -\u003e real Labels queries; LLMDB snapshot -\u003e fixture transform -\u003e real ProviderModels; queue commit -\u003e synchronous native steer -\u003e submitter exit -\u003e release external HTTP barrier. No mocks of production domains, no production changes. Existing assertions/scenarios preserved; only prerequisites and synchronization repaired. Async readiness: schema/catalog cases intentionally synchronous; document-only tests elsewhere remain async. No Application env changes introduced.",
       "timestamp": "2026-11-04T08:49:39Z"
+    },
+    {
+      "text": "Final validation passed: fresh database partition _finalfix_20261104 full mix test --seed 538931 =\u003e11894 passed (48 doctests,311 properties,11535 tests),1 skipped,159 excluded,322.2s. mix q exit0. Final mix precommit exit0 with 10515 selected checks passed (17 doctests,229 properties,10269 tests),1 skipped,151 excluded,289.7s. git diff --check clean. Final changes only test files: direct sandboxed Chunk.create_table and async:false in value-management; explicit compatible vendor model identities; monitor queued submitter completion in Mattermost fixture. No production changes, assertions not weakened, no commits/pushes. Existing .serena/project.yml user change preserved. PR2 worktree untouched. Known browser LabelPicker hook-list mismatch is outside mix test and not repaired here; PR1 gate remains open.",
+      "timestamp": "2026-11-04T08:59:14Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.43] Fix PR1 clean-database test failures",
   "type": "bug",
-  "updated_at": "2026-11-04T08:49:39Z"
+  "updated_at": "2026-11-04T08:59:14Z"
 }
