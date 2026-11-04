@@ -7,9 +7,15 @@
   "id": "zaq-kw0.42.12.3",
   "labels": [],
   "parent": "zaq-kw0.42.12",
+  "comments": [
+    {
+      "text": "Plan: add automatic LabelChips tooltip and manual fallback tests; real LabelsLive summary refresh preserving selection/staged form, nil confirmation no-op, unconfigured edits, empty-carrier preview, changed-scope confirmation error; LabelEvents safe automation failures and unavailable config; independent IngestionLive guard/refresh tests if fixture setup permits without shared env. Reuse current Events/NodeRouter/Repo paths, no production changes or changed existing assertions.",
+      "timestamp": "2026-11-04T11:08:46Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Cover PR2 automatic-label rendering and LiveView guard branches",
   "type": "task",
-  "updated_at": "2026-11-04T11:07:48Z"
+  "updated_at": "2026-11-04T11:08:46Z"
 }
