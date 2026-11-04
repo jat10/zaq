@@ -9,9 +9,15 @@
   "id": "zaq-juu.18.2",
   "labels": [],
   "parent": "zaq-juu.18",
+  "comments": [
+    {
+      "text": "Completed normalized fallback integration and contract tests. Full real attachment journey passes after SMTP fixture connection budget updated for approved notice plus follow-up; verified no SMTP resend, no uncertain new Jido post, callback suppression, private diagnostics not displayed, original reason preservation and no false confirmation. Updated Telegram rejection assertion to reason field without changing persistence invariants. mix q passes; logs /tmp/zaq-delivery-policy-tests.log (458 passed), /tmp/zaq-delivery-consumers-final.log (123 passed), /tmp/zaq-delivery-quality-final.log. Existing license_manager warning remains. No browser E2E needed: tested existing message delivery journeys at real HTTP/SMTP boundaries. Final PR-wide coverage/precommit deferred until remaining review work completes.",
+      "timestamp": "2026-11-04T12:20:18Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.18] Apply delivery error policy and validate integration",
   "type": "task",
-  "updated_at": "2026-11-04T12:09:39Z"
+  "updated_at": "2026-11-04T12:20:18Z"
 }
