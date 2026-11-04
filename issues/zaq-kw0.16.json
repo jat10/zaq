@@ -23,11 +23,15 @@
     {
       "text": "Add deferred scenarios: Labels Values / usage -\u003e filter value -\u003e matching documents/chunks -\u003e select current-page resources -\u003e confirm replace or clear. Verify empty group, page selection reset, read-only rows, stale reload and only selected resources change. New tests authored this iteration are ExUnit integration/LiveView only; final UX approval still required for feature E2E authoring.",
       "timestamp": "2026-11-03T17:31:38Z"
+    },
+    {
+      "text": "PR2 implementation scenario handoff: cover shared Decision threshold 80 default/bounds/future reservations; no-model automatic controls; preflight failed interactive Cancel creates no jobs and retains selection, Proceed persists skip across whole folder/run/retry; unattended safe classification_error reporting; mid-run failures retain ingestion and prior labels without silent retries; automatic chips/confidence/stale editor metadata; background updates retain open drafts and catalog selection; definition edits preview exact authorized current carriers, Not now has no inference, confirmed scope evaluates all eligible automatic chunk labels/manual overrides preserved; new definitions enqueue no backfill; re-ingestion retains manual document exclusions/values and replaces all chunk assignments. Actual unit/integration/LiveView implementation exists; no new labeling browser tests authored. zaq-kw0.15 -\u003e zaq-kw0.16 remains open in PR3.",
+      "timestamp": "2026-11-04T09:31:01Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.16] PR 3 Implement consolidated feature E2E",
   "type": "task",
-  "updated_at": "2026-11-04T04:19:40Z"
+  "updated_at": "2026-11-04T09:31:01Z"
 }
