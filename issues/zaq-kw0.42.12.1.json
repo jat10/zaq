@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-04T11:06:13Z",
+  "description": "",
+  "id": "zaq-kw0.42.12.1",
+  "labels": [],
+  "parent": "zaq-kw0.42.12",
+  "priority": 2,
+  "status": "open",
+  "title": "Cover classification Action and run-preflight error branches",
+  "type": "task",
+  "updated_at": "2026-11-04T11:06:13Z"
+}
