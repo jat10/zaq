@@ -19,11 +19,15 @@
     {
       "text": "Consolidation implemented: Document.validate_label_filters/1 and filter_by_labels/2 own validation and document query composition; Labels.matching_document_ids/2 and matching_document_value_ids/2 own assignment subqueries. Removed standalone DocumentFilters, updated ResourceQuery and service documentation. No existing test changes. mix q passes; 231 targeted checks pass (8 properties, 223 tests). Final precommit running; no stale DocumentFilters references in lib/test/service docs, git diff --check clean.",
       "timestamp": "2026-11-04T02:26:21Z"
+    },
+    {
+      "text": "Final combined validation passes after domain consolidation and LiveView blocker repairs: mix q; 254 focused checks; final precommit exit 0 with 11825 checks passed. DocumentFilters removed, Document/Labels own filter logic, NodeRouter boundary preserved, no stale references or diff whitespace errors. Current changes remain in working tree, not committed or pushed.",
+      "timestamp": "2026-11-04T02:40:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.40] Route ingestion resource queries through NodeRouter",
   "type": "task",
-  "updated_at": "2026-11-04T02:26:21Z"
+  "updated_at": "2026-11-04T02:40:38Z"
 }
