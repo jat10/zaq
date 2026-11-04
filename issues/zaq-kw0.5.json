@@ -15,11 +15,15 @@
     {
       "text": "Generic classifier implemented with workflow/Jido schemas, explicit registry entry and confidential fixed Agent Event; no Ingestion dependency, thresholds, writes or generation fallback. 14 focused runtime/classifier/schema checks pass (2 properties), mix q passes. Added HTTP success/overlap/none, malformed/unknown IDs, refusal, terminal failure/no retry, input budgets, duplicate-ID property and identity/privacy checks. Catalog audit found modern ReqLLM evaluation models advertise capabilities.evaluate rather than legacy decisions modality; extended RAG eligibility to accept either explicit metadata form, preserving existing tests. Two exact registry-list assertions need approved addition general.classify; explicit approval requested asynchronously and tests remain unchanged. Task remains open until expectation updates are approved and regression suite passes. Schema/generation infrastructure is independently testable and does not call Classify, so refining conservative chain to permit schema work while this test-only approval is pending; keep classifier dependency on automation consumer.",
       "timestamp": "2026-11-04T08:29:40Z"
+    },
+    {
+      "text": "Classifier code and public contracts are green; only approval for adding general.classify to two existing exact-registry assertions remains. This does not affect independent automation implementation. Move its consumer edge to integration verification .42.10 so approval remains a hard completion requirement without stopping implementation; preserve task open.",
+      "timestamp": "2026-11-04T08:45:21Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.5] PR2 Build reusable general.classify tool and routed contract",
   "type": "task",
-  "updated_at": "2026-11-04T08:29:43Z"
+  "updated_at": "2026-11-04T08:45:21Z"
 }
