@@ -7,9 +7,15 @@
   "id": "zaq-juu.18",
   "labels": [],
   "parent": "zaq-juu",
+  "comments": [
+    {
+      "text": "Scope corrected and approved by user implement that: introduce ZAQ DeliveryError with reason/message/stage/delivery; bridge-owned mappings, API-owned fallback. Stage preparation or transport; certainty not_sent or unconfirmed. SMTP errors never automatically resend; attachment preparation may send text-only; uncertain Jido may update an existing placeholder but never create a new post. Original reason preserved inside struct, callers/tests matching reasons must use field. Explicit user approval covers these expectation changes and earlier approval covers email preparation fallback after revocation. Retain completed prepare/DecodeBase64 work. Reuse Swoosh gen_smtp known error contract in EmailBridge only; no Jido semantics for email. Existing API upsert callback offers update-only path with present ID; no new transport API.",
+      "timestamp": "2026-11-04T11:59:50Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Use generic attachment failure notice in Channels delivery orchestration",
   "type": "task",
-  "updated_at": "2026-11-04T11:18:48Z"
+  "updated_at": "2026-11-04T11:59:50Z"
 }
