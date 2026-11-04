@@ -11,9 +11,15 @@
   "id": "zaq-kw0.42.8",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Extended existing authorized editor and batched document-chip projections with automatic origin/probability/freshness and latest attempt state; manual output contracts retained. Attempt status is scoped to current generation/definition and never changes effective selection. Existing Document/ResourceQuery filters and ValueManagement continue selected-assignment semantics, so retained stale positives count and filter until replacement. No Agent SQL or duplicate query owner added. Validation: 42 labels/automation checks and 38 stale-projection/labels checks pass (5 and 4 properties respectively); mix q passes. New real persistence regression covers Not now, stale chips/editor, selected filters, authorized usage, failed replacement retention and nil identity.",
+      "timestamp": "2026-11-04T09:09:48Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.8] PR2 Project automatic status and retained stale labels consistently",
   "type": "task",
-  "updated_at": "2026-11-04T09:05:13Z"
+  "updated_at": "2026-11-04T09:09:48Z"
 }
