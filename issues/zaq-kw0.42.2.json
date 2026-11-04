@@ -11,9 +11,15 @@
   "id": "zaq-kw0.42.2",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Extended existing RAGModelConfig and System get/save operation: shared integer percentage 0..100, default 80 for old settings, Decision-only persistence, unrelated re-ranking settings retained. Empty submitted threshold rejected instead of silently resetting default. New threshold persistence/invalid-save tests and range property plus existing settings/snapshot tests pass: 11 checks (2 properties); mix q passes. No inference/scheduling on settings save and no generic classifier policy input.",
+      "timestamp": "2026-11-04T08:23:26Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.2] PR2 Persist shared Decision classification threshold",
   "type": "task",
-  "updated_at": "2026-11-04T08:21:07Z"
+  "updated_at": "2026-11-04T08:23:26Z"
 }
