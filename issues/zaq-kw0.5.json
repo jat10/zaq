@@ -23,11 +23,15 @@
     {
       "text": "Explicit user approval received via async reply: Approve the expected-list additions. Added general.classify to both exact registry lists, retaining all original entries and assertions; placed descriptor with the existing general tools. Rerunning full registry/classifier/runtime regressions before closure.",
       "timestamp": "2026-11-04T09:02:10Z"
+    },
+    {
+      "text": "Approved exact-list additions validated: 34 registry/classifier/runtime checks pass (1 property); subsequent combined registry/reclassification run 25 passed and mix q passes. All original registry entries and assertions retained. Generic tool implementation complete; no code committed.",
+      "timestamp": "2026-11-04T09:05:08Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.5] PR2 Build reusable general.classify tool and routed contract",
   "type": "task",
-  "updated_at": "2026-11-04T09:02:10Z"
+  "updated_at": "2026-11-04T09:05:08Z"
 }
