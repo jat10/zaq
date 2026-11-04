@@ -3,7 +3,7 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-04T12:42:25Z",
-  "description": "Comment 5 authorized by user. Inspected Factory.ask_with_config -\u003e native ask_stream, Executor.consume_or_queue, and deps/jido_ai Request.Stream receive_event selective matching by Handle.id. Remove duplicate native_request_id and matching_request? from reducer; retain canonical request_id for lifecycle correlation. Action reuse: reuse upstream Request.Stream contract; reducer state bookkeeping local-only, no new Action. Add scoped-stream property with interleaved foreign attachment and terminal events; preserve existing test expectations. Update owner docs, run focused stream/Executor/native selection suites and mix q. No E2E needed for reducer refactor.",
+  "description": "Completed comment 5. Removed native_request_id and matching_request? from StreamEvents, retaining existing canonical request_id for lifecycle correlation. Verified Factory uses native ask_stream and Executor consumes its request-scoped enumerable. Native Request.Stream.receive_event selects by Handle.id; no production alternate caller needs normalization. Documented input boundary. Added property proving interleaved foreign attachment/terminal events cannot affect requested answer and remain consumable through their own handle. Existing expectations unchanged. Action reuse: upstream Request.Stream, local-only reducer bookkeeping; no new Action. Focused stream events/update policy/Executor/attachment selection suites: 149 passed (6 doctests, 11 properties, 132 tests). mix q and git diff --check passed. Logs /tmp/zaq-comment5-tests.log and /tmp/zaq-comment5-quality.log. No E2E needed. Full PR coverage/precommit remains zaq-juu.8. No GitHub writes or commits.",
   "id": "zaq-juu.21",
   "labels": [],
   "parent": "zaq-juu",
@@ -11,5 +11,5 @@
   "status": "open",
   "title": "Remove redundant native request filtering from StreamEvents",
   "type": "task",
-  "updated_at": "2026-11-04T12:42:25Z"
+  "updated_at": "2026-11-04T12:43:45Z"
 }
