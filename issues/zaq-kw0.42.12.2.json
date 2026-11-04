@@ -3,7 +3,7 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-04T11:06:14Z",
-  "description": "",
+  "description": "Plan: add only tests/helpers to post_processing_test.exs. (1) Default Worker.perform/1 on enqueued reservation after document generation changes persists skipped/obsolete; duplicate preserves terminal record. (2) Persist an unknown processor key and assert terminal failed/unknown_processor and duplicate stability. (3) Inject failing processor through existing Config seam; actual Worker performs claim then raises; assert initial attempt remains running with no terminal error, duplicate first delivery does not invoke failing processor, later actual Oban attempt recovers to completed. (4) On actual job max attempt assert infrastructure exception reraises while reservation persists failed/infrastructure_failure and duplicate leaves it unchanged. Existing tests/assertions unchanged, actual Repo/Oban scheduling only; no env mutation or production changes. Validate isolated MIX_TEST_PARTITION=cov_worker targeted tests, targeted --cover, mix q; root handles global coverage/precommit.",
   "id": "zaq-kw0.42.12.2",
   "labels": [],
   "parent": "zaq-kw0.42.12",
@@ -11,5 +11,5 @@
   "status": "in_progress",
   "title": "Cover post-processing worker recovery and terminal outcomes",
   "type": "task",
-  "updated_at": "2026-11-04T11:07:27Z"
+  "updated_at": "2026-11-04T11:08:49Z"
 }
