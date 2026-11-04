@@ -31,11 +31,15 @@
     {
       "text": "Boundary-fix final precommit additionally exposed a LabelsLive FunctionClauseError on :addons_updated (seed 318664, values/usage clear test line 405). Committed LabelsLive handles only :label_values_updated. The test passes in isolation with identical seed; likely full-suite broadcast interference revealing missing handler. Catalog text assertion still fails as previously recorded. No existing assertions changed.",
       "timestamp": "2026-11-04T02:21:19Z"
+    },
+    {
+      "text": "Root cause established: catalog test fails alone (mix test labels_live_test.exs:384 --seed 0), because template renders compact value/resource counts while assertions expect obsolete prose. User explicitly approved keeping compact display and updating assertions via request_user_input_async reply. Will assert exact 1 / 2 then 2 / 2, retaining selected/unselected DB assertions. Separate intermittent crash: AuthHook increments features_version then returns :cont for :addons_updated; LabelsLive has only :label_values_updated handler. Add explicit handler and deterministic process-local message regression. No Application env reads/writes in scoped label modules/tests; Zaq.Config delegates to Application by default, so replacing wrappers alone would not provide isolation. SQL fixtures are per-test sandbox, no global configuration or PubSub mutations needed.",
+      "timestamp": "2026-11-04T02:32:16Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Clean up labeling iteration leftovers",
   "type": "task",
-  "updated_at": "2026-11-04T02:21:19Z"
+  "updated_at": "2026-11-04T02:32:16Z"
 }
