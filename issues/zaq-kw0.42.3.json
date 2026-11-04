@@ -9,7 +9,7 @@
   "parent": "zaq-kw0.42",
   "priority": 2,
   "status": "open",
-  "title": "Expose classification threshold in RAG Decision settings",
+  "title": "[zaq-kw0.42.3] PR2 Expose classification threshold in RAG Decision settings",
   "type": "task",
-  "updated_at": "2026-11-04T04:17:48Z"
+  "updated_at": "2026-11-04T04:17:50Z"
 }
