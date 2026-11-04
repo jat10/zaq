@@ -15,11 +15,15 @@
     {
       "text": "User approved follow-up reuse of DecodeBase64 Action and its more lenient whitespace/optional-padding behavior. Action reuse assessment updated: candidate lib/zaq/agent/tools/general/decode_base64.ex accepts data and variant and returns decoded binary plus text?/byte_size. Reuse via Jido.Exec.run/3 with explicit standard variant, preserving existing attachment error atom. Retain raw-byte passthrough and reject URL-safe alphabet for declared base64. Action is pure with no actor dependency; no source permissions or Materialization changes. Add property coverage for wrapped unpadded binary content and exact malformed/URL-safe rejection tests. Existing asserted contracts remain intact.",
       "timestamp": "2026-11-04T11:00:14Z"
+    },
+    {
+      "text": "Decode Action reuse follow-up implemented: DeliveryFiles delegates explicit standard Base64 decoding via validated Jido.Exec.run/3 and extracts decoded bytes; existing attachment error mapping retained. Added property for wrapped unpadded arbitrary binary content and exact rejection of malformed/URL-safe input. Shared Action itself unchanged. Validation: 171 passed (7 properties, 164 tests) across eight focused files including Action, preparation, selection and chat/email integration suites; final mix q exit 0 and diff whitespace check passed. Existing license_manager configuration warning appeared during tests. Changes remain uncommitted; no PR comment/resolution or final PR approval requested.",
+      "timestamp": "2026-11-04T11:02:17Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Remove outgoing attachment preparation callback for PR 876",
   "type": "task",
-  "updated_at": "2026-11-04T11:00:14Z"
+  "updated_at": "2026-11-04T11:02:17Z"
 }
