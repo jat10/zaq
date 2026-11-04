@@ -1,7 +1,6 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-kw0.19",
     "zaq-kw0.42.1"
   ],
   "blocks": [
@@ -17,5 +16,5 @@
   "status": "open",
   "title": "[zaq-kw0.3] PR2 Resolve Decision evaluation runtime",
   "type": "task",
-  "updated_at": "2026-11-04T04:18:33Z"
+  "updated_at": "2026-11-04T04:18:48Z"
 }
