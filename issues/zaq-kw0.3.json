@@ -5,6 +5,7 @@
     "zaq-kw0.42.1"
   ],
   "blocks": [
+    "zaq-kw0.42.2",
     "zaq-kw0.5"
   ],
   "created": "2026-11-02T11:25:59Z",
@@ -16,5 +17,5 @@
   "status": "open",
   "title": "[zaq-kw0.3] PR2 Resolve Decision evaluation runtime",
   "type": "task",
-  "updated_at": "2026-11-04T04:18:32Z"
+  "updated_at": "2026-11-04T04:18:33Z"
 }
