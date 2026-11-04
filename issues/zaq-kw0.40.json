@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-04T02:05:12Z",
+  "description": "User explicitly approved boundary correction. Current QueryResources -\u003e Agent Query -\u003e Repo locally reads Ingestion schemas. Move document/label SQL, filters, authorization orchestration, projections and local descriptor allowlist to Ingestion.ResourceQuery; Agent Query becomes dispatcher for those keys via Ingestion.Events/NodeRouter and explicit :query_resources API action. Extract existing shared authorization/field-validation/pagination/response helpers into Zaq.Resources.QuerySupport for both local Agent resources and Ingestion, avoiding duplicated policy. Static descriptor metadata can be shared at compile time; request cannot supply schema or descriptor. Action reuse: extend existing QueryResources Action; reuse Ingestion.Events and role Api; read-only context query is local-only domain implementation, no second Action/tool. Context: envelope actor plus allowlisted person_id/team_ids/explicit skip_permissions options, never request authorization; preserve Everyone/team/person and nil defaults. Preserve query/get/describe outputs, filters, count/pagination, projection restrictions, errors. Tests first: event dispatch and unavailable/error propagation, request forgery rejection, trusted identity/bypass transport; existing label query properties/contracts remain unchanged. Add real routing integration tests and query-layer regressions. Doc updates Agent/Ingestion service guides. Validate mix q, targeted resource/notification/ingestion tests, final precommit. No E2E needed for internal boundary fix; existing catalog assertion issue remains separate.",
+  "id": "zaq-kw0.40",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "Route ingestion resource queries through NodeRouter",
+  "type": "task",
+  "updated_at": "2026-11-04T02:05:12Z"
+}
