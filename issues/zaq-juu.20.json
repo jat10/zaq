@@ -2,14 +2,15 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-04T12:39:36Z",
   "created": "2026-11-04T12:34:23Z",
   "description": "Implemented authorized comment 3 fix. StreamEvents clears rejected attachments into bounded attachment_error without setting global error; later valid instruction clears failure. Executor propagates into dedicated Outgoing field outside metadata. Channels maps via DeliveryFiles to selection-stage DeliveryError and reuses existing best-effort notice policy, sending answer plus safe notice once with no files/callbacks; retains original delivery error. Genuine stream errors unchanged. Added malformed-output property, recovery/schema validation/request failure tests, Outgoing metadata injection guard, and Executor-to-Channels integration including ToolResult wrapper. Original two red regressions now pass. 269 focused checks passed (6 doctests, 11 properties, 252 tests); mix q passed after alias style repair; git diff --check clean. Logs /tmp/zaq-comment3-final-tests.log and /tmp/zaq-comment3-quality-final.log. Action reuse: extend existing validation/result propagation/error mapping/delivery policy, no new Action; runtime bookkeeping is local-only. No existing behavioral expectations weakened; no browser E2E needed. Full PR coverage and precommit remain zaq-juu.8. No commits/push or GitHub thread resolution.",
   "id": "zaq-juu.20",
   "labels": [],
   "parent": "zaq-juu",
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Preserve completed answers when attachment selection fails",
   "type": "bug",
-  "updated_at": "2026-11-04T12:39:34Z"
+  "updated_at": "2026-11-04T12:39:36Z"
 }
