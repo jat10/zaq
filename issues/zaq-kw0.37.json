@@ -43,11 +43,15 @@
     {
       "text": "Final validation passes: mix q clean; targeted suite 254 passed (8 properties, 246 tests); mix precommit exit 0, 11825 passed (48 doctests, 304 properties, 11473 tests), 1 skipped, 153 excluded. Catalog assertion mismatch fixed with explicit user approval; global PubSub broadcast test isolated without changing its body; LabelsLive now handles add-on notifications with deterministic regression coverage. Log /tmp/zaq-labels-fixed-precommit.log. No Application environment access in any current changed/new Elixir file.",
       "timestamp": "2026-11-04T02:40:36Z"
+    },
+    {
+      "text": "Committed and pushed in f2f67db40900c79c1c707587705296e0906dc731. All validation passes; PR #918 description updated.",
+      "timestamp": "2026-11-04T02:47:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Clean up labeling iteration leftovers",
   "type": "task",
-  "updated_at": "2026-11-04T02:40:36Z"
+  "updated_at": "2026-11-04T02:47:18Z"
 }
