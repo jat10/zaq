@@ -11,9 +11,15 @@
   "id": "zaq-kw0.21",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Added static-key dispatcher, Processor behaviour, durable Request records and one shared Oban worker on existing ingestion queue. Reservation/enqueue share document-lock transaction; identity deduplicates requests. Explicit provider failures finish terminally; duplicate delivery is inert; higher Oban attempts recover running infrastructure work. Trusted config injection supports deterministic processor boundary tests, while keys/modules cannot be supplied in job data. Four real Repo/Oban checks pass for rollback, dedupe, terminal failure, retry recovery, skips, stale generation and unknown keys; mix q passes. Label-specific eligibility and final write guards are the next task.",
+      "timestamp": "2026-11-04T08:45:19Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.21] PR2 Add shared post-ingestion dispatcher and worker",
   "type": "task",
-  "updated_at": "2026-11-04T08:42:23Z"
+  "updated_at": "2026-11-04T08:45:19Z"
 }
