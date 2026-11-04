@@ -27,11 +27,15 @@
     {
       "text": "Mattermost race diagnosis: RequestControl.do_control obtains input_opts (Engine queue_execution_input commits queued receipt) BEFORE invoke_control/Factory.steer. Existing test released LLM on receipt alone. Adjusted test-only receipt observer to include submitter PID; await_queued_input monitors normal task exit before LLM release, matching existing await_answer synchronization pattern. Both provider-mention scenarios use helper. Entire MattermostSharedHistoryIntegrationTest passes 26 tests; production unchanged, assertions preserved. Direct Chunk.create_table setup verified rolled back afterward. Final q/full fresh-db/precommit sequence running; no precommit run before full success.",
       "timestamp": "2026-11-04T08:47:22Z"
+    },
+    {
+      "text": "Isolation audit final:\n| Resource | Writer/reader | Logical owner and lifetime | Resolution |\n| chunks schema/FK | Chunk.create_table; chunk insert/value queries | Shared DB schema, owned by this test sandbox transaction | Direct creation before usage, async:false; rollback verified |\n| compatible catalog model identities | with_compatible_provider_catalog; ProviderModels.find_model | Synthetic fixture identities, existing serialized catalog swap/on_exit restore | Fixed template and explicit model/id/aliases remove unrelated inherited lookup identities |\n| queued steering submission | Engine receipt writer then Factory.steer; LLM refresh | Async submission task and blocked HTTP fixture | Commit is intermediate; monitor submitter completion before releasing LLM |\nDependency map: Repo Sandbox -\u003e Chunk.create_table real DDL -\u003e real Labels queries; LLMDB snapshot -\u003e fixture transform -\u003e real ProviderModels; queue commit -\u003e synchronous native steer -\u003e submitter exit -\u003e release external HTTP barrier. No mocks of production domains, no production changes. Existing assertions/scenarios preserved; only prerequisites and synchronization repaired. Async readiness: schema/catalog cases intentionally synchronous; document-only tests elsewhere remain async. No Application env changes introduced.",
+      "timestamp": "2026-11-04T08:49:39Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.43] Fix PR1 clean-database test failures",
   "type": "bug",
-  "updated_at": "2026-11-04T08:47:22Z"
+  "updated_at": "2026-11-04T08:49:39Z"
 }
