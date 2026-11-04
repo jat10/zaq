@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-kw0.19"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-kw0.3"
   ],
@@ -15,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.42.1] PR2 Finalize PR2 execution contracts and reuse audit",
   "type": "task",
-  "updated_at": "2026-11-04T04:18:32Z"
+  "updated_at": "2026-11-04T08:16:14Z"
 }
