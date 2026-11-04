@@ -11,9 +11,15 @@
   "id": "zaq-kw0.3",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Implemented ProviderSpec.evaluation_runtime/1 using canonical authentication/provider resolution; generation runtime now tolerates specialized config without sampling fields. Callable catalog adapter required; evaluation opts allow only auth/endpoint plus 15s total/receive timeout and max_retries 0. Added missing config, unsupported generation model, canonical auth and real ReqLLM boolean HTTP normalization tests. Validation: 68 isolated ProviderSpec/runtime tests passed; mix q passed. No existing assertions changed; provider error/malformed/refusal paths additionally covered in generic classifier task.",
+      "timestamp": "2026-11-04T08:21:05Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.3] PR2 Resolve Decision evaluation runtime",
   "type": "task",
-  "updated_at": "2026-11-04T08:17:04Z"
+  "updated_at": "2026-11-04T08:21:05Z"
 }
