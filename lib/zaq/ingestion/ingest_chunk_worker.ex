@@ -24,6 +24,7 @@ defmodule Zaq.Ingestion.IngestChunkWorker do
   alias Zaq.Ingestion
 
   alias Zaq.Ingestion.{
+    ClassificationRun,
     DocumentChunker,
     DocumentIngestionSummary,
     IngestChunkJob,
@@ -44,11 +45,16 @@ defmodule Zaq.Ingestion.IngestChunkWorker do
                    is_struct(reason, Postgrex.Error)
 
   @impl Oban.Worker
-  def perform(%Oban.Job{
-        args: %{"chunk_job_id" => chunk_job_id, "job_id" => job_id},
-        attempt: attempt,
-        max_attempts: max_attempts
-      }) do
+  def perform(job), do: perform(job, [])
+
+  def perform(
+        %Oban.Job{
+          args: %{"chunk_job_id" => chunk_job_id, "job_id" => job_id},
+          attempt: attempt,
+          max_attempts: max_attempts
+        },
+        opts
+      ) do
     with %IngestJob{status: status}
          when status not in @aborted_job_statuses <- Repo.get(IngestJob, job_id),
          %IngestChunkJob{} = chunk_job <- Repo.get(IngestChunkJob, chunk_job_id),
@@ -56,7 +62,7 @@ defmodule Zaq.Ingestion.IngestChunkWorker do
          when status not in @aborted_job_statuses <- Repo.get(IngestJob, job_id) do
       chunk_job = transition_chunk!(chunk_job, %{status: "processing", attempts: attempt})
 
-      result = process_chunk(ingest_job, chunk_job)
+      result = process_chunk(ingest_job, chunk_job, opts)
 
       case result do
         :ok ->
@@ -102,8 +108,16 @@ defmodule Zaq.Ingestion.IngestChunkWorker do
     end
   end
 
-  defp process_chunk(ingest_job, chunk_job) do
-    processor = Application.get_env(:zaq, :document_processor, Zaq.Ingestion.DocumentProcessor)
+  defp process_chunk(ingest_job, chunk_job, opts) do
+    if is_nil(chunk_job.generation) do
+      {:error, :missing_generation}
+    else
+      process_current_chunk(ingest_job, chunk_job, opts)
+    end
+  end
+
+  defp process_current_chunk(ingest_job, chunk_job, opts) do
+    processor = Zaq.Config.get(:zaq, :document_processor, Zaq.Ingestion.DocumentProcessor, opts)
 
     payload = chunk_job.chunk_payload || %{}
     content = Map.get(payload, "content", "")
@@ -115,7 +129,10 @@ defmodule Zaq.Ingestion.IngestChunkWorker do
         content: content,
         section_path: section_path,
         tokens: Map.get(payload, "tokens", 0),
-        metadata: Map.get(payload, "metadata", %{}),
+        metadata:
+          Map.get(payload, "metadata", %{})
+          |> Map.put(:ingestion_generation, chunk_job.generation)
+          |> Map.put(:classification_context, ClassificationRun.context(ingest_job)),
         # Derived, not persisted: embedding_input is a pure function of two
         # payload keys, so old and new payloads take the same path.
         embedding_input: DocumentChunker.Chunk.embedding_input(content, section_path),

@@ -72,6 +72,7 @@ config :zaq, Oban,
   queues: [
     ingestion: 3,
     ingestion_chunks: 6,
+    post_processing: 3,
     default: 10,
     conversations: 5,
     connect_maintenance: 1,

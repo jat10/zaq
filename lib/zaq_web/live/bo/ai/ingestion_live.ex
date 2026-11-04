@@ -23,7 +23,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
   alias Zaq.Permissions
   alias Zaq.Repo
   alias Zaq.System
-  alias ZaqWeb.Components.Drawer
+  alias ZaqWeb.Components.{BOModal, Drawer}
   alias ZaqWeb.Helpers.Markdown
   alias ZaqWeb.Live.BO.AI.BOActor
   alias ZaqWeb.Live.BO.DataSourceBrowser
@@ -47,7 +47,10 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
   @prep_prune_interval_ms :timer.minutes(1)
 
   def mount(params, _session, socket) do
-    if connected?(socket), do: Phoenix.PubSub.subscribe(Zaq.PubSub, @ingestion_topic)
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(Zaq.PubSub, @ingestion_topic)
+      Phoenix.PubSub.subscribe(Zaq.PubSub, "ingestion:labels")
+    end
 
     source_scopes = enabled_data_source_sources()
     active_source = resolve_source_scope(params, source_scopes)
@@ -89,6 +92,7 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
        status_filter: "all",
        jobs_drawer_open: false,
        ingest_toast: nil,
+       classification_confirmation: nil,
        ingest_mode: "async",
        source_scopes: source_scopes,
        active_source: active_source,
@@ -825,22 +829,46 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
   def handle_event("ingest_selected", _params, socket) do
     if Map.get(socket.assigns.action_capabilities, :download, false) do
       records = selected_records(socket)
-      result = dispatch_ingest_records(records, %{mode: socket.assigns.ingest_mode}, socket)
 
-      socket =
-        socket
-        |> assign(selected: MapSet.new())
-        |> load_jobs()
-        # With Oban testing: :inline (E2E/ExUnit), async jobs finish before this handler
-        # returns. Refresh entries now so the file browser shows terminal badges in the
-        # same patch; PubSub {:job_updated, _} still refreshes for real async runs.
-        |> load_entries()
-        |> put_ingest_result_flash(result)
+      result =
+        dispatch_ingest_records(
+          records,
+          %{mode: socket.assigns.ingest_mode, interactive: true},
+          socket
+        )
+
+      socket = handle_ingest_result(socket, result, records)
 
       {:noreply, socket}
     else
       {:noreply, put_flash(socket, :info, "This data source does not support ingestion.")}
     end
+  end
+
+  def handle_event("cancel_classification_ingestion", _, socket),
+    do: {:noreply, assign(socket, classification_confirmation: nil)}
+
+  def handle_event(
+        "proceed_without_classification",
+        _,
+        %{assigns: %{classification_confirmation: nil}} = socket
+      ),
+      do: {:noreply, socket}
+
+  def handle_event("proceed_without_classification", _, socket) do
+    pending = socket.assigns.classification_confirmation
+
+    result =
+      dispatch_ingest_records(
+        pending.records,
+        %{mode: pending.mode, interactive: true, classification_choice: "proceed_without"},
+        socket
+      )
+
+    {:noreply,
+     socket
+     |> assign(classification_confirmation: nil)
+     |> handle_ingest_result(result, pending.records)}
   end
 
   def handle_event("dismiss_ingest_toast", _params, socket) do
@@ -1004,6 +1032,11 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
   def handle_info({:resource_labels_saved, _resource}, socket) do
     {:noreply, socket |> assign(label_editor_resource: nil) |> load_entries()}
   end
+
+  def handle_info({:automatic_labels_updated, %{type: "document"}}, socket),
+    do: {:noreply, load_entries(socket)}
+
+  def handle_info({:automatic_labels_updated, _resource}, socket), do: {:noreply, socket}
 
   def handle_info({:job_progress, job_id, payload}, socket) when is_map(payload) do
     # Only record progress for a job the client still sees in its preparation
@@ -1532,6 +1565,24 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLive do
 
   defp data_source_bridge_module do
     Application.get_env(:zaq, :ingestion_data_source_bridge_module, DataSourceBridge)
+  end
+
+  defp handle_ingest_result(
+         socket,
+         {:error, {:classification_confirmation_required, _}},
+         records
+       ),
+       do:
+         assign(socket,
+           classification_confirmation: %{records: records, mode: socket.assigns.ingest_mode}
+         )
+
+  defp handle_ingest_result(socket, result, _records) do
+    socket
+    |> assign(selected: MapSet.new(), classification_confirmation: nil)
+    |> load_jobs()
+    |> load_entries()
+    |> put_ingest_result_flash(result)
   end
 
   defp dispatch_ingest_records([], _params, _socket), do: {:ok, []}

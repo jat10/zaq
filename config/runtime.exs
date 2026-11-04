@@ -165,6 +165,7 @@ if config_env() == :prod do
       ingestion: String.to_integer(System.get_env("OBAN_INGESTION_CONCURRENCY", "3")),
       ingestion_chunks:
         String.to_integer(System.get_env("OBAN_INGESTION_CHUNKS_CONCURRENCY", "6")),
+      post_processing: 3,
       conversations: String.to_integer(System.get_env("OBAN_CONVERSATIONS_CONCURRENCY", "5")),
       connect_maintenance: 1,
       connect_credential_notifications: 1,

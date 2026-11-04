@@ -11,11 +11,16 @@ defmodule ZaqWeb.Live.BO.Data.LabelsLive do
 
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket), do: Phoenix.PubSub.subscribe(Zaq.PubSub, "ingestion:labels")
+
     {:ok,
      socket
      |> assign(
        current_path: "/bo/labels",
        selected_label: nil,
+       automation_configured?: LabelEvents.automation_configured?(socket.assigns.current_user),
+       reclassification: nil,
+       reclassification_error: nil,
        usage_label: nil,
        value_summaries: %{},
        form: nil,
@@ -36,6 +41,15 @@ defmodule ZaqWeb.Live.BO.Data.LabelsLive do
   def handle_info(:label_values_updated, socket), do: {:noreply, load_labels(socket)}
 
   def handle_info(:addons_updated, socket), do: {:noreply, socket}
+
+  def handle_info({:automatic_labels_updated, _resource}, socket) do
+    ids = Enum.map(socket.assigns.labels_by_id, fn {_id, label} -> label.id end)
+
+    case LabelEvents.call(socket.assigns.current_user, :label_value_summaries, %{ids: ids}) do
+      {:ok, summaries} -> {:noreply, assign(socket, value_summaries: summaries)}
+      _ -> {:noreply, socket}
+    end
+  end
 
   @impl true
   def handle_event("manage_label_values", %{"id" => id}, socket),
@@ -65,7 +79,11 @@ defmodule ZaqWeb.Live.BO.Data.LabelsLive do
           "name" => label.name,
           "description" => label.description,
           "document" => "document" in types,
-          "chunk" => "chunk" in types
+          "chunk" => "chunk" in types,
+          "automatic_document" =>
+            Enum.any?(label.targets, &(&1.resource_type == "document" and &1.automatic)),
+          "automatic_chunk" =>
+            Enum.any?(label.targets, &(&1.resource_type == "chunk" and &1.automatic))
         }
 
         {:noreply,
@@ -106,17 +124,28 @@ defmodule ZaqWeb.Live.BO.Data.LabelsLive do
     attrs = %{name: params["name"], description: params["description"], targets: types}
 
     attrs =
+      if socket.assigns.automation_configured? do
+        Map.merge(attrs, %{
+          automatic_document: params["automatic_document"] in [true, "true"],
+          automatic_chunk: params["automatic_chunk"] in [true, "true"]
+        })
+      else
+        attrs
+      end
+
+    attrs =
       case socket.assigns.selected_label do
         nil -> attrs
         label -> Map.merge(attrs, %{id: label.id, expected_version: label.lock_version})
       end
 
     case LabelEvents.call(socket.assigns.current_user, :save_label_definition, %{attrs: attrs}) do
-      {:ok, _label} ->
+      {:ok, label} ->
         {:noreply,
          socket
          |> assign(form: nil, modal_error: nil)
          |> load_labels()
+         |> offer_reclassification(label, not is_nil(socket.assigns.selected_label))
          |> put_flash(:info, "Label saved.")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -134,6 +163,34 @@ defmodule ZaqWeb.Live.BO.Data.LabelsLive do
 
       {:error, reason} ->
         {:noreply, assign(socket, modal_error: LabelEvents.error_message(reason))}
+    end
+  end
+
+  def handle_event("skip_reclassification", _, socket),
+    do: {:noreply, assign(socket, reclassification: nil, reclassification_error: nil)}
+
+  def handle_event("confirm_reclassification", _, %{assigns: %{reclassification: nil}} = socket),
+    do: {:noreply, socket}
+
+  def handle_event("confirm_reclassification", _, socket) do
+    preview = socket.assigns.reclassification
+
+    request = %{
+      label_id: preview.label_id,
+      expected_version: preview.expected_version,
+      confirmation_token: preview.confirmation_token,
+      confirm: true
+    }
+
+    case LabelEvents.call(socket.assigns.current_user, :reclassify_label_chunks, request) do
+      {:ok, _} ->
+        {:noreply,
+         socket
+         |> assign(reclassification: nil, reclassification_error: nil)
+         |> put_flash(:info, "Chunk reclassification queued.")}
+
+      {:error, reason} ->
+        {:noreply, assign(socket, reclassification_error: LabelEvents.error_message(reason))}
     end
   end
 
@@ -346,6 +403,25 @@ defmodule ZaqWeb.Live.BO.Data.LabelsLive do
   end
 
   defp default_form, do: %{"name" => "", "description" => "", "document" => true, "chunk" => true}
+
+  defp offer_reclassification(socket, label, true) do
+    if socket.assigns.automation_configured? do
+      case LabelEvents.call(socket.assigns.current_user, :reclassify_label_chunks, %{
+             label_id: label.id,
+             expected_version: label.lock_version
+           }) do
+        {:ok, %{affected_chunks: count} = preview} when count > 0 ->
+          assign(socket, reclassification: preview)
+
+        _ ->
+          socket
+      end
+    else
+      socket
+    end
+  end
+
+  defp offer_reclassification(socket, _label, false), do: socket
 
   @impl true
   def render(assigns) do
@@ -577,18 +653,39 @@ defmodule ZaqWeb.Live.BO.Data.LabelsLive do
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="zaq-resource-label-choice zaq-layout-stack-tight">
               <DSCheckbox.checkbox field={@form[:document]} label="Documents" />
+              <DSCheckbox.checkbox
+                :if={@automation_configured?}
+                id="label-automatic-document"
+                field={@form[:automatic_document]}
+                label="Apply automatically to new documents"
+                disabled={@form[:document].value not in [true, "true"]}
+              />
               <p class="zaq-text-body-sm" style="color: var(--zaq-text-color-body-tertiary)">
                 Label the whole document.
               </p>
             </div>
             <div class="zaq-resource-label-choice zaq-layout-stack-tight">
               <DSCheckbox.checkbox field={@form[:chunk]} label="Chunks" />
+              <DSCheckbox.checkbox
+                :if={@automation_configured?}
+                id="label-automatic-chunk"
+                field={@form[:automatic_chunk]}
+                label="Apply automatically to new chunks"
+                disabled={@form[:chunk].value not in [true, "true"]}
+              />
               <p class="zaq-text-body-sm" style="color: var(--zaq-text-color-body-tertiary)">
                 Label individual sections.
               </p>
             </div>
           </div>
         </fieldset>
+        <p
+          :if={!@automation_configured?}
+          class="zaq-text-body-sm"
+          style="color: var(--zaq-text-color-body-tertiary)"
+        >
+          Configure a Decision model in RAG settings to enable automatic labeling.
+        </p>
       </.form>
       <:actions>
         <DSButton.button
@@ -603,6 +700,30 @@ defmodule ZaqWeb.Live.BO.Data.LabelsLive do
         >Delete label</DSButton.button>
         <DSButton.button variant={:secondary} phx-click="close_label_form">Cancel</DSButton.button>
         <DSButton.button type="submit" form="label-definition-form" id="save-label">Save</DSButton.button>
+      </:actions>
+    </BOModal.form_dialog>
+    <BOModal.form_dialog
+      :if={@reclassification}
+      id="label-reclassification-modal"
+      title="Reclassify affected chunks?"
+      cancel_event="skip_reclassification"
+    >
+      <p class="zaq-text-body-sm">
+        This label is currently applied to {@reclassification.affected_chunks} chunks you can update.
+        Reclassify those chunks against all eligible automatic labels? Manual selections and values are preserved.
+      </p>
+      <p class="zaq-text-body-sm">Not now keeps existing labels until a later replacement.</p>
+      <p
+        :if={@reclassification_error}
+        role="alert"
+        class="zaq-text-body-sm"
+        style="color: var(--zaq-text-color-body-danger)"
+      >
+        {@reclassification_error}
+      </p>
+      <:actions>
+        <DSButton.button variant={:secondary} phx-click="skip_reclassification">Not now</DSButton.button>
+        <DSButton.button id="confirm-label-reclassification" phx-click="confirm_reclassification">Reclassify chunks</DSButton.button>
       </:actions>
     </BOModal.form_dialog>
     <BOModal.confirm_dialog

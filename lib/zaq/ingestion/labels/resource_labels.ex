@@ -13,6 +13,7 @@ defmodule Zaq.Ingestion.Labels.ResourceLabels do
   alias Zaq.Ingestion.Labels.{
     Access,
     AssignmentValue,
+    Automation,
     ChunkAssignment,
     DocumentAssignment,
     Label,
@@ -127,12 +128,13 @@ defmodule Zaq.Ingestion.Labels.ResourceLabels do
 
       visible = visible_documents(documents, actor, user)
       ids = Enum.map(visible, & &1.id)
+      metadata = automatic_chip_metadata(ids)
 
       chips =
         Repo.all(DocumentAssignment.selected_labels_query(ids))
-        |> Enum.map(fn
-          {id, %{value: nil} = chip} -> {id, Map.delete(chip, :value)}
-          entry -> entry
+        |> Enum.map(fn {id, chip} ->
+          chip = Map.merge(chip, Map.get(metadata, {id, chip.id}, %{}))
+          {id, if(is_nil(chip.value), do: Map.delete(chip, :value), else: chip)}
         end)
         |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
@@ -142,6 +144,19 @@ defmodule Zaq.Ingestion.Labels.ResourceLabels do
   end
 
   def document_chips(_, _), do: {:error, :invalid_request}
+
+  defp automatic_chip_metadata(ids) do
+    Repo.all(
+      from a in DocumentAssignment,
+        join: l in Label,
+        on: l.id == a.label_id,
+        where: a.document_id in ^ids and a.selected and a.origin == :automatic,
+        select: {a.document_id, a.label_id, a.probability, a.definition_version != l.lock_version}
+    )
+    |> Map.new(fn {document_id, label_id, probability, stale} ->
+      {{document_id, label_id}, %{origin: :automatic, probability: probability, stale: stale}}
+    end)
+  end
 
   @doc "Suggests existing values only from resources readable by the current BO actor."
   def value_suggestions(resource, label_id, query, actor)
@@ -214,18 +229,23 @@ defmodule Zaq.Ingestion.Labels.ResourceLabels do
       Repo.all(from a in resource.schema, where: field(a, ^resource.key) == ^resource.id)
       |> Map.new(&{&1.label_id, &1})
 
+    attempts = Automation.attempts(resource.type, resource.id)
+
     rows =
       Enum.map(labels, fn label ->
         assignment = Map.get(assignments, label.id)
 
-        %{
-          id: label.id,
-          name: label.name,
-          description: label.description,
-          selected: assignment != nil and assignment.selected,
-          value: if(assignment, do: assignment.value, else: nil),
-          expected_version: if(assignment, do: assignment.lock_version, else: 0)
-        }
+        Map.merge(
+          %{
+            id: label.id,
+            name: label.name,
+            description: label.description,
+            selected: assignment != nil and assignment.selected,
+            value: if(assignment, do: assignment.value, else: nil),
+            expected_version: if(assignment, do: assignment.lock_version, else: 0)
+          },
+          Automation.metadata(assignment, label, attempts[label.id])
+        )
       end)
 
     %{

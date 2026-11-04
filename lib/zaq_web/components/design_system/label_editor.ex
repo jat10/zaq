@@ -93,6 +93,13 @@ defmodule ZaqWeb.Components.DesignSystem.LabelEditor do
         </p>
         <p :if={!@editable} class="zaq-text-body-sm">You have read-only access to these labels.</p>
         <p
+          :if={Enum.any?(@labels, &(Map.get(&1, :processing_status) == "failed"))}
+          class="zaq-text-body-sm"
+          role="status"
+        >
+          Some automatic classifications failed. Existing labels are retained; you can still edit labels manually.
+        </p>
+        <p
           :if={@error}
           role="alert"
           class="zaq-text-body-sm"
@@ -161,6 +168,15 @@ defmodule ZaqWeb.Components.DesignSystem.LabelEditor do
             class="zaq-text-body-sm zaq-label-description"
             style="color: var(--zaq-text-color-body-tertiary)"
           >{@label.description}</span>
+          <span
+            :if={Map.get(@label, :origin) == :automatic}
+            class="zaq-text-body-sm"
+            style="color: var(--zaq-text-color-body-tertiary)"
+          >
+            Automatic · {round((Map.get(@label, :probability) || 0) * 100)}%
+            <span :if={Map.get(@label, :stale)}> · Definition changed; previous result retained</span>
+            <span :if={Map.get(@label, :processing_status) in ["pending", "running"]}> · Replacement pending</span>
+          </span>
         </span>
       </div>
       <form

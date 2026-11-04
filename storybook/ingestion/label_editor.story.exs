@@ -8,7 +8,8 @@ defmodule Storybook.Ingestion.LabelEditor do
   def render(assigns) do
     assigns = assign(assigns, labels: [
       %{id: 1, name: "Location", description: "Location associated with this resource", value: "Paris"},
-      %{id: 2, name: "Architecture", description: "System design and scalability"},
+      %{id: 2, name: "Architecture", description: "System design and scalability",
+        origin: :automatic, probability: 0.94, stale: true, processing_status: "pending"},
       %{id: 3, name: "FinTech", description: "Financial technology documents"}
     ])
 

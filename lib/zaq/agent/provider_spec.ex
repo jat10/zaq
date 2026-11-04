@@ -52,8 +52,8 @@ defmodule Zaq.Agent.ProviderSpec do
         credential_id: id,
         credential: credential,
         model: model,
-        temperature: config.temperature,
-        top_p: config.top_p
+        temperature: Map.get(config, :temperature, 0.0),
+        top_p: Map.get(config, :top_p, 0.9)
       }
 
       with {:ok, spec} <- build(agent),
@@ -63,6 +63,20 @@ defmodule Zaq.Agent.ProviderSpec do
     else
       {:error, _} = error -> error
       _ -> {:error, :model_not_configured}
+    end
+  end
+
+  @doc "Builds a callable Decision runtime with evaluation-only options and bounded transport."
+  def evaluation_runtime(config) do
+    with {:ok, spec, opts} <- operation_runtime(config),
+         true <- "#{spec.provider}:#{spec.id}" in ReqLLM.evaluation_models() do
+      {:ok, spec,
+       opts
+       |> Keyword.take([:api_key, :base_url])
+       |> Keyword.merge(receive_timeout: 15_000, total_timeout: 15_000, max_retries: 0)}
+    else
+      false -> {:error, :evaluation_not_supported}
+      {:error, _} = error -> error
     end
   end
 

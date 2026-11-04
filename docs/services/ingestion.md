@@ -421,7 +421,7 @@ If a change touches one of these areas and no property test is added, document t
 
 ---
 
-## Manual category labels
+## Category labels
 
 Agent metadata discovery reads use the confidential `:query_resources` Event.
 `Zaq.Ingestion.ResourceQuery` accepts only `document` and `label` resource keys,
@@ -493,24 +493,69 @@ Bulk consumers use `:labels_deletion_preview` with `ids`, then
 requests. Batches accept 1–50 distinct label IDs and lock them in ID order.
 Any missing, stale, or changed-usage label rolls back the entire transaction.
 
-Assignments live in separate FK-backed tables. `selected: true` is a manual
-inclusion; `false` is a retained manual exclusion. Each edit supplies its expected
+Assignments live in separate FK-backed tables. `selected: true` is an effective
+inclusion; `false` can be an automatic negative or retained manual exclusion.
+Manual origin always overrides automation. Each edit supplies its expected
 assignment version (zero means absent), and definition edits supply the expected
 definition version. Add/remove batches are atomic; stale edits fail without
 partial writes. Removing an in-use target is rejected even if its assignments are
 exclusions. Manual assignment writes lock the parent document, sorted label
 definitions, chunk when applicable, and assignment rows.
 
-Document upsert preserves the document ID and its assignments. Chunk deletion
+Document replacement preserves the document ID and manual assignments. Chunk deletion
 cascades assignments. The dynamic chunk-table reset clears assignments, detaches
 the foreign key, and restores it on table creation. While no chunk table exists,
 a database check forbids chunk assignments; fresh installations do not need an
 embedding model to migrate. Migration rollback removes label tables only.
 
-PR 1 supports manual labels without model configuration. Automatic settings and
-`reset_automatic` return `:automation_unavailable`; the UI disables them. Generic
-post-ingestion processing, model evaluation and inline chunk markers are later
-delivery stages tracked in Beadwork `zaq-kw0`.
+Manual labeling does not require a model. Reset-to-automatic and classification
+suggestion workflows are not supported. Chunk visualization remains a later delivery
+stage tracked in Beadwork `zaq-kw0`; its UX approval and consolidated feature E2E gates remain open.
+
+### Automatic classification and labeling
+
+Automatic target settings require a saved Decision model. `ClassificationRun`
+performs a bounded confidential Agent readiness check before enabled ingestion.
+Interactive failures return `:classification_confirmation_required` before any job
+is created: proceeding saves a skip for the entire run; cancelling starts nothing.
+Unattended failures proceed with `classification_state: "skipped"` and a safe
+`classification_error` on every job. Folder descendants and retries preserve that
+decision; restoring model availability cannot reverse a saved skip.
+
+`DocumentGeneration` coordinates replacement and final chunk insertion. Parsing
+and embedding happen outside locks. Every full ingestion advances generation,
+including same-content ingestion, removes old chunks and automatic document results,
+and preserves manual document selections, exclusions and values. Final chunk writes
+compare the captured generation under the parent lock. Old queued chunk jobs without
+generation are rejected rather than assigned the current generation.
+Partial retries resume the unchanged document under its existing generation,
+preserving successful chunks and progress. Changed content or an explicitly
+supplied obsolete generation requires a full ingestion instead.
+
+`PostProcessing` reserves and enqueues registered processor work in the resource
+persistence transaction. The shared worker uses the separate `post_processing`
+queue and carries only a durable request ID. The labeling processor captures the
+definition/assignment versions, generation, run identity and shared Decision
+threshold. It sends supplied text/categories through the generic confidential
+Agent classifier, then rechecks guards before applying probabilities. There are
+no model calls under database locks. Explicit provider failures finish terminally
+without ingestion retries; infrastructure exceptions use bounded Oban recovery.
+Classification failures leave ingestion intact and never become negative decisions.
+
+Processing attempts are separate from effective assignments. Manual selections,
+exclusions and value-only/bulk edits dominate delayed results. Pending or failed
+replacements retain the previous effective result. Stale selected labels remain
+visible, filterable and counted in authorized usage until replaced or manually edited.
+Automatic processing never generates assignment values.
+
+The validated `ReclassifyLabelChunks` Action is available through the fixed
+`:reclassify_label_chunks` Ingestion Event. Preview counts only current chunks
+carrying the edited label within the manager's read/update scope. Confirmation
+rechecks the definition and exact affected-chunk snapshot and reserves all eligible
+automatic chunk labels on that scope, preserving manual overrides. Negative,
+unassigned, deleted or replaced chunks are excluded. Not now schedules nothing;
+new labels never backfill existing resources. Broader refresh requires deliberate
+re-ingestion. This mutation is not an agent tool or workflow node.
 
 ## What's Left
 

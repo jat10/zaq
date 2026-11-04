@@ -556,6 +556,27 @@ without safe permission mutation support return `:unsupported`.
   exception module and source module/function/arity; raw reasons and arguments are omitted.
   They return safe, non-retryable structured execution errors. Ordinary error strings remain compatible.
 
+### Supplied-text classification (`general.classify`)
+
+`Zaq.Agent.Tools.General.Classify` is the shared validated Action for configured
+agents, workflows and the confidential fixed `:classify` Agent Event. Input is
+`text` plus independent categories (`id`, `name`, `description`); output is exactly
+one finite probability in [0, 1] per category ID. Several or no categories may apply.
+Registration does not enable the tool on every agent. Trusted execution identity
+is required; credentials, model selection and runtime options are server-owned.
+
+The classifier has no Ingestion dependency, resource lookup, writes or threshold.
+`ProviderSpec.evaluation_runtime/1` reuses canonical credential/provider resolution,
+requires an installed evaluation adapter and permits only evaluation transport options.
+There is no text-generation fallback. Limits are 65,536 text bytes, 32 categories,
+200-byte IDs/names, 4,096-byte descriptions and 131,072 combined input bytes.
+Provider transport has a 15-second total/receive budget and zero retries. Invalid
+IDs, malformed or partial probabilities and refusals are failures, not negative results.
+
+`CheckDecisionModel` uses the same Action with a fixed nonprivate probe through
+the confidential `:check_decision_model` Event. It distinguishes unconfigured,
+ready and failed without starting ingestion or exposing provider errors.
+
 ### Resource queries (`Zaq.Agent.Tools.Resources.QueryResources`, key `resources.query`)
 
 The existing read-only Action supports `describe`, get by ID, text search, exact

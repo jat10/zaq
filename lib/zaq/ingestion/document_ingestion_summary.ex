@@ -73,7 +73,7 @@ defmodule Zaq.Ingestion.DocumentIngestionSummary do
     document =
       Document |> where([d], d.id == ^job.document_id) |> lock("FOR UPDATE") |> Repo.one()
 
-    if document do
+    if document && document.generation == (job.generation || 0) do
       previous = Map.get(document.metadata || %{}, "ingestion", %{})
 
       if Keyword.get(opts, :new_run, false) or Map.get(previous, "job_id") in [nil, job.id] do
@@ -105,9 +105,13 @@ defmodule Zaq.Ingestion.DocumentIngestionSummary do
   end
 
   @doc "Updates progress for the direct, non-Oban ingestion path."
-  def refresh_inline(document_id, detected_chunks, results, reset?) do
+  def refresh_inline(document_id, detected_chunks, results, reset?, opts \\ []) do
     Repo.transaction(fn ->
       document = Document |> where([d], d.id == ^document_id) |> lock("FOR UPDATE") |> Repo.one()
+      expected = Keyword.get(opts, :generation)
+
+      if document && not is_nil(expected) && document.generation != expected,
+        do: Repo.rollback(:stale_generation)
 
       if document, do: persist_inline(document, detected_chunks, results, reset?)
     end)

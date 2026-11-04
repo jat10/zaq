@@ -46,6 +46,13 @@ defmodule Zaq.Agent.Tools.Registry do
       module: Zaq.Agent.Tools.KnowledgeBaseOverview
     },
     %{
+      key: "general.classify",
+      label: "Classify text",
+      description:
+        "Evaluate supplied text against independent categories using the Decision model",
+      module: Zaq.Agent.Tools.General.Classify
+    },
+    %{
       key: "general.encode_base64",
       label: "Encode Base64",
       description:

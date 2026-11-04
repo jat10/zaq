@@ -14,6 +14,20 @@ defmodule ZaqWeb.Live.BO.LabelEvents do
     |> Map.fetch!(:response)
   end
 
+  @doc "Reads saved Decision availability through its owning Engine settings operation."
+  def automation_configured?(user) do
+    event =
+      Event.new(%{kind: :decision}, :engine,
+        actor: BOActor.build(user),
+        opts: [action: :system_config_get_rag_model_config, confidential: true]
+      )
+
+    case NodeRouter.dispatch(event).response do
+      %{credential_id: id, model: model} -> is_integer(id) and is_binary(model) and model != ""
+      _ -> false
+    end
+  end
+
   @doc "Remove a selected label using the shared editor projection and versioned mutation."
   @spec remove(map(), map(), integer()) :: term()
   def remove(user, resource, label_id) do
@@ -43,7 +57,16 @@ defmodule ZaqWeb.Live.BO.LabelEvents do
   def error_message(:invalid_value), do: "Label values must be text of at most 200 characters."
 
   def error_message(:invalid_targets), do: "Choose at least one resource type."
-  def error_message(:automation_unavailable), do: "Automatic labeling is not available yet."
+
+  def error_message(:automation_unavailable),
+    do: "Configure a Decision model in RAG settings to enable automatic labeling."
+
+  def error_message(:decision_unavailable),
+    do: "The Decision model is unavailable. Try again later."
+
+  def error_message(:affected_chunks_changed),
+    do: "Affected chunks changed. Reopen the label to review the current scope."
+
   def error_message(:not_found), do: "This resource is no longer available."
 
   def error_message(reason) when reason in [:unauthorized, :forbidden],

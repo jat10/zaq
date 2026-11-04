@@ -15,6 +15,8 @@ defmodule Zaq.Ingestion.IngestWorker do
 
   alias Zaq.Ingestion.{
     Chunk,
+    ClassificationRun,
+    DocumentGeneration,
     DocumentIngestionSummary,
     ExternalPermissions,
     IngestChunkJob,
@@ -27,7 +29,12 @@ defmodule Zaq.Ingestion.IngestWorker do
   alias Zaq.Repo
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"job_id" => job_id} = args, attempt: attempt, max_attempts: max}) do
+  def perform(job), do: perform(job, [])
+
+  def perform(
+        %Oban.Job{args: %{"job_id" => job_id} = args, attempt: attempt, max_attempts: max},
+        opts
+      ) do
     job = Repo.get!(IngestJob, job_id)
 
     updated_job = JobLifecycle.mark_processing!(job)
@@ -41,7 +48,14 @@ defmodule Zaq.Ingestion.IngestWorker do
       try do
         case materialized do
           {:ok, input} ->
-            process_materialized_input(input, updated_job, telemetry_dimensions, attempt, max)
+            process_materialized_input(
+              input,
+              updated_job,
+              telemetry_dimensions,
+              attempt,
+              max,
+              opts
+            )
 
           {:error, reason} ->
             handle_error(updated_job, reason, attempt, max, telemetry_dimensions)
@@ -52,8 +66,8 @@ defmodule Zaq.Ingestion.IngestWorker do
     end
   end
 
-  defp process_materialized_input(input, job, telemetry_dimensions, attempt, max) do
-    case prepare_chunks(input.path, job, input.processor_opts || []) do
+  defp process_materialized_input(input, job, telemetry_dimensions, attempt, max, opts) do
+    case prepare_chunks(input.path, job, Keyword.merge(input.processor_opts || [], opts)) do
       {:ok, document, :legacy_completed} ->
         import_external_permissions(input, document)
         finalize_legacy_job(job, document, telemetry_dimensions)
@@ -108,8 +122,13 @@ defmodule Zaq.Ingestion.IngestWorker do
   end
 
   defp prepare_chunks(file_path, job, opts) do
-    proc = processor()
-    opts = Keyword.merge(opts, on_progress: progress_reporter(job))
+    proc = Zaq.Config.get(:zaq, :document_processor, Zaq.Ingestion.DocumentProcessor, opts)
+
+    opts =
+      Keyword.merge(opts,
+        on_progress: progress_reporter(job),
+        classification_context: ClassificationRun.context(job)
+      )
 
     if Code.ensure_loaded?(proc) and function_exported?(proc, :prepare_file_chunks, 2) do
       proc.prepare_file_chunks(file_path, opts)
@@ -172,11 +191,25 @@ defmodule Zaq.Ingestion.IngestWorker do
   defp import_external_permissions(_input, _document), do: :ok
 
   defp schedule_chunk_jobs(job, document, indexed_payloads, telemetry_dimensions) do
-    Chunk.delete_by_document(document.id)
+    result =
+      Repo.transaction(fn ->
+        current = DocumentGeneration.lock!(document.id)
+        if current.generation != document.generation, do: Repo.rollback(:stale_generation)
+        do_schedule_chunk_jobs(job, document, indexed_payloads, telemetry_dimensions)
+      end)
+
+    case result do
+      {:ok, result} -> result
+      {:error, reason} -> {:cancel, reason}
+    end
+  end
+
+  defp do_schedule_chunk_jobs(job, document, indexed_payloads, telemetry_dimensions) do
     IngestChunkJob.upsert_many(job.id, document.id, indexed_payloads)
 
     attrs = %{
       document_id: document.id,
+      generation: document.generation,
       total_chunks: length(indexed_payloads),
       ingested_chunks: 0,
       failed_chunks: 0,
@@ -285,8 +318,4 @@ defmodule Zaq.Ingestion.IngestWorker do
   defp format_error(reason) when is_atom(reason), do: Atom.to_string(reason)
   defp format_error(%{errors: _} = changeset), do: inspect(changeset.errors)
   defp format_error(reason), do: inspect(reason)
-
-  defp processor do
-    Application.get_env(:zaq, :document_processor, Zaq.Ingestion.DocumentProcessor)
-  end
 end

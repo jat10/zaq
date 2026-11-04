@@ -75,6 +75,7 @@ defmodule Zaq.Ingestion.IngestChunkWorkerTest do
         %{
           ingest_job_id: job.id,
           document_id: 123,
+          generation: 0,
           chunk_index: 1,
           chunk_payload: %{"content" => "chunk content", "metadata" => %{}},
           status: "pending"
@@ -114,6 +115,19 @@ defmodule Zaq.Ingestion.IngestChunkWorkerTest do
     assert refreshed_chunk_job.status == "pending"
     assert refreshed_chunk_job.attempts == 1
     assert refreshed_chunk_job.error == "Rate limited (429), retrying"
+  end
+
+  test "legacy queued chunk without generation never adopts current document identity" do
+    job = create_job()
+    document = create_document()
+    chunk_job = create_chunk_job(job, %{document_id: document.id, generation: nil})
+
+    assert {:error, :missing_generation} =
+             IngestChunkWorker.perform(%Oban.Job{
+               args: %{"chunk_job_id" => chunk_job.id, "job_id" => job.id},
+               attempt: 1,
+               max_attempts: 5
+             })
   end
 
   test "does not reopen parent when job is already terminal" do

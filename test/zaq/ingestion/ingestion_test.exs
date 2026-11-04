@@ -903,6 +903,7 @@ defmodule Zaq.IngestionTest do
         document_id: doc.id,
         chunk_index: 2,
         chunk_payload: %{"content" => "chunk two", "metadata" => %{}},
+        generation: doc.generation,
         status: "failed_final"
       })
       |> Repo.insert!()
@@ -913,6 +914,7 @@ defmodule Zaq.IngestionTest do
         document_id: doc.id,
         chunk_index: 5,
         chunk_payload: %{"content" => "chunk five", "metadata" => %{}},
+        generation: doc.generation,
         status: "failed_final"
       })
       |> Repo.insert!()

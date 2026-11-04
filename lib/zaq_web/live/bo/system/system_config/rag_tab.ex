@@ -126,7 +126,11 @@ defmodule ZaqWeb.Live.BO.System.SystemConfig.RAGTab do
         <header>
           <h2 class="zaq-text-h3" style="color: var(--zaq-text-color-body-default)">{@title}</h2>
           <p class="zaq-text-caption" style="color: var(--zaq-text-color-body-secondary)">
-            Saved for future use. Not active in the RAG pipeline.
+            <%= if @kind == :decision do %>
+              Used for automatic classification when labels are enabled.
+            <% else %>
+              Saved for future use. Not active in the RAG pipeline.
+            <% end %>
           </p>
         </header>
         <.form
@@ -143,6 +147,16 @@ defmodule ZaqWeb.Live.BO.System.SystemConfig.RAGTab do
             options={@options}
             credential_options={@credential_options}
             stacked={true}
+          />
+          <Input.input
+            :if={@kind == :decision}
+            field={@form[:classification_threshold]}
+            type="number"
+            label="Classification threshold (%)"
+            min="0"
+            max="100"
+            step="1"
+            hint="Higher values apply fewer labels; lower values apply more labels. Shared by automatic document and chunk labels. Changes apply to future classification requests."
           />
           <p
             :if={@options == []}

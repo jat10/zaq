@@ -27,6 +27,7 @@ defmodule Zaq.Ingestion.IngestChunkJob do
     field :document_id, :integer
     field :chunk_index, :integer
     field :chunk_payload, :map
+    field :generation, :integer
     field :status, :string, default: "pending"
     field :attempts, :integer, default: 0
     field :error, :string
@@ -45,6 +46,7 @@ defmodule Zaq.Ingestion.IngestChunkJob do
       :document_id,
       :chunk_index,
       :chunk_payload,
+      :generation,
       :status,
       :attempts,
       :error
@@ -64,6 +66,7 @@ defmodule Zaq.Ingestion.IngestChunkJob do
           document_id: document_id,
           chunk_index: chunk_index,
           chunk_payload: chunk_payload,
+          generation: chunk_payload["generation"],
           status: "pending",
           attempts: 0,
           error: nil,
@@ -75,7 +78,8 @@ defmodule Zaq.Ingestion.IngestChunkJob do
     Repo.insert_all(
       __MODULE__,
       rows,
-      on_conflict: {:replace, [:chunk_payload, :status, :attempts, :error, :updated_at]},
+      on_conflict:
+        {:replace, [:chunk_payload, :generation, :status, :attempts, :error, :updated_at]},
       conflict_target: [:ingest_job_id, :chunk_index]
     )
   end

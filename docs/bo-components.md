@@ -259,6 +259,15 @@ Prefer `<.input type="checkbox" ...>` over raw `<input>` tags — the core compo
 
 ## Checklist before opening a PR for any BO UI change
 
+Label automation reuses `LabelsLive`, `LabelEditor`, `LabelChips` and
+`IngestionJobsPanel`; confirmations use neutral `BOModal.form_dialog` actions.
+The Decision configuration, ingestion proceed/cancel and affected-chunk
+reclassification contracts are owned by the
+[Ingestion guide](services/ingestion.md#automatic-classification-and-labeling).
+Automatic result updates refresh chips/counts without clearing an open editor's
+staged values or catalog selection. New consolidated browser coverage remains
+behind the feature's explicit UX approval gate.
+
 - [ ] Template opens with `<ZaqWeb.Components.BOLayout.bo_layout ...>` and `current_path` is assigned
 - [ ] Styling follows [`DESIGN.md`](../DESIGN.md) (tokens, typography, buttons, forbidden patterns)
 - [ ] No hardcoded hex, rgb, oklch, or hsl color values in templates
