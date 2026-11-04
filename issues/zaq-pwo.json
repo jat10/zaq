@@ -6,9 +6,15 @@
   "description": "Merge upstream/main into feat/labeling; retain trusted-context dispatch and label handlers while adapting main knowledge chunk/fusion/limit handlers. Action reuse assessment: reuse existing KnowledgeChunks.fetch, DocumentProcessor.fuse_chunks and limit_chunks and label Actions through existing Ingestion API dispatch; no new operations or tool exposure. Preserve all test expectations. Validate mix q, ingestion API/label tests and final mix precommit. Coverage/E2E additions not applicable: merge reconciliation without new behavior.",
   "id": "zaq-pwo",
   "labels": [],
+  "comments": [
+    {
+      "text": "Resolved sole conflict in lib/zaq/ingestion/api.ex against upstream/main acf2aff23. Preserved action-first private dispatch, label Actions, and main chunk fetch/fusion/explicit limits. mix q passed; focused ingestion API, labels, knowledge chunks, document processor tests: 199 passed (12 properties), 10 excluded. No existing tests manually altered. Final mix precommit running. Merge staged without commit or push.",
+      "timestamp": "2026-11-04T16:50:46Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Resolve labeling branch conflicts with main",
   "type": "task",
-  "updated_at": "2026-11-04T16:48:40Z"
+  "updated_at": "2026-11-04T16:50:46Z"
 }
