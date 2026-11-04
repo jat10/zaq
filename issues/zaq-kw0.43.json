@@ -7,9 +7,15 @@
   "id": "zaq-kw0.43",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "Baseline full mix test after user reset reproduced missing chunks table in ValueManagementTest (seed 638151). Ownership audit: test async:true assumes shared dynamic table; no setup creates it; DataCase only owns sandbox records. Chunks table is shared schema created by embedding configuration, not unconditional migrations. Existing LifecycleTest async:false seeds embedding config inside sandbox and rolls DDL back. Move unchanged usage assertions/scenario there, arrange own label/docs/chunk, preserving document-only async tests. No assertion weakening or production operation changes. Existing unrelated .serena/project.yml retained; PR2 worktree untouched.",
+      "timestamp": "2026-11-04T08:24:21Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.43] Fix PR1 clean-database test failures",
   "type": "bug",
-  "updated_at": "2026-11-04T08:21:35Z"
+  "updated_at": "2026-11-04T08:24:21Z"
 }
