@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-04T02:05:12Z",
@@ -8,8 +8,8 @@
   "labels": [],
   "parent": "zaq-kw0",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-kw0.40] Route ingestion resource queries through NodeRouter",
   "type": "task",
-  "updated_at": "2026-11-04T02:05:14Z"
+  "updated_at": "2026-11-04T02:05:15Z"
 }
