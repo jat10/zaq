@@ -1,7 +1,8 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-kw0.42.9"
+    "zaq-kw0.42.9",
+    "zaq-kw0.5"
   ],
   "blocks": [
     "zaq-kw0.42.11"
@@ -15,5 +16,5 @@
   "status": "open",
   "title": "[zaq-kw0.42.10] PR2 Verify PR2 lifecycle contracts and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-04T04:18:45Z"
+  "updated_at": "2026-11-04T08:45:22Z"
 }
