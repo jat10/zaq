@@ -20,11 +20,15 @@
     {
       "text": "Post-fix broad integration passed: 1244 checks (40 properties), 1 existing skip and 59 tagged exclusions; mix q clean. Added real blocked-embedding replacement race: release old model response after new generation/chunk/progress persisted; old path returns stale_generation and leaves current chunk/progress unchanged. Both complete lifecycle tests pass. Existing three-browser journeys continue serially; no new feature E2E authored.",
       "timestamp": "2026-11-04T10:45:06Z"
+    },
+    {
+      "text": "Action reuse for partial retry correction: extend existing DocumentGeneration coordinator via resume/3, local-only internal consistency boundary reused by DocumentProcessor.store_document/5. Existing retry entry points and user operation stay unchanged; no standalone Action/tool is appropriate for a lock/capture helper. Real conversion, queued worker and unchanged multilingual retry assertions pass. Latest mix q passed after race test and documentation changes. Firefox 161/161 and WebKit 161/161 journeys passed; Chromium/Storybook still running.",
+      "timestamp": "2026-11-04T10:50:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.10] PR2 Verify PR2 lifecycle contracts and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-04T10:45:06Z"
+  "updated_at": "2026-11-04T10:50:28Z"
 }
