@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-04T10:48:16Z",
+  "description": "Comment 1 only. Replace DeliveryFiles.with_prepared/4 with prepare/3 returning {:ok, files} or {:error, reason}; rename per-record private helper; compose preparation and sending at chat/email callers. User approved this exact proposal including adaptation of helper tests on 2026-11-04 (go ahead and apply this). Preserve byte/order properties, authorization, metadata, source preservation and caller failure assertions. Action reuse assessment: retain local-only delivery conversion in DeliveryFiles and reuse Materialization.materialize/3 plus Base.decode64/1; no new Action/tool or duplicated acquisition logic. Existing chat/email send APIs remain owners of sending; trusted actor and node_router dependency unchanged, no retries or new effects. Shared helper is transport adaptation, not independently exposed workflow/agent operation. Verify mix q and isolated helper/selection/chat/email tests. No new UI or browser journey; E2E unnecessary for this API refactor. Remaining PR comments and final coverage/precommit lifecycle remain tracked separately.",
+  "id": "zaq-juu.17",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "Remove outgoing attachment preparation callback for PR 876",
+  "type": "task",
+  "updated_at": "2026-11-04T10:48:16Z"
+}
