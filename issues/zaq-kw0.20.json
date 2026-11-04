@@ -1,6 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [
+    "zaq-kw0.42.12",
     "zaq-kw0.7"
   ],
   "blocks": [
@@ -15,5 +16,5 @@
   "status": "open",
   "title": "[zaq-kw0.20] PR2 Complete PR2 final validation and human approval",
   "type": "task",
-  "updated_at": "2026-11-04T04:18:14Z"
+  "updated_at": "2026-11-04T04:18:47Z"
 }
