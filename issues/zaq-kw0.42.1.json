@@ -9,9 +9,15 @@
   "id": "zaq-kw0.42.1",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Execution audit: extend ProviderSpec with evaluation_runtime/1 using canonical operation_runtime authentication but no sampling options; RAGModelConfig lacks temperature/top_p, so normalize via Map.get preserving generation callers. Installed ReqLLM.Evaluation.evaluate/4 supports independent boolean questions and normalized Response.object, callable models via Evaluation.models/0; provider errors remain terminal and sanitized. New reusable Classify workflow/Jido Action owns bounded supplied text/categories validation and exact probability mapping, Registry entry and confidential Agent classify Event; no Ingestion lookup or threshold. Extend existing System get/save_rag_model_config for Decision-only 0..100 threshold default 80; retain Engine authorization. New local PostProcessing dispatcher/shared Oban worker owns status and allowlisted processor, typed IDs/generation/request data; use processor-owned durable reservations, retry infrastructure crashes only, terminal provider outcomes persisted. Budgets: 65536 UTF-8 text bytes, 32 categories, ID/name 200 bytes, description 4096 bytes, 15s total request timeout with max_retries 0; preflight fixed small boolean probe under same bound. Reservation captures threshold, definition version, generation and assignment version; final write compares all under locks; no model call while locked. Manual origins/exclusions/values always win. Extend existing Ingestion entry points and job payload/schema for immutable enabled/skipped run decision, propagate to children/retry; absent legacy decision defaults skipped without inference. Definition create never schedules; confirmed definition edits select only presently selected affected chunks authorized to actor, then all eligible automatic chunk labels; Not now retains assignments. Reuse Labels/ResourceLabels permissions and optimistic versions, Document/Chunk lifecycle and existing job/status surfaces; reject retry_job for reclassification because it reingests. New affected-chunk and Decision readiness Actions are tracked by existing .42.7/.42.5 prerequisites. No new product semantics or generic invoke endpoints. Negative-identity, stale-generation/manual race, malformed probabilities and threshold capture tests required before consumers; existing behavioral expectations remain unchanged unless separately approved. Audit-only validation: inspected source and installed dependency contracts, no application code changed; mix q/application tests not applicable.",
+      "timestamp": "2026-11-04T08:17:02Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.1] PR2 Finalize PR2 execution contracts and reuse audit",
   "type": "task",
-  "updated_at": "2026-11-04T08:16:15Z"
+  "updated_at": "2026-11-04T08:17:02Z"
 }
