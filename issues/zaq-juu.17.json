@@ -11,11 +11,15 @@
     {
       "text": "Implemented comment 1 in five code/test files. DeliveryFiles.prepare/3 returns ordered prepared files or errors; chat and email callers compose preparation with sending. Private single-record helper renamed. Existing helper/selection tests adapted to approved return contract, including source-preservation after caller errors/exceptions; unchanged integration tests cover failed preparation preventing upload/send. Validation: final mix q exit 0; focused seven-file run exit 0, 147 passed (6 properties, 141 tests). Fixed test with-expression parsing issue found on initial run. git diff reviewed; no remaining with_prepared references. No commit/push or GitHub reply/resolution. Pre-existing .serena/project.yml unchanged. Remaining PR review comments, coverage and final precommit stay under existing PR finalization zaq-juu.8; this is one review iteration, not final PR approval.",
       "timestamp": "2026-11-04T10:52:33Z"
+    },
+    {
+      "text": "User approved follow-up reuse of DecodeBase64 Action and its more lenient whitespace/optional-padding behavior. Action reuse assessment updated: candidate lib/zaq/agent/tools/general/decode_base64.ex accepts data and variant and returns decoded binary plus text?/byte_size. Reuse via Jido.Exec.run/3 with explicit standard variant, preserving existing attachment error atom. Retain raw-byte passthrough and reject URL-safe alphabet for declared base64. Action is pure with no actor dependency; no source permissions or Materialization changes. Add property coverage for wrapped unpadded binary content and exact malformed/URL-safe rejection tests. Existing asserted contracts remain intact.",
+      "timestamp": "2026-11-04T11:00:14Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Remove outgoing attachment preparation callback for PR 876",
   "type": "task",
-  "updated_at": "2026-11-04T10:52:33Z"
+  "updated_at": "2026-11-04T11:00:14Z"
 }
