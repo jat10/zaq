@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-04T11:18:24Z",
@@ -8,8 +8,8 @@
   "labels": [],
   "parent": "zaq-juu",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Use generic attachment failure notice in Channels delivery orchestration",
   "type": "task",
-  "updated_at": "2026-11-04T11:18:24Z"
+  "updated_at": "2026-11-04T11:18:48Z"
 }
