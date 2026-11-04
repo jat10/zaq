@@ -2,6 +2,7 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-04T02:47:23Z",
   "created": "2026-11-04T02:42:15Z",
   "description": "User confirms PR has not reached production and authorizes migration consolidation. Fold assignment value columns into create_resource_labels migration and remove add_label_assignment_values. Preserve tables, columns, defaults, indexes, constraints and chunks availability guard. Action reuse not applicable: migration-only schema definition consolidation, no runtime operation. Validate old sequence versus merged schema in disposable DB with and without chunks, rollback/reapply, mix q, relevant label tests and final precommit. Do not reset existing development databases.",
   "id": "zaq-kw0.41",
@@ -22,8 +23,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Consolidate unpublished label migrations",
   "type": "task",
-  "updated_at": "2026-11-04T02:47:22Z"
+  "updated_at": "2026-11-04T02:47:23Z"
 }
