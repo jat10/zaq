@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-04T11:18:24Z",
+  "description": "PR 876 comments 2 and overlapping 4. User explicitly approved generic attachment notice, preservation of original error, removal of raw HTTP/timeout interpretation and moving policy to existing Channels delivery orchestration. Extend Channels.Api deliver_outgoing with private best-effort notice helper; invoke existing bridge.send_reply with empty attachments and callback metadata removed, using same resolved connection; preserve original response and avoid recording notice as successful attachment delivery. Remove JidoChatBridge fallback/classification helpers. Action reuse: reuse existing API event delivery owner, bridge transport callbacks and DeliveryConfirmation; no new Action/framework/tool or duplicated transport. Shared generic fallback applies at API delivery boundary; direct bridge calls only return errors. Contract: any failed attachment-bearing outgoing with binary body receives one conservative notice attempt, no attachment retry; success/text-only/nonbinary body do not trigger fallback. Test behavior approval: user go ahead and apply this follows explicit proposal of generic text and ownership move; migrate affected notice tests to API entry and replace specific text assertions with agreed notice, preserving error/no-retry/body/callback invariants. Add API/bridge regression coverage. No UI changes or new browser journey. Run mix q and focused API/chat/attachment integration tests; final PR coverage/precommit remains zaq-juu.8.",
+  "id": "zaq-juu.18",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "Use generic attachment failure notice in Channels delivery orchestration",
+  "type": "task",
+  "updated_at": "2026-11-04T11:18:24Z"
+}
