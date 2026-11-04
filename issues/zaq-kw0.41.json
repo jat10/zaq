@@ -11,11 +11,15 @@
     {
       "text": "Merged nullable value columns into original create_resource_labels migration, preserving original column order; deleted follow-up add_label_assignment_values. Disposable PostgreSQL validation passed: original two-migration sequence and consolidated migration have identical columns/defaults/nullability/indexes/constraints, both when dynamic chunks table exists and when absent. Rollback removes label tables and reapply restores identical schema. Disposable DB removed; no existing development DB changed. mix q clean; targeted labels/query/UI suite 69 passed (7 properties, 62 tests). Final precommit running. Verification script/log: /tmp/zaq-verify-label-migration.exs and /tmp/zaq-label-migration-check.log.",
       "timestamp": "2026-11-04T02:43:40Z"
+    },
+    {
+      "text": "Final mix precommit passed (exit 0): Credo clean, test --stale reported No stale tests. Migration behavior was independently verified against old sequence in disposable DB, including both chunks states and rollback/reapply; targeted 69 checks passed. Only one PR-added label migration remains. Existing worktree DBs retain their applied schema/history; no reset or manual history rewrite performed. Changes uncommitted.",
+      "timestamp": "2026-11-04T02:45:17Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Consolidate unpublished label migrations",
   "type": "task",
-  "updated_at": "2026-11-04T02:43:40Z"
+  "updated_at": "2026-11-04T02:45:17Z"
 }
