@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-juu.18.2"
+  ],
   "created": "2026-11-04T11:59:51Z",
   "description": "Implement approved reason/message/stage/delivery struct and map shared preparation, Jido generic transport, and email SMTP failures. Local-only error contract; reuse existing preparation and sender operations. Preserve raw reasons internally and safe display messages. Update unit contracts and run focused tests.",
   "id": "zaq-juu.18.1",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-juu.18] Add delivery error contract and bridge mappings",
   "type": "task",
-  "updated_at": "2026-11-04T11:59:51Z"
+  "updated_at": "2026-11-04T12:00:32Z"
 }
