@@ -35,11 +35,15 @@
     {
       "text": "Root cause established: catalog test fails alone (mix test labels_live_test.exs:384 --seed 0), because template renders compact value/resource counts while assertions expect obsolete prose. User explicitly approved keeping compact display and updating assertions via request_user_input_async reply. Will assert exact 1 / 2 then 2 / 2, retaining selected/unselected DB assertions. Separate intermittent crash: AuthHook increments features_version then returns :cont for :addons_updated; LabelsLive has only :label_values_updated handler. Add explicit handler and deterministic process-local message regression. No Application env reads/writes in scoped label modules/tests; Zaq.Config delegates to Application by default, so replacing wrappers alone would not provide isolation. SQL fixtures are per-test sandbox, no global configuration or PubSub mutations needed.",
       "timestamp": "2026-11-04T02:32:16Z"
+    },
+    {
+      "text": "Isolation audit found explicit source: async AuthHookTest broadcasts on global addons:updated topic. Moved only its unchanged broadcast describe/setup/test into AuthHookBroadcastTest (async:false) in same file, retaining five async pure/auth tests. LabelsLive regression sends directly to its own LiveView PID and preserves selected label/count state; reproduced FunctionClauseError before production fix. Added explicit :addons_updated handler (AuthHook already updates features_version), no generic catch-all. Updated approved catalog text assertions to 1 / 2 and 2 / 2. No global environment operations found in affected label/query modules, auth hook, fixtures or ConnCase; no Zaq.Config replacement necessary. mix q passes.",
+      "timestamp": "2026-11-04T02:33:59Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Clean up labeling iteration leftovers",
   "type": "task",
-  "updated_at": "2026-11-04T02:32:16Z"
+  "updated_at": "2026-11-04T02:33:59Z"
 }
