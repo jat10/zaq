@@ -1,8 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-kw0.21",
-    "zaq-kw0.5"
+    "zaq-kw0.21"
   ],
   "blocks": [
     "zaq-kw0.42.5"
@@ -16,5 +15,5 @@
   "status": "open",
   "title": "[zaq-kw0.7] PR2 Reserve and apply automatic label results safely",
   "type": "task",
-  "updated_at": "2026-11-04T08:29:41Z"
+  "updated_at": "2026-11-04T08:45:23Z"
 }
