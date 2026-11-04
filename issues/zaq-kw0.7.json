@@ -4,7 +4,6 @@
     "zaq-kw0.21"
   ],
   "blocks": [
-    "zaq-kw0.20",
     "zaq-kw0.42.5"
   ],
   "created": "2026-11-02T11:26:12Z",
@@ -16,5 +15,5 @@
   "status": "open",
   "title": "[zaq-kw0.7] PR2 Reserve and apply automatic label results safely",
   "type": "task",
-  "updated_at": "2026-11-04T04:18:39Z"
+  "updated_at": "2026-11-04T04:18:51Z"
 }
