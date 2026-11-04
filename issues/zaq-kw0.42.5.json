@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-kw0.7"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-kw0.42",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-kw0.42.5] PR2 Implement bounded Decision readiness operation",
   "type": "task",
-  "updated_at": "2026-11-04T04:18:40Z"
+  "updated_at": "2026-11-04T08:51:01Z"
 }
