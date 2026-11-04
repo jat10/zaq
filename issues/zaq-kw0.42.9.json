@@ -11,9 +11,15 @@
   "id": "zaq-kw0.42.9",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Wired automatic document/chunk controls into existing catalog form only with configured Decision model, retaining server gating. Saved edits offer exact affected-chunk preview with Reclassify/Not now; new labels never backfill. Ingestion preflight modal preserves selection on Cancel and persists whole-run skip on Proceed. Existing editor/chips show automatic confidence/staleness; job panel reports safe classification skips. Automatic updates refresh document chips without resetting open label drafts and update catalog counts without clearing selection. Reused BOModal form dialogs and DS checkbox/input/button patterns after Storybook review; updated existing label/job stories. No reset/suggestion/cost workflow. Validation: full catalog/ingestion LiveView suite 218 passed, component/editor/jobs targeted suite 20 passed, mix q clean. New UI regressions exercise real routed persistence and local provider probe; exact NodeRouterMock bridge forwards only check_decision_model to real NodeRouter. Existing assertions unchanged.",
+      "timestamp": "2026-11-04T09:22:16Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.9] PR2 Wire automatic controls and classification confirmation flows",
   "type": "task",
-  "updated_at": "2026-11-04T09:09:51Z"
+  "updated_at": "2026-11-04T09:22:16Z"
 }
