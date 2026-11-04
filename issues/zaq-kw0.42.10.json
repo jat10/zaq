@@ -24,11 +24,15 @@
     {
       "text": "Action reuse for partial retry correction: extend existing DocumentGeneration coordinator via resume/3, local-only internal consistency boundary reused by DocumentProcessor.store_document/5. Existing retry entry points and user operation stay unchanged; no standalone Action/tool is appropriate for a lock/capture helper. Real conversion, queued worker and unchanged multilingual retry assertions pass. Latest mix q passed after race test and documentation changes. Firefox 161/161 and WebKit 161/161 journeys passed; Chromium/Storybook still running.",
       "timestamp": "2026-11-04T10:50:28Z"
+    },
+    {
+      "text": "Existing journey run completed successfully (exit 0): 480 passed, 3 existing skips across Firefox/WebKit/Chromium, 13.4 minutes. This is the exact final count (earlier per-browser progress included one existing skip each). Storybook smoke completed 103 passed / 3 failed; investigating failures before closing integration. Logs /tmp/zaq-pr2-post-rebase-journeys.log and /tmp/zaq-pr2-storybook-retry.log.",
+      "timestamp": "2026-11-04T10:51:13Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.10] PR2 Verify PR2 lifecycle contracts and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-04T10:50:28Z"
+  "updated_at": "2026-11-04T10:51:13Z"
 }
