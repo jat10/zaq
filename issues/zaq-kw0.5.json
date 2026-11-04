@@ -1,7 +1,8 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-kw0.3"
+    "zaq-kw0.3",
+    "zaq-kw0.42.3"
   ],
   "blocks": [
     "zaq-kw0.6"
@@ -15,5 +16,5 @@
   "status": "open",
   "title": "[zaq-kw0.5] PR2 Build reusable general.classify tool and routed contract",
   "type": "task",
-  "updated_at": "2026-11-04T04:17:51Z"
+  "updated_at": "2026-11-04T04:18:36Z"
 }
