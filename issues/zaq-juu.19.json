@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-04T12:26:34Z",
+  "description": "User explicitly requested test-first reproduction only, intentionally failing against current implementation. Add new stream unit regressions for rejected instruction and malformed output followed by a valid completed answer; preserve existing assertions and production code. Action reuse: not applicable, test-only public consume contract. E2E unnecessary; direct reducer boundary proves the defect. Run isolated tests and mix q; leave regressions red as requested.",
+  "id": "zaq-juu.19",
+  "labels": [],
+  "parent": "zaq-juu",
+  "priority": 2,
+  "status": "open",
+  "title": "Reproduce PR comment 3 attachment selection failing completed answers",
+  "type": "task",
+  "updated_at": "2026-11-04T12:26:34Z"
+}
