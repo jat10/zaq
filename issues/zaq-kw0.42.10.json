@@ -28,11 +28,15 @@
     {
       "text": "Existing journey run completed successfully (exit 0): 480 passed, 3 existing skips across Firefox/WebKit/Chromium, 13.4 minutes. This is the exact final count (earlier per-browser progress included one existing skip each). Storybook smoke completed 103 passed / 3 failed; investigating failures before closing integration. Logs /tmp/zaq-pr2-post-rebase-journeys.log and /tmp/zaq-pr2-storybook-retry.log.",
       "timestamp": "2026-11-04T10:51:13Z"
+    },
+    {
+      "text": "Integration scope complete with explicit existing Storybook exception: real lifecycle/manual precedence/scoped reclassification/generation replacement and blocked-embedding race pass; 1244 broad checks plus new race, mix q clean, three-browser journeys exit0 with480pass/3existing skips. Storybook103pass/3fail: old button route mechanically repaired to current forms/button story with every color assertion unchanged and isolated green; person_header timeout passes isolated; person_profile iframe callback still fails isolated in unchanged Phoenix Storybook1.3.0 onload code. Base comparison confirms story/component/assets/mix.lock unchanged; separate bug recorded rather than weakening assertions or changing unrelated dependency. Changed labeling stories passed. Owner docs and PR3 handoff updated; final review, coverage, precommit and human approval remain open.",
+      "timestamp": "2026-11-04T10:54:41Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.10] PR2 Verify PR2 lifecycle contracts and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-04T10:51:13Z"
+  "updated_at": "2026-11-04T10:54:41Z"
 }
