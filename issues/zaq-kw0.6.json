@@ -11,9 +11,15 @@
   "id": "zaq-kw0.6",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Implemented DocumentGeneration coordinator: atomic source upsert, generation increment, old chunks/cascaded assignments removal, automatic document-result invalidation and pending-request obsolescence; manual document choices/values survive. Parse/chunk before replacement locks; embedding outside locks; final insertion/retry-slot removal checks captured generation under document lock. Sync and queued paths carry generation; worker child scheduling is transactional and rejects stale generations. Missing legacy chunk generation never adopts current identity. Existing worker fixtures now carry explicit generation 0, including test-only processor payloads; every original assertion and scenario retained. Preserved original missing-document changeset error and retry deletion contract after regressions exposed differences. Validation: 176 pipeline checks (7 properties), 48 focused generation/worker/migration checks (1 property), legacy nil-generation regression included; mix q passes. No existing test expectations changed.",
+      "timestamp": "2026-11-04T08:42:21Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.6] PR2 Protect document generations and final chunk insertion",
   "type": "task",
-  "updated_at": "2026-11-04T08:34:38Z"
+  "updated_at": "2026-11-04T08:42:21Z"
 }
