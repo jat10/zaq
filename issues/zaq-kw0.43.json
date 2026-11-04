@@ -23,11 +23,15 @@
     {
       "text": "User steering: simply create chunks table before test. Replaced relocation with smaller direct setup: ValueManagementTest now async:false (DDL ownership), and chunk usage test asserts Chunk.create_table(1536) before insert. All original scenarios/assertions retained; lifecycle file restored. Fresh _directfix_20261104 run passes 9 checks (1 property,8 tests). Catalog fixture fix retained. Latest whole-suite run exposed intermittent preexisting Mattermost context-refresh race: DB queued receipt precedes runtime steer acknowledgement; investigating test barrier without weakening assertions.",
       "timestamp": "2026-11-04T08:44:13Z"
+    },
+    {
+      "text": "Mattermost race diagnosis: RequestControl.do_control obtains input_opts (Engine queue_execution_input commits queued receipt) BEFORE invoke_control/Factory.steer. Existing test released LLM on receipt alone. Adjusted test-only receipt observer to include submitter PID; await_queued_input monitors normal task exit before LLM release, matching existing await_answer synchronization pattern. Both provider-mention scenarios use helper. Entire MattermostSharedHistoryIntegrationTest passes 26 tests; production unchanged, assertions preserved. Direct Chunk.create_table setup verified rolled back afterward. Final q/full fresh-db/precommit sequence running; no precommit run before full success.",
+      "timestamp": "2026-11-04T08:47:22Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.43] Fix PR1 clean-database test failures",
   "type": "bug",
-  "updated_at": "2026-11-04T08:44:13Z"
+  "updated_at": "2026-11-04T08:47:22Z"
 }
