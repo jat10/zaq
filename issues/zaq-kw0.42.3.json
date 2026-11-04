@@ -11,9 +11,15 @@
   "id": "zaq-kw0.42.3",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Reused existing RAGTab Decision form and DesignSystem.Input number field after DESIGN.md, BO guide and Input Storybook review. Input shows default 80, bounds 0..100, higher/fewer lower/more guidance and future-request scope. Existing NodeRouter get/save handlers unchanged. Added component scope/default regression; existing RAG component and LiveView model selection/save test preserved. Three checks pass, mix q passes. No feature E2E authored; consolidated PR3 approval remains open.",
+      "timestamp": "2026-11-04T08:25:40Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.3] PR2 Expose classification threshold in RAG Decision settings",
   "type": "task",
-  "updated_at": "2026-11-04T08:23:28Z"
+  "updated_at": "2026-11-04T08:25:40Z"
 }
