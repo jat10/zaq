@@ -15,11 +15,15 @@
     {
       "text": "Final mix precommit passed (exit 0): Credo clean, test --stale reported No stale tests. Migration behavior was independently verified against old sequence in disposable DB, including both chunks states and rollback/reapply; targeted 69 checks passed. Only one PR-added label migration remains. Existing worktree DBs retain their applied schema/history; no reset or manual history rewrite performed. Changes uncommitted.",
       "timestamp": "2026-11-04T02:45:17Z"
+    },
+    {
+      "text": "Committed and pushed in f2f67db40900c79c1c707587705296e0906dc731. PR #918 now describes single migration and schema-equivalence/rollback validation.",
+      "timestamp": "2026-11-04T02:47:22Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Consolidate unpublished label migrations",
   "type": "task",
-  "updated_at": "2026-11-04T02:45:17Z"
+  "updated_at": "2026-11-04T02:47:22Z"
 }
