@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-04T10:48:16Z",
@@ -8,8 +8,8 @@
   "labels": [],
   "parent": "zaq-juu",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Remove outgoing attachment preparation callback for PR 876",
   "type": "task",
-  "updated_at": "2026-11-04T10:48:16Z"
+  "updated_at": "2026-11-04T10:48:41Z"
 }
