@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-04T11:06:15Z",
+  "description": "",
+  "id": "zaq-kw0.42.12.3",
+  "labels": [],
+  "parent": "zaq-kw0.42.12",
+  "priority": 2,
+  "status": "open",
+  "title": "Cover PR2 automatic-label rendering and LiveView guard branches",
+  "type": "task",
+  "updated_at": "2026-11-04T11:06:15Z"
+}
