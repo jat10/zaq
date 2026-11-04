@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-juu.18.2"
   ],
+  "closed_at": "2026-11-04T12:09:38Z",
   "created": "2026-11-04T11:59:51Z",
   "description": "Implement approved reason/message/stage/delivery struct and map shared preparation, Jido generic transport, and email SMTP failures. Local-only error contract; reuse existing preparation and sender operations. Preserve raw reasons internally and safe display messages. Update unit contracts and run focused tests.",
   "id": "zaq-juu.18.1",
@@ -16,8 +17,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-juu.18] Add delivery error contract and bridge mappings",
   "type": "task",
-  "updated_at": "2026-11-04T12:09:37Z"
+  "updated_at": "2026-11-04T12:09:38Z"
 }
