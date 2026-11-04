@@ -15,11 +15,15 @@
     {
       "text": "Baseline completed: mix test seed 638151, 11893/11894 passed (48 doctests,311 properties,11535 tests), only missing chunks failure; 1 skipped,159 excluded. Fixed targeted tests on new partition _isolation_20261104:15 passed (1 property,14 tests). Verified all 10 original assertions unchanged and chunks absent after sandbox teardown (SELECT to_regclass IS NULL=true). mix q passed. Full fixed suite now running on another new partition _fullfix_20261104; final precommit queued only after full success. No production changes; no new coverage-specific phase needed for test relocation.",
       "timestamp": "2026-11-04T08:28:27Z"
+    },
+    {
+      "text": "First fixed full fresh-DB run: chunk regression passed, but revealed unrelated intermittent SystemConfigLiveTest compatible-provider embedding identity failure. Proven fixture issue: with_compatible_provider_catalog selects arbitrary OpenAI template and overrides id/name/provider but inherits source.model. ProviderModels.find_model correctly accepts model.id OR model.model, so copied text-embedding-3-large alias violates fixture intended independent vendor identity. Deterministic reproduction by choosing that template failed same unchanged assertion; setting model:id and aliases:[] passed embedding and image identity tests (2 passed). No production behavior/expectations changed. Catalog mutation is existing serialized async:false scope with on_exit restoration; no new global seam. Final full rerun required.",
+      "timestamp": "2026-11-04T08:35:24Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.43] Fix PR1 clean-database test failures",
   "type": "bug",
-  "updated_at": "2026-11-04T08:28:27Z"
+  "updated_at": "2026-11-04T08:35:24Z"
 }
