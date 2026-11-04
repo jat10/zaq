@@ -23,11 +23,15 @@
     {
       "text": "Final combined validation passes after domain consolidation and LiveView blocker repairs: mix q; 254 focused checks; final precommit exit 0 with 11825 checks passed. DocumentFilters removed, Document/Labels own filter logic, NodeRouter boundary preserved, no stale references or diff whitespace errors. Current changes remain in working tree, not committed or pushed.",
       "timestamp": "2026-11-04T02:40:38Z"
+    },
+    {
+      "text": "Committed and pushed in f2f67db40900c79c1c707587705296e0906dc731. Verified GitHub branch SHA; PR #918 remains draft with current boundary and validation details.",
+      "timestamp": "2026-11-04T02:47:20Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.40] Route ingestion resource queries through NodeRouter",
   "type": "task",
-  "updated_at": "2026-11-04T02:40:38Z"
+  "updated_at": "2026-11-04T02:47:20Z"
 }
