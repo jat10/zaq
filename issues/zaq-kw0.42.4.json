@@ -11,9 +11,15 @@
   "id": "zaq-kw0.42.4",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Added non-destructive PR1 upgrade: document generation default 0, nullable legacy job generation, immutable run-decision fields default skipped, automatic assignment provenance/probability constraints and separate generic processing requests. Pending attempts are not assignment rows, so selected remains non-null and old effective results remain available. Manual edits clear automatic provenance. Dynamic chunks FK/availability lifecycle unchanged; generic requests reference parent document and typed chunk identity checked by processor. Legacy queued chunk jobs without generation will be rejected, never adopt current generation. Validation: 64 existing/new schema, manual label and Chunk checks pass (4 properties); sandboxed real migration down/up preserves PR1 exclusion/version and restores generation default; mix q passes. Fresh branch test DB dynamic chunks initialized through canonical Chunk.create_table(1536), no test expectation edits.",
+      "timestamp": "2026-11-04T08:34:36Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.4] PR2 Add automation state and generation upgrade migrations",
   "type": "task",
-  "updated_at": "2026-11-04T08:29:45Z"
+  "updated_at": "2026-11-04T08:34:36Z"
 }
