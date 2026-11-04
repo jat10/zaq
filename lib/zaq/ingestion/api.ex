@@ -14,6 +14,7 @@ defmodule Zaq.Ingestion.Api do
     DeleteLabelDefinition,
     DeleteLabelDefinitions,
     EditResourceLabels,
+    ReclassifyLabelChunks,
     SaveLabelDefinition,
     UpdateLabelValues
   }
@@ -45,7 +46,8 @@ defmodule Zaq.Ingestion.Api do
               :edit_resource_labels,
               :update_label_values,
               :delete_label_definition,
-              :delete_label_definitions
+              :delete_label_definitions,
+              :reclassify_label_chunks
             ] do
     module =
       case action do
@@ -54,10 +56,11 @@ defmodule Zaq.Ingestion.Api do
         :update_label_values -> UpdateLabelValues
         :delete_label_definition -> DeleteLabelDefinition
         :delete_label_definitions -> DeleteLabelDefinitions
+        :reclassify_label_chunks -> ReclassifyLabelChunks
       end
 
     response =
-      case Jido.Exec.run(module, request, %{actor: event.actor}) do
+      case Jido.Exec.run(module, request, %{actor: event.actor, opts: event.opts}) do
         {:ok, %{result: result}} -> result
         {:error, _} = error -> error
       end
@@ -135,7 +138,10 @@ defmodule Zaq.Ingestion.Api do
          _context
        )
        when is_list(records) and is_map(params) do
-    %{event | response: Ingestion.ingest_records(records, put_actor(params, event.actor))}
+    %{
+      event
+      | response: Ingestion.ingest_records(records, put_actor(params, event.actor), event.opts)
+    }
   end
 
   defp dispatch_event(:process_data_source_changes, %Event{request: request} = event, _context)

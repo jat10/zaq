@@ -71,6 +71,11 @@ defmodule ZaqWeb.Components.DesignSystem.IngestionJobsPanel do
             style="color: var(--zaq-text-color-body-secondary)"
           >
             <p>Mode: {job.mode}</p>
+            <p :if={Map.get(job, :classification_error)} role="status">
+              {if Map.get(job, :classification_error) == "skipped_by_user",
+                do: "Classification skipped for this run.",
+                else: "Classification skipped: the Decision model check failed. Ingestion continues."}
+            </p>
             <p>Started: {format_datetime(job.started_at)}</p>
             <p :if={job.completed_at}>Completed: {format_datetime(job.completed_at)}</p>
             <p :if={job.total_chunks > 0}>Chunks: {job.ingested_chunks}/{job.total_chunks}</p>

@@ -102,6 +102,34 @@ defmodule Zaq.Agent.Api do
   def handle_event(%Event{} = event, :processing_status, _context),
     do: %{event | response: RequestControl.processing_status(event), next_hop: nil}
 
+  def handle_event(%Event{} = event, :classify, _context) do
+    response =
+      if event.opts[:confidential] == true do
+        Jido.Exec.run(Zaq.Agent.Tools.General.Classify, event.request, %{
+          actor: event.actor,
+          opts: event.opts
+        })
+      else
+        {:error, :confidential_event_required}
+      end
+
+    %{event | response: response}
+  end
+
+  def handle_event(%Event{} = event, :check_decision_model, _context) do
+    response =
+      if event.opts[:confidential] == true do
+        Jido.Exec.run(Zaq.Agent.Actions.CheckDecisionModel, %{}, %{
+          actor: event.actor,
+          opts: event.opts
+        })
+      else
+        {:error, :confidential_event_required}
+      end
+
+    %{event | response: response}
+  end
+
   def handle_event(%Event{} = event, :invoke, _context),
     do: InternalBoundaries.invoke_request(event)
 

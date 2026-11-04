@@ -1,5 +1,5 @@
 defmodule Zaq.Ingestion.Labels.DocumentAssignment do
-  @moduledoc "Manual category inclusion/exclusion with a foreign key to its resource."
+  @moduledoc "Effective category decision, optional manual value and automatic result provenance."
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query, only: [from: 2]
@@ -10,7 +10,11 @@ defmodule Zaq.Ingestion.Labels.DocumentAssignment do
     belongs_to :document, Zaq.Ingestion.Document
     field :value, :string
     field :selected, :boolean
-    field :origin, Ecto.Enum, values: [:manual], default: :manual
+    field :origin, Ecto.Enum, values: [:manual, :automatic], default: :manual
+    field :probability, :float
+    field :definition_version, :integer
+    field :generation, :integer
+    field :request_id, Ecto.UUID
     field :lock_version, :integer, default: 1
     timestamps(type: :utc_datetime_usec)
   end
@@ -27,7 +31,14 @@ defmodule Zaq.Ingestion.Labels.DocumentAssignment do
   @doc "Sets a manual decision with server-owned identity and provenance."
   def decision_changeset(assignment, selected, value \\ :unchanged) do
     assignment
-    |> change(selected: selected, origin: :manual)
+    |> change(
+      selected: selected,
+      origin: :manual,
+      probability: nil,
+      definition_version: nil,
+      generation: nil,
+      request_id: nil
+    )
     |> AssignmentValue.put(selected, value)
     |> validate_required([:selected, :label_id, :document_id])
     |> unique_constraint([:document_id, :label_id])

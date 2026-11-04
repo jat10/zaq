@@ -39,7 +39,7 @@ defmodule Zaq.Ingestion.IngestWorkerTest do
           :ok
       end
 
-      {:ok, %{id: document_id},
+      {:ok, %{id: document_id, generation: 0},
        [
          {payload("a", 1), 1},
          {payload("b", 2), 2}
@@ -61,6 +61,7 @@ defmodule Zaq.Ingestion.IngestWorkerTest do
     defp payload(content, idx) do
       %{
         "section_id" => "sec-#{idx}",
+        "generation" => 0,
         "content" => content,
         "section_path" => ["Sec #{idx}"],
         "tokens" => 10,
@@ -907,6 +908,7 @@ defmodule Zaq.Ingestion.IngestWorkerTest do
             "content" => "retry me",
             "metadata" => %{}
           },
+          generation: document.generation,
           status: "failed_final",
           attempts: 5,
           error: "boom"

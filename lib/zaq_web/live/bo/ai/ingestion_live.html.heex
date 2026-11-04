@@ -124,6 +124,26 @@
   </Drawer.drawer>
 
   <%!-- ——— Modals ——— --%>
+  <BOModal.form_dialog
+    :if={@classification_confirmation}
+    id="classification-preflight-modal"
+    title="Proceed without classification?"
+    cancel_event="cancel_classification_ingestion"
+  >
+    <p class="zaq-text-body-sm">
+      The Decision model check failed. Proceed with ingestion without automatic labeling for this entire run, or cancel before ingestion starts.
+    </p>
+    <:actions>
+      <ZaqWeb.Components.DesignSystem.Button.button
+        variant={:secondary}
+        phx-click="cancel_classification_ingestion"
+      >Cancel</ZaqWeb.Components.DesignSystem.Button.button>
+      <ZaqWeb.Components.DesignSystem.Button.button
+        id="confirm-ingest-without-classification"
+        phx-click="proceed_without_classification"
+      >Proceed without classification</ZaqWeb.Components.DesignSystem.Button.button>
+    </:actions>
+  </BOModal.form_dialog>
   <.modal_add_raw
     :if={@modal == :add_raw}
     modal_error={@modal_error}

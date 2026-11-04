@@ -18,12 +18,15 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLiveTest do
   alias Zaq.Ingestion.ExternalSource
   alias Zaq.Ingestion.IngestJob
   alias Zaq.Ingestion.JobLifecycle
+  alias Zaq.Ingestion.Labels
+  alias Zaq.NodeRouter
   alias Zaq.Permissions
   alias Zaq.Repo
   alias Zaq.Storage.EntryCatalog
   alias Zaq.Storage.StorageEntry
   alias Zaq.System, as: ZaqSystem
   alias Zaq.SystemConfigFixtures
+  alias Zaq.TestSupport.OpenAIStub
 
   defmodule ProviderBrowserBridgeStub do
     def list_files(provider, params, context) do
@@ -2528,6 +2531,58 @@ defmodule ZaqWeb.Live.BO.AI.IngestionLiveTest do
 
   # ────────────────────────────────────────────────────────────────
   # NEW: Ingest mode and ingest_selected
+  test "classification preflight requires proceed or cancel before starting a job", %{conn: conn} do
+    {_pid, endpoint} =
+      OpenAIStub.start!(
+        fn _conn, _body ->
+          {503, %{error: %{message: "Decision unavailable"}}}
+        end,
+        self()
+      )
+
+    credential =
+      SystemConfigFixtures.ai_credential_fixture(%{
+        provider: "openai",
+        endpoint: endpoint,
+        api_key: "ui-check"
+      })
+
+    {:ok, _} =
+      ZaqSystem.save_rag_model_config(:decision, %{
+        credential_id: credential.id,
+        model: "gpt-6-luna"
+      })
+
+    {:ok, _} =
+      Labels.save_definition(
+        %{name: "Preflight", targets: ["chunk"], automatic_chunk: true},
+        %{user_id: get_session(conn, :user_id)}
+      )
+
+    stub(Zaq.NodeRouterMock, :dispatch, fn %Zaq.Event{opts: opts} = event ->
+      assert opts[:action] == :check_decision_model
+      NodeRouter.dispatch(event)
+    end)
+
+    {:ok, view, _} = live(conn, ~p"/bo/ingestion")
+    render_hook(view, "set_mode", %{"mode" => "async"})
+    render_hook(view, "toggle_select", %{"path" => "alpha.md"})
+    render_hook(view, "ingest_selected", %{})
+    assert has_element?(view, "#classification-preflight-modal")
+    assert Repo.aggregate(IngestJob, :count) == 0
+    render_hook(view, "cancel_classification_ingestion", %{})
+    refute has_element?(view, "#classification-preflight-modal")
+    assert has_element?(view, "button", "Delete (1)")
+    assert Repo.aggregate(IngestJob, :count) == 0
+    render_hook(view, "ingest_selected", %{})
+    render_hook(view, "proceed_without_classification", %{})
+
+    assert %{classification_state: "skipped", classification_error: "skipped_by_user"} =
+             Repo.get_by!(IngestJob, file_path: disk_source("alpha.md"))
+
+    refute has_element?(view, "#classification-preflight-modal")
+  end
+
   # ────────────────────────────────────────────────────────────────
 
   describe "ingest mode and triggering ingestion" do

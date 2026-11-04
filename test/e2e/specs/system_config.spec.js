@@ -197,7 +197,11 @@ test.describe("System Config", () => {
       ]
       for (const selection of selections) {
         const prefix = `#rag-${selection.kind}`
-        await expect(page.locator(`${prefix}-section`)).toContainText("Not active in the RAG pipeline.")
+        await expect(page.locator(`${prefix}-section`)).toContainText(
+          selection.kind === "decision"
+            ? "Used for automatic classification when labels are enabled."
+            : "Not active in the RAG pipeline."
+        )
         await page.locator(`${prefix}-section`).scrollIntoViewIfNeeded()
         await pickSearchableSelect(page, `${prefix}-credential-select`, credential.name)
         await waitForLiveViewSettled(page)

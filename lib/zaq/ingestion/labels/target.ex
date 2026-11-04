@@ -1,5 +1,5 @@
 defmodule Zaq.Ingestion.Labels.Target do
-  @moduledoc "Supported resource type for a category; automatic settings are disabled in PR 1."
+  @moduledoc "Supported resource type and opt-in automatic setting for a category."
   use Ecto.Schema
   import Ecto.Changeset
 

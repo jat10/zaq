@@ -28,6 +28,7 @@ defmodule Zaq.Ingestion.Document do
     field :title, :string
     field :source, :string
     field :content, :string
+    field :generation, :integer, default: 0
     field :content_type, :string, default: "markdown"
     field :metadata, :map, default: %{}
     field :watch_status, :string, default: "unwatched"

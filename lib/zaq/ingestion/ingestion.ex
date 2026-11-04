@@ -31,6 +31,7 @@ defmodule Zaq.Ingestion do
 
   alias Zaq.Ingestion.{
     Chunk,
+    ClassificationRun,
     ContentSource,
     Document,
     ExternalSource,
@@ -60,9 +61,20 @@ defmodule Zaq.Ingestion do
 
   # --- Ingestion triggers ---
 
-  def ingest_records(records, params \\ %{}) when is_list(records) and is_map(params) do
+  def ingest_records(records, params \\ %{}, opts \\ [])
+      when is_list(records) and is_map(params) do
+    with {:ok, decision} <- ClassificationRun.prepare(params, opts) do
+      ingest_prepared_records(records, Map.put(params, :classification_decision, decision), opts)
+    end
+  end
+
+  defp ingest_prepared_records(records, params, opts) do
     mode = normalize_mode(Map.get(params, "mode") || Map.get(params, :mode) || :async)
-    context = materialization_context(params)
+
+    context =
+      materialization_context(params)
+      |> Map.put(:classification_decision, params[:classification_decision])
+      |> Map.put(:classification_opts, opts)
 
     {jobs, errors} = Enum.reduce(records, {[], []}, &collect_ingest_result(&1, mode, context, &2))
 
@@ -105,7 +117,9 @@ defmodule Zaq.Ingestion do
   def process_data_source_changes(_request), do: {:error, :invalid_request}
 
   def ingest_record(record, mode \\ :async) do
-    ingest_record_with_context(record, mode, %{})
+    with {:ok, decision} <- ClassificationRun.prepare(%{}) do
+      ingest_record_with_context(record, mode, %{classification_decision: decision})
+    end
   end
 
   defp ingest_record_with_context(record, mode, context) do
@@ -115,7 +129,11 @@ defmodule Zaq.Ingestion do
 
       :folder ->
         with {:ok, children} <- RecordSource.list_children(record, context) do
-          ingest_records(children, Map.put(context, :mode, mode))
+          ingest_records(
+            children,
+            Map.put(context, :mode, mode),
+            Map.get(context, :classification_opts, [])
+          )
         end
 
       _ ->
@@ -998,7 +1016,8 @@ defmodule Zaq.Ingestion do
 
   defp ingest_file_record(record, mode, context) do
     with path when is_binary(path) <- RecordSource.job_path(record),
-         {:ok, job} <- create_job(path, mode, nil, source_record_for_job(record, context)) do
+         {:ok, job} <-
+           create_job(path, mode, nil, source_record_for_job(record, context), context) do
       run_job(job, mode)
     else
       _ -> {:error, :unsupported_record_source}
@@ -1348,9 +1367,18 @@ defmodule Zaq.Ingestion do
 
   defp read_any(map, keys), do: MapUtils.read_present(map, keys)
 
-  defp create_job(path, mode, volume_name, source_record) do
+  defp create_job(path, mode, volume_name, source_record, context) do
+    decision = Map.get(context, :classification_decision, %ClassificationRun{})
+
     attrs =
-      %{file_path: path, status: "pending", mode: to_string(mode), source_record: source_record}
+      %{
+        file_path: path,
+        status: "pending",
+        mode: to_string(mode),
+        source_record: source_record,
+        classification_state: decision.state,
+        classification_error: decision.error
+      }
       |> then(fn a -> if volume_name, do: Map.put(a, :volume_name, volume_name), else: a end)
 
     %IngestJob{}

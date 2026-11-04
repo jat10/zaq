@@ -2,6 +2,14 @@
 
 ## Overview
 
+Classification is an Agent-owned supplied-text operation, shared by tools,
+workflows and confidential fixed Events. Ingestion owns resource lookup,
+generation, run decisions, label thresholds, reservations and guarded writes;
+Agent never reads label/resource tables for classification. Generic durable
+post-processing uses a shared worker and an allowlisted processor key.
+See [classification](services/agent.md#supplied-text-classification-generalclassify)
+and [label lifecycle](services/ingestion.md#automatic-classification-and-labeling).
+
 ZAQ is a single Elixir/OTP application with six routable roles. Role-specific
 supervisors and the web endpoint are enabled per node; shared infrastructure
 (Repo, PubSub, Oban, hooks and add-ons) starts outside those role-specific trees.

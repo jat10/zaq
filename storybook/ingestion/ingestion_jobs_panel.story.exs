@@ -19,7 +19,8 @@ defmodule Storybook.Ingestion.IngestionJobsPanel do
         ingested_chunks: 4,
         failed_chunks: 0,
         chunks_count: 0,
-        error: nil
+        error: nil,
+        classification_error: "decision_unavailable"
       },
       %{
         id: "2",

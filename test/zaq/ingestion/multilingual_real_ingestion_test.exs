@@ -114,6 +114,7 @@ defmodule Zaq.Ingestion.MultilingualRealIngestionTest do
       |> IngestJob.changeset(%{
         file_path: fixture,
         document_id: document.id,
+        generation: document.generation,
         status: "processing"
       })
       |> Repo.insert()

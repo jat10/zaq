@@ -37,6 +37,9 @@ defmodule Zaq.Ingestion.IngestJob do
     field :volume_name, :string
     field :source_record, :map
     field :preparation_progress, :map
+    field :generation, :integer
+    field :classification_state, :string, default: "skipped"
+    field :classification_error, :string
 
     timestamps(type: :utc_datetime_usec)
   end
@@ -63,10 +66,14 @@ defmodule Zaq.Ingestion.IngestJob do
       :document_id,
       :volume_name,
       :source_record,
-      :preparation_progress
+      :preparation_progress,
+      :generation,
+      :classification_state,
+      :classification_error
     ])
     |> validate_required([:file_path, :status, :mode])
     |> validate_inclusion(:status, @statuses)
     |> validate_inclusion(:mode, @modes)
+    |> validate_inclusion(:classification_state, ["enabled", "skipped"])
   end
 end

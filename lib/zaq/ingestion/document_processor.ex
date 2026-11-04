@@ -27,6 +27,7 @@ defmodule Zaq.Ingestion.DocumentProcessor do
     Document,
     DocumentAccess,
     DocumentChunker,
+    DocumentGeneration,
     DocumentIngestionSummary,
     FTSBackend
   }
@@ -174,20 +175,22 @@ defmodule Zaq.Ingestion.DocumentProcessor do
 
     with {:ok, content} <- read_as_markdown(file_path, opts),
          {:ok, source} <- extract_source(content, file_path, opts),
+         sections <- DocumentChunker.parse_layout(content, format: :markdown),
+         chunks <- DocumentChunker.chunk_sections(sections),
          {:ok, document} <-
            store_document(
              content,
              source,
              source_metadata(opts),
-             document_title(opts)
+             document_title(opts),
+             opts
            ) do
-      sections = DocumentChunker.parse_layout(content, format: :markdown)
-      chunks = DocumentChunker.chunk_sections(sections)
-
       indexed_payloads =
         chunks
         |> Enum.with_index(1)
-        |> Enum.map(fn {chunk, index} -> {chunk_to_payload(chunk), index} end)
+        |> Enum.map(fn {chunk, index} ->
+          {Map.put(chunk_to_payload(chunk), "generation", document.generation), index}
+        end)
 
       {:ok, document, indexed_payloads}
     else
@@ -207,14 +210,22 @@ defmodule Zaq.Ingestion.DocumentProcessor do
 
     with {:ok, content} <- read_as_markdown(file_path, opts),
          {:ok, source} <- extract_source(content, file_path, opts),
+         sections <- DocumentChunker.parse_layout(content, format: :markdown),
+         chunks <- DocumentChunker.chunk_sections(sections),
          {:ok, document} <-
            store_document(
              content,
              source,
              source_metadata(opts),
-             document_title(opts)
+             document_title(opts),
+             opts
            ),
-         {:ok, report} <- process_and_store_chunks_report(content, document.id, opts) do
+         {:ok, report} <-
+           process_and_store_chunks_report(
+             content,
+             document.id,
+             Keyword.merge(opts, generation: document.generation, parsed_chunks: chunks)
+           ) do
       Logger.info("Successfully processed: #{source}")
       {:ok, document, report}
     else
@@ -553,12 +564,17 @@ defmodule Zaq.Ingestion.DocumentProcessor do
   @doc """
   Upserts a `Zaq.Ingestion.Document` record.
   """
-  def store_document(content, source, metadata \\ %{}, title \\ nil) do
+  def store_document(content, source, metadata \\ %{}, title \\ nil, opts \\ []) do
     attrs =
       %{content: content, source: source, metadata: metadata}
       |> maybe_put_title(title)
 
-    case Document.upsert(attrs) do
+    result =
+      if Keyword.get(opts, :reset_chunks, true),
+        do: DocumentGeneration.replace(attrs, opts),
+        else: DocumentGeneration.resume(source, content, Keyword.get(opts, :generation))
+
+    case result do
       {:ok, document} ->
         Logger.info("Document stored with ID: #{document.id}, source: #{source}")
         {:ok, document}
@@ -610,12 +626,28 @@ defmodule Zaq.Ingestion.DocumentProcessor do
     reset_chunks = Keyword.get(opts, :reset_chunks, true)
     retry_chunk_indices = Keyword.get(opts, :retry_chunk_indices)
 
-    if reset_chunks do
-      Chunk.delete_by_document(document_id)
-    end
+    chunks =
+      Keyword.get_lazy(opts, :parsed_chunks, fn ->
+        content
+        |> DocumentChunker.parse_layout(format: :markdown)
+        |> DocumentChunker.chunk_sections()
+      end)
 
-    sections = DocumentChunker.parse_layout(content, format: :markdown)
-    chunks = DocumentChunker.chunk_sections(sections)
+    generation =
+      Keyword.get_lazy(opts, :generation, fn ->
+        document = Repo.get!(Document, document_id)
+
+        if reset_chunks do
+          {:ok, document} =
+            DocumentGeneration.replace(
+              Map.take(document, [:source, :title, :content, :content_type, :metadata])
+            )
+
+          document.generation
+        else
+          document.generation
+        end
+      end)
 
     Logger.info("Created #{length(chunks)} layout-aware chunks for document_id: #{document_id}")
 
@@ -625,7 +657,20 @@ defmodule Zaq.Ingestion.DocumentProcessor do
       selected_chunks
       |> Task.async_stream(
         fn {chunk, index} ->
-          maybe_delete_chunk_before_store(reset_chunks, document_id, index)
+          if not reset_chunks,
+            do: DocumentGeneration.discard_chunk(document_id, generation, index)
+
+          chunk = %{
+            chunk
+            | metadata:
+                (chunk.metadata || %{})
+                |> Map.put(:ingestion_generation, generation)
+                |> Map.put(
+                  :classification_context,
+                  Keyword.get(opts, :classification_context, %{})
+                )
+          }
+
           {index, store_chunk_with_metadata(chunk, document_id, index)}
         end,
         timeout: chunk_processing_timeout(),
@@ -653,22 +698,33 @@ defmodule Zaq.Ingestion.DocumentProcessor do
 
     case Enum.find(normalized_results, &structural_error?/1) do
       nil ->
-        ingested_chunks = Chunk.count_by_document(document_id)
-        :ok = DocumentIngestionSummary.refresh_inline(document_id, chunks, results, reset_chunks)
+        report = %{
+          results: normalized_results,
+          total_chunks: length(chunks),
+          failed_chunks: length(failed_chunk_indices),
+          failed_chunk_indices: failed_chunk_indices
+        }
 
-        {:ok,
-         %{
-           results: normalized_results,
-           total_chunks: length(chunks),
-           ingested_chunks: ingested_chunks,
-           failed_chunks: length(failed_chunk_indices),
-           failed_chunk_indices: failed_chunk_indices
-         }}
+        finalize_report(document_id, generation, chunks, results, reset_chunks, report)
 
       structural_error ->
         Logger.error("Structural error while storing chunks: #{inspect(structural_error)}")
         {:error, "Structural chunk processing error: #{inspect(structural_error)}"}
     end
+  end
+
+  defp finalize_report(document_id, generation, chunks, results, reset_chunks, report) do
+    Repo.transaction(fn ->
+      document = DocumentGeneration.lock!(document_id)
+      if document.generation != generation, do: Repo.rollback(:stale_generation)
+
+      :ok =
+        DocumentIngestionSummary.refresh_inline(document_id, chunks, results, reset_chunks,
+          generation: generation
+        )
+
+      Map.put(report, :ingested_chunks, Chunk.count_by_document(document_id))
+    end)
   end
 
   defp select_chunks(chunks, retry_chunk_indices) when is_list(retry_chunk_indices) do
@@ -680,13 +736,6 @@ defmodule Zaq.Ingestion.DocumentProcessor do
   end
 
   defp select_chunks(chunks, _retry_chunk_indices), do: Enum.with_index(chunks, 1)
-
-  defp maybe_delete_chunk_before_store(true, _document_id, _index), do: :ok
-
-  defp maybe_delete_chunk_before_store(false, document_id, index) do
-    Chunk.delete_by_document_and_index(document_id, index)
-    :ok
-  end
 
   defp chunk_to_payload(%DocumentChunker.Chunk{} = chunk) do
     %{
@@ -713,6 +762,14 @@ defmodule Zaq.Ingestion.DocumentProcessor do
   via Ecto.
   """
   def store_chunk_with_metadata(%DocumentChunker.Chunk{} = chunk, document_id, index) do
+    generation =
+      metadata_field(chunk.metadata, :ingestion_generation) ||
+        case Repo.get(Document, document_id) do
+          nil -> 0
+          document -> document.generation
+        end
+
+    chunk = %{chunk | metadata: Map.put(chunk.metadata || %{}, :ingestion_generation, generation)}
     # Embed the enriched input; persist only the verbatim content. The
     # fallback stays at this call site — Zaq.Embedding.Client also serves
     # query-time callers that must receive plain text.
@@ -770,9 +827,12 @@ defmodule Zaq.Ingestion.DocumentProcessor do
       language: language
     }
 
-    %Chunk{}
-    |> Chunk.changeset(attrs)
-    |> Repo.insert()
+    DocumentGeneration.insert_chunk(
+      document_id,
+      metadata_field(chunk.metadata, :ingestion_generation),
+      attrs,
+      classification_context: metadata_field(chunk.metadata, :classification_context) || %{}
+    )
     |> case do
       {:ok, record} ->
         ChunkLanguages.invalidate()

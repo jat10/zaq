@@ -24,7 +24,7 @@ defmodule ZaqWeb.Components.DesignSystem.LabelChips do
         tone={:neutral}
         class="zaq-label-chip"
       >
-        <span class="truncate" title={display_label(label)}>{display_label(label)}</span>
+        <span class="truncate" title={label_title(label)}>{display_label(label)}</span>
         <button
           type="button"
           class="zaq-label-chip-remove"
@@ -63,4 +63,13 @@ defmodule ZaqWeb.Components.DesignSystem.LabelChips do
     do: "#{name}: #{value}"
 
   defp display_label(label), do: label.name
+
+  defp label_title(%{origin: :automatic} = label) do
+    stale =
+      if Map.get(label, :stale), do: " Definition changed; previous result retained.", else: ""
+
+    "#{display_label(label)} · Automatic (#{round(label.probability * 100)}%).#{stale}"
+  end
+
+  defp label_title(label), do: display_label(label)
 end

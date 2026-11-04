@@ -472,7 +472,8 @@ defmodule Zaq.Ingestion.ChunkVerbatimIngestionTest do
           file_path: @fixture_path,
           status: "processing",
           mode: "async",
-          document_id: document.id
+          document_id: document.id,
+          generation: document.generation
         })
         |> Repo.insert!()
 
@@ -481,6 +482,7 @@ defmodule Zaq.Ingestion.ChunkVerbatimIngestionTest do
         |> IngestChunkJob.changeset(%{
           ingest_job_id: ingest_job.id,
           document_id: document.id,
+          generation: document.generation,
           chunk_index: 99,
           chunk_payload: %{
             "id" => "step1b-derivation-gate",

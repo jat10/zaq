@@ -45,8 +45,8 @@ direct page access from lazily starting persistence while Studio is disabled.
 AI model settings are configured in Back Office at `/bo/system-config` and
 persisted in `system_configs`.
 
-The **RAG** tab groups embeddings and chunking, image-to-text, Retrieval, and saved-only
-re-ranking and decision model selections. Retrieval sits below Image to text and
+The **RAG** tab groups embeddings and chunking, image-to-text, Retrieval,
+re-ranking and Decision model selections. Retrieval sits below Image to text and
 contains the Knowledge-query translation credential/model selection. Retrieval tuning
 (maximum cosine distance and hybrid BM25/vector fusion weights) is under its collapsed
 **Advanced settings** and saves independently of embedding or translation changes.
@@ -55,13 +55,20 @@ confirmation remain in place. The former embedding and image-to-text tab URLs
 continue to open RAG.
 
 Specialized selectors use saved AI provider credentials and filter their models
-by catalog metadata: `capabilities.rerank` for re-ranking and `decisions` output
-modality for decision models. Changing credentials clears the model selection;
+by catalog metadata: `capabilities.rerank` for re-ranking, and explicit evaluation
+capability or legacy `decisions` output modality for Decision models. Changing credentials clears the model selection;
 incompatible submissions are rejected by System persistence for both BO and Engine callers. These selections
 are persisted as `rag.reranking.credential_id`, `rag.reranking.model`,
-`rag.decision.credential_id` and `rag.decision.model`; they **do not activate**
-re-ranking or decision inference in the pipeline. Referenced AI credentials cannot
+`rag.decision.credential_id` and `rag.decision.model`. Re-ranking remains saved-only;
+Decision inference is used by the generic classifier and eligible automatic labels.
+Referenced AI credentials cannot
 be deleted until the selection is cleared.
+
+The Decision section also stores `rag.decision.classification_threshold`, a shared
+whole percentage from 0 through 100 (default 80). Labeling reserves its value before
+inference, so changes apply only to future requests. Settings saves do not schedule
+classification, rescore existing results or change in-flight reservations. See
+[automatic labeling](ingestion.md#automatic-classification-and-labeling) for run decisions and lifecycle.
 
 Retrieval settings retain their existing `llm.max_cosine_distance`,
 `llm.fusion_bm25_weight` and `llm.fusion_vector_weight` keys for runtime

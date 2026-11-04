@@ -1,10 +1,11 @@
 defmodule Zaq.Ingestion.Labels do
   @moduledoc """
-  Category definitions and manual resource assignments owned by Ingestion.
+  Category definitions and resource assignments owned by Ingestion.
 
   Definitions have typed targets. Resource decisions use separate FK-backed tables;
   a manual exclusion is retained even when no inclusion previously existed.
-  Automatic controls are unavailable until the processing pipeline is implemented.
+  Automatic targets require saved Decision configuration; automation and confirmed
+  reclassification are delegated to the owning lifecycle modules.
   """
   import Ecto.Query
 
@@ -66,7 +67,7 @@ defmodule Zaq.Ingestion.Labels do
         check_version!(label, attr(attrs, :expected_version))
         check_removed_targets!(label, types)
         saved = persist!(Label.changeset(label, attrs))
-        sync_targets(saved, types)
+        sync_targets(saved, types, attrs)
         Repo.preload(saved, :targets, force: true)
       end)
     end
@@ -201,7 +202,10 @@ defmodule Zaq.Ingestion.Labels do
   defp manual_only(attrs) do
     flags = [:automatic, :automatic_document, :automatic_chunk]
 
-    if Enum.any?(flags, &(attr(attrs, &1) not in [nil, false, "false"])),
+    enabled? = Enum.any?(flags, &(attr(attrs, &1) not in [nil, false, "false"]))
+    config = Zaq.System.get_rag_model_config(:decision)
+
+    if enabled? and (is_nil(config.credential_id) or is_nil(config.model)),
       do: {:error, :automation_unavailable},
       else: :ok
   end
@@ -260,7 +264,7 @@ defmodule Zaq.Ingestion.Labels do
   defp unwrap!({:ok, record}), do: record
   defp unwrap!({:error, error}), do: Repo.rollback(error)
 
-  defp sync_targets(label, types) do
+  defp sync_targets(label, types, attrs) do
     Repo.delete_all(
       from t in Target, where: t.label_id == ^label.id and t.resource_type not in ^types
     )
@@ -269,6 +273,21 @@ defmodule Zaq.Ingestion.Labels do
 
     for type <- types -- existing,
         do: insert!(Target.changeset(%Target{label_id: label.id}, type))
+
+    for type <- types do
+      flag = if type == "document", do: :automatic_document, else: :automatic_chunk
+
+      case attr(attrs, flag) do
+        nil ->
+          :ok
+
+        value ->
+          Repo.update_all(
+            from(t in Target, where: t.label_id == ^label.id and t.resource_type == ^type),
+            set: [automatic: value in [true, "true"]]
+          )
+      end
+    end
   end
 
   defp attr(attrs, key), do: Map.get(attrs, key, Map.get(attrs, Atom.to_string(key)))

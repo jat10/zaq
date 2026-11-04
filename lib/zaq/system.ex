@@ -582,11 +582,13 @@ defmodule Zaq.System do
 
   @doc "Loads a saved-only specialized RAG model selection."
   def get_rag_model_config(kind) when kind in [:reranking, :decision] do
-    raw = read_config_fields("rag.#{kind}", ~w(credential_id model))
+    fields = rag_model_fields(kind)
+    raw = read_config_fields("rag.#{kind}", fields)
 
     %RAGModelConfig{
       credential_id: ParseUtils.parse_int(raw["credential_id"], nil),
-      model: blank_to_nil(raw["model"])
+      model: blank_to_nil(raw["model"]),
+      classification_threshold: ParseUtils.parse_int(raw["classification_threshold"], 80)
     }
   end
 
@@ -600,13 +602,16 @@ defmodule Zaq.System do
     if changeset.valid? do
       config = Ecto.Changeset.apply_changes(changeset)
 
-      with {:ok, _} <- persist_config_fields(~w(credential_id model), "rag.#{kind}", config) do
+      with {:ok, _} <- persist_config_fields(rag_model_fields(kind), "rag.#{kind}", config) do
         {:ok, get_rag_model_config(kind)}
       end
     else
       {:error, changeset}
     end
   end
+
+  defp rag_model_fields(:decision), do: ~w(credential_id model classification_threshold)
+  defp rag_model_fields(:reranking), do: ~w(credential_id model)
 
   @doc "Loads an independent translation or small-model selection, without resolving secrets."
   def get_operation_model_config(kind) when kind in [:translation, :small] do
