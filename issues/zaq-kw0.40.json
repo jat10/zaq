@@ -7,9 +7,15 @@
   "id": "zaq-kw0.40",
   "labels": [],
   "parent": "zaq-kw0",
+  "comments": [
+    {
+      "text": "Implemented NodeRouter query_resources boundary for document/label reads, moved domain SQL/filter/projection ownership to Ingestion, extracted common authorization/query contract helpers, and added transport/trust/allowlist regressions. mix q passes; targeted resource/API/events/notification suite passes 168 checks (4 properties, 164 tests). Final mix precommit seed 318664: 11822/11824 pass; all 304 properties and 48 doctests pass. Failures: existing catalog value text assertion, plus LabelsLive missing handle_info(:addons_updated) during full suite. The latter passes in isolation with same seed (labels_live_test.exs:405), and handler gap exists in committed HEAD. Logs: /tmp/zaq-query-boundary-precommit.log and /tmp/zaq-labels-isolated.log. Existing test behavior was not changed. Implementation remains uncommitted pending validation blocker resolution.",
+      "timestamp": "2026-11-04T02:21:18Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.40] Route ingestion resource queries through NodeRouter",
   "type": "task",
-  "updated_at": "2026-11-04T02:05:15Z"
+  "updated_at": "2026-11-04T02:21:18Z"
 }
