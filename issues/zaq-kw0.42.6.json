@@ -11,9 +11,15 @@
   "id": "zaq-kw0.42.6",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Integrated ClassificationRun preflight with canonical ingestion entry points. Immutable server-created run decision is reused through folder fanout, persisted on each IngestJob, propagated into preparation/chunk workers and unchanged on retries. Interactive failed check returns confirmation-required before job creation; explicit proceed_without skips entire run. Unattended failure persists skipped plus safe classification_error and logs the problem. Legacy jobs default skipped. Transactional resource persistence schedules shared processor requests; provider failures never change ingestion job status or remove chunks. Post-processing gets separate queue capacity so slow model calls do not consume ingestion slots. Validation: 135 run/ingestion/worker checks pass (2 properties), 1 existing skip; mix q passes. Existing retry fixtures gained explicit generation only; assertions unchanged. Three new actual HTTP/NodeRouter lifecycle tests cover prompt-before-job, durable skip/reporting, one auto label over all new chunks, and mid-run failure isolation.",
+      "timestamp": "2026-11-04T08:58:29Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.6] PR2 Integrate preflight and per-run classification scheduling",
   "type": "task",
-  "updated_at": "2026-11-04T08:52:37Z"
+  "updated_at": "2026-11-04T08:58:29Z"
 }
