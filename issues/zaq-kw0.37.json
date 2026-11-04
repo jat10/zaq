@@ -39,11 +39,15 @@
     {
       "text": "Isolation audit found explicit source: async AuthHookTest broadcasts on global addons:updated topic. Moved only its unchanged broadcast describe/setup/test into AuthHookBroadcastTest (async:false) in same file, retaining five async pure/auth tests. LabelsLive regression sends directly to its own LiveView PID and preserves selected label/count state; reproduced FunctionClauseError before production fix. Added explicit :addons_updated handler (AuthHook already updates features_version), no generic catch-all. Updated approved catalog text assertions to 1 / 2 and 2 / 2. No global environment operations found in affected label/query modules, auth hook, fixtures or ConnCase; no Zaq.Config replacement necessary. mix q passes.",
       "timestamp": "2026-11-04T02:33:59Z"
+    },
+    {
+      "text": "Final validation passes: mix q clean; targeted suite 254 passed (8 properties, 246 tests); mix precommit exit 0, 11825 passed (48 doctests, 304 properties, 11473 tests), 1 skipped, 153 excluded. Catalog assertion mismatch fixed with explicit user approval; global PubSub broadcast test isolated without changing its body; LabelsLive now handles add-on notifications with deterministic regression coverage. Log /tmp/zaq-labels-fixed-precommit.log. No Application environment access in any current changed/new Elixir file.",
+      "timestamp": "2026-11-04T02:40:36Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0] Clean up labeling iteration leftovers",
   "type": "task",
-  "updated_at": "2026-11-04T02:33:59Z"
+  "updated_at": "2026-11-04T02:40:36Z"
 }
