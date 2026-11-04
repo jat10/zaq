@@ -11,9 +11,15 @@
   "id": "zaq-kw0.42.7",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Implemented reusable validated ReclassifyLabelChunks preview/confirm Action and fixed Ingestion Event. Preview scopes current selected carriers through current BO manager identity and document read/update grants. Confirmation compares definition and exact chunk/generation/assignment snapshot token under ordered document locks; checks model readiness before enqueue. Reserves every eligible automatic chunk label on affected chunks, protecting manual decisions and deduplicating confirmations; negative/unassigned chunks excluded and new definitions enqueue nothing. Future apply rechecks requesting actor permissions for confirmed work. No re-embedding or generic invoke/tool exposure. Three real database/HTTP/NodeRouter scenario tests cover all-label scope/manual preservation, idempotence, nil identity, definition/scope drift and no backfill; combined reclassification/automation eight checks pass and final registry/reclassification 25 pass; mix q clean.",
+      "timestamp": "2026-11-04T09:05:11Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.7] PR2 Add authorized affected-chunk reclassification operation",
   "type": "task",
-  "updated_at": "2026-11-04T08:58:31Z"
+  "updated_at": "2026-11-04T09:05:11Z"
 }
