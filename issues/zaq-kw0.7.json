@@ -11,9 +11,15 @@
   "id": "zaq-kw0.7",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Implemented Labels.Automation and registered labeling processor. Reservations capture per-label definition/assignment version, resource generation, shared threshold and run identity; stable initial request keys deduplicate even after completion. Explicit future reclassification keys permit confirmed all-label reevaluation. Inference is a confidential fixed Agent classify Event via NodeRouter, outside locks; apply rechecks definition/target/generation/manual/version/request/run guards under document-first locks. Manual decisions clear automatic provenance; no reset or generated values. Initial and retained effective assignments stay separate from pending/failed attempts. Existing save_definition now persists automatic target flags only with configured Decision model; no backfill. Validation: 42 labels/automation checks pass with seed 0 (5 properties), 5 focused guard/idempotence checks pass (1 property), mix q passes. Real NodeRouter + provider HTTP proves terminal failure retains prior label. A pre-existing ValueManagement unique-list generator exhausted small input space under seed 264061; unchanged, succeeds under seed 0. Integration remains gated on pending exact registry assertion approval in .5.",
+      "timestamp": "2026-11-04T08:50:59Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.7] PR2 Reserve and apply automatic label results safely",
   "type": "task",
-  "updated_at": "2026-11-04T08:45:24Z"
+  "updated_at": "2026-11-04T08:50:59Z"
 }
