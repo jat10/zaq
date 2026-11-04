@@ -12,9 +12,15 @@
   "id": "zaq-kw0.42.10",
   "labels": [],
   "parent": "zaq-kw0.42",
+  "comments": [
+    {
+      "text": "Broader post-rebase integration exposed real retry regression: process_single_file_with_report reset_chunks:false called full replacement and deleted previously successful chunks. Reused generation coordinator for locked same-content/same-generation resume; unchanged multilingual repair test now passes. Added dedicated generation resume and read-revocation regressions. Delayed classification now rechecks both read and update before provider access and final application. Existing worker fixture additions carry explicit generation without changing assertions. Reused sibling PR1 Python venv via local symlink (no software installed), fixing five environment-only failures. Focused affected suites 90 passed (3 properties). mix q initially found a test alias suggestion, corrected; revalidation follows.",
+      "timestamp": "2026-11-04T10:41:50Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42.10] PR2 Verify PR2 lifecycle contracts and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-04T09:22:18Z"
+  "updated_at": "2026-11-04T10:41:50Z"
 }
