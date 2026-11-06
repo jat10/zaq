@@ -9,8 +9,8 @@
   "id": "zaq-dcg",
   "labels": [],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Plan Mattermost uploads within configured size limits",
   "type": "task",
-  "updated_at": "2026-11-06T14:03:47Z"
+  "updated_at": "2026-11-06T14:17:01Z"
 }
