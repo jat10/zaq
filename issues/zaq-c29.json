@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-06T14:38:23Z",
+  "description": "Remove rejected provider-specific planner from JidoChatBridge and pass connector file limit via adapter options. Reuse existing send/edit operations; local-only option projection, no new Action. Verify forwarding and adapter error propagation. Multi-message delivery remains deferred pending agreed adapter contract.",
+  "id": "zaq-c29",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Remove Mattermost file planning from shared bridge",
+  "type": "task",
+  "updated_at": "2026-11-06T14:38:23Z"
+}
