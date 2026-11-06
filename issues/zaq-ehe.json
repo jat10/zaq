@@ -3,12 +3,12 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-06T15:21:49Z",
-  "description": "Adapter continuation thread_id is retained in receipts but dropped by History.Delivery; TranscriptHistory uses input placement unconditionally. Extend existing confirmed-delivery path to preserve thread_id and resolve matching child transcript under authorized root, without provider-specific logic. Add regression through DeliveryConfirmation -\u003e Engine -\u003e HistoryIngress, assert child placement and parent, replay idempotence. No new Action; reuse existing confirmation and transcript storage.",
+  "description": "Confirmed root cause: History.Delivery omitted thread_id and TranscriptHistory placed every confirmed response with input. Added thread_id to Engine confirmation request, persisted receipt and optional fingerprint field; target resolution now ensures/reuses child transcript under verified input placement root using existing scope and permissions. Two regressions failed first (new-thread placement, existing-thread receipt), then passed. mix q passed; 105 targeted checks passed across delivery, ingress, transcript, worker and history LiveView suites. Existing stored entries are not automatically backfilled; restart ZAQ and send a fresh request to verify new history placement.",
   "id": "zaq-ehe",
   "labels": [],
   "priority": 2,
   "status": "open",
   "title": "Preserve delivery thread placement in canonical history",
   "type": "task",
-  "updated_at": "2026-11-06T15:21:49Z"
+  "updated_at": "2026-11-06T15:25:17Z"
 }
