@@ -2,13 +2,14 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-06T14:43:28Z",
   "created": "2026-11-06T14:38:23Z",
   "description": "Removed provider-specific planner and its uncommitted continuation-history implementation. Generic connection details carry settings to existing AdapterOptions. User explicitly requested max_file_size everywhere, with no key translation: UI, persistence, and opts now use that name. Existing adapter owns validation and upload planning. New tests cover option forwarding across providers, actual create/edit, and adapter rejection. Multi-message splitting remains deferred.",
   "id": "zaq-c29",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Remove Mattermost file planning from shared bridge",
   "type": "task",
-  "updated_at": "2026-11-06T14:42:04Z"
+  "updated_at": "2026-11-06T14:43:28Z"
 }
