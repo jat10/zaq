@@ -11,8 +11,8 @@
   "id": "zaq-lbg",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Split Mattermost file delivery into separate ZAQ messages",
   "type": "task",
-  "updated_at": "2026-11-06T14:03:46Z"
+  "updated_at": "2026-11-06T14:17:03Z"
 }
