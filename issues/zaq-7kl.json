@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-06T12:22:03Z",
+  "description": "Update jido_chat to jat10 attachment-edits branch and refresh Mattermost lock after batch-upload push. Action reuse assessment: not applicable; dependency configuration only, no new operations. Validate dependency resolution and existing channel delivery tests; no test behavior changes authorized.",
+  "id": "zaq-7kl",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Test updated Mattermost batch upload dependencies",
+  "type": "task",
+  "updated_at": "2026-11-06T12:22:03Z"
+}
