@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-06T14:03:24Z",
+  "description": "Extend JidoChatBridge existing prepared-file delivery, reuse DeliveryFiles and handle_send_with_adapter. Filter oversized records, group valid files into \u003c=10 attachments; return per-message receipts and failed files. Existing single-message behavior retained. User explicitly authorized 15 files in 2 messages and 9 valid plus one oversized; migrate matching old rejection test. No new public Action required: transport orchestration under deliver_outgoing. Test missing config, grouping, partial failure, continuation and unaffected providers.",
+  "id": "zaq-lbg",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Split Mattermost file delivery into separate ZAQ messages",
+  "type": "task",
+  "updated_at": "2026-11-06T14:03:24Z"
+}
