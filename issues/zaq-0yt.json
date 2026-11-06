@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-lbg"
+  ],
   "blocks": [],
   "created": "2026-11-06T14:03:25Z",
   "description": "Extend DeliveryConfirmation to dispatch each confirmed part through existing Engine record_delivery_confirmation event, preserving per-part text and delivered attachment metadata and only first assistant identity. No cross-service bypass/new action. Test two receipts yield separate history entries and failed confirmations never resend. No new UI/E2E feature; API/history integration tests and mix q.",
@@ -10,5 +12,5 @@
   "status": "open",
   "title": "Record each split delivery as a separate history entry",
   "type": "task",
-  "updated_at": "2026-11-06T14:03:25Z"
+  "updated_at": "2026-11-06T14:03:46Z"
 }
