@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-06T15:08:51Z",
+  "description": "User explicitly requests adapter owns splitting, full attachment list passed unchanged. Generic bridge projects metadata.delivery_report to per-message receipts. DeliveryConfirmation forwards each confirmed receipt; Engine stores continuation as its own canonical assistant/history entry. Reuse existing delivery and history APIs, local projection only; no provider rules in ZAQ. Replace recently added too-many-files rejection test with approved required 15-file success behavior. Verify separate history, replay and partial delivery.",
+  "id": "zaq-doj",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Consume adapter-owned multi-post delivery reports",
+  "type": "task",
+  "updated_at": "2026-11-06T15:08:51Z"
+}
