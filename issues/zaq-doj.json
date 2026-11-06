@@ -3,12 +3,12 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-06T15:08:51Z",
-  "description": "User explicitly requests adapter owns splitting, full attachment list passed unchanged. Generic bridge projects metadata.delivery_report to per-message receipts. DeliveryConfirmation forwards each confirmed receipt; Engine stores continuation as its own canonical assistant/history entry. Reuse existing delivery and history APIs, local projection only; no provider rules in ZAQ. Replace recently added too-many-files rejection test with approved required 15-file success behavior. Verify separate history, replay and partial delivery.",
+  "description": "Implemented adapter-owned preflight, ten-file post partitioning, request-size batching, thread continuations, and partial-delivery metadata. ZAQ forwards full lists and max_file_size unchanged, projects delivery_report generically, records each confirmed post, and stores canonical continuation history idempotently. Verified Mattermost 179 unit tests passed, ZAQ 66 targeted tests passed, both quality gates passed. Docker live tests: 15x1KiB -\u003e10+5 with root_id verified; edit existing -\u003e10+5 threaded; nine valid plus oversized -\u003enine and one failure; fetched all new-post files and compared bytes. No commit or push. Live test post udoo83oi7in6pkqdtqknywp3wh; edit roka3kks4pd1deuqkk5hgho6pc.",
   "id": "zaq-doj",
   "labels": [],
   "priority": 2,
   "status": "open",
   "title": "Consume adapter-owned multi-post delivery reports",
   "type": "task",
-  "updated_at": "2026-11-06T15:08:51Z"
+  "updated_at": "2026-11-06T15:14:36Z"
 }
