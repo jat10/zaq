@@ -3,12 +3,12 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-06T14:38:23Z",
-  "description": "Removed rejected Mattermost branch and bridge-owned file splitting/filtering. Removed uncommitted continuation receipt/history implementation and tests tied to that rejected design. Generic connection details carry settings; existing AdapterOptions maps UI file_max_size to current adapter max_file_size option without provider checks, preserving transport injection. Action reuse: local-only projection using existing create/edit adapter path; no new operation. Focused tests: 71 passed including forwarding for all providers, real Mattermost create/edit and too-many-files rejection. More-than-ten split delivery remains deferred pending adapter contract.",
+  "description": "Removed provider-specific planner and its uncommitted continuation-history implementation. Generic connection details carry settings to existing AdapterOptions. User explicitly requested max_file_size everywhere, with no key translation: UI, persistence, and opts now use that name. Existing adapter owns validation and upload planning. New tests cover option forwarding across providers, actual create/edit, and adapter rejection. Multi-message splitting remains deferred.",
   "id": "zaq-c29",
   "labels": [],
   "priority": 2,
   "status": "open",
   "title": "Remove Mattermost file planning from shared bridge",
   "type": "task",
-  "updated_at": "2026-11-06T14:40:54Z"
+  "updated_at": "2026-11-06T14:42:04Z"
 }
