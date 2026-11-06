@@ -2,13 +2,14 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-06T14:35:11Z",
   "created": "2026-11-06T14:32:21Z",
   "description": "Restore bridge.ex as requested. Extend existing connector configuration save operation with optional positive file_max_size in bytes and Advanced settings UI. Reuse existing configuration persistence and Engine dispatch; no new Action or bridge logic. Validate save/reload and invalid values with focused tests.",
   "id": "zaq-nmn",
   "labels": [],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Mattermost advanced file-size configuration UI",
   "type": "task",
-  "updated_at": "2026-11-06T14:33:11Z"
+  "updated_at": "2026-11-06T14:35:11Z"
 }
