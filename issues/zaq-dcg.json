@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-06T14:03:23Z",
+  "description": "Adapter owns required max_file_size bytes configuration, validates source sizes/count before network, groups uploads within encoded multipart request budget, preserves single Response. Reuse existing upload_files path and Req multipart encoder; private planning only, no new Action. Verify boundaries, missing config, split requests and errors.",
+  "id": "zaq-dcg",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Plan Mattermost uploads within configured size limits",
+  "type": "task",
+  "updated_at": "2026-11-06T14:03:23Z"
+}
