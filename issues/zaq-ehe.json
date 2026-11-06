@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-06T15:21:49Z",
+  "description": "Adapter continuation thread_id is retained in receipts but dropped by History.Delivery; TranscriptHistory uses input placement unconditionally. Extend existing confirmed-delivery path to preserve thread_id and resolve matching child transcript under authorized root, without provider-specific logic. Add regression through DeliveryConfirmation -\u003e Engine -\u003e HistoryIngress, assert child placement and parent, replay idempotence. No new Action; reuse existing confirmation and transcript storage.",
+  "id": "zaq-ehe",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Preserve delivery thread placement in canonical history",
+  "type": "task",
+  "updated_at": "2026-11-06T15:21:49Z"
+}
