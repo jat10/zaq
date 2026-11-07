@@ -3,12 +3,12 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-07T15:02:43Z",
-  "description": "PR876 inline comments 4501506622 and 4501513062: normalize/validate supplied max_file_size for every provider. Declare configurable_max_file_size in channel registration and project through existing capability snapshot; BO fields depend on that signal and use generic wording/IDs. Existing Bridge.provider_config and snapshot dispatch reused, no new Action or provider branch. Test supported non-Mattermost, unsupported Mattermost, validation and persistence.",
+  "description": "Addressed PR876 inline comments 4501506622/4501513062 locally in zaq-feat-channel-files. Generic max_file_size validation handles all providers and malformed settings safely. Channel registration configurable_max_file_size=true projects through existing Bridge capability snapshot; BO uses signal with generic IDs/copy. Snapshot explicitly uses provider scope so multiple connectors do not hide field. Documentation added. Tests cover Discord opt-in and persistence, Mattermost no opt-in hidden, multiple configs, validation across four providers. mix q passed; 164 targeted tests passed. Broader RequestEffects privacy comment intentionally separate. No commit/push or reviewer reply performed.",
   "id": "zaq-a3z",
   "labels": [],
   "priority": 2,
   "status": "open",
   "title": "Make upload size configuration capability-driven",
   "type": "task",
-  "updated_at": "2026-11-07T15:02:43Z"
+  "updated_at": "2026-11-07T15:06:36Z"
 }
