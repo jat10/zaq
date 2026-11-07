@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-07T15:02:43Z",
+  "description": "PR876 inline comments 4501506622 and 4501513062: normalize/validate supplied max_file_size for every provider. Declare configurable_max_file_size in channel registration and project through existing capability snapshot; BO fields depend on that signal and use generic wording/IDs. Existing Bridge.provider_config and snapshot dispatch reused, no new Action or provider branch. Test supported non-Mattermost, unsupported Mattermost, validation and persistence.",
+  "id": "zaq-a3z",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Make upload size configuration capability-driven",
+  "type": "task",
+  "updated_at": "2026-11-07T15:02:43Z"
+}
