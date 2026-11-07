@@ -22,11 +22,15 @@
     {
       "text": "User requested root-cause investigation and suggested fixes only. Plan: classify all 53 failures; compare old and new dependency behavior; reproduce representative failures and test narrow hypotheses with disposable probes; report ownership, compatibility contracts, and minimal fixes. No production or existing test edits. Action reuse: diagnosis only; assess existing fact/edge adapters before recommending a change.",
       "timestamp": "2026-11-07T11:21:40Z"
+    },
+    {
+      "text": "Investigation completed (report /tmp/zaq-lcv-investigation.txt). Two compatibility causes explain original failures: 42 routing failures because alpha.13 halts admission on failed runnables, while EdgeStep uses ConditionNotMet exceptions for normal pruning; 11 canonical identity failures (10 Record, 1 DateTime). Baseline with original lock and seed 29114: all original 53 failing tests pass; 771/772 overall due to distinct orphaned-run DB race, which passes on isolated rerun. Deterministic probe confirms default returns runnable work after false guard; EdgeStep-only on_failure:skip/max_retries:0 policy completes selected sibling. Separate integration probe confirms that policy retains failed step/run records and downstream pruning on real edge crash. Explicit Projectable Record/DateTime projections accept nested structs, preserve Fact.value, distinguish changed fields and produce stable digests. Suggested fix: graph-level EdgeStep-only scheduler policy in DagBuilder plus explicit versioned struct projections before consolidation. Policy tradeoff: Runic labels all edge failures skipped; ZAQ durable rows retain real failures. Full upgraded suite with production fixes remains untested. No application or existing test files modified.",
+      "timestamp": "2026-11-07T11:29:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Update jido_runic and resolve Runic alpha.13",
   "type": "task",
-  "updated_at": "2026-11-07T11:21:40Z"
+  "updated_at": "2026-11-07T11:29:03Z"
 }
