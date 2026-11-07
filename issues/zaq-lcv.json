@@ -10,11 +10,15 @@
     {
       "text": "Resolved jido_runic main to ef8431a60c24c61d489a965eacad59e99acf985b, Runic 0.1.0-alpha.13, and required multigraph 0.16.1-mg.5. Preserved unrelated ecto/uniq lock versions and verified mix deps.get succeeds. Running mix q and workflow regression suite; no source or test behavior changes.",
       "timestamp": "2026-11-07T11:09:29Z"
+    },
+    {
+      "text": "mix q passed. Workflow suite failed with 53 failures. Confirmed isolated reproduction in test/zaq/engine/workflows/edge_step_struct_cascade_e2e_test.exs:100: Runic.Identity.CanonicalError rejects unsupported Elixir.Zaq.Contracts.Record values (nested row and list entries). Other failures include edge routing expectations. No test expectations modified. Final mix precommit is running. Full logs: /tmp/zaq-lcv-mix-q.log, /tmp/zaq-lcv-workflow-tests.log, /tmp/zaq-lcv-reproduction.log.",
+      "timestamp": "2026-11-07T11:14:33Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Update jido_runic and resolve Runic alpha.13",
   "type": "task",
-  "updated_at": "2026-11-07T11:09:29Z"
+  "updated_at": "2026-11-07T11:14:33Z"
 }
