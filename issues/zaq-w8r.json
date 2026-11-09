@@ -9,8 +9,8 @@
   "id": "zaq-w8r",
   "labels": [],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Add Mattermost metadata-only file validation",
   "type": "task",
-  "updated_at": "2026-11-09T18:43:47Z"
+  "updated_at": "2026-11-09T18:44:31Z"
 }
