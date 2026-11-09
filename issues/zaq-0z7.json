@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-09T18:23:05Z",
@@ -7,8 +7,8 @@
   "id": "zaq-0z7",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Test workflow RunAgent attachment delivery to Mattermost and email",
   "type": "task",
-  "updated_at": "2026-11-09T18:23:05Z"
+  "updated_at": "2026-11-09T18:23:50Z"
 }
