@@ -6,9 +6,15 @@
   "description": "Merge current upstream/main into feat/channel-files, resolve conflicts preserving adapter capability and current main contracts, validate and push as requested. Action reuse: not applicable to the merge itself; retain existing domain implementations and dispatch boundaries.",
   "id": "zaq-dxi",
   "labels": [],
+  "comments": [
+    {
+      "text": "Merged upstream/main 1f63f912e. Preserved both StreamEvents aliases and all independent test additions; restored Record alias needed by attachment types after automatic merge. Lock keeps main Jido AI fork 4cb999e and branch Jido Chat 5f27164 plus Mattermost aeb0019. Dependencies fetched; mix q passed; 446 focused tests passed (10 properties). Running final precommit. Serena configuration stored in named stash for restoration after merge.",
+      "timestamp": "2026-11-09T15:15:05Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[PR #876] Resolve main merge conflicts",
   "type": "task",
-  "updated_at": "2026-11-09T15:01:23Z"
+  "updated_at": "2026-11-09T15:15:05Z"
 }
