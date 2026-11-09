@@ -26,11 +26,15 @@
     {
       "text": "User approved using DeliveryError for each rejected file while preserving partial success. Reuse existing data-only DeliveryError; extend JidoChatBridge transport mapping to normalize failed_files, move safe message formatting out of Api, and consume error.message in Channels. Existing tests will assert the approved typed failure contract with unchanged delivery/history/no-retry expectations. Local-only mapping; no new Action or tool.",
       "timestamp": "2026-11-09T16:26:22Z"
+    },
+    {
+      "text": "Cleanup requested by user: removed all per-file failure interpretation and filename sanitization from Channels.Api; JidoChatBridge now maps raw adapter failures into the existing data-only DeliveryError, with original per-file evidence in reason. Api only presents DeliveryError.message and retains existing notice update/persistence flow. Added property coverage for safe names and original facts; no new module or Action.",
+      "timestamp": "2026-11-09T16:29:06Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[PR #876] Surface oversized-file rejection and partial delivery outcomes",
   "type": "bug",
-  "updated_at": "2026-11-09T16:26:22Z"
+  "updated_at": "2026-11-09T16:29:06Z"
 }
