@@ -5,12 +5,12 @@
   ],
   "blocks": [],
   "created": "2026-11-09T18:43:29Z",
-  "description": "Action reuse: existing AttachDocuments authorization and Channels delivery_connection/Bridge/AdapterOptions are extended; adapter owns size normalization and limits, DeliveryFiles retains materialization. Mattermost commit 28a200bed2cc114d179cc9daec7c8d303446ee5f published after review, red-to-green caption regressions, 210 passing tests (16 integration exclusions), quality gate and 17 adversarial probes (192 caption combinations plus 16 report lifecycle scenarios). ZAQ Mattermost dependency updated to that exact revision; no new Actions or operations for lock update. Running normal focused tests and final gates without in-memory dependency overrides. Preserve existing user work.",
+  "description": "Action reuse: extend existing AttachDocuments and Channels delivery routing; adapter owns metadata size normalization/limits; no new Action or materialization path. Mattermost commit 28a200bed2cc114d179cc9daec7c8d303446ee5f is pushed and both GitHub Quality/Coverage checks pass. Nil/empty caption tests observed failing before fix; 210 adapter tests pass (16 local integration exclusions), mix q passes, final review passes 192 caption combinations plus 16 report lifecycle variants. ZAQ mix.lock now pins that exact commit (only one lock entry changed). Normal ZAQ mix q and 42 focused attachment checks, including existing Mattermost/email journeys, pass with installed dependency and no source-loading workaround. Full mix precommit currently running; preserve other worktree changes and leave ZAQ lock edit uncommitted.",
   "id": "zaq-04j",
   "labels": [],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-04j] Route attachment selection validation through Channels",
   "type": "task",
-  "updated_at": "2026-11-09T19:15:26Z"
+  "updated_at": "2026-11-09T19:20:16Z"
 }
