@@ -34,11 +34,15 @@
     {
       "text": "Typed failure contract and cleanup validated: mix q passed; focused 85 checks passed (5 properties, 80 tests). Successful receipts, history persistence, original per-file facts and no-retry assertions retained. Self-review found only JidoChatBridge creates partial failed_files; Api is the sole presentation consumer. Final precommit running.",
       "timestamp": "2026-11-09T16:30:17Z"
+    },
+    {
+      "text": "Completed requested DeliveryError reuse and cleanup. Final mix precommit exit 0: 10,716 passed (17 doctests, 262 properties, 10,437 tests), 1 skipped and 156 excluded. mix q and all 85 focused checks also passed. Api no longer owns per-file failure mapping; bridge creates data-only DeliveryErrors preserving raw reasons; partial success, accepted receipts, history and no-retry behavior remain covered. No commit or push performed; unrelated .serena/project.yml untouched.",
+      "timestamp": "2026-11-09T16:35:59Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[PR #876] Surface oversized-file rejection and partial delivery outcomes",
   "type": "bug",
-  "updated_at": "2026-11-09T16:30:17Z"
+  "updated_at": "2026-11-09T16:35:59Z"
 }
