@@ -4,14 +4,15 @@
   "blocks": [
     "zaq-439.2"
   ],
+  "closed_at": "2026-11-09T15:56:55Z",
   "created": "2026-11-09T15:48:21Z",
   "description": "Extend existing AttachDocuments Action output with selection-only delivery status and guidance. Preserve operation/records validation and authorization; no send or size-check logic in selection. Add output contract tests. Action reuse: extend existing Action and output schema, consumed by agent and StreamEvents; no new tool.",
   "id": "zaq-439.1",
   "labels": [],
   "parent": "zaq-439",
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-439] Clarify attachment selection output",
   "type": "task",
-  "updated_at": "2026-11-09T15:48:49Z"
+  "updated_at": "2026-11-09T15:56:55Z"
 }
