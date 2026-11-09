@@ -9,9 +9,15 @@
   "id": "zaq-6do.1",
   "labels": [],
   "parent": "zaq-6do",
+  "comments": [
+    {
+      "text": "Red: both new partial delivery regressions failed with actual :sent vs expected :partial. Green: 57 notification/log/threading checks passed after extending existing status and audit flow. Partial is terminal, failure details survive log reload, accepted anchor remains available, configured fallback unused. mix q passed. No existing assertions changed; working-tree changes retained for parent fix.",
+      "timestamp": "2026-11-09T19:40:09Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6do] Add failing regression and preserve partial notification audit state",
   "type": "task",
-  "updated_at": "2026-11-09T19:37:05Z"
+  "updated_at": "2026-11-09T19:40:09Z"
 }
