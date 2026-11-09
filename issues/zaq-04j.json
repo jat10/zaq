@@ -5,12 +5,12 @@
   ],
   "blocks": [],
   "created": "2026-11-09T18:43:29Z",
-  "description": "Action reuse assessment: extend AttachDocuments after existing authorization; reuse Channels.Api delivery_connection and Bridge resolution for exact destination routing; JidoChatBridge delegates metadata-only validation to adapter. Records remain unmaterialized; no selection state on errors. Remove/empty requests bypass size checks; contexts without a destination retain workflow selection behavior. Nonparticipating bridges retain behavior; configurable limit adapters missing validation report unsupported. Preserve actor, node_router and existing tests. Add focused route/tool tests; no new UI or E2E journey.",
+  "description": "Action reuse assessment: extend AttachDocuments after authorization; reuse Channels.Api delivery_connection and Bridge resolution; JidoChatBridge delegates metadata-only checks to adapter. Ownership: tool authorization/instruction; StreamEvents request-local selection; Channels destination config; adapter normalization/limits; DeliveryFiles materialization. No new state or transport. Returns :ok or error before instruction; remove/clear and destination-free contexts retain behavior. Known risks: unknown sizes fail; old limit-aware adapters return file_validation_unsupported until upgraded. Adapter quality gate and 205 tests pass (16 excluded). New async route/property tests cover limits, routing, content stripping, authorization, removal and deployment compatibility. Existing tests unchanged; ZAQ final validation ongoing.",
   "id": "zaq-04j",
   "labels": [],
   "priority": 2,
   "status": "in_progress",
   "title": "Route attachment selection validation through Channels",
   "type": "task",
-  "updated_at": "2026-11-09T18:44:32Z"
+  "updated_at": "2026-11-09T18:51:01Z"
 }
