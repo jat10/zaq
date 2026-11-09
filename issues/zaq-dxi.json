@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-09T15:01:16Z",
@@ -7,8 +7,8 @@
   "id": "zaq-dxi",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[PR #876] Resolve main merge conflicts",
   "type": "task",
-  "updated_at": "2026-11-09T15:01:16Z"
+  "updated_at": "2026-11-09T15:01:23Z"
 }
