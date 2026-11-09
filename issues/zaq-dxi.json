@@ -2,6 +2,7 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-09T15:23:17Z",
   "created": "2026-11-09T15:01:16Z",
   "description": "Merge current upstream/main into feat/channel-files, resolve conflicts preserving adapter capability and current main contracts, validate and push as requested. Action reuse: not applicable to the merge itself; retain existing domain implementations and dispatch boundaries.",
   "id": "zaq-dxi",
@@ -17,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[PR #876] Resolve main merge conflicts",
   "type": "task",
-  "updated_at": "2026-11-09T15:23:15Z"
+  "updated_at": "2026-11-09T15:23:17Z"
 }
