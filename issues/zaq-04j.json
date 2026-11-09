@@ -5,12 +5,12 @@
   ],
   "blocks": [],
   "created": "2026-11-09T18:43:29Z",
-  "description": "Action reuse: extend AttachDocuments; reuse Channels delivery_connection, Bridge resolution and AdapterOptions. Tool authorizes, StreamEvents owns selection, Channels resolves destination, adapter owns normalization/limits; materialization remains DeliveryFiles-owned. No new state or source I/O. Atomic preflight returns adapter errors before success; remove/clear and destination-free workflow selections remain supported. Unknown sizes fail. Deployment requires new Mattermost validate_files/2 revision; old configurable-limit adapters return file_validation_unsupported. Validation: adapter mix q and 205 tests pass (16 excluded); ZAQ mix q and 17 focused tests pass (2 properties). Temporary real Channels API -\u003e JidoChatBridge -\u003e sibling Mattermost smoke checks pass at 0, exact limit, over limit. Final precommit running. No preexisting tests changed.",
+  "description": "Action reuse: extend AttachDocuments; reuse Channels delivery_connection, Bridge resolution and AdapterOptions. Tool authorizes; StreamEvents owns selection; Channels resolves destination; adapter normalizes and checks limits; DeliveryFiles alone materializes. Atomic metadata-only preflight returns errors before success. Remove/clear and destination-free workflows (including Incoming provider nil) retain behavior. Unknown sizes fail. Implemented across ZAQ and sibling adapter. Validation: both mix q pass; adapter 205 tests pass (16 excluded); 42 ZAQ tests/properties including existing attachment journeys pass with sibling adapter loaded in memory, without modifying pinned dependency files. Real Channels API -\u003e JidoChatBridge -\u003e sibling adapter smoke passes zero/exact/oversized. Full plain precommit cannot pass with current pinned adapter: Mattermost journeys report file_validation_unsupported. Interrupted that known-failing broad run; deployment/final gate awaits published adapter revision and dependency pin update. Existing tests unchanged.",
   "id": "zaq-04j",
   "labels": [],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-04j] Route attachment selection validation through Channels",
   "type": "task",
-  "updated_at": "2026-11-09T18:52:16Z"
+  "updated_at": "2026-11-09T18:58:33Z"
 }
