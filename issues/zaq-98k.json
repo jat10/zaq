@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-85t"
   ],
@@ -9,8 +9,8 @@
   "id": "zaq-98k",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-0z7] Preserve RunAgent selected files in workflow results",
   "type": "task",
-  "updated_at": "2026-11-09T18:28:37Z"
+  "updated_at": "2026-11-09T18:32:47Z"
 }
