@@ -5,12 +5,12 @@
   ],
   "blocks": [],
   "created": "2026-11-09T18:43:29Z",
-  "description": "Action reuse: extend AttachDocuments; reuse Channels delivery_connection, Bridge resolution and AdapterOptions. Tool authorizes; StreamEvents owns selection; Channels resolves destination; adapter normalizes and checks limits; DeliveryFiles alone materializes. Atomic metadata-only preflight returns errors before success. Remove/clear and destination-free workflows (including Incoming provider nil) retain behavior. Unknown sizes fail. Implemented across ZAQ and sibling adapter. Validation: both mix q pass; adapter 205 tests pass (16 excluded); 42 ZAQ tests/properties including existing attachment journeys pass with sibling adapter loaded in memory, without modifying pinned dependency files. Real Channels API -\u003e JidoChatBridge -\u003e sibling adapter smoke passes zero/exact/oversized. Full plain precommit cannot pass with current pinned adapter: Mattermost journeys report file_validation_unsupported. Interrupted that known-failing broad run; deployment/final gate awaits published adapter revision and dependency pin update. Existing tests unchanged.",
+  "description": "Action reuse: existing AttachDocuments authorization and Channels delivery_connection/Bridge/AdapterOptions are extended; adapter owns size normalization and limits, DeliveryFiles retains materialization. Mattermost commit 28a200bed2cc114d179cc9daec7c8d303446ee5f published after review, red-to-green caption regressions, 210 passing tests (16 integration exclusions), quality gate and 17 adversarial probes (192 caption combinations plus 16 report lifecycle scenarios). ZAQ Mattermost dependency updated to that exact revision; no new Actions or operations for lock update. Running normal focused tests and final gates without in-memory dependency overrides. Preserve existing user work.",
   "id": "zaq-04j",
   "labels": [],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-04j] Route attachment selection validation through Channels",
   "type": "task",
-  "updated_at": "2026-11-09T18:58:33Z"
+  "updated_at": "2026-11-09T19:15:26Z"
 }
