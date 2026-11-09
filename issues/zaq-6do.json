@@ -2,13 +2,14 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-09T19:48:17Z",
   "created": "2026-11-09T19:35:57Z",
   "description": "User requested failing regression then fix. Ownership: Channels and adapters produce partial receipts; Notifications owns fallback and final result; NotificationLog owns durable statuses/attempts/thread anchors; NotifyPerson owns workflow/tool projection. Action reuse assessment: extend existing notify/2, append_attempt/4, transition_status/2 and NotifyPerson; retain NodeRouter dispatch and adapter ownership, no new Action or provider-specific branching. Plan: first regression must fail on status sent; then add terminal partial status, retain failed-file diagnostics and successful threading, no fallback/retry after partial acceptance; extend validated NotifyPerson output. Existing tests stay unchanged. Verify persisted log and caller output, successful plus failed parts, alternate rejection, confidentiality and legacy sent/skipped behavior; mix q and isolated suites. Docs: notifications service and affected module contracts. No new E2E needed for this consumer-contract regression.",
   "id": "zaq-6do",
   "labels": [],
   "priority": 1,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6do] Preserve partial notification delivery",
   "type": "bug",
-  "updated_at": "2026-11-09T19:36:26Z"
+  "updated_at": "2026-11-09T19:48:17Z"
 }
