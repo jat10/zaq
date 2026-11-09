@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-09T19:36:28Z",
+  "description": "Extend existing NotifyPerson validated output to status partial with notified false and JSON-safe failed-file evidence; ordinary and confidential callers retain explicit partial results without automatic retry. Reuse existing Action execution, Engine event and TraceEvidence JSON conversion rather than parallel logic. Add new tool tests before change, preserving existing tests. Update notifications service docs; run focused integration and quality checks, retain full final gate limitation if blocked. No new feature E2E.",
+  "id": "zaq-6do.2",
+  "labels": [],
+  "parent": "zaq-6do",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-6do] Preserve partial outcomes in NotifyPerson and validate consumer contract",
+  "type": "task",
+  "updated_at": "2026-11-09T19:36:28Z"
+}
