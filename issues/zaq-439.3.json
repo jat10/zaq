@@ -13,11 +13,15 @@
     {
       "text": "Self-review complete: changes are limited to selection result guidance, existing Channels notice orchestration, canonical confirmed reply text, focused regression/integration tests and Channels owner documentation. No new Action/tool or adapter size enforcement. mix q passed; 76 focused checks passed (5 properties, 71 tests). Final mix precommit running. Existing .serena/project.yml changes left untouched.",
       "timestamp": "2026-11-09T16:03:03Z"
+    },
+    {
+      "text": "First precommit: 10,714/10,716 checks passed. Found and fixed overly broad canonical content replacement by carrying attachment_notice only for a successful partial-notice update. Existing test behavior remains unchanged. A workflow DB-connection failure passed on isolated rerun. Final mix q passed; expanded isolated suite passed 106 checks (5 properties, 101 tests), including attachment journey, history, selection, failed partial notice, and workflow recovery. Final precommit rerun in progress.",
+      "timestamp": "2026-11-09T16:09:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-439] Validate delivery feedback integration and documentation",
   "type": "task",
-  "updated_at": "2026-11-09T16:03:03Z"
+  "updated_at": "2026-11-09T16:09:28Z"
 }
