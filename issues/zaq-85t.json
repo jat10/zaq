@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-98k"
+  ],
   "created": "2026-11-09T18:28:14Z",
   "description": "Action reuse assessment: extend NotifyPerson, Engine.Api notify_person and Notifications/Notification optional attachments contract; reuse Channels delivery and Record.from_map verification. Preserve text-only defaults, exact recipient routing and fallback. Carry TrustedContext actor and explicit bypass through role event builders; never accept identity from attachment params. Keep attachments runtime-only in Notification, outside notification_logs payload. Validate signed file Records and use existing Channels materialization authorization. Add contract/security tests. Module context: Action owns input dispatch; Engine.Api projects envelope; Notifications owns routing/audit; Channels owns file transport/materialization; Record owns signature validation. Risk: identity loss and JSONB map round trips. Existing channel byte tests prove adapters; new workflow tests prove consumer propagation.",
   "id": "zaq-85t",
@@ -10,5 +12,5 @@
   "status": "open",
   "title": "[zaq-0z7] Carry authorized attachments through notification delivery",
   "type": "task",
-  "updated_at": "2026-11-09T18:28:14Z"
+  "updated_at": "2026-11-09T18:28:37Z"
 }

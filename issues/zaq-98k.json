@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-85t"
+  ],
   "blocks": [],
   "created": "2026-11-09T18:28:31Z",
   "description": "Action reuse assessment: extend RunAgent successful output with optional attachments using existing Record.metadata public content-free projection; preserve selected order and signed lazy Records across workflow JSONB resume. Reuse NotifyPerson from zaq-85t via edge mapping, no new Action or agent runtime. Keep failed execution attachment-free and propagate rejected selection failure rather than silently lose it. Validate unchanged two transport regressions plus direct serialization/security tests and mix q; run final precommit after all fixes. No browser UI change. Module context: StreamEvents owns request selection, Outgoing owns result, RunAgent projects workflow result, StepRunner owns JSONB; signed provenance is not authorization and materialization must retain trusted actor.",
@@ -10,5 +12,5 @@
   "status": "open",
   "title": "[zaq-0z7] Preserve RunAgent selected files in workflow results",
   "type": "task",
-  "updated_at": "2026-11-09T18:28:31Z"
+  "updated_at": "2026-11-09T18:28:37Z"
 }
