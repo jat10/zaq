@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-6do.2"
+  ],
   "created": "2026-11-09T19:36:27Z",
   "description": "Extend Notifications and NotificationLog in their existing ownership. First add consumer-boundary regression: signed attachments, one accepted part plus one failed part, configured fallback remains unused, reloaded partial log retains failure details and accepted anchor. Then extend terminal partial transition and existing attempt/status flow, no new dispatch path. Action reuse: extend notify/2, append_attempt/4, transition_status/2 and thread_anchor/2; provider-specific planning remains upstream. Existing sent/skipped/failed tests remain unchanged. Validate isolated notification and log suites plus mix q. Update module contracts.",
   "id": "zaq-6do.1",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-6do] Add failing regression and preserve partial notification audit state",
   "type": "task",
-  "updated_at": "2026-11-09T19:36:27Z"
+  "updated_at": "2026-11-09T19:37:04Z"
 }
