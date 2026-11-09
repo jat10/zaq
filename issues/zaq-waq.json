@@ -10,11 +10,15 @@
     {
       "text": "Mattermost capability committed and pushed to origin/fix/attachment-edit-history at aeb0019230ebd682c67b26e825597a7ca7e225d0. Adapter 60 tests and mix q passed. ZAQ lock updated; provider flag and Bridge injection removed; JidoChatBridge forwards SDK capability; UI requires native support. ZAQ mix q and 314 focused tests passed. Final precommit interrupted/timed out without captured completion; resumed with durable log /tmp/zaq-waq-precommit.log. Existing unrelated local changes preserved. No ZAQ commit/push requested.",
       "timestamp": "2026-11-09T13:51:55Z"
+    },
+    {
+      "text": "Final mix precommit succeeded, exit 0: 11962 passed (48 doctests, 328 properties, 11586 tests), 1 skipped and 161 excluded. Host tool connection timed out at 300s but the original run continued and completed in 334.9s test time; captured completion in /tmp/zaq-waq-precommit-result.json. Full log /tmp/zaq-waq-precommit.log. Prior focused checks: adapter 60 passed and mix q, ZAQ 314 passed and mix q. No further code changes needed.",
+      "timestamp": "2026-11-09T14:10:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[PR #876] Discover upload size configuration from adapter capabilities",
   "type": "task",
-  "updated_at": "2026-11-09T13:51:55Z"
+  "updated_at": "2026-11-09T14:10:27Z"
 }
