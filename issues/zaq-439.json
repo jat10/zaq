@@ -10,11 +10,15 @@
     {
       "text": "User requests only an intentionally failing regression test. Reuse existing deliver_outgoing helper, real Mattermost adapter, FileTransport and local HTTP status fixture; no new Action or production operations. Scenario: a streamed answer with a small file plus a file one byte above configured max_file_size; verify real partial receipt and single accepted upload, then require a user-facing status update identifying rejected filename, size and limit without retransmission. Existing tests remain unchanged.",
       "timestamp": "2026-11-09T15:36:56Z"
+    },
+    {
+      "text": "Added regression at test/zaq/channels/jido_chat_delivery_test.exs:456. mix q passed. Isolated test fails as intended at line 492: no rejection status notice received. All preceding assertions passed: configured 307200-byte limit rejects 307201-byte oversized.txt with reason file_too_large and delivery not_sent, returns partial receipt, sends accepted file exactly once, and updates original answer without duplicate posts. No production code or existing assertions changed. User explicitly requested red test; leave bug open and do not run a full precommit to fix intentional failure.",
+      "timestamp": "2026-11-09T15:37:48Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[PR #876] Surface oversized-file rejection and partial delivery outcomes",
   "type": "bug",
-  "updated_at": "2026-11-09T15:36:56Z"
+  "updated_at": "2026-11-09T15:37:48Z"
 }
