@@ -18,11 +18,15 @@
     {
       "text": "Non-mutating quality checks completed successfully: format --check-formatted, hooks.verify, credo --strict, docs --warnings-as-errors, compile --warnings-as-errors. Only this task change is the two dependency revisions in mix.lock; concurrent unrelated edits were preserved. Dependency update is local/uncommitted. Channel suite remains red with the five identified test-contract mismatches; no test expectations changed.",
       "timestamp": "2026-11-09T11:17:28Z"
+    },
+    {
+      "text": "User explicitly approved the described test-contract changes: successful post fixtures confirm uploaded file_ids; missing provider post ID expects unconfirmed delivery and no success callback. Updating tests only, preserving duplicate-send and callback invariants.",
+      "timestamp": "2026-11-09T11:18:52Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "Test updated Mattermost batch upload dependencies",
   "type": "task",
-  "updated_at": "2026-11-09T11:17:28Z"
+  "updated_at": "2026-11-09T11:18:52Z"
 }
