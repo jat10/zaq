@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-09T15:48:22Z",
+  "description": "Extend Channels.Api failure notice orchestration for partial receipts. Format safe rejected filename/byte-size/limit evidence, update first confirmed post without files or callbacks, carry confirmed final body into existing DeliveryConfirmation per-message persistence. Preserve report and successful attachments even on notice failure; no retry of delivered files. Action reuse: existing bridge upsert_message/send_reply and record_delivery_confirmation Event; local-only delivery policy and presentation helpers. Verify mixed-size and all-rejected cases, 15-\u003e14 two posts, durable next-turn history and no duplicate sends.",
+  "id": "zaq-439.2",
+  "labels": [],
+  "parent": "zaq-439",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-439] Report partial delivery through existing notice and history paths",
+  "type": "task",
+  "updated_at": "2026-11-09T15:48:22Z"
+}
