@@ -8,9 +8,15 @@
   "description": "Action reuse assessment: extend RunAgent successful output with optional attachments using existing Record.metadata public content-free projection; preserve selected order and signed lazy Records across workflow JSONB resume. Reuse NotifyPerson from zaq-85t via edge mapping, no new Action or agent runtime. Keep failed execution attachment-free and propagate rejected selection failure rather than silently lose it. Validate unchanged two transport regressions plus direct serialization/security tests and mix q; run final precommit after all fixes. No browser UI change. Module context: StreamEvents owns request selection, Outgoing owns result, RunAgent projects workflow result, StepRunner owns JSONB; signed provenance is not authorization and materialization must retain trusted actor.",
   "id": "zaq-98k",
   "labels": [],
+  "comments": [
+    {
+      "text": "RunAgent now exposes content-free signed Record metadata as attachments; NotifyPerson edge mapping reaches real file upload/SMTP. Rejected selection fails step. 218 targeted checks passed (7 properties, 211 tests), including unchanged workflow happy-path regressions, revocation and missing actor cases. mix q passed in dev. Test-environment formatter needed a layout correction; MIX_ENV=test mix q could not run docs (dev-only dependency). Final mix precommit is running. Browser E2E not needed for this service-only propagation fix. Signed references persist in private workflow results; notification logs exclude attachments and file contents.",
+      "timestamp": "2026-11-09T18:36:38Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-0z7] Preserve RunAgent selected files in workflow results",
   "type": "task",
-  "updated_at": "2026-11-09T18:32:47Z"
+  "updated_at": "2026-11-09T18:36:38Z"
 }
