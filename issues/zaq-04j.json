@@ -5,12 +5,12 @@
   ],
   "blocks": [],
   "created": "2026-11-09T18:43:29Z",
-  "description": "Action reuse assessment: extend AttachDocuments after authorization; reuse Channels.Api delivery_connection and Bridge resolution; JidoChatBridge delegates metadata-only checks to adapter. Ownership: tool authorization/instruction; StreamEvents request-local selection; Channels destination config; adapter normalization/limits; DeliveryFiles materialization. No new state or transport. Returns :ok or error before instruction; remove/clear and destination-free contexts retain behavior. Known risks: unknown sizes fail; old limit-aware adapters return file_validation_unsupported until upgraded. Adapter quality gate and 205 tests pass (16 excluded). New async route/property tests cover limits, routing, content stripping, authorization, removal and deployment compatibility. Existing tests unchanged; ZAQ final validation ongoing.",
+  "description": "Action reuse: extend AttachDocuments; reuse Channels delivery_connection, Bridge resolution and AdapterOptions. Tool authorizes, StreamEvents owns selection, Channels resolves destination, adapter owns normalization/limits; materialization remains DeliveryFiles-owned. No new state or source I/O. Atomic preflight returns adapter errors before success; remove/clear and destination-free workflow selections remain supported. Unknown sizes fail. Deployment requires new Mattermost validate_files/2 revision; old configurable-limit adapters return file_validation_unsupported. Validation: adapter mix q and 205 tests pass (16 excluded); ZAQ mix q and 17 focused tests pass (2 properties). Temporary real Channels API -\u003e JidoChatBridge -\u003e sibling Mattermost smoke checks pass at 0, exact limit, over limit. Final precommit running. No preexisting tests changed.",
   "id": "zaq-04j",
   "labels": [],
   "priority": 2,
   "status": "in_progress",
-  "title": "Route attachment selection validation through Channels",
+  "title": "[zaq-04j] Route attachment selection validation through Channels",
   "type": "task",
-  "updated_at": "2026-11-09T18:51:01Z"
+  "updated_at": "2026-11-09T18:52:16Z"
 }
