@@ -14,11 +14,15 @@
     {
       "text": "Updated feat/channel-files mix.lock to jido_chat 5f27164 and Mattermost 7a3cd6e. Ran mix test test/zaq/channels: 1791/1796 passed (42 properties passed), 5 failures, 21 excluded. All failures in jido_chat_delivery_test.exs at lines 161,317,492,516,533: four success fixtures omit file_ids, and missing-provider-ID test expects a generated ID to count as confirmed. New adapter correctly rejects these as unconfirmed. Tests and production code unchanged. Full log: /tmp/zaq-updated-channels-tests.log. Non-mutating quality checks running instead of mix q to preserve concurrent unrelated edits (mix q formats all files and unlocks unused deps).",
       "timestamp": "2026-11-09T11:15:55Z"
+    },
+    {
+      "text": "Non-mutating quality checks completed successfully: format --check-formatted, hooks.verify, credo --strict, docs --warnings-as-errors, compile --warnings-as-errors. Only this task change is the two dependency revisions in mix.lock; concurrent unrelated edits were preserved. Dependency update is local/uncommitted. Channel suite remains red with the five identified test-contract mismatches; no test expectations changed.",
+      "timestamp": "2026-11-09T11:17:28Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "Test updated Mattermost batch upload dependencies",
   "type": "task",
-  "updated_at": "2026-11-09T11:15:55Z"
+  "updated_at": "2026-11-09T11:17:28Z"
 }
