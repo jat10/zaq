@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-439.1"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-439",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-439] Report partial delivery through existing notice and history paths",
   "type": "task",
-  "updated_at": "2026-11-09T15:48:48Z"
+  "updated_at": "2026-11-09T15:56:56Z"
 }
