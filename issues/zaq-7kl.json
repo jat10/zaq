@@ -6,9 +6,15 @@
   "description": "Updated mix.exs to jat10/jido_chat fix/attachment-edits override; lock now SDK 8f22121 and Mattermost 9c9c615. deps.update and mix q pass. Focused bridge/delivery tests: 204 of 213 pass, 9 delivery failures. Existing tests still implement upload_file, reject multiple files, expect old patch endpoint and omit channel_id. Tests left unchanged; adapting behavioral expectations requires explicit approval per docs/testing-approach.md. Action reuse: not applicable, dependency configuration only. Logs /tmp/zaq-chat-tests.log and /tmp/zaq-chat-quality.log. Dependency update ready for user testing; test migration remains outstanding.",
   "id": "zaq-7kl",
   "labels": [],
+  "comments": [
+    {
+      "text": "Resuming user-requested dependency update and channel-suite validation in feat/channel-files. Action reuse: not applicable; dependency lock update and validation only. Updating the explicit SDK override together with Mattermost. No existing test expectations will be changed.",
+      "timestamp": "2026-11-09T11:07:04Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "Test updated Mattermost batch upload dependencies",
   "type": "task",
-  "updated_at": "2026-11-06T12:24:20Z"
+  "updated_at": "2026-11-09T11:07:04Z"
 }
