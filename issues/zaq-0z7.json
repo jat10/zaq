@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-09T18:23:05Z",
+  "description": "Add two integration scenarios using real Workflows, RunAgent, GetDocument, AttachDocuments, NotifyPerson and channel adapters; stub only LLM HTTP and delivery HTTP/SMTP. Action reuse assessment: reuse these existing Actions and Workflows public lifecycle. No production operations changed. Preserve actor authorization and signed Records; assert exact filename/bytes and Mattermost uploaded file ID or email MIME attachment. Existing assertions unchanged. Browser E2E unnecessary: transport integration directly proves requested behavior. Source inspection identifies RunAgent dropping Outgoing.attachments and NotifyPerson/Notifications lacking attachment propagation; tests must require successful delivery and expose the gap, not inject attachments. No property test needed for these two concrete scenarios.",
+  "id": "zaq-0z7",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Test workflow RunAgent attachment delivery to Mattermost and email",
+  "type": "task",
+  "updated_at": "2026-11-09T18:23:05Z"
+}
