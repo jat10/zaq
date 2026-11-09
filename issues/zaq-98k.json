@@ -12,11 +12,15 @@
     {
       "text": "RunAgent now exposes content-free signed Record metadata as attachments; NotifyPerson edge mapping reaches real file upload/SMTP. Rejected selection fails step. 218 targeted checks passed (7 properties, 211 tests), including unchanged workflow happy-path regressions, revocation and missing actor cases. mix q passed in dev. Test-environment formatter needed a layout correction; MIX_ENV=test mix q could not run docs (dev-only dependency). Final mix precommit is running. Browser E2E not needed for this service-only propagation fix. Signed references persist in private workflow results; notification logs exclude attachments and file contents.",
       "timestamp": "2026-11-09T18:36:38Z"
+    },
+    {
+      "text": "Final validation complete: mix q passed; 218 focused checks passed; mix precommit completed successfully with 10725 passed (17 doctests, 265 properties, 10443 tests), 1 skipped, 156 excluded. Context Mode call timed out at 300s but underlying precommit process survived; recovered final successful log at /tmp/zaq-workflow-final-precommit.log. No existing assertions changed. No commits/pushes. Numerical coverage phase not invoked: no PR review/merge requested.",
+      "timestamp": "2026-11-09T18:42:56Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-0z7] Preserve RunAgent selected files in workflow results",
   "type": "task",
-  "updated_at": "2026-11-09T18:36:38Z"
+  "updated_at": "2026-11-09T18:42:56Z"
 }
