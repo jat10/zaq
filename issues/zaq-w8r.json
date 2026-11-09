@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-04j"
+  ],
   "created": "2026-11-09T18:43:18Z",
   "description": "Action reuse assessment: extend existing adapter validation using validate_upload_limit and validate_file_size; expose validate_files/2 for maps with name/filename and size (including metadata). No ZAQ dependency, transport, materialization or state. Return :ok or error for batch; byte validation at delivery remains authoritative. Add async boundary/error tests. Module context: adapter owns normalization and limits; tool owns authorization; Channels owns destination resolution. Unknown size must fail explicitly when this adapter validates.",
   "id": "zaq-w8r",
@@ -10,5 +12,5 @@
   "status": "open",
   "title": "Add Mattermost metadata-only file validation",
   "type": "task",
-  "updated_at": "2026-11-09T18:43:18Z"
+  "updated_at": "2026-11-09T18:43:46Z"
 }
