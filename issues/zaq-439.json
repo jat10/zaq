@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-09T15:34:05Z",
+  "description": "User reports attach-files appears unaware of max_file_size rejections. Source evidence: AttachDocuments.run only validates/authorizes selection; final delivery occurs after the agent answer. Mattermost plan_files rejects oversized files and file_post_result reports partial successful sends with failed_files. JidoChatBridge.delivery_attachments preserves partial status and failed_files. Channels.Api.report_file_failure handles only error DeliveryError tuples, so successful partial receipts receive no user notice. DeliveryConfirmation records each delivered message but does not send aggregate failed_files to Engine. All-rejected plans become file_too_large errors, conservatively mapped to generic unconfirmed transport errors. Re-ran existing partial-delivery bridge regression: 1 passed. Exact user runtime scenario (some vs all rejected) pending clarification. Owner: Channels delivery outcome handling, not attachment selection. Invariant: selection is not delivery, and partial sends must not silently imply all selected files arrived. Candidate fix: reuse existing Channels.Api failure-notice path for explicit partial receipts and persist safe outcome evidence without retrying successful sends. Validation: mixed small/oversized files, all oversized, no duplicates, safe filename/size/limit notices, receipt history and agent-visible outcomes. No production code changed during diagnosis.",
+  "id": "zaq-439",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[PR #876] Surface oversized-file rejection and partial delivery outcomes",
+  "type": "bug",
+  "updated_at": "2026-11-09T15:34:05Z"
+}
