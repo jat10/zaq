@@ -22,11 +22,15 @@
     {
       "text": "User explicitly approved the described test-contract changes: successful post fixtures confirm uploaded file_ids; missing provider post ID expects unconfirmed delivery and no success callback. Updating tests only, preserving duplicate-send and callback invariants.",
       "timestamp": "2026-11-09T11:18:52Z"
+    },
+    {
+      "text": "Applied user-approved test updates only: FileTransport and recording-failure HTTP success fixtures now confirm uploaded file_ids; missing-post-ID fixture confirms file IDs but omits ID so the test isolates unconfirmed_delivery, no on_reply job and no repeated upload/post. Focused delivery suite: 30 passed (2 properties). Full channels suite: 1796 passed (42 properties, 1754 tests), 21 excluded, log /tmp/zaq-channels-updated-fixtures.log. Formatting, hooks.verify, strict Credo, docs and compile warnings-as-errors passed. Changes remain local/uncommitted; no production-code edits from this task, unrelated worktree edits preserved.",
+      "timestamp": "2026-11-09T11:22:37Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "Test updated Mattermost batch upload dependencies",
   "type": "task",
-  "updated_at": "2026-11-09T11:18:52Z"
+  "updated_at": "2026-11-09T11:22:37Z"
 }
