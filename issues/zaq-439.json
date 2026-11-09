@@ -30,11 +30,15 @@
     {
       "text": "Cleanup requested by user: removed all per-file failure interpretation and filename sanitization from Channels.Api; JidoChatBridge now maps raw adapter failures into the existing data-only DeliveryError, with original per-file evidence in reason. Api only presents DeliveryError.message and retains existing notice update/persistence flow. Added property coverage for safe names and original facts; no new module or Action.",
       "timestamp": "2026-11-09T16:29:06Z"
+    },
+    {
+      "text": "Typed failure contract and cleanup validated: mix q passed; focused 85 checks passed (5 properties, 80 tests). Successful receipts, history persistence, original per-file facts and no-retry assertions retained. Self-review found only JidoChatBridge creates partial failed_files; Api is the sole presentation consumer. Final precommit running.",
+      "timestamp": "2026-11-09T16:30:17Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[PR #876] Surface oversized-file rejection and partial delivery outcomes",
   "type": "bug",
-  "updated_at": "2026-11-09T16:29:06Z"
+  "updated_at": "2026-11-09T16:30:17Z"
 }
