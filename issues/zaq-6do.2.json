@@ -9,9 +9,15 @@
   "id": "zaq-6do.2",
   "labels": [],
   "parent": "zaq-6do",
+  "comments": [
+    {
+      "text": "Added two validated NotifyPerson regressions, ordinary and confidential. Both failed before the consumer fix; ordinary Jido execution attempted a second dispatch after interpreting partial as an error. Fixed by extending the existing success-result projection to status partial/notified false with JSON-safe failed_files, retaining message pointers and audit ID. Existing schemas and sent/skipped behavior preserved. Combined 100 checks passed (2 properties, 98 tests), including attachment workflow journeys. mix q passed. Final mix precommit currently running; no new commits/pushes requested for this fix.",
+      "timestamp": "2026-11-09T19:43:24Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6do] Preserve partial outcomes in NotifyPerson and validate consumer contract",
   "type": "task",
-  "updated_at": "2026-11-09T19:40:11Z"
+  "updated_at": "2026-11-09T19:43:24Z"
 }
