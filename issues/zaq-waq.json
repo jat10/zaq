@@ -2,6 +2,7 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-09T14:10:28Z",
   "created": "2026-11-09T12:45:49Z",
   "description": "Implement and test configurable_max_file_size in Mattermost capabilities, publish the authorized adapter branch, then update the ZAQ lock and consume the adapter capability. Remove provider registration flag. Action reuse: reuse Jido.Chat.Adapter.capabilities/1 and existing channel_capability_snapshot dispatch; local-only UI visibility and capability projection, no new Action or execution path. Verify native declaration survives SDK normalization, absence on other adapters, BO visibility and existing limit validation. User explicitly approved adapter capability and test changes.",
   "id": "zaq-waq",
@@ -17,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[PR #876] Discover upload size configuration from adapter capabilities",
   "type": "task",
-  "updated_at": "2026-11-09T14:10:27Z"
+  "updated_at": "2026-11-09T14:10:28Z"
 }
