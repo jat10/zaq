@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-439.2"
+  ],
   "blocks": [],
   "created": "2026-11-09T15:48:23Z",
   "description": "Run focused regression/property tests for adapter rejection, selection and canonical history reuse; update owner documentation and run mix q and final precommit. No new browser UI or E2E flow: server-side delivery and history contract integration tests. User authorized implementing proposed selection/delivery/feedback fix; preserve existing assertions.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-439] Validate delivery feedback integration and documentation",
   "type": "task",
-  "updated_at": "2026-11-09T15:48:23Z"
+  "updated_at": "2026-11-09T15:48:48Z"
 }
