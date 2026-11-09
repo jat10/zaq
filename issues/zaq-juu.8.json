@@ -65,11 +65,15 @@
     {
       "text": "Read-only PR review of HEAD 4cf106239 plus local edits against upstream/main 1f63f912: one high finding in the uncommitted notification attachment extension. Adapter partial receipts are preserved by bridge/confirmation but Notifications marks them sent and drops failed_files; temporary consumer-contract reproduction confirmed durable log sent. 48 existing focused checks passed plus reproduction; two broader batches timed out at 60s without reported failure. No production or existing test changes, temporary probe removed, no remote review posted. Review artifact: /tmp/zaq-pr876-review.txt. Reuse of Materialization, DecodeBase64, GetDocument, Authorization.principal, media_records and AdapterOptions inspected; no additional actionable duplication finding.",
       "timestamp": "2026-11-09T19:29:47Z"
+    },
+    {
+      "text": "Review finding fixed in current working tree under zaq-6do. Added red-then-green regressions for partial timeout and rejection, durable log/anchor/fallback behavior, and validated ordinary/confidential NotifyPerson output without retry. Terminal partial status, failed-file evidence and accepted pointers preserved. mix q and 100 focused checks passed; mix precommit completed with 10738 passed, 1 skipped. No fix commit or push performed; prior requested push was 263eb41d7.",
+      "timestamp": "2026-11-09T19:48:19Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-juu.8] Complete docs review coverage handoff and final validation",
   "type": "task",
-  "updated_at": "2026-11-09T19:29:47Z"
+  "updated_at": "2026-11-09T19:48:19Z"
 }
