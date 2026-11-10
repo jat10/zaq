@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-10T13:18:38Z",
+  "description": "Functional specifications/files: focused integration/property regressions and authoritative docs/services/channels.md plus sibling docs/jido_chat_adapter.md. Tests to add before implementation: end-to-end public delivery boundaries via existing seams, mixed failures and uncertain publication, exact per-message confirmation, no duplication. Branches all acceptance cases in parent. Mocking external edges only. Documentation plain public policy option/capability and certainty guarantees, no duplicate procedure docs. Action reuse verify existing implementation shared across consumers and no new APIs/Actions/tools. Run isolated tests and mix q both repositories, final precommit per workflow. Coverage remains post-review handoff. Feature browser E2E authoring waits for human UX approval.",
+  "id": "zaq-ucc.5",
+  "labels": [],
+  "parent": "zaq-ucc",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ucc] Validate attachment policy contracts and update owner documentation",
+  "type": "task",
+  "updated_at": "2026-11-10T13:18:38Z"
+}
