@@ -74,11 +74,15 @@
     {
       "text": "User authorized committing all current ZAQ changes except browsing_test.exs. Created d531d4e84 feat(channels): enforce attachment failure policy (zaq-ucc), 26 files. Commit hooks qf and commit message check passed. Browsing test fix remains uncommitted; no push. Overall full precommit remains outstanding.",
       "timestamp": "2026-11-10T17:04:55Z"
+    },
+    {
+      "text": "zaq-ucc.16 complete: confirmed SMTP selected attachment display metadata now crosses receipt boundary and persists in recipient transcript, with source locators/private fields removed and existing provider media evidence authoritative. Parent-authored red test now green unchanged; focused61checks plus parent independent17checks and q passed. Existing final precommit remains pending. No commit/push.",
+      "timestamp": "2026-11-10T17:16:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T17:04:55Z"
+  "updated_at": "2026-11-10T17:16:03Z"
 }
