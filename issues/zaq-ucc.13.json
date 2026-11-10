@@ -1,7 +1,9 @@
 {
   "assignee": "Jad",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-ucc.5"
+  ],
   "created": "2026-11-10T16:13:28Z",
   "description": "User explicitly requests GPT-6.1 diagnose and fix failures reported by full run in jido_chat_delivery_test, delivery_error_test, browsing_test and channels_live_test. First reproduce using normal published dependency, classify exact contracts/property counterexample and report proposal before changing behavior expectations. Preserve authorization/source/no-resend/security invariants. No transcript, dependency pin, commit or push changes. Reuse current owner helpers and test fixtures; no architecture drift. Focused four-file tests plus mix q; coordinate final precommit with parent.",
   "id": "zaq-ucc.13",
@@ -11,5 +13,5 @@
   "status": "in_progress",
   "title": "[zaq-ucc] Resolve four-file validation failures",
   "type": "task",
-  "updated_at": "2026-11-10T16:14:05Z"
+  "updated_at": "2026-11-10T16:14:06Z"
 }
