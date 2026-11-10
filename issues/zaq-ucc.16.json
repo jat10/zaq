@@ -24,11 +24,15 @@
     {
       "text": "Final validation complete for scoped implementation: mix q exit0 (/tmp/zaq-ucc-email-transcript-quality.log), agent normal-dependency focused61passed(5properties56tests),20.5s (/tmp/zaq-ucc-email-transcript-focused.log). Exact focused command: mix test test/zaq/channels/delivery_confirmation_test.exs test/zaq/engine/history/delivery_test.exs test/zaq/channels/email_file_delivery_integration_test.exs test/zaq/channels/jido_chat_delivery_test.exs. Root independently verified17checks(3properties14tests), normal dependencies (/tmp/zaq-ucc-email-transcript-root-verification.log), and approved minimal boundary-correct diff. Four files: lib/zaq/channels/delivery_confirmation.ex, test/zaq/channels/delivery_confirmation_test.exs, docs/services/channels.md, and parent-authored test/zaq/engine/history/delivery_test.exs (agent formatter changes only). Parent regression logic unchanged; successful recipient association/replay verified. All code edits stopped for review. No commit/push; overall precommit remains pending and no full-suite claim made.",
       "timestamp": "2026-11-10T17:16:01Z"
+    },
+    {
+      "text": "User authorized publication. Committed and pushed 4a07d06ad fix(channels): persist confirmed email attachment metadata (zaq-ucc.16) to origin/feat/channel-files. Four task files included; commit qf/message and push format hooks passed. Working tree clean. Focused validations previously recorded; no full precommit success claimed.",
+      "timestamp": "2026-11-10T17:44:26Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "[zaq-ucc] Preserve confirmed email attachments in transcript receipts",
   "type": "bug",
-  "updated_at": "2026-11-10T17:16:02Z"
+  "updated_at": "2026-11-10T17:44:26Z"
 }
