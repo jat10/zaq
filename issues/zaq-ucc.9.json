@@ -11,9 +11,15 @@
   "id": "zaq-ucc.9",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Exactly three new MIME delivery tests implemented (true/false/missing); each tests direct SMTP and conflicting-policy IMAP binding with selected saved SMTP authority. Agent and independent parent seven-file runs both 163 passed (3 properties,160 tests). Safe partial reports/successful-only confirmation and zero SMTP/confirmation in abort verified. No bridge/send stub for MIME; only existing external loopback SMTP fixture and confirmation edge. Parent log /tmp/zaq-ucc-smtp-parent-validation.log.",
+      "timestamp": "2026-11-10T14:30:54Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc.9] Verify SMTP attachment policy with three real MIME integration cases",
   "type": "task",
-  "updated_at": "2026-11-10T14:22:50Z"
+  "updated_at": "2026-11-10T14:30:54Z"
 }
