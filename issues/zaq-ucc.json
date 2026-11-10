@@ -54,11 +54,15 @@
     {
       "text": "Published adapter feature to origin/fix/attachment-edit-history at 0a3cae00300e11511d6c80ffb48f90f7cdb7bcde as explicitly authorized. Sibling mix q and 223 unit tests passed (16 integration excluded). Updated ZAQ mix.exs to exact ref and refreshed mix.lock using mix deps.get; only Mattermost lock entry changed. Normal pinned dependency validation now passes: mix q, 107 focused checks (5 properties,102 tests), and 2 strict Mattermost HTTP create/edit tests. No VM override needed. ZAQ changes remain uncommitted; no full precommit claim.",
       "timestamp": "2026-11-10T15:27:28Z"
+    },
+    {
+      "text": "User explicitly requested normal pinned-dependency mix precommit validation/report only, no fixes/test revisions/dependency changes. Started through Context Mode (900000ms timeout) at 2026-11-10T15:59:15Z; durable PID20363 log /tmp/zaq-ucc-precommit-published.log and exit file .exit. Published Mattermost ref verified 0a3cae00300e11511d6c80ffb48f90f7cdb7bcde in mix.exs/mix.lock. Prior dirty implementation authorized and preserved. No VM loader or duplicate invocation.",
+      "timestamp": "2026-11-10T15:59:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T15:27:28Z"
+  "updated_at": "2026-11-10T15:59:32Z"
 }
