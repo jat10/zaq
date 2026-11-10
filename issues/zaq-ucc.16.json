@@ -7,9 +7,15 @@
   "id": "zaq-ucc.16",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "User explicitly approved updating the existing SMTP test assertion from absence of receipt.attachments to confirmed sanitized metadata, while preserving failed-file and private-data checks. Parent will author regression first. Materialization handles remain transient only; persisted metadata uses existing Record.attachment_metadata projection and does not fabricate SMTP provider source references.",
+      "timestamp": "2026-11-10T17:09:51Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Preserve confirmed email attachments in transcript receipts",
   "type": "bug",
-  "updated_at": "2026-11-10T17:09:50Z"
+  "updated_at": "2026-11-10T17:09:51Z"
 }
