@@ -1,6 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [
+    "zaq-ucc.11",
     "zaq-ucc.4",
     "zaq-ucc.8",
     "zaq-ucc.9"
@@ -27,5 +28,5 @@
   "status": "open",
   "title": "[zaq-ucc.5] Validate attachment policy contracts and update owner documentation",
   "type": "task",
-  "updated_at": "2026-11-10T14:19:21Z"
+  "updated_at": "2026-11-10T14:55:17Z"
 }
