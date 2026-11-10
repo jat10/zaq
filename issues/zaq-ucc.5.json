@@ -11,9 +11,15 @@
   "id": "zaq-ucc.5",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Owner docs updated: docs/services/channels.md and sibling docs/jido_chat_adapter.md plus transport callback docs. Final independent quality: ZAQ mix q passed; sibling mix q passed, 223 unit tests passed, 16 integration tests excluded. Existing local links retained; git diff --check passed both repos. No source in lib/zaq/agent changed, no new public lifecycle/Action/tool/registry, no dependency pins changed. Real HTTP later-batch failure not executed under sibling no-HTTP-mocking rule; injected transport prefix tests pass and supervisor reviewed ReqClient retention. Standard pinned precommit already started before timing clarification and is being allowed to finish; no repeat until approved expectations are green. Coverage remains post-review per workflow.",
+      "timestamp": "2026-11-10T13:42:23Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-ucc.5] Validate attachment policy contracts and update owner documentation",
   "type": "task",
-  "updated_at": "2026-11-10T13:42:21Z"
+  "updated_at": "2026-11-10T13:42:23Z"
 }
