@@ -11,9 +11,15 @@
   "id": "zaq-ucc.3",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Shared preparation and email explicit-policy extension implemented; absent policy retains direct-call behavior. New success-index selection facts consumed only by DeliveryConfirmation, never fabricated provider references. Initial focused prep/email tests passed; final confirmation selection regressions pending next focused validation. ZAQ mix q currently passes.",
+      "timestamp": "2026-11-10T13:34:53Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply preparation policy to one email submission",
   "type": "task",
-  "updated_at": "2026-11-10T13:34:52Z"
+  "updated_at": "2026-11-10T13:34:53Z"
 }
