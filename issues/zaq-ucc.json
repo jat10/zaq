@@ -38,11 +38,15 @@
     {
       "text": "Delivery failure persistence audit recorded in zaq-ucc.11. No code changed. Canonical assistant answer is persisted before transport, but strict failures are currently discarded by DeliveryConfirmation pass-through; there is no failure operation. Existing public transcript placement requires confirmed delivery/audience. Supervisor stopped implementation under user no-drift rule pending confirmation of private delivery-outcome metadata on the existing assistant, with distinct failed placement/display deferred. Do not treat this as an approved failure contract or a completion claim.",
       "timestamp": "2026-11-10T14:55:18Z"
+    },
+    {
+      "text": "Connected workflow/NotifyPerson coverage completed in zaq-ucc.12: false/true/default for email and Mattermost, winning/exhausted fallback, persisted attempts/status, actual notification-center rendering and SMTP anchor. Six default-on journey revisions explicitly user-approved. Found and fixed approved partial-email canonical-body history conflict through existing receipt/confirmation helpers. q green; parent independent combined validation98 passed (4properties94tests). Transcript failure persistence remains explicitly deferred in zaq-ucc.11. Current dependency pin and other pending test expectation approvals unchanged; no full precommit rerun.",
+      "timestamp": "2026-11-10T15:15:35Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T14:55:18Z"
+  "updated_at": "2026-11-10T15:15:35Z"
 }
