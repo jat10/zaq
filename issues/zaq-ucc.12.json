@@ -17,11 +17,15 @@
     {
       "text": "Final self-review: focused changes limited to attachment_agent_journey_test.exs, delivery_confirmation_test.exs, DeliveryConfirmation body default, EmailBridge unsplit partial receipt shape, and channels receipt documentation. Final mix q exit0 log /tmp/zaq-ucc-workflow-quality-final.log. Pinned affected email test command: mix test test/zaq/channels/email_file_delivery_integration_test.exs test/zaq/channels/email_bridge/outgoing_attachments_test.exs =\u003e15 passed (1 property,14 tests), /tmp/zaq-ucc-workflow-email-regression.log. VM-only sibling command: MIX_ENV=test mix run --no-start /tmp/zaq-ucc-cross-repo.exs test/zaq/channels/attachment_agent_journey_test.exs test/zaq/channels/delivery_confirmation_test.exs test/zaq_web/live/bo/communication/notification_logs_live_test.exs test/zaq/agent/tools/people/notify_person_test.exs =\u003e83 passed (3 properties,80 tests), /tmp/zaq-ucc-workflow-fixed.log. Script asserts sibling source/capability in same VM; current deployable dependency pin remains unchanged. Known SMTP fixture accept closed cleanup diagnostics occur for deliberately unused strict listeners; no failing tests/production errors, fixture unchanged. No broad precommit rerun per supervisor due existing unrelated approvals/pin blockers. Files stable and parent independent validation requested.",
       "timestamp": "2026-11-10T15:15:19Z"
+    },
+    {
+      "text": "Parent independently validated combined six suites with sibling VM loader: 98 passed (4 properties,94 tests), /tmp/zaq-ucc-workflow-parent-validation.log. Parent reviewed final matrix, six explicitly approved default-on revisions, actual safe NotificationLogsLive rendering, winning SMTP anchor, and focused canonical-body correction. No further changes requested. Scope complete; no commit/push/pin or full-precommit claim.",
+      "timestamp": "2026-11-10T15:15:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc.12] Verify workflow attachment policy and notification-center outcomes",
   "type": "task",
-  "updated_at": "2026-11-10T15:15:19Z"
+  "updated_at": "2026-11-10T15:15:32Z"
 }
