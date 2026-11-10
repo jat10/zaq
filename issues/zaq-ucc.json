@@ -62,11 +62,15 @@
     {
       "text": "Requested normal published-dependency mix precommit completed with EXIT1 before ExUnit. Log /tmp/zaq-ucc-precommit-published.log, durable exit /tmp/zaq-ucc-precommit-published.exit. Credo1759 source files/21503 mods-funs/94 checks: no issues (19.7s). Test alias database creation failed before tests: Zaq.Repo connection unavailable, request dropped from queue after4000ms. Therefore no tests/properties/doctests ran or reported totals. Also emitted configured :license_manager application unavailable warning. Read-only diagnostic: local PostgreSQL PID847 was listening on IPv4/IPv6 localhost5432, so log proves Ecto connection acquisition timeout, not server-down or code/test regression; exact root cause unproven. Different from earlier pinned-run assertion failures: no assertions executed this time. No fixes, test revisions, dependency changes or rerun performed; user requested validation/report only. Published ref0a3cae00300e11511d6c80ffb48f90f7cdb7bcde verified in mix.exs/mix.lock; VM loader not used. git diff --check clean.",
       "timestamp": "2026-11-10T16:01:03Z"
+    },
+    {
+      "text": "Final bounded DB readiness probe: pg_isready -h localhost -p5432 reports accepting connections. This confirms PostgreSQL listener readiness after the failed run; it does not establish why Ecto database-creation connection acquisition timed out. No rerun/fix performed.",
+      "timestamp": "2026-11-10T16:01:16Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T16:01:03Z"
+  "updated_at": "2026-11-10T16:01:16Z"
 }
