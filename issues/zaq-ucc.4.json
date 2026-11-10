@@ -15,11 +15,15 @@
     {
       "text": "Implemented single policy projection in ConnectorConfig.Settings at Api selected-connector boundary, native policy capability snapshot/UI gate, bridge option propagation, strict unsupported preflight, fallback suppression for strict/completed adapter attempts, safe failure normalization and callback/confirmation preservation. Standard pinned focused prep/email/confirmation/API run 165 passed (5 properties). Cross-repo VM tests assert sibling source paths and capability; four focused scenarios passed, including actual Api final create/edit failure retaining unconfirmed with no replacement/status operation. Eight existing journey scenarios and two previously added toggle fake snapshots need explicit human approval before expectation/setup edits; supervising parent has requested it. Those scenarios remain untouched. Direct bridge calls without supplied policy retain legacy preparation behavior; production email runtime verified to dispatch :deliver_outgoing.",
       "timestamp": "2026-11-10T13:42:22Z"
+    },
+    {
+      "text": "User explicitly requested new integrated strict-mode HTTP coverage via supervisor. Functional spec: two new create/placeholder variants in existing jido_chat_delivery_test.exs; persist selected connector send_on_file_failure=false plus competing permissive connector; dispatch actual Api -\u003e JidoChatBridge -\u003e real Mattermost adapter -\u003e ReqClient -\u003e existing local HTTP fixture. First ten-file group uploads successfully, second one-file group fails HTTP 413. Assert not_sent, no published messages, retained ten upload IDs, exactly two uploads/no duplicates, zero message POST/PUT/PATCH, no callback or confirmation, original Records unchanged and explicit actor retained. Tests added before further implementation; no production changes planned. Action reuse assessment: test-only verification of existing delivery operation, selected connector lookup, adapter lifecycle and OpenAIStub.start!; no new operations/Actions/tools/frameworks. Runtime dependency uses approved VM-only sibling loading with source/capability assertions. Existing tests, latest native-file-only UI visibility and dedicated email UI scope remain unchanged. Targeted tests and mix q only; no known-failing broad precommit rerun for this addition.",
+      "timestamp": "2026-11-10T14:06:14Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc.4] Wire connector policy and truthful capability-aware UI",
   "type": "task",
-  "updated_at": "2026-11-10T13:42:22Z"
+  "updated_at": "2026-11-10T14:06:14Z"
 }
