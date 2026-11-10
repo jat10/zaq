@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-ucc.4"
   ],
+  "closed_at": "2026-11-10T13:36:39Z",
+  "close_reason": "Preparation/email/confirmation implementation validated with focused tests and quality; final integration tracked separately.",
   "created": "2026-11-10T13:18:36Z",
   "description": "Functional specifications/files: DeliveryFiles and EmailBridge; extend prepare/3 opt without changing absent-option tuple contract; continue retains successes and safe failures, abort stops before SMTP. Tests to add first: mixed/all fail continue, abort no send, stable order/content property, authorization/source preservation, one SMTP attempt and uncertain no-resend. Branches: no files, partial/all preparation failure, SMTP failure. Mocking: existing materialization router/SMTP edge doubles. Documentation: Channels guide final step. Action reuse: DeliveryFiles.prepare_record, Materialization.materialize, validated DecodeBase64 execution retained; local preparation is transport adaptation, not a separate Action. TrustedContext unchanged; original files never modified. No new tool exposure.",
   "id": "zaq-ucc.3",
@@ -22,8 +24,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc] Apply preparation policy to one email submission",
   "type": "task",
-  "updated_at": "2026-11-10T13:36:38Z"
+  "updated_at": "2026-11-10T13:36:39Z"
 }
