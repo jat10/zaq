@@ -10,11 +10,15 @@
     {
       "text": "User requested updating the issue after review of the contract audit. Revised design: ZAQ selects a provider-neutral continue/abort policy and passes it through existing send/edit options; adapters enforce it before publication and return structured outcomes. Supersedes upload -\u003e return control to ZAQ -\u003e publish. Explicit policy capability is independent of edit_message/edit_attachments. Strict mode must complete uploads for all planned posts before first publication. No code changed; stop-and-report constraint retained.",
       "timestamp": "2026-11-10T13:14:18Z"
+    },
+    {
+      "text": "Implementation authorized by user via supervising parent. Exclusive ownership of current ZAQ and sibling worktrees provides delegation isolation; parent approved staying in place and will perform read-only supervision. Existing dirty UI/test files preserved. Dependency graph: zaq-ucc.1 → zaq-ucc.2 → zaq-ucc.3 → zaq-ucc.4 → zaq-ucc.5 → zaq-ucc.6 → zaq-ucc.7. Sequential DAG; only contract audit ready; implementation tests precede edits. Existing UI visibility expectations remain unchanged because file-only adapters do not declare policy support.",
+      "timestamp": "2026-11-10T13:18:50Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T13:18:49Z"
+  "updated_at": "2026-11-10T13:18:50Z"
 }
