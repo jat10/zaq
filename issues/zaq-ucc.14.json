@@ -9,9 +9,15 @@
   "id": "zaq-ucc.14",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Implemented approved report-boundary correction. Mattermost normalizes failed_files at all three existing structured report builders (strict abort, failed first publication, partial success including nil-policy legacy); raw legacy top-level reasons unchanged. Neutral atom/HTTP categories preserve timeout, stage/delivery, preflight filename-size-limit and confirmed upload-prefix IDs; no lifecycle/resend changes. ZAQ bridge removed Req/raw HTTP interpretation, validates reported atom or http_error category and applies safe projection consistently to successful and error reports; DeliveryError struct/Inspect unchanged. Docs correct native adapter multi-file delivery versus Jido fallback restriction, and describe safe category/stage-default contract. Reuse: extended existing private report builders/helper only; local-only transport bookkeeping, no new Action/tool/event/public module. New adapter regressions first failed3 cases then green; new ZAQ matrix covers40 raw/normalized x policy x create/edit scenarios. Authorized existing strict HTTP expectation now neutral http_error413 plus explicit body-absence check; original zero-publication/callback/confirmation, successful-prefix and identity assertions retained.",
+      "timestamp": "2026-11-10T16:57:23Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Normalize adapter attachment failure reports at provider boundary",
   "type": "task",
-  "updated_at": "2026-11-10T16:47:45Z"
+  "updated_at": "2026-11-10T16:57:23Z"
 }
