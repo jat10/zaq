@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-10T19:15:50Z",
+  "description": "Deferred finding 3 approved. Reuse Record.attachment_metadata with prepared SMTP descriptors; shared confirmation fallback drops source ID and private attributes while preserving provider receipt metadata. Existing Engine receipt route unchanged, no new Action. User explicitly approved updating existing receipt expectations. Validate red then green unit/property and real channel journey privacy coverage.",
+  "id": "zaq-ucc.24",
+  "labels": [],
+  "parent": "zaq-ucc",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ucc] Exclude source IDs from confirmed SMTP attachments",
+  "type": "bug",
+  "updated_at": "2026-11-10T19:15:50Z"
+}
