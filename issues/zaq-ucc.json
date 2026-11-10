@@ -78,11 +78,15 @@
     {
       "text": "zaq-ucc.16 complete: confirmed SMTP selected attachment display metadata now crosses receipt boundary and persists in recipient transcript, with source locators/private fields removed and existing provider media evidence authoritative. Parent-authored red test now green unchanged; focused61checks plus parent independent17checks and q passed. Existing final precommit remains pending. No commit/push.",
       "timestamp": "2026-11-10T17:16:03Z"
+    },
+    {
+      "text": "Review fixes 1, 2 and 4 implemented in current working tree (zaq-ucc.17/.18/.19). Finding 3/source document IDs explicitly deferred by user; privacy test unchanged. Validation: mix q passed; 206 focused checks passed (7 properties, 199 tests); pre-fix isolated SMTP regressions 1/4 passed with three expected failures; restored final SMTP regressions 4/4 passed. Generic bridge regression also failed against old API and passed in focused run. Initial precommit formatting issue corrected. Final precommit exceeded 15-minute execution/tool limit without a recoverable result; no full-gate success claimed. No commit/push. Logs /tmp/zaq-review-fixes-focused.log, /tmp/zaq-review-fixes-q-final.log, /tmp/zaq-review-fixes-before-email.log, /tmp/zaq-review-fixes-restored.log. The precommit-final log retains the earlier formatting failure and is NOT the result of the timed-out rerun.",
+      "timestamp": "2026-11-10T18:33:19Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T17:16:03Z"
+  "updated_at": "2026-11-10T18:33:19Z"
 }
