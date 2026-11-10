@@ -34,11 +34,15 @@
     {
       "text": "SMTP iteration complete and independently verified by parent. Exactly three new generated delivery scenarios (true, false, missing/default-on) each exercise direct SMTP and an IMAP-bound route with conflicting inbound policy, actual persisted connectors, Api -\u003e EmailBridge -\u003e SmtpSender -\u003e local SMTP fixture, parsed MIME/envelope and safe reports. On/default submits one original email per attempt with only usable file; false returns not_sent and captures no SMTP message or confirmation. Original IMAP/history routing identity remains intact; same outbound SMTP ID/policy is frozen in details and exact-ID submission revalidation retained. Existing selection clauses/default precedence and direct-bridge behavior remain unchanged. Switch added to existing Advanced SMTP through existing EmailConfig/EmailConnectorSettings persistence and shared DesignSystem.Switch; default-on and both save/reopen values tested; IMAP UI untouched. User-corrected general channel native-file-only visibility preserved. Agent main focused run: 163 passed (3 properties,160 tests); additional SMTP sender/config-less notification selection regressions: 39 passed; mix q and diff --check passed. Parent independently reran the seven focused suites: 163 passed (3 properties,160 tests), log /tmp/zaq-ucc-smtp-parent-validation.log, and reviewed diff/selection/UI. Agent logs: /tmp/zaq-ucc-smtp-focused.log, /tmp/zaq-ucc-smtp-selection.log, /tmp/zaq-ucc-smtp-quality.log. No old assertions modified, no broad precommit rerun, no commit/push/pin change. Prior old-test approval/dependency/final-gate work remains open under .4/.5.",
       "timestamp": "2026-11-10T14:30:50Z"
+    },
+    {
+      "text": "Delivery failure persistence audit recorded in zaq-ucc.11. No code changed. Canonical assistant answer is persisted before transport, but strict failures are currently discarded by DeliveryConfirmation pass-through; there is no failure operation. Existing public transcript placement requires confirmed delivery/audience. Supervisor stopped implementation under user no-drift rule pending confirmation of private delivery-outcome metadata on the existing assistant, with distinct failed placement/display deferred. Do not treat this as an approved failure contract or a completion claim.",
+      "timestamp": "2026-11-10T14:55:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T14:30:50Z"
+  "updated_at": "2026-11-10T14:55:18Z"
 }
