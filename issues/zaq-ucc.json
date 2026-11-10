@@ -86,11 +86,15 @@
     {
       "text": "Read-only function reuse review completed; report /tmp/zaq-pr-reuse-review.txt. R1 medium: AttachDocuments manually builds event opts and drops trusted bridge override/skip_permissions; temporary Jido.Exec probe confirmed both absent, source test removed, log /tmp/zaq-reuse-context-probe.log. R2 low: Email outbound lookup rereads already selected connector. R3 low: local_transport_opts duplicates AdapterOptions transport propagation. R4 low: SMTP LiveView duplicates Engine snapshot form_config, pre-existing duplication expanded by toggle. No implementation or external comments; finding 3 still deferred.",
       "timestamp": "2026-11-10T18:59:15Z"
+    },
+    {
+      "text": "Applied reuse findings R1-R4. Validation: mix q passed; combined scoped regression suite passed 261 checks (10 properties, 251 tests) in 101.9s, log /tmp/zaq-reuse-four-regression.log; git diff --check passed. Added only new regression tests, no existing assertions changed for these four fixes. Existing routes/callback contracts retained; no new Actions. Earlier deferred source-ID/privacy finding remains untouched. Full precommit has not been re-run for this iteration; prior run timed out. Changes remain uncommitted.",
+      "timestamp": "2026-11-10T19:10:17Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T18:59:15Z"
+  "updated_at": "2026-11-10T19:10:17Z"
 }
