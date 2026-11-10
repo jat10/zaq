@@ -3,6 +3,7 @@
   "blocked_by": [
     "zaq-ucc.12",
     "zaq-ucc.13",
+    "zaq-ucc.14",
     "zaq-ucc.4",
     "zaq-ucc.8",
     "zaq-ucc.9"
@@ -33,5 +34,5 @@
   "status": "open",
   "title": "[zaq-ucc.5] Validate attachment policy contracts and update owner documentation",
   "type": "task",
-  "updated_at": "2026-11-10T16:25:44Z"
+  "updated_at": "2026-11-10T16:47:45Z"
 }
