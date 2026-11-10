@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-ucc.3"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-ucc.5"
+  ],
   "created": "2026-11-10T13:18:37Z",
   "description": "Functional specifications/files: Bridge/Api/JidoChatBridge/AdapterOptions, capability snapshot and existing ChannelsLive template. Normalize selected connector send_on_file_failure default true once at delivery owner and carry stable policy. Explicit policy support independent of edit capabilities. Suppress abort/handled-policy fallback; preserve confirmation and callbacks. Tests to add first: connector selection/default/false, unsupported strict zero effects, create/edit option propagation, successful-only confirmation and no resend, UI hide for file-only adapters. Existing behavior assertion changes require exact human approval; do not edit pending assertions. Branches text-only, default/on/off, create/update, unsupported, failure reporting. Mocking existing edge transports/config seams. Documentation final step. Action reuse: extend existing connection resolution/send/upsert/DeliveryConfirmation, no provider module in Api; no new Actions or dispatch lifecycle. E2E scope tracked separately after UX approval.",
   "id": "zaq-ucc.4",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-ucc] Wire connector policy and truthful capability-aware UI",
   "type": "task",
-  "updated_at": "2026-11-10T13:18:44Z"
+  "updated_at": "2026-11-10T13:18:45Z"
 }
