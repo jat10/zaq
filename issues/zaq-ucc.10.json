@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [
     "zaq-ucc.9"
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-ucc",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-ucc.10] Freeze actual outbound SMTP connector and attachment policy",
   "type": "task",
-  "updated_at": "2026-11-10T14:22:50Z"
+  "updated_at": "2026-11-10T14:22:51Z"
 }
