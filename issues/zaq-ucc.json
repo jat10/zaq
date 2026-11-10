@@ -90,11 +90,15 @@
     {
       "text": "Applied reuse findings R1-R4. Validation: mix q passed; combined scoped regression suite passed 261 checks (10 properties, 251 tests) in 101.9s, log /tmp/zaq-reuse-four-regression.log; git diff --check passed. Added only new regression tests, no existing assertions changed for these four fixes. Existing routes/callback contracts retained; no new Actions. Earlier deferred source-ID/privacy finding remains untouched. Full precommit has not been re-run for this iteration; prior run timed out. Changes remain uncommitted.",
       "timestamp": "2026-11-10T19:10:17Z"
+    },
+    {
+      "text": "Committed and pushed authorized review/reuse/privacy fixes as 5e9891a83 to origin/feat/channel-files. Commit quality and message hooks and pre-push format hook passed. Latest reported stale SMTP assertion fixed; its focused 23-check suite passed. Working tree clean.",
+      "timestamp": "2026-11-10T19:32:13Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T19:10:17Z"
+  "updated_at": "2026-11-10T19:32:13Z"
 }
