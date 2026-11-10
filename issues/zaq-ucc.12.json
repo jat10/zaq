@@ -9,9 +9,15 @@
   "id": "zaq-ucc.12",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Implemented 8 generated connected real RunAgent -\u003e NotifyPerson workflows: email/Mattermost saved false/true/missing settings; strict Mattermost then permissive email wins; strict email then strict Mattermost exhausts. Two authorized Disk Records selected before model pause; revoke B, retain usable A. Assert strict zero publication, safe persisted per-attempt errors, final status/NotifyPerson step failure or success, unchanged source bytes/selected IDs, and render actual persisted rows/errors in existing NotificationLogsLive. Revised only approved four default-on denial and two revoked-source journeys. First 8-case run green. Full focused run initially found a real partial-email confirmation bug: formatted HTML receipt body replaced canonical assistant text and History capture returned source_conflict. Supervisor approved focused correction: unsplit email omits per-part body, DeliveryConfirmation defaults absent body to original canonical outgoing body; explicit split-chat part bodies unchanged. New confirmation regression added; real revoked-email journey retains persistence wait and same assistant UUID/body assertions. Current full focused result 83 passed (3 properties,80 tests), log /tmp/zaq-ucc-workflow-fixed.log. Final q and affected email checks in progress. Transcript failure persistence remains deferred (zaq-ucc.11).",
+      "timestamp": "2026-11-10T15:14:43Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Verify workflow attachment policy and notification-center outcomes",
   "type": "task",
-  "updated_at": "2026-11-10T15:06:11Z"
+  "updated_at": "2026-11-10T15:14:43Z"
 }
