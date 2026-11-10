@@ -50,11 +50,15 @@
     {
       "text": "Callback-only validation implemented in JidoChatBridge: delegate validate_files/2 if exported, otherwise :ok; capability gate removed. Focused existing expectation updated per explicit user direction; service contract corrected. Validation: mix q passed, file_validation_test 9 passed (1 property, 8 tests), git diff --check clean.",
       "timestamp": "2026-11-10T15:23:59Z"
+    },
+    {
+      "text": "Published adapter feature to origin/fix/attachment-edit-history at 0a3cae00300e11511d6c80ffb48f90f7cdb7bcde as explicitly authorized. Sibling mix q and 223 unit tests passed (16 integration excluded). Updated ZAQ mix.exs to exact ref and refreshed mix.lock using mix deps.get; only Mattermost lock entry changed. Normal pinned dependency validation now passes: mix q, 107 focused checks (5 properties,102 tests), and 2 strict Mattermost HTTP create/edit tests. No VM override needed. ZAQ changes remain uncommitted; no full precommit claim.",
+      "timestamp": "2026-11-10T15:27:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T15:23:59Z"
+  "updated_at": "2026-11-10T15:27:28Z"
 }
