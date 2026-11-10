@@ -19,11 +19,15 @@
     {
       "text": "JidoChatBridge now implements the shared delivery_connection/2 callback and resolves selected-connector policy through Settings.attachment_failure_policy, preserving existing explicit policy and transport options. Email uses the same API dispatch step with its SMTP binding implementation. New property covers false/true/form/default values plus connection preservation; explicit-policy test added. Validation: 56 focused checks passed (4 properties, 52 tests), covering Mattermost delivery and real SMTP/history flows. mix q passed. Existing test expectations unchanged. Prior full precommit remains unverified after timeout; source ID finding 3 remains deferred. No commit/push.",
       "timestamp": "2026-11-10T18:39:37Z"
+    },
+    {
+      "text": "User requests removal of delivery_connection callback and reuse of existing fetch_connection_details_for_config. Reuse assessment: extend existing lookup with an outbound arity accepting outgoing/resolver options and returning tagged result; preserve one-argument projection for ingress and existing callers. Bridge default reuses the resolver projection; EmailBridge overrides the outbound lookup to bind SMTP via existing selector. Jido inherits shared lookup, no separate hook. Fold into existing API delivery_connection selection; remove second callback dispatch. Existing callback-specific test updates requested for approval. Preserve fixes 1/4 and defer finding 3.",
+      "timestamp": "2026-11-10T18:45:51Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Keep outbound connector resolution bridge owned",
   "type": "task",
-  "updated_at": "2026-11-10T18:39:37Z"
+  "updated_at": "2026-11-10T18:45:51Z"
 }
