@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-ucc.6"
+  ],
   "blocks": [],
   "created": "2026-11-10T13:18:41Z",
   "description": "Deferred until explicit human UX/UI approval: connector setting default/on/off/save/reopen and capability unsupported visibility, outgoing partial/all failure behavior where existing E2E fixture seams permit. Do not author before gate approval. Extend existing journey fixtures only; preserve existing assertions unless separately approved. Action reuse existing BO events and delivery paths, no parallel operations. Final feature remains open until approved E2E scope validated.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-ucc] Finalize approved attachment policy browser E2E",
   "type": "task",
-  "updated_at": "2026-11-10T13:18:41Z"
+  "updated_at": "2026-11-10T13:18:47Z"
 }
