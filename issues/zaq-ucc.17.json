@@ -7,9 +7,15 @@
   "id": "zaq-ucc.17",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Implemented canonical answer preservation for successful fallback confirmation. User explicitly approved changing the existing history-body assertion; transport notice assertions preserved. New real SMTP plus Engine/DB test checks stored confirmation and transcript placement. Focused combined run: 206 passed (7 properties, 199 tests). Final checks pending; finding 3 remains deferred.",
+      "timestamp": "2026-11-10T18:15:14Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Preserve canonical fallback delivery confirmation",
   "type": "bug",
-  "updated_at": "2026-11-10T18:08:32Z"
+  "updated_at": "2026-11-10T18:15:14Z"
 }
