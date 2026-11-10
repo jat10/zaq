@@ -23,11 +23,15 @@
     {
       "text": "User requests removal of delivery_connection callback and reuse of existing fetch_connection_details_for_config. Reuse assessment: extend existing lookup with an outbound arity accepting outgoing/resolver options and returning tagged result; preserve one-argument projection for ingress and existing callers. Bridge default reuses the resolver projection; EmailBridge overrides the outbound lookup to bind SMTP via existing selector. Jido inherits shared lookup, no separate hook. Fold into existing API delivery_connection selection; remove second callback dispatch. Existing callback-specific test updates requested for approval. Preserve fixes 1/4 and defer finding 3.",
       "timestamp": "2026-11-10T18:45:51Z"
+    },
+    {
+      "text": "Removed shared delivery_connection callback and Email/Jido implementations. Consolidated attachment lookup into existing API delivery_connection selection using fetch_connection_details_for_config/2; one-argument map projection unchanged. Base Bridge reuses configured resolver and normalizes policy; Email override binds SMTP and calls super; Jido inherits default. No separate callback dispatch or concrete email dependency in API. 55 focused checks passed (3 properties, 52 tests), including new ingress-versus-outbound binding regressions. Callback-specific existing test updates await explicit user approval requested asynchronously; do not claim entire suite passes while those still reference removed API. Finding 3 remains deferred.",
+      "timestamp": "2026-11-10T18:49:17Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Keep outbound connector resolution bridge owned",
   "type": "task",
-  "updated_at": "2026-11-10T18:45:51Z"
+  "updated_at": "2026-11-10T18:49:17Z"
 }
