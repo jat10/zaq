@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-10T19:01:52Z",
+  "description": "R3 remove local_transport_opts forwarding duplicated by AdapterOptions.build. Inspect create_message callers and preserve explicit per-call overrides where used. Reuse current send/edit adapter path and run delivery regressions; no new Action or callback.",
+  "id": "zaq-ucc.22",
+  "labels": [],
+  "parent": "zaq-ucc",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ucc] Consolidate Jido transport options",
+  "type": "task",
+  "updated_at": "2026-11-10T19:01:52Z"
+}
