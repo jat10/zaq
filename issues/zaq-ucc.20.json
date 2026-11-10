@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-10T19:01:50Z",
+  "description": "R1 reuse TrustedContext.event_builder_opts in AttachDocuments existing validation event. Preserve actor, allowlisted event opts and local runtime dependencies. No new Action or delivery route. Add regression for forwarded trusted context and omitted content; preserve existing tests.",
+  "id": "zaq-ucc.20",
+  "labels": [],
+  "parent": "zaq-ucc",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ucc] Reuse trusted context for attachment validation",
+  "type": "bug",
+  "updated_at": "2026-11-10T19:01:50Z"
+}
