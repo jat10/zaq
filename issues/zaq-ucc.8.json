@@ -4,6 +4,8 @@
   "blocks": [
     "zaq-ucc.5"
   ],
+  "closed_at": "2026-11-10T14:30:56Z",
+  "close_reason": "Implemented, mix q and focused tests passed, independently reviewed and validated by supervising parent; overall feature finalization remains open.",
   "created": "2026-11-10T14:19:17Z",
   "description": "User explicitly authorized adding existing DesignSystem.Switch to NotificationSmtpLive Advanced SMTP form; no IMAP UI or unrelated layout/CSS/credential changes. Files: notification_smtp_live.html.heex, existing EmailConfig embedded schema/cast, NotificationSmtpLive current form projection, EmailConnectorSettings SMTP projection/persistence; lean new LiveView save/reopen test. Tests before implementation: default checked for absent setting; false/true save and reopen exact selected connector while retaining relay, enabled state and unrelated connector. Branches: missing/default-on and both bool/form values. Mocking: existing UI fixture boundary only, actual settings persistence/Engine event. Documentation: Channels owner guide updated for SMTP UI availability. Action reuse: extend existing SaveEmailConnector Action -\u003e EmailConnectorSettings persistence and Switch story setting_row; no new Action/tool, no direct BO domain call. Existing credential encryption and dispatch preserved. Native-file-only general channel toggle untouched. Browser E2E unnecessary for this small form extension; LiveView persistence covers the flow. Targeted tests + mix q; parent independently validates. Existing test behavior approval remains pending.",
   "id": "zaq-ucc.8",
@@ -16,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc.8] Add persisted attachment failure switch to SMTP settings",
   "type": "task",
-  "updated_at": "2026-11-10T14:30:52Z"
+  "updated_at": "2026-11-10T14:30:56Z"
 }
