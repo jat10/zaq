@@ -28,11 +28,15 @@
     {
       "text": "Scoped zaq-ucc.13 test fixes complete and independently green166; q green. Final full validation remains INCOMPLETE: fresh-cache normal precommit failed before ExUnit on unresolved Ecto DB connection acquisition timeout, /tmp/zaq-ucc-precommit-four-fixed.log. No full-suite result exists for this attempt; do not infer gate success from focused tests. Supervisor requested no further run/investigation this turn.",
       "timestamp": "2026-11-10T16:25:44Z"
+    },
+    {
+      "text": "Review fix zaq-ucc.14 locally validated and closed; normal published pin0a3cae0 still lacks new adapter failure normalization. Publication/pin update requires separate authorization before final deployable gate. Parent independent VM-loaded42checks and agent48checks plus both q gates green. Full precommit remains unexecuted for this correction due known DB blocker; do not claim final gate complete.",
+      "timestamp": "2026-11-10T16:57:28Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-ucc.5] Validate attachment policy contracts and update owner documentation",
   "type": "task",
-  "updated_at": "2026-11-10T16:47:45Z"
+  "updated_at": "2026-11-10T16:57:28Z"
 }
