@@ -26,11 +26,15 @@
     {
       "text": "User correction: toggle visibility must follow send-file capability, not attachment_failure_policy. Removed the policy-support visibility gate and updated the service guide; runtime capability enforcement remains unchanged. Action reuse: not applicable to this correction, which changes only rendering eligibility. Existing tests are not being modified without approval.",
       "timestamp": "2026-11-10T13:58:59Z"
+    },
+    {
+      "text": "Visibility correction validated: mix q passed; ChannelsLive suite 74/76 passed. Both toggle visibility/persistence tests now pass unchanged. The two legacy assertions requiring Advanced settings hidden for file-capable adapters without configurable upload size conflict with the latest requested behavior and remain untouched pending test-expectation approval. Runtime enforcement still requires policy-capable adapter; no dependency pin changed.",
+      "timestamp": "2026-11-10T14:00:07Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T13:58:59Z"
+  "updated_at": "2026-11-10T14:00:07Z"
 }
