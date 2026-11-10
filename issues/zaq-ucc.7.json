@@ -4,14 +4,16 @@
     "zaq-ucc.6"
   ],
   "blocks": [],
+  "closed_at": "2026-11-10T13:20:21Z",
+  "close_reason": "No new browser journey required; immediate LiveView, property, and transport integration coverage is sufficient for this scope.",
   "created": "2026-11-10T13:18:41Z",
   "description": "Deferred until explicit human UX/UI approval: connector setting default/on/off/save/reopen and capability unsupported visibility, outgoing partial/all failure behavior where existing E2E fixture seams permit. Do not author before gate approval. Extend existing journey fixtures only; preserve existing assertions unless separately approved. Action reuse existing BO events and delivery paths, no parallel operations. Final feature remains open until approved E2E scope validated.",
   "id": "zaq-ucc.7",
   "labels": [],
   "parent": "zaq-ucc",
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "[zaq-ucc] Finalize approved attachment policy browser E2E",
   "type": "task",
-  "updated_at": "2026-11-10T13:18:47Z"
+  "updated_at": "2026-11-10T13:20:21Z"
 }
