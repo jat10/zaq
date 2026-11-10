@@ -9,9 +9,15 @@
   "id": "zaq-ucc.11",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "User explicitly deferred transcript failure persistence in favor of connected notification workflow coverage. Audit remains evidence only; no code changes or failed transcript association authorized.",
+      "timestamp": "2026-11-10T15:06:01Z"
+    }
+  ],
   "priority": 2,
   "status": "deferred",
   "title": "[zaq-ucc.11] Confirm backend delivery failure persistence contract",
   "type": "task",
-  "updated_at": "2026-11-10T15:05:59Z"
+  "updated_at": "2026-11-10T15:06:01Z"
 }
