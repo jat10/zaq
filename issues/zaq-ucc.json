@@ -70,11 +70,15 @@
     {
       "text": "PR876 review completed without source edits or pushes. Report /tmp/zaq-ucc-pr-review.txt. Medium boundary finding: new generic Jido bridge safe_file_failure_reason classifies raw HTTP and Req.TransportError; probe proved already-normalized {:http_error,413} is degraded to :attachment_delivery_failed. Recommend adapter-owned safe report categories. Low documentation finding: channels guide line536 incorrectly says all Jido multi-file delivery is rejected; native Mattermost splits15 files. No newly proven send/authorization/persistence defect. Two adversarial probes passed (strict error safe in NotificationLog; source RPC failure plus usable sibling honors both policies), third supports classification finding. Probe source removed. Full precommit remains blocked before ExUnit; no final approval claim.",
       "timestamp": "2026-11-10T16:44:14Z"
+    },
+    {
+      "text": "User authorized committing all current ZAQ changes except browsing_test.exs. Created d531d4e84 feat(channels): enforce attachment failure policy (zaq-ucc), 26 files. Commit hooks qf and commit message check passed. Browsing test fix remains uncommitted; no push. Overall full precommit remains outstanding.",
+      "timestamp": "2026-11-10T17:04:55Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T16:44:14Z"
+  "updated_at": "2026-11-10T17:04:55Z"
 }
