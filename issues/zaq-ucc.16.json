@@ -15,11 +15,15 @@
     {
       "text": "Parent authored integration regression in test/zaq/engine/history/delivery_test.exs:157 and ran it before delegation. It fails exactly at persisted message.attachments == expected: actual [] vs confirmed first.txt and last.txt descriptors; history_capture was stored. Test also asserts recipient transcript readback, private-data exclusion and idempotent replay. Red evidence /tmp/zaq-ucc-email-transcript-red.log. GPT-6.1 Sol implementation agent now assigned; parent remains independent reviewer.",
       "timestamp": "2026-11-10T17:11:23Z"
+    },
+    {
+      "text": "Parent-authored persistence regression reproduced red before delegation (/tmp/zaq-ucc-email-transcript-red.log); after sole DeliveryConfirmation helper fix it passes unchanged: mix test test/zaq/engine/history/delivery_test.exs:157 =\u003e1passed6excluded (/tmp/zaq-ucc-email-transcript-green.log). Explicit delivered_attachment_indices select original Records; Record.attachment_metadata provides bounded durable fields; strip projected attributes so original source locator never becomes SMTP delivered-media source; Map.put_new preserves existing provider receipt attachments including empty evidence. Original transient outgoing Records/handles remain unchanged apart from content clearing. No Engine fallback, provider module, new lifecycle or remote SMTP reference. Approved SMTP assertion updated; new original-order/subset/duplicate/out-of-range/malformed-index property, source/private exclusion and provider-evidence precedence tests. Normal dependency focused61passed(5properties56tests),20.5s (/tmp/zaq-ucc-email-transcript-focused.log); final q in progress. Parent regression assertion intent unchanged; only formatting allowed.",
+      "timestamp": "2026-11-10T17:14:54Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Preserve confirmed email attachments in transcript receipts",
   "type": "bug",
-  "updated_at": "2026-11-10T17:11:23Z"
+  "updated_at": "2026-11-10T17:14:54Z"
 }
