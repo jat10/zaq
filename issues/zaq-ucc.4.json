@@ -19,11 +19,15 @@
     {
       "text": "User explicitly requested new integrated strict-mode HTTP coverage via supervisor. Functional spec: two new create/placeholder variants in existing jido_chat_delivery_test.exs; persist selected connector send_on_file_failure=false plus competing permissive connector; dispatch actual Api -\u003e JidoChatBridge -\u003e real Mattermost adapter -\u003e ReqClient -\u003e existing local HTTP fixture. First ten-file group uploads successfully, second one-file group fails HTTP 413. Assert not_sent, no published messages, retained ten upload IDs, exactly two uploads/no duplicates, zero message POST/PUT/PATCH, no callback or confirmation, original Records unchanged and explicit actor retained. Tests added before further implementation; no production changes planned. Action reuse assessment: test-only verification of existing delivery operation, selected connector lookup, adapter lifecycle and OpenAIStub.start!; no new operations/Actions/tools/frameworks. Runtime dependency uses approved VM-only sibling loading with source/capability assertions. Existing tests, latest native-file-only UI visibility and dedicated email UI scope remain unchanged. Targeted tests and mix q only; no known-failing broad precommit rerun for this addition.",
       "timestamp": "2026-11-10T14:06:14Z"
+    },
+    {
+      "text": "New user-requested integrated strict HTTP coverage complete in test/zaq/channels/jido_chat_delivery_test.exs:223 (two generated create/edit cases) and private strict_upload_server fixture helper. Selected connector persists send_on_file_failure=false; a later enabled permissive connector has another URL/token. Tests dispatch default actual Api -\u003e Bridge lookup -\u003e JidoChatBridge -\u003e real Mattermost adapter -\u003e production ReqClient -\u003e existing OpenAIStub.start! loopback HTTP server. Tiny files with 64000-byte limit intentionally produce one ten-file upload request (201) followed by one eleventh-file upload request (413). Assertions positively inspect both multipart filename sequences, retain ten provider upload IDs, require not_sent/upload-stage error and no published messages, reject all extra HTTP requests including POST /posts and every PUT/PATCH, and require no callback job/confirmation dispatch. Original Records and explicit actor remain intact. Final mix q passed and git diff --check passed. Final VM sibling run: 2 passed, 34 excluded; command MIX_ENV=test mix run --no-start /tmp/zaq-ucc-cross-repo.exs test/zaq/channels/jido_chat_delivery_test.exs:230; log /tmp/zaq-ucc-strict-http-sibling.log. Standard pinned run correctly fails both positive-upload assertions at unsupported strict policy because current adapter pin lacks the capability; log /tmp/zaq-ucc-strict-http-pinned.log. No production/sibling/UI changes, no old assertion changes, no framework/dependency pin/publication. Preserved latest user UI rule: native file-send capability alone controls toggle visibility. No broad precommit rerun for this test-only addition; prior pending test approvals and final feature gate remain open.",
+      "timestamp": "2026-11-10T14:09:16Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc.4] Wire connector policy and truthful capability-aware UI",
   "type": "task",
-  "updated_at": "2026-11-10T14:06:14Z"
+  "updated_at": "2026-11-10T14:09:16Z"
 }
