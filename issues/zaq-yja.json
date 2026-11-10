@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-10T19:46:15Z",
@@ -7,8 +7,8 @@
   "id": "zaq-yja",
   "labels": [],
   "priority": 1,
-  "status": "open",
+  "status": "in_progress",
   "title": "Fix NotifyPerson attachment alias expansion",
   "type": "bug",
-  "updated_at": "2026-11-10T19:46:15Z"
+  "updated_at": "2026-11-10T19:46:41Z"
 }
