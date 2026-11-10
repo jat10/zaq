@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-ucc.1"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-ucc.3"
+  ],
   "created": "2026-11-10T13:18:35Z",
   "description": "Functional specifications/files: adapter.ex and transport/req_client.ex; optional policy branch inside existing send/edit lifecycle. Strict upload all planned groups before any post/update. Continue retains confirmed uploads/files after preparation/upload failure. Preserve old behavior when option absent. Tests to add first: mixed/all rejection, later group upload failure no strict publication, partial batch results, no duplicate upload, edit policy, partial/uncertain publication, default compatibility. Branches: prep/upload/create/edit/exception, ordered identity/report accuracy. Mocking: async FakeTransport, HTTP edge transport tests existing seams. Documentation: adapter contract at final step. Action reuse: extend existing private upload/planning/publication helpers and delivery_report, transport returns partial uploaded results only for explicit policy; no public upload API, no ZAQ types/callbacks. Credentials and transport stay existing opts; no retries.",
   "id": "zaq-ucc.2",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-ucc] Enforce Mattermost attachment policy inside existing delivery",
   "type": "task",
-  "updated_at": "2026-11-10T13:18:42Z"
+  "updated_at": "2026-11-10T13:18:43Z"
 }
