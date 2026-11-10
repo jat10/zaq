@@ -1,6 +1,8 @@
 {
   "assignee": "Jad",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-ucc.10"
+  ],
   "blocks": [
     "zaq-ucc.5"
   ],
@@ -13,5 +15,5 @@
   "status": "in_progress",
   "title": "[zaq-ucc.9] Verify SMTP attachment policy with three real MIME integration cases",
   "type": "task",
-  "updated_at": "2026-11-10T14:19:23Z"
+  "updated_at": "2026-11-10T14:22:50Z"
 }

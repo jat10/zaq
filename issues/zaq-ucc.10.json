@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-ucc.9"
+  ],
   "created": "2026-11-10T14:22:48Z",
   "description": "Focused correction approved by supervising parent after concrete ownership audit. Existing Api projection reads original routing connector, which may be IMAP, while EmailBridge selects another outbound SMTP. Extend existing email selector owner as reply_smtp_config/1 returning selected SMTP config or nil/default plus existing DeliveryError; no generic lifecycle hook. Api resolves once before policy, freezes smtp_config_id and policy in existing details, retains original IMAP routing/history ID; EmailBridge consumes same frozen ID; SmtpSender keeps exact-ID revalidation. Preserve explicit binding/sole/default selection precedence and direct bridge error behavior. Tests before implementation: expand each of three new SMTP on/off/missing scenarios to include IMAP-bound route with conflicting inbound policy, keeping actual SMTP envelope/MIME and no-send assertions. Dependencies: this correction before completing .9; UI .8 independent. Action reuse: extend existing reply_smtp_config_id selection logic and current connection/details flow; no provider module/HTTP/SMTP mechanics in Api, no new Actions/tools/framework/retry. Documentation: Channels guide selection/policy ownership. Targeted selection/email tests and mix q; old expectations untouched; no broad precommit rerun.",
   "id": "zaq-ucc.10",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-ucc.10] Freeze actual outbound SMTP connector and attachment policy",
   "type": "task",
-  "updated_at": "2026-11-10T14:22:48Z"
+  "updated_at": "2026-11-10T14:22:50Z"
 }
