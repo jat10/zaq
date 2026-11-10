@@ -9,9 +9,15 @@
   "id": "zaq-ucc.1",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Live SDK audit: Thread.post retains arbitrary options, Adapter.post_message only drops scope, edit path passes options unchanged; normalized Response preserves metadata and bridge retains raw edit result. CapabilityMatrix preserves extension atoms; validate_capabilities skips unknown callback keys. No SDK edits required. Added wrapper-level adapter policy tests before implementation.",
+      "timestamp": "2026-11-10T13:20:18Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-ucc.1] Verify existing policy option and capability contracts",
   "type": "task",
-  "updated_at": "2026-11-10T13:20:17Z"
+  "updated_at": "2026-11-10T13:20:18Z"
 }
