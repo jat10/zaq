@@ -15,11 +15,15 @@
     {
       "text": "User clarified shared delivery_connection contract must be used by JidoChatBridge as well as EmailBridge. Extend JidoChatBridge to resolve the selected connector attachment policy via existing Settings helper, preserving explicit connection policy and transport options. Keep optional fallback for other bridges. Reuse existing send_reply and adapter validation/upload paths. Add new contract property tests; preserve existing expectations. Continue authorized uncommitted fixes; finding 3 remains deferred.",
       "timestamp": "2026-11-10T18:37:39Z"
+    },
+    {
+      "text": "JidoChatBridge now implements the shared delivery_connection/2 callback and resolves selected-connector policy through Settings.attachment_failure_policy, preserving existing explicit policy and transport options. Email uses the same API dispatch step with its SMTP binding implementation. New property covers false/true/form/default values plus connection preservation; explicit-policy test added. Validation: 56 focused checks passed (4 properties, 52 tests), covering Mattermost delivery and real SMTP/history flows. mix q passed. Existing test expectations unchanged. Prior full precommit remains unverified after timeout; source ID finding 3 remains deferred. No commit/push.",
+      "timestamp": "2026-11-10T18:39:37Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Keep outbound connector resolution bridge owned",
   "type": "task",
-  "updated_at": "2026-11-10T18:37:39Z"
+  "updated_at": "2026-11-10T18:39:37Z"
 }
