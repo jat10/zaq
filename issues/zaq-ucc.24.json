@@ -11,11 +11,15 @@
     {
       "text": "Implemented source-ID boundary fix: SMTP receipts are projected solely from prepared display descriptors; removed original outgoing argument. Shared fallback excludes source id and attributes, leaving explicit provider receipts authoritative. User approved existing expectation updates. Red proof: 1 property + 3 tests failed on source IDs before fix. Green: 90 checks including real SMTP/Mattermost agent journeys, plus 29 policy/history regression checks (overlapping confirmation suite); existing Mattermost destination IDs preserved. Moved touched mocked-callback assertions outside production rescue to make failures observable. mix q and git diff --check passed. No new route, callback or Action; Engine unchanged. No commit/push; full precommit not rerun.",
       "timestamp": "2026-11-10T19:19:35Z"
+    },
+    {
+      "text": "Follow-up from user precommit failure: updated stale absence assertion in email_bridge/outgoing_attachments_test.exs to exact confirmed descriptor equality (kind/name/MIME/size only). Preserves one-email, successful bytes and failed-index exclusion assertions; exact equality excludes source IDs/private fields. Covered by prior explicit approval for SMTP receipt expectation updates. Focused suite passed 23 checks (3 properties, 20 tests); mix q passed. Production code unchanged.",
+      "timestamp": "2026-11-10T19:30:39Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Exclude source IDs from confirmed SMTP attachments",
   "type": "bug",
-  "updated_at": "2026-11-10T19:19:35Z"
+  "updated_at": "2026-11-10T19:30:39Z"
 }
