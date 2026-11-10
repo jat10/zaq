@@ -1,7 +1,9 @@
 {
   "assignee": "Jad",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-ucc.5"
+  ],
   "created": "2026-11-10T15:06:03Z",
   "description": "User explicitly approved connected RunAgent -\u003e NotifyPerson email/Mattermost tests for saved false/true/default policy, fallback success/exhaustion, actual persisted NotificationLog projection/rendering, and revisions of four default-on denial plus two revoked-source agent journeys. Reuse existing workflow DAG, signed Disk Records, SMTP fixture and Mattermost HTTP fixture; no production operation/schema or UI changes expected. Keep original authorization/source preservation assertions, safe errors, failed attempt persistence/no failed threading. Existing dirty tree authorized; sole writer. Dependency: this focused validation blocks final zaq-ucc.5. No broad precommit rerun; q and focused tests with VM-loaded sibling adapter.",
   "id": "zaq-ucc.12",
@@ -11,5 +13,5 @@
   "status": "in_progress",
   "title": "[zaq-ucc] Verify workflow attachment policy and notification-center outcomes",
   "type": "task",
-  "updated_at": "2026-11-10T15:06:10Z"
+  "updated_at": "2026-11-10T15:06:11Z"
 }
