@@ -6,9 +6,15 @@
   "description": "PR #876 review fix authorized by user. Declare attachment Records so existing OpaqueAliases interception expands signed references before notification validation. Add a regression using model-facing aliases and preserve existing map callers. Action reuse assessment: extend existing NotifyPerson schema; reuse OpaqueAliases, Record validation and Notifications normalization. No new operation or tool. Validate with mix q, focused regressions and final precommit.",
   "id": "zaq-yja",
   "labels": [],
+  "comments": [
+    {
+      "text": "Implemented semantic Record metadata on the Zoi attachment schema, retaining Engine ownership of provenance validation and existing map/struct payloads. Reused standard Tool.convert_params_using_schema for JSON arguments. Added real Factory interceptor -\u003e Jido.Exec -\u003e Notification.build regression for provenance and materialization aliases, including JSON string keys. Existing assertions preserved; schema-key introspection mechanically adapted. mix q passed; focused notification/alias suites: 50 passed (6 properties, 44 tests). Final precommit pending. No commit/push authorized.",
+      "timestamp": "2026-11-10T19:48:53Z"
+    }
+  ],
   "priority": 1,
   "status": "in_progress",
   "title": "Fix NotifyPerson attachment alias expansion",
   "type": "bug",
-  "updated_at": "2026-11-10T19:46:41Z"
+  "updated_at": "2026-11-10T19:48:53Z"
 }
