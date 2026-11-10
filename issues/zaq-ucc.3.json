@@ -15,11 +15,15 @@
     {
       "text": "Shared preparation and email explicit-policy extension implemented; absent policy retains direct-call behavior. New success-index selection facts consumed only by DeliveryConfirmation, never fabricated provider references. Initial focused prep/email tests passed; final confirmation selection regressions pending next focused validation. ZAQ mix q currently passes.",
       "timestamp": "2026-11-10T13:34:53Z"
+    },
+    {
+      "text": "Final focused ZAQ preparation/email/confirmation/API run: 165 passed (5 properties, 160 tests). New ordinary/partial SMTP selection tests verify duplicate/out-of-range indices do not duplicate or invent files, malformed selection confirms none, source Records remain unchanged, and index fact is removed before Engine dispatch. ZAQ mix q passed. Direct bridge legacy tests unchanged.",
+      "timestamp": "2026-11-10T13:36:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply preparation policy to one email submission",
   "type": "task",
-  "updated_at": "2026-11-10T13:34:53Z"
+  "updated_at": "2026-11-10T13:36:38Z"
 }
