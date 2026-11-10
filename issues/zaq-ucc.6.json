@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-10T13:18:39Z",
+  "description": "Human UX/UI approval gate for connector Advanced settings and capability-aware failure-policy toggle. Pending explicit approval of final implemented behavior before new/substantially rewritten browser E2E authoring. Existing test expectations not authorized for alteration. No code changes/Action reuse not applicable.",
+  "id": "zaq-ucc.6",
+  "labels": [],
+  "parent": "zaq-ucc",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ucc] Approve attachment policy UX for consolidated E2E",
+  "type": "task",
+  "updated_at": "2026-11-10T13:18:39Z"
+}
