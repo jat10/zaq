@@ -17,11 +17,15 @@
     {
       "text": "Validation: sibling mix q exit0 (/tmp/zaq-ucc-neutral-sibling-1.log), mix test227passed16excluded (/tmp/zaq-ucc-neutral-sibling-2.log). Final ZAQ mix q exit0 (/tmp/zaq-ucc-neutral-quality-final.log). VM-only sibling source/capability-asserted focused command: MIX_ENV=test mix run --no-start /tmp/zaq-ucc-cross-repo.exs test/zaq/channels/jido_chat_delivery_test.exs test/zaq/channels/delivery_error_test.exs test/zaq/channels/attachment_policy_test.exs =\u003e48passed(4properties44tests),19.3s (/tmp/zaq-ucc-neutral-zaq-final.log). Parent independently ran first two suites via same loader =\u003e42passed(3properties39tests),19.7s,exit0 (/tmp/zaq-ucc-neutral-root-validation.log). Both diff --check clean. No full precommit due known unresolved pre-test DB acquisition blocker.",
       "timestamp": "2026-11-10T16:57:25Z"
+    },
+    {
+      "text": "Attribution: task-owned ZAQ files are docs/services/channels.md, lib/zaq/channels/jido_chat_bridge.ex, test/zaq/channels/jido_chat_delivery_test.exs; sibling files are docs/jido_chat_adapter.md, lib/jido/chat/mattermost/adapter.ex, test/jido/chat/mattermost/attachment_policy_test.exs, test/support/policy_transport.exs. Unowned sibling changes appeared during work: test/jido/chat/mattermost/transport/req_client_config_test.exs, test/support/recording_transport.exs, and untracked test/jido/chat/mattermost/attachment_failure_coverage_test.exs. Neither agent nor supervisor authored/assigned those; preserved untouched and no attribution/validation claim for their latest state. Parent informed. Publish/pin prerequisite: ZAQ still pins published0a3cae00300e11511d6c80ffb48f90f7cdb7bcde, which lacks new report normalization; new sibling source was compiled only inside validation VM. Separate authorized publication and dependency pin update are REQUIRED before deployable ZAQ uses this correction. No commit, push, publication or pin change performed.",
+      "timestamp": "2026-11-10T16:57:26Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Normalize adapter attachment failure reports at provider boundary",
   "type": "task",
-  "updated_at": "2026-11-10T16:57:25Z"
+  "updated_at": "2026-11-10T16:57:26Z"
 }
