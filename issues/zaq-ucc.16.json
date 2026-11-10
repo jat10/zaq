@@ -11,11 +11,15 @@
     {
       "text": "User explicitly approved updating the existing SMTP test assertion from absence of receipt.attachments to confirmed sanitized metadata, while preserving failed-file and private-data checks. Parent will author regression first. Materialization handles remain transient only; persisted metadata uses existing Record.attachment_metadata projection and does not fabricate SMTP provider source references.",
       "timestamp": "2026-11-10T17:09:51Z"
+    },
+    {
+      "text": "Parent authored integration regression in test/zaq/engine/history/delivery_test.exs:157 and ran it before delegation. It fails exactly at persisted message.attachments == expected: actual [] vs confirmed first.txt and last.txt descriptors; history_capture was stored. Test also asserts recipient transcript readback, private-data exclusion and idempotent replay. Red evidence /tmp/zaq-ucc-email-transcript-red.log. GPT-6.1 Sol implementation agent now assigned; parent remains independent reviewer.",
+      "timestamp": "2026-11-10T17:11:23Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Preserve confirmed email attachments in transcript receipts",
   "type": "bug",
-  "updated_at": "2026-11-10T17:09:51Z"
+  "updated_at": "2026-11-10T17:11:23Z"
 }
