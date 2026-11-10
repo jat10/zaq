@@ -11,9 +11,15 @@
   "id": "zaq-ucc.4",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Implemented single policy projection in ConnectorConfig.Settings at Api selected-connector boundary, native policy capability snapshot/UI gate, bridge option propagation, strict unsupported preflight, fallback suppression for strict/completed adapter attempts, safe failure normalization and callback/confirmation preservation. Standard pinned focused prep/email/confirmation/API run 165 passed (5 properties). Cross-repo VM tests assert sibling source paths and capability; four focused scenarios passed, including actual Api final create/edit failure retaining unconfirmed with no replacement/status operation. Eight existing journey scenarios and two previously added toggle fake snapshots need explicit human approval before expectation/setup edits; supervising parent has requested it. Those scenarios remain untouched. Direct bridge calls without supplied policy retain legacy preparation behavior; production email runtime verified to dispatch :deliver_outgoing.",
+      "timestamp": "2026-11-10T13:42:22Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc.4] Wire connector policy and truthful capability-aware UI",
   "type": "task",
-  "updated_at": "2026-11-10T13:42:20Z"
+  "updated_at": "2026-11-10T13:42:22Z"
 }
