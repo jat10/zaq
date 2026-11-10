@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-ucc.5"
   ],
+  "closed_at": "2026-11-10T16:57:27Z",
   "created": "2026-11-10T16:47:22Z",
   "description": "User approved PR review corrections: classify transport errors within Mattermost existing failed_files/report builders, generic ZAQ consumes neutral safe categories without Req/raw HTTP matching; preserve partial success, stages/delivery/preflight/prefix IDs, legacy raw errors/no resend. Correct native multi-file vs fallback docs. Add sibling injected transport and ZAQ regression tests, both quality gates/focused tests, temporary VM-loaded sibling integration only; no publish/pin/commits/full precommit without coordination.",
   "id": "zaq-ucc.14",
@@ -24,8 +25,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc] Normalize adapter attachment failure reports at provider boundary",
   "type": "task",
-  "updated_at": "2026-11-10T16:57:26Z"
+  "updated_at": "2026-11-10T16:57:27Z"
 }
