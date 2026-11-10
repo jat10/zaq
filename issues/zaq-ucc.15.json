@@ -2,6 +2,7 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-10T17:02:59Z",
   "created": "2026-11-10T17:01:02Z",
   "description": "Use agentjido/jido_chat main after PR 72 merged, and pin the published Mattermost attachment report fixes. Action reuse assessment: not applicable; dependency source/reference update only, existing delivery APIs and lifecycle are reused. Validate dependency resolution, mix q, and focused attachment delivery/workflow tests.",
   "id": "zaq-ucc.15",
@@ -14,8 +15,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc] Refresh merged chat and Mattermost dependencies",
   "type": "task",
-  "updated_at": "2026-11-10T17:02:58Z"
+  "updated_at": "2026-11-10T17:02:59Z"
 }
