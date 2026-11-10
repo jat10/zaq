@@ -31,11 +31,15 @@
     {
       "text": "User explicitly approved replacing callback-specific tests with existing lookup tests while retaining policy, transport option, error and history identity coverage. Updated EmailTransport delegate, API contract fake and Jido property calls to fetch_connection_details_for_config/2. Assertions and scenarios retained; combined validation running.",
       "timestamp": "2026-11-10T18:49:51Z"
+    },
+    {
+      "text": "Callback removal and lookup reuse completed. CommunicationBridge and JidoChatBridge have no remaining diff for the abandoned callback. Existing one-argument fetch_connection_details_for_config is unchanged; outbound arity reuses resolver projection, is inherited by Jido, and extended by Email for SMTP binding. API selects connection once through existing delivery path. Updated tests explicitly approved by user. Final combined run: 210 passed (8 properties, 202 tests), 100.4s; mix q passed; git diff --check clean. Logs /tmp/zaq-reuse-connection-combined.log and /tmp/zaq-reuse-connection-quality-final.log. Full precommit not rerun; prior full gate remains unverified after timeout. Source ID finding 3 unchanged, no commit/push.",
+      "timestamp": "2026-11-10T18:52:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Keep outbound connector resolution bridge owned",
   "type": "task",
-  "updated_at": "2026-11-10T18:49:51Z"
+  "updated_at": "2026-11-10T18:52:27Z"
 }
