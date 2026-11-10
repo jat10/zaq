@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-10T19:01:54Z",
+  "description": "R4 consume existing email_connector_settings snapshot form_config in SMTP LiveView. Reuse NodeRouter Event for selection/new snapshots; preserve selected/new/refresh/validation/password behavior. Remove duplicated SMTP projection helpers. Data-flow refactor only, no markup or UX changes; existing LiveView tests and E2E smoke as applicable.",
+  "id": "zaq-ucc.23",
+  "labels": [],
+  "parent": "zaq-ucc",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ucc] Reuse Engine SMTP form snapshot",
+  "type": "task",
+  "updated_at": "2026-11-10T19:01:54Z"
+}
