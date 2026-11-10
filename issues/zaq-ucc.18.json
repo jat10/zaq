@@ -7,9 +7,15 @@
   "id": "zaq-ucc.18",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Replaced concrete EmailBridge coupling with optional CommunicationBridge.delivery_connection/2. Existing SMTP selector remains EmailBridge-owned; no new publication route or Action. New alternate-bridge test covers policy override and resolution failure; real SMTP tests also use a delegating bridge. Existing direct email policy true/false/missing tests passed in 206-check run.",
+      "timestamp": "2026-11-10T18:15:15Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Keep outbound connector resolution bridge owned",
   "type": "task",
-  "updated_at": "2026-11-10T18:08:33Z"
+  "updated_at": "2026-11-10T18:15:15Z"
 }
