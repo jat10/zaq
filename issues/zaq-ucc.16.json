@@ -2,6 +2,7 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-10T17:16:02Z",
   "created": "2026-11-10T17:09:30Z",
   "description": "User requests parent-authored failing regression followed by GPT-6.1 Sol implementation. Reproduce successful SMTP attachment metadata loss at DeliveryConfirmation to Engine history boundary, including partial delivery and private-data exclusion. Extend existing DeliveryConfirmation receipt normalization; reuse Record.attachment_metadata, Engine History.Delivery and HistoryIngress. No new Action, lifecycle, provider module dependency, resend, or Engine fallback to unconfirmed outgoing attachments. Existing SMTP test asserts receipt attachments absent: explicit test-change approval requested asynchronously. New integration regression first, agent fix second, independent verification last. No new E2E needed for backend receipt normalization. No commit or push authorized for this follow-up.",
   "id": "zaq-ucc.16",
@@ -26,8 +27,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc] Preserve confirmed email attachments in transcript receipts",
   "type": "bug",
-  "updated_at": "2026-11-10T17:16:01Z"
+  "updated_at": "2026-11-10T17:16:02Z"
 }
