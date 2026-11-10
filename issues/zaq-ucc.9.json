@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-10T14:19:19Z",
+  "description": "User explicitly requests exactly three new delivery tests: saved SMTP send_on_file_failure true, false, absent/default-on. File: existing email_file_delivery_integration_test.exs; reuse existing FileDeliverySmtpStub loopback server, Mail parsing, actual Api -\u003e EmailBridge -\u003e SmtpSender -\u003e Mailer. One usable inline Record plus invalid-base64 preparation failure. On/default: one original email, usable attachment bytes/name/type and envelope, safe partial report, exactly one successful confirmation. Off: not_sent preparation error, zero SMTP message/confirmation and no duplicate submission. Explicit trusted actor, selected outbound SMTP ID, competing connector and originals preserved. Tests added before production changes; no production runtime changes required for direct SMTP-ID path. Mocking only existing external SMTP fixture and existing confirmation edge; no new framework/third-party traffic. Action reuse: existing connector resolution, shared preparation, exact-ID sender and fixture reused; no new operations/Actions/tools. Documentation: test evidence in Beadwork; owner docs only as UI correction warrants. IMAP-routed policy mismatch is separately reported/stopped pending user decision and not claimed covered. Run these targeted tests and mix q; no known-failing broad precommit rerun.",
+  "id": "zaq-ucc.9",
+  "labels": [],
+  "parent": "zaq-ucc",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ucc.9] Verify SMTP attachment policy with three real MIME integration cases",
+  "type": "task",
+  "updated_at": "2026-11-10T14:19:19Z"
+}
