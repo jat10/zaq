@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-ucc",
   "priority": 2,
-  "status": "open",
+  "status": "deferred",
   "title": "[zaq-ucc.11] Confirm backend delivery failure persistence contract",
   "type": "task",
-  "updated_at": "2026-11-10T14:55:17Z"
+  "updated_at": "2026-11-10T15:05:59Z"
 }
