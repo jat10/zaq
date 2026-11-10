@@ -7,9 +7,15 @@
   "id": "zaq-ucc.20",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Implemented via TrustedContext.event_builder_opts/1 on the existing validate-files event route. Added property coverage for trusted options, permission flag and content exclusion; initial focused suite passed. No new Action, callback or delivery path.",
+      "timestamp": "2026-11-10T19:09:29Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Reuse trusted context for attachment validation",
   "type": "bug",
-  "updated_at": "2026-11-10T19:02:29Z"
+  "updated_at": "2026-11-10T19:09:29Z"
 }
