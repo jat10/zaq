@@ -9,9 +9,15 @@
   "id": "zaq-ucc.13",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Normal published dependency reproduction seed965780:155/166 passed(2/3properties,153/163tests),11failures. Browsing passed isolated but user supplied screenshot-timeout failure: expected capture timed out, actual url timed out at800ms under full-suite load. Jido property counterexample empty string; expected obsolete appended notice/error but native policy now returns safe partial success and unchanged original body. User/supervisor approved scoped test corrections: upload failures before publication continue once with safe indexed/stage errors; final create/edit transport failures remain unconfirmed with no later status/retry/callback; preserve early malformed nil collection rejection/legacy safe notice and unsupported-body no-effects. Legacy failure notice errors/raise/exit retained via existing non-policy FailingEditAdapter fixture. Email default-on now confirms original text+HTML once and reports safe Base64 failure. Advanced panel stays visible for native:file switch even without max-size support, while max-size input stays hidden. Browsing private fixture callback sets short environment timeout only after successful URL lookup, using existing per-invocation timeout resolution; no production runner injection/change. Existing async:false restoration retained. Initial corrected suite165/166; sole remaining new assertion overgeneralized nil collection and was restored to prior unchanged contract. Final q/four-file run in progress. Only four requested test files touched for this iteration; no production/pin changes. Parent approved reversible stale-manifest invalidation after independent focused validation for one full precommit.",
+      "timestamp": "2026-11-10T16:21:09Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc.13] Resolve four-file validation failures",
   "type": "task",
-  "updated_at": "2026-11-10T16:21:08Z"
+  "updated_at": "2026-11-10T16:21:09Z"
 }
