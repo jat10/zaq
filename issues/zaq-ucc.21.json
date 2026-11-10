@@ -7,9 +7,15 @@
   "id": "zaq-ucc.21",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Reused the selected matching connector through the existing SMTP selector and shared binding interpretation. New query assertion verifies no duplicate inbox lookup while sender validation remains. Initial focused suite passed.",
+      "timestamp": "2026-11-10T19:09:30Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Reuse selected connector for SMTP binding",
   "type": "task",
-  "updated_at": "2026-11-10T19:02:31Z"
+  "updated_at": "2026-11-10T19:09:30Z"
 }
