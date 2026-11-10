@@ -42,11 +42,15 @@
     {
       "text": "Connected workflow/NotifyPerson coverage completed in zaq-ucc.12: false/true/default for email and Mattermost, winning/exhausted fallback, persisted attempts/status, actual notification-center rendering and SMTP anchor. Six default-on journey revisions explicitly user-approved. Found and fixed approved partial-email canonical-body history conflict through existing receipt/confirmation helpers. q green; parent independent combined validation98 passed (4properties94tests). Transcript failure persistence remains explicitly deferred in zaq-ucc.11. Current dependency pin and other pending test expectation approvals unchanged; no full precommit rerun.",
       "timestamp": "2026-11-10T15:15:35Z"
+    },
+    {
+      "text": "User explicitly requests callback-only file validation: delegate when adapter exports validate_files/2; otherwise return :ok regardless of capabilities. Reuse existing JidoChatBridge.validate_files operation and event path; remove inferred configurable_max_file_size requirement. Update focused missing-callback expectation to the requested contract; callback delegation/error and authorization tests remain intact. No new Action or lifecycle.",
+      "timestamp": "2026-11-10T15:22:41Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Apply channel attachment failure policy through existing delivery contracts",
   "type": "task",
-  "updated_at": "2026-11-10T15:15:35Z"
+  "updated_at": "2026-11-10T15:22:41Z"
 }
