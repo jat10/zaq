@@ -10,11 +10,15 @@
     {
       "text": "Implemented semantic Record metadata on the Zoi attachment schema, retaining Engine ownership of provenance validation and existing map/struct payloads. Reused standard Tool.convert_params_using_schema for JSON arguments. Added real Factory interceptor -\u003e Jido.Exec -\u003e Notification.build regression for provenance and materialization aliases, including JSON string keys. Existing assertions preserved; schema-key introspection mechanically adapted. mix q passed; focused notification/alias suites: 50 passed (6 properties, 44 tests). Final precommit pending. No commit/push authorized.",
       "timestamp": "2026-11-10T19:48:53Z"
+    },
+    {
+      "text": "Final validation completed: mix precommit passed with 12,186 passed (48 doctests, 359 properties, 11,779 tests), 1 skipped, 164 excluded, 398.9 seconds. Context Mode call transport timed out at 300 seconds despite requested 900000ms; verified the original Mix process continued and captured its successful final summary in /tmp/zaq-yja-precommit.log. No restart or timeout extension used. mix q and 50 focused tests/properties passed. Fix is ready in working tree; commit/push not authorized. Existing test behavior unchanged; schema introspection adapted mechanically.",
+      "timestamp": "2026-11-10T19:56:45Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "Fix NotifyPerson attachment alias expansion",
   "type": "bug",
-  "updated_at": "2026-11-10T19:48:53Z"
+  "updated_at": "2026-11-10T19:56:45Z"
 }
