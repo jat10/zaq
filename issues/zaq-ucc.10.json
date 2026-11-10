@@ -9,9 +9,15 @@
   "id": "zaq-ucc.10",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Approved focused selector correction implemented: EmailBridge.reply_smtp_config/1 reuses existing private selection, returns actual selected config or safe DeliveryError; Api validates original routing config first, selects policy from actual SMTP and freezes ID, preserves IMAP identity; sender exact-ID revalidation unchanged. Parent independently reviewed and reran focused suites green; additional sender/config-less NotifyPerson regressions 39 passed.",
+      "timestamp": "2026-11-10T14:30:53Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc.10] Freeze actual outbound SMTP connector and attachment policy",
   "type": "task",
-  "updated_at": "2026-11-10T14:22:51Z"
+  "updated_at": "2026-11-10T14:30:53Z"
 }
