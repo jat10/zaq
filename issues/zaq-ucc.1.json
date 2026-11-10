@@ -4,6 +4,8 @@
   "blocks": [
     "zaq-ucc.2"
   ],
+  "closed_at": "2026-11-10T13:21:39Z",
+  "close_reason": "SDK live audit complete; tests added proving policy through existing wrapper routes. No third-repo extension required.",
   "created": "2026-11-10T13:18:34Z",
   "description": "Functional specifications/files: audit SDK post/send/edit option propagation, adapter capability extensions, raw receipt/report normalization; owners existing JidoChatBridge and Mattermost Adapter. Tests to add before implementation: wrapper-level create/edit policy propagation and coherent extension capability checks in sibling tests. Branches: explicit policy vs absent option; unsupported strict before any I/O. Mocking: injected edge transport only. Documentation: adapter public contract and Channels guide at final step. Action reuse assessment: extend existing Thread.post/Adapter callbacks and capability map; metadata.delivery_report preserved by Response; no new lifecycle/API/Action/tool. Contract inputs provider-neutral attachment_failure_policy :continue/:abort, existing results/errors; preserve authorization/threading and absent-option behavior. Consumers code-only existing delivery, no agent exposure. SDK sources inspected live; no third-repo changes required.",
   "id": "zaq-ucc.1",
@@ -16,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "[zaq-ucc.1] Verify existing policy option and capability contracts",
   "type": "task",
-  "updated_at": "2026-11-10T13:20:18Z"
+  "updated_at": "2026-11-10T13:21:39Z"
 }
