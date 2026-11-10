@@ -7,9 +7,15 @@
   "id": "zaq-ucc.23",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "SMTP LiveView now consumes Engine snapshot form_config through existing confidential NodeRouter events. Removed duplicated construction/decryption helpers. Added fresh-snapshot selection regression; SMTP LiveView suite passed. No markup or UX changes. No SMTP browser spec exists in current E2E specs; validated this data-flow refactor through LiveView tests.",
+      "timestamp": "2026-11-10T19:09:33Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Reuse Engine SMTP form snapshot",
   "type": "task",
-  "updated_at": "2026-11-10T19:02:33Z"
+  "updated_at": "2026-11-10T19:09:33Z"
 }
