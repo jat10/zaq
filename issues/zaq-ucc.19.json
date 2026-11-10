@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-10T18:07:48Z",
+  "description": "Fix finding 4. Reuse DeliveryFiles prepared output and Record.attachment_metadata to populate EmailBridge receipt.attachments from actual submitted filenames, MIME and byte size; preserve source IDs unchanged per explicit deferral of finding 3. Reuse existing DeliveryConfirmation receipt precedence. Add stale and defaulted metadata regressions; no new materialization or send route.",
+  "id": "zaq-ucc.19",
+  "labels": [],
+  "parent": "zaq-ucc",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ucc] Confirm SMTP metadata from prepared files",
+  "type": "bug",
+  "updated_at": "2026-11-10T18:07:48Z"
+}
