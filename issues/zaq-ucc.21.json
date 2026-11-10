@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-10T19:01:51Z",
+  "description": "R2 extend existing reply SMTP selector to consume the selected matching connector rather than reread it. Share existing binding interpretation with direct send and self-address paths. Preserve provider-only defaults, disabled/wrong connector errors and SMTP submission revalidation. Verify queries and existing email paths.",
+  "id": "zaq-ucc.21",
+  "labels": [],
+  "parent": "zaq-ucc",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-ucc] Reuse selected connector for SMTP binding",
+  "type": "task",
+  "updated_at": "2026-11-10T19:01:51Z"
+}
