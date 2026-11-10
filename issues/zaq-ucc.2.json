@@ -11,9 +11,15 @@
   "id": "zaq-ucc.2",
   "labels": [],
   "parent": "zaq-ucc",
+  "comments": [
+    {
+      "text": "Implemented optional attachment_failure_policy through existing adapter lifecycle. Strict preuploads every group before publication; continue reuses confirmed uploads and reports failures. Absent option retains legacy behavior, including ReqClient exception/exit propagation. Latest sibling mix q passed; full unit suite 223 passed, 16 integration excluded. Injected-transport prefix tests cover policy behavior; real HTTP later-batch failure not executed because sibling prohibits HTTP mocking and has no safe fault fixture. Supervisor independently reviewed ReqClient prefix retention. No SDK edits, release, pin, commit or push.",
+      "timestamp": "2026-11-10T13:34:50Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Enforce Mattermost attachment policy inside existing delivery",
   "type": "task",
-  "updated_at": "2026-11-10T13:21:40Z"
+  "updated_at": "2026-11-10T13:34:50Z"
 }
