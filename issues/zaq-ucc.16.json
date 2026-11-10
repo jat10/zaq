@@ -19,11 +19,15 @@
     {
       "text": "Parent-authored persistence regression reproduced red before delegation (/tmp/zaq-ucc-email-transcript-red.log); after sole DeliveryConfirmation helper fix it passes unchanged: mix test test/zaq/engine/history/delivery_test.exs:157 =\u003e1passed6excluded (/tmp/zaq-ucc-email-transcript-green.log). Explicit delivered_attachment_indices select original Records; Record.attachment_metadata provides bounded durable fields; strip projected attributes so original source locator never becomes SMTP delivered-media source; Map.put_new preserves existing provider receipt attachments including empty evidence. Original transient outgoing Records/handles remain unchanged apart from content clearing. No Engine fallback, provider module, new lifecycle or remote SMTP reference. Approved SMTP assertion updated; new original-order/subset/duplicate/out-of-range/malformed-index property, source/private exclusion and provider-evidence precedence tests. Normal dependency focused61passed(5properties56tests),20.5s (/tmp/zaq-ucc-email-transcript-focused.log); final q in progress. Parent regression assertion intent unchanged; only formatting allowed.",
       "timestamp": "2026-11-10T17:14:54Z"
+    },
+    {
+      "text": "Final validation complete for scoped implementation: mix q exit0 (/tmp/zaq-ucc-email-transcript-quality.log), agent normal-dependency focused61passed(5properties56tests),20.5s (/tmp/zaq-ucc-email-transcript-focused.log). Exact focused command: mix test test/zaq/channels/delivery_confirmation_test.exs test/zaq/engine/history/delivery_test.exs test/zaq/channels/email_file_delivery_integration_test.exs test/zaq/channels/jido_chat_delivery_test.exs. Root independently verified17checks(3properties14tests), normal dependencies (/tmp/zaq-ucc-email-transcript-root-verification.log), and approved minimal boundary-correct diff. Four files: lib/zaq/channels/delivery_confirmation.ex, test/zaq/channels/delivery_confirmation_test.exs, docs/services/channels.md, and parent-authored test/zaq/engine/history/delivery_test.exs (agent formatter changes only). Parent regression logic unchanged; successful recipient association/replay verified. All code edits stopped for review. No commit/push; overall precommit remains pending and no full-suite claim made.",
+      "timestamp": "2026-11-10T17:16:01Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ucc] Preserve confirmed email attachments in transcript receipts",
   "type": "bug",
-  "updated_at": "2026-11-10T17:14:54Z"
+  "updated_at": "2026-11-10T17:16:01Z"
 }
