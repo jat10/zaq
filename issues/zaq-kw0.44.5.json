@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T23:51:54Z",
+  "description": "## Functional specifications and files\nExtend existing catalog and staged editor with type/config/mode/threshold controls; definition-owned option choices, Boolean/scale controls, pending automatic state, inheritance origin/exclusion UX. Allow folder/non-ingested source editing; Save atomically ensures identity. Adapt chips/bulk/usage/query presentation without adding parallel editors.\nFiles/owners: Existing LabelsLive, LabelEditor, LabelEvents, ingestion file list/grid and relevant DSM stories.\n## Tests to add before implementation\nExtend existing LabelsLive/LabelEditor/browser tests, preserve shared component consumer assertions; validate false/zero, option constraints, pending state, inherited origin, Cancel/no writes, failed/stale saves, selected bulk only and permissions.\n## Branches/paths validated\nSuccess, invalid input, nil/denied actor, stale/concurrent write, unavailable/deleted source, lifecycle cleanup and failure rollback where relevant. No hidden cross-service calls.\n## Mocking plan\nReal Repo, validated Actions, NodeRouter and domain boundaries. Mock only external provider/conversion HTTP when relevant; runtime dependencies via existing Zaq.Config opts, no global mutation.\n## Documentation\nUpdate owner module docs and relevant existing service/BO guide alongside behavior; durable evidence here. Follow docs/documentation.md.\n## Action reuse assessment\nExtend shared DSM primitives and existing BO flows; all service reads/mutations via NodeRouter/Event, existing Actions. No Agent calls, converter or duplication of domain validation in LiveView.\n## Validation/dependencies\nRead AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and applicable service guides. Scoped tests + mix q only per implementation issue. Final precommit reserved for final child. Supervisor verifies before closure. New feature E2E remains zaq-kw0.15 -\u003e zaq-kw0.16.\n",
+  "id": "zaq-kw0.44.5",
+  "labels": [],
+  "parent": "zaq-kw0.44",
+  "priority": 2,
+  "status": "open",
+  "title": "Adapt catalog, editor and source browser to typed contracts",
+  "type": "task",
+  "updated_at": "2026-11-11T23:51:54Z"
+}
