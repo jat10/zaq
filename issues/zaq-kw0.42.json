@@ -39,11 +39,15 @@
     {
       "text": "User explicitly authorized push to jat10 fork only. Pushed local commit e5d2da3db to https://github.com/jat10/zaq.git branch feature/labeling-pr2 successfully; pre_push format hook passed. Direct HTTPS used after configured SSH authentication failed. No push to www-zaq-ai/zaq upstream, no PR creation or merge. Coverage/final-validation/human gates remain open; stopped coverage agents were not resumed.",
       "timestamp": "2026-11-04T11:20:12Z"
+    },
+    {
+      "text": "Requirements drift recorded: issue #598 comments require per-label thresholds, typed-value selection and classification independent of chunks. Existing global-threshold/no-suggestions contracts are historical and must not drive new work. PR1 alignment tracked in zaq-kw0.44; PR2 changes deferred.",
+      "timestamp": "2026-11-11T23:52:17Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42] PR2 generic classification and automatic labeling",
   "type": "epic",
-  "updated_at": "2026-11-04T11:20:12Z"
+  "updated_at": "2026-11-11T23:52:17Z"
 }
