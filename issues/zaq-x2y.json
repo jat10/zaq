@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T17:24:21Z",
+  "description": "User requested tests for review discussion_r4513073084. Add new regression cases for null, numeric and string post_process nodes in Iterate and Batch; assert validation errors and no persistence. Preserve existing tests and production code. Action reuse: not applicable — tests only, exercising existing workflow persistence APIs. No new E2E needed; DataCase integration coverage is sufficient. Run focused tests to confirm the reported failure and mix q.",
+  "id": "zaq-x2y",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Add PR 910 malformed pipeline entry regression tests",
+  "type": "task",
+  "updated_at": "2026-11-11T17:24:21Z"
+}
