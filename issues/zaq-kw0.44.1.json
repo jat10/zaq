@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T23:51:40Z",
+  "description": "## Functional specifications and files\nRead live Label/Labels, ResourceLabels, ValueManagement, Actions, Document/ExternalSource/ExternalPermissions, EntryCatalog and BO. Record module ownership, source identity and ancestry, validated dispatch contracts, migration baseline, affected tests and compatibility. Resolve API/data shapes before dependent implementation.\nFiles/owners: Existing modules only; planning evidence in this issue. No application edits.\n## Tests to add before implementation\nCompare existing catalog/resource/value/lifecycle/LiveView tests to revised contract; identify extensions and duplicate scenarios, report exact approval scope.\n## Branches/paths validated\nSuccess, invalid input, nil/denied actor, stale/concurrent write, unavailable/deleted source, lifecycle cleanup and failure rollback where relevant. No hidden cross-service calls.\n## Mocking plan\nReal Repo, validated Actions, NodeRouter and domain boundaries. Mock only external provider/conversion HTTP when relevant; runtime dependencies via existing Zaq.Config opts, no global mutation.\n## Documentation\nUpdate owner module docs and relevant existing service/BO guide alongside behavior; durable evidence here. Follow docs/documentation.md.\n## Action reuse assessment\nLocal-only audit; existing SaveLabelDefinition, EditResourceLabels, UpdateLabelValues and delete Actions are extension candidates. Document.insert_new/1 and ExternalPermissions.apply/2 are ensure candidates, source authority must be verified. No new generic tool or parallel tree.\n## Validation/dependencies\nRead AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and applicable service guides. Scoped tests + mix q only per implementation issue. Final precommit reserved for final child. Supervisor verifies before closure. New feature E2E remains zaq-kw0.15 -\u003e zaq-kw0.16.\n",
+  "id": "zaq-kw0.44.1",
+  "labels": [],
+  "parent": "zaq-kw0.44",
+  "priority": 2,
+  "status": "open",
+  "title": "Audit current contracts, reuse and test migration",
+  "type": "task",
+  "updated_at": "2026-11-11T23:51:40Z"
+}
