@@ -4,6 +4,7 @@
     "zaq-6r7.2"
   ],
   "blocks": [],
+  "closed_at": "2026-11-11T08:48:56Z",
   "created": "2026-11-11T08:41:13Z",
   "description": "Audit remaining PR test additions and owning pre-existing suites for repeated flows, duplicate setup and exact helper reuse. Implement additional behavior-preserving candidates only when semantics and isolation match; record remaining mismatches and stop when no justified candidate remains. Validate each changed suite plus mix q and final mix precommit. No arbitrary LOC target, deleted coverage or production edits.",
   "id": "zaq-6r7.3",
@@ -28,8 +29,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6r7] Audit remaining tests and complete worthwhile consolidation",
   "type": "task",
-  "updated_at": "2026-11-11T08:48:54Z"
+  "updated_at": "2026-11-11T08:48:56Z"
 }
