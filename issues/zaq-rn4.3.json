@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T09:04:10Z",
+  "description": "PR 3 of 4 under zaq-rn4.\nUser goal: Ask the agent for a file and have it select and send the correct attachment.\nSource implementation: 814ca7a83b00356e8f1bd8e2155f159a371ae641 (feat/channel-files). Copy existing lines and tests; preserve behavior. No independent rewrite.\n\nFunctional specifications covered with associated files to edit/add: lib/zaq/agent/{executor,opaque_aliases,stream_events}.ex; tools/data_source/attach_documents.ex; tools/people/notify_person.ex; tools/workflow/run_agent.ex; tools/registry.ex. Include request-effect and selection support fixtures. This is the initial ownership map; verify source hunks and dependency closure before extraction. Earlier slices own shared prerequisites.\nTests to add before implementation: copy existing source scenarios into this slice with their smallest required fixtures. Attachment selection, existing stream_events, notify_person, run_agent, registry and native-tool effect suites. Verify alias expansion, selection replacement/clearing, streaming, delegated ownership and denied access without changing expectations.\nBranches/paths validated: positive paths, explicit permission rejection, malformed inputs, error propagation and all source regression cases relevant to this slice; standalone compilation against predecessor. Final PR also checks cumulative source parity.\nMocking plan: reuse existing source fixtures/stubs for external APIs; retain real internal boundaries and existing isolation. Do not create redundant fixture frameworks.\nDocumentations to update for both code and docs/ related content: copy source documentation hunks with the behavior they explain; record source mapping, validation and exceptions in this issue/PR. Do not invent new behavior or rewrite unrelated documentation.\nAction reuse assessment: extraction reuses the source implementation's existing Actions/domain operations at the listed paths; no new operation is proposed. Before editing, inspect current module responsibility and dependencies and record reuse evidence for affected operations. Preserve NodeRouter event dispatch, explicit identity checks, configuration resolution and external side-effect boundaries.\n\nAcceptance: slice copies its owned source changes, tests pass independently, no later-PR dependency is missing, source hunks are accounted for, review/coverage/final validation complete, upstream PR merged. Apply epic delivery and restacking instructions. New feature E2E authoring remains subject to the existing zaq-ic9 approval tracking; this split should reuse source tests.\n",
+  "id": "zaq-rn4.3",
+  "labels": [],
+  "parent": "zaq-rn4",
+  "priority": 1,
+  "status": "open",
+  "title": "PR3: Agent attachment selection and tools",
+  "type": "task",
+  "updated_at": "2026-11-11T09:04:10Z"
+}
