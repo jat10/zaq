@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-58u.1"
+  ],
   "blocks": [],
   "created": "2026-11-11T08:34:58Z",
   "description": "Move five examples unchanged into StreamEventsTest describe attachment selection; retain alias scope setup and cleanup only for these examples. Keep private selection, consume, completed and record helpers since existing incoming/event builders have different contracts. Action reuse local-only, no production changes. Remove old module, verify body equivalence and stale references, run mix q, both owning suites and mix precommit.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-58u] Consolidate attachment stream tests and validate",
   "type": "task",
-  "updated_at": "2026-11-11T08:34:58Z"
+  "updated_at": "2026-11-11T08:35:15Z"
 }
