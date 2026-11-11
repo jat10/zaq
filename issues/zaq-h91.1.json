@@ -5,7 +5,7 @@
     "zaq-h91.2"
   ],
   "created": "2026-11-11T12:02:43Z",
-  "description": "User approved migration/removal of duplicated tests; preserve security and lifecycle coverage. Test-only fixture reuse, no production operations altered: Action reuse not applicable. No commit/push. Explicit user instruction defers mix precommit until before push. Steps: assess net-reducing consolidation, implement, run mix q and isolated affected suites, review exact line totals.",
+  "description": "User approves consolidation/migration and duplicate removal, preserving security/lifecycle contracts. Concrete reduction: merge standalone successful privacy and selection matrix into one canonical ingress per provider (add A, add B, repeated add B, remove A), keeping exact persisted/private-history and fresh followup assertions; runtime suite retains replace/clear permutations. Move UI projection checks into existing NotificationLogsLive modal tests; integration keeps exact persisted log payload/status/errors. Keep policy/workflow and denial bodies because extracting their provider/disk helpers would add source. Action reuse not applicable: tests reuse real existing Actions and fixtures, no production operation changes. No commits/push; mix precommit explicitly deferred by user until before push.",
   "id": "zaq-h91.1",
   "labels": [],
   "parent": "zaq-h91",
@@ -13,5 +13,5 @@
   "status": "in_progress",
   "title": "Consolidate approved PR876 attachment journey contracts",
   "type": "task",
-  "updated_at": "2026-11-11T12:03:12Z"
+  "updated_at": "2026-11-11T12:04:26Z"
 }
