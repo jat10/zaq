@@ -39,11 +39,15 @@
     {
       "text": "Cumulative PR1+PR2+PR3 validation complete before publishing: ERL_FLAGS=+S 4:4 mix deps.get exits 0 without lock changes. mix q exits 0, hooks verify 3 events, Credo 1774 files/94 checks/no issues, docs generated. Focused 11 _test.exs files selected from pr3-before-stack.patch: 324 passed (6 doctests, 19 properties, 299 tests), seed 177738, 23.4s. Standard integration/paradedb/real_browser tags excluded by project defaults. Logs /tmp/zaq-stack-publish/pr3-{deps,q,tests}.log. git diff --check and cached check pass; no unstaged source/lock changes. Generated Serena config restored in index and working tree. Parent owns full precommit/final publishing.",
       "timestamp": "2026-11-11T09:29:30Z"
+    },
+    {
+      "text": "Published incremental stack commit d5bc610b253a7c3be59b0252914765bd305f88d8. Fork PR: https://github.com/jat10/zaq/pull/12. Base: zaq-rn4.2/channel-files-delivery. Validation: mix q, focused tests, commit/pre-push hooks passed. Upstream PR1: https://github.com/www-zaq-ai/zaq/pull/935. Keep task open until its upstream PR merges.",
+      "timestamp": "2026-11-11T09:36:43Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.3] PR3: Agent attachment selection and tools",
   "type": "task",
-  "updated_at": "2026-11-11T09:29:30Z"
+  "updated_at": "2026-11-11T09:36:43Z"
 }
