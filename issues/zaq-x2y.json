@@ -3,7 +3,7 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-11T17:24:21Z",
-  "description": "User requested tests for review discussion_r4513073084. Add new regression cases for null, numeric and string post_process nodes in Iterate and Batch; assert validation errors and no persistence. Preserve existing tests and production code. Action reuse: not applicable — tests only, exercising existing workflow persistence APIs. No new E2E needed; DataCase integration coverage is sufficient. Run focused tests to confirm the reported failure and mix q.",
+  "description": "User approved shared Step.Node.validate_node_map/1 non-map fallback after six regressions reproduced FunctionClauseError. Preserve map validation and existing test behavior; add focused non-map property and import regressions. Action reuse: reuse existing shared node validator used by Iterate and Batch; local schema validation is not an executable domain operation and needs no new Action or tool. Validate focused tests, mix q and final mix precommit. Do not commit/push or modify pre-existing .serena/project.yml changes.",
   "id": "zaq-x2y",
   "labels": [],
   "comments": [
@@ -14,7 +14,7 @@
   ],
   "priority": 2,
   "status": "in_progress",
-  "title": "Add PR 910 malformed pipeline entry regression tests",
+  "title": "Reject malformed inline pipeline nodes before workflow persistence",
   "type": "task",
-  "updated_at": "2026-11-11T17:26:16Z"
+  "updated_at": "2026-11-11T17:30:18Z"
 }
