@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T08:27:22Z",
+  "description": "Follow-up authorized by user: extract stream consumption setup, agent journey startup and duplicated upload failure/timeout flow. Preserve all test declarations, scenarios, assertions, actor context, stream consumption timing and teardown. No production changes. Action reuse: local-only private test helpers using existing StreamEvents.consume, IntegrationAgent, AttachmentSelectionLLMStub and delivery helpers; no new Actions/tools or execution boundaries. Existing fixture consolidation and notify_person edits are preserved. No new tests needed: existing suites are the regression oracle; E2E and numerical production coverage are not applicable.",
+  "id": "zaq-37r",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[PR #876] Simplify repeated attachment test execution flows",
+  "type": "epic",
+  "updated_at": "2026-11-11T08:27:22Z"
+}
