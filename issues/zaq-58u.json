@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T08:34:44Z",
+  "description": "User approved moving RunAgent attachment scenarios into RunAgentTest and attachment stream scenarios into StreamEventsTest. Preserve all assertions and async modes; describe-scoped setup must not affect existing tests. Action reuse: local-only reorganization using existing owning suites; retain distinct request-filtering and alias helpers. No production changes, new E2E or production coverage needed. Validate test body equivalence, both affected suites, mix q and final mix precommit. Existing uncommitted work remains intact.",
+  "id": "zaq-58u",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Merge attachment scenarios into existing owning test suites",
+  "type": "epic",
+  "updated_at": "2026-11-11T08:34:44Z"
+}
