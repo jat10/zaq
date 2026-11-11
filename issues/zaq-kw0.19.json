@@ -1,7 +1,8 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-kw0.13"
+    "zaq-kw0.13",
+    "zaq-kw0.44.9"
   ],
   "blocks": [],
   "created": "2026-11-03T07:18:53Z",
@@ -111,5 +112,5 @@
   "status": "in_progress",
   "title": "[zaq-kw0.19] PR 1 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-04T08:16:14Z"
+  "updated_at": "2026-11-11T23:52:14Z"
 }
