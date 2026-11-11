@@ -25,11 +25,15 @@
     {
       "text": "Review comment 4537409843: user authorized boolean-accessor refactor only. Action reuse assessment: extend ConnectorConfig.Settings pure projections with send_on_file_failure?/1; policy delegates and EmailConnectorSettings consumes boolean directly. Preserve lookup precedence, default-on behavior, false/string-false handling and all existing assertions. Local domain projection has no side effects, actor requirements, retries or Action/tool exposure. Add accessor contract/property coverage; run mix q and focused settings/email tests. PR second comment remains out of scope.",
       "timestamp": "2026-11-11T13:48:32Z"
+    },
+    {
+      "text": "Applied first review comment locally: Settings.send_on_file_failure?/1 owns unchanged normalization; policy maps boolean to atoms; email form consumes boolean directly. Added default/precedence tests and atom/string-key property; existing expectations unchanged. mix q passed; focused Settings, EmailConnectorSettings and API suites passed (21 checks: 3 properties, 18 tests); git diff --check passed. No commit/push or GitHub reply. Second review comment remains pending; final coverage/precommit gate remains for completed review fixes. Serena-generated project.yml changes were reverted.",
+      "timestamp": "2026-11-11T13:50:19Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.1] PR1: Attachment contracts and access policies",
   "type": "task",
-  "updated_at": "2026-11-11T13:48:32Z"
+  "updated_at": "2026-11-11T13:50:19Z"
 }
