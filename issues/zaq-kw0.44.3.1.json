@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-kw0.44.1"
+  ],
   "blocks": [],
   "created": "2026-11-11T23:56:55Z",
   "description": "Independent prerequisite for ensure/folder consumers. Functional specs/files: extend canonical Channels DataSourceBridge and Events/Api with authorized source record context, provider/config/record canonical identity, current permissions and bounded nearest-first ancestry. Disk delegates through Storage API to EntryCatalog ancestry; remote providers traverse immediate parent IDs through existing authorized get_file. No label tables or ingestion writes. Tests before implementation: extend data_source_bridge/entry catalog boundary suites for success, nil/denied/update actor, cross-provider/config spoofing, cycles/depth limits, multiple-parent ambiguity and inaccessible ancestor redaction, no unexpected side effects; existing assertions remain unchanged. Mocking: external provider edge only, real internal Events/permissions. Docs: owning Channels/Storage module docs and service guide contract. Reuse: get_file/list_permissions, EntryCatalog.ancestors_many and existing dispatch; do not build second hierarchy. Input canonical ref + trusted actor; output trusted record+permissions+ordered ancestor refs or typed denied/notfound/incomplete/ambiguous error. No public agent tool. This prerequisite can run alongside typed persistence because it touches independent service ownership; parent ensure integration remains blocked on both. Tests/mix q only; no precommit/push. Read AGENTS and tool/workflow/action/test/conventions/domain policies.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.44.3.1] Implement authorized source record context prerequisite",
   "type": "task",
-  "updated_at": "2026-11-11T23:57:26Z"
+  "updated_at": "2026-11-11T23:57:27Z"
 }
