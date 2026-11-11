@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T08:11:30Z",
+  "description": "User authorized shared-test-code consolidation before PR splitting. Preserve all existing scenarios, assertions, authorization paths and async isolation; leave existing notify_person edits untouched. Plan: fixture extraction -\u003e capture assertion reuse -\u003e final validation. Action reuse: local-only test support; reuse ChannelFileDelivery, FileDeliverySmtpStub, MattermostHistoryFixture, OpenAIStub and real changesets/Storage APIs. No production operation or agent tool changes. Existing DiskConfigFixture reuses a global default and CommunicationFixtures coerces SMTP to IMAP, so neither preserves private per-test connector semantics. No new E2E or numerical production coverage needed for behavior-preserving test refactor.",
+  "id": "zaq-oy9",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Consolidate channel attachment test fixtures and assertions",
+  "type": "epic",
+  "updated_at": "2026-11-11T08:11:30Z"
+}
