@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-oy9.2"
   ],
+  "closed_at": "2026-11-11T08:17:53Z",
   "created": "2026-11-11T08:11:46Z",
   "description": "Create cohesive ChannelFileFixtures primitives and migrate ChannelFileDelivery, agent selection/journeys and SMTP integration fixtures. Preserve exact connector attributes, file bytes, cleanup, permission grants, and retrieval entry points. Reuse existing transport stubs; do not use global default DiskConfigFixture or SMTP-coercing CommunicationFixtures. Tests to add: none; existing consumer suites validate the extraction. Verify authorization, real SMTP/HTTP, workflows, concurrency and cleanup with affected suites and mix q. Documentation: helper moduledoc/API docs only. E2E unnecessary: test-only behavior-preserving refactor. Action reuse: local-only test fixture construction with real ChannelConfig changesets; no product Actions changed.",
   "id": "zaq-oy9.1",
@@ -20,8 +21,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-oy9] Share private document and connector fixture construction",
   "type": "task",
-  "updated_at": "2026-11-11T08:17:51Z"
+  "updated_at": "2026-11-11T08:17:53Z"
 }
