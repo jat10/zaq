@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T23:52:01Z",
+  "description": "## Functional specifications and files\nRun pr-review and adversarial lifecycle review against full PR, issue comments and revised PR1 boundary. Supervisor checks DRY, coupling, test duplication, source ACL, stale/version/concurrency, migration and UI contracts. Fix evidenced findings and repeat review until none remain.\nFiles/owners: Full PR diff and surrounding execution paths; fixes tracked here or focused children.\n## Tests to add before implementation\nProve findings with paths or temporary reproduction tests; preserve/extend existing tests for fixes, rerun relevant tests and mix q. Do not run precommit yet.\n## Branches/paths validated\nSuccess, invalid input, nil/denied actor, stale/concurrent write, unavailable/deleted source, lifecycle cleanup and failure rollback where relevant. No hidden cross-service calls.\n## Mocking plan\nReal Repo, validated Actions, NodeRouter and domain boundaries. Mock only external provider/conversion HTTP when relevant; runtime dependencies via existing Zaq.Config opts, no global mutation.\n## Documentation\nUpdate owner module docs and relevant existing service/BO guide alongside behavior; durable evidence here. Follow docs/documentation.md.\n## Action reuse assessment\nReview-only not applicable; audit implementation reuse assessments and absence of duplicated operations. No GitHub comments posted unless separately requested.\n## Validation/dependencies\nRead AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and applicable service guides. Scoped tests + mix q only per implementation issue. Final precommit reserved for final child. Supervisor verifies before closure. New feature E2E remains zaq-kw0.15 -\u003e zaq-kw0.16.\n",
+  "id": "zaq-kw0.44.7",
+  "labels": [],
+  "parent": "zaq-kw0.44",
+  "priority": 2,
+  "status": "open",
+  "title": "Independent PR review and repair to zero findings",
+  "type": "task",
+  "updated_at": "2026-11-11T23:52:01Z"
+}
