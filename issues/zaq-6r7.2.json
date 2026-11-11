@@ -6,6 +6,7 @@
   "blocks": [
     "zaq-6r7.3"
   ],
+  "closed_at": "2026-11-11T08:43:57Z",
   "created": "2026-11-11T08:41:12Z",
   "description": "Move 3 principal provenance cases into existing RecordTest Provenance describe; move connector attachment-policy defaults case into SettingsTest. Preserve assertions and setup; no async changes. Validate AST equivalence, old suite bodies, mix q and affected suites. Action reuse local-only suite ownership; no new operations.",
   "id": "zaq-6r7.2",
@@ -18,8 +19,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6r7] Merge provenance and settings scenarios into existing owners",
   "type": "task",
-  "updated_at": "2026-11-11T08:43:56Z"
+  "updated_at": "2026-11-11T08:43:57Z"
 }
