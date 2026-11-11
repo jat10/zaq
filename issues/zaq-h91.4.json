@@ -4,6 +4,7 @@
     "zaq-h91.3"
   ],
   "blocks": [],
+  "closed_at": "2026-11-11T12:35:17Z",
   "created": "2026-11-11T12:24:43Z",
   "description": "Depends on shared fixture extraction. Complete affected history strategy and attachment suites, mix q; preserve assertions/security/lifecycle. No precommit per explicit user instruction. Export patches and actual net source totals.",
   "id": "zaq-h91.4",
@@ -16,8 +17,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-h91] Validate shared provider journeys",
   "type": "task",
-  "updated_at": "2026-11-11T12:35:16Z"
+  "updated_at": "2026-11-11T12:35:17Z"
 }
