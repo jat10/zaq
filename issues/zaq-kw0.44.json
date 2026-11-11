@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T23:51:38Z",
+  "description": "Implement revised PR1 on existing feat/labeling and upstream PR #918 (fork jat10/zaq#7), not split PRs yet. User 2026-11-12 authorized epic, delegated GPT-6.1 Sol implementation, iterative independent PR review, tests, final precommit and push. No merge authorized. Requirements: issue #598 plus https://github.com/www-zaq-ai/zaq/issues/598#issuecomment-6705695678 and #issuecomment-6705696617. Full PR1 includes typed definitions, shared assignments, pending automatic configuration, folder inheritance, pre-ingestion identity, existing UI/queries/lifecycle. PR2 retains conversion using existing ingestion pipeline, Decision execution and retrieval representation refresh; PR3 retains chunk visualization and final feature UX/E2E.\nWorking contracts from discussed plan: definitions separate from one polymorphic assignment table; Boolean, scale(min,max,increment), stable option IDs; manual values required, false/zero meaningful, automatic missing values pending, explicit exclusion distinct. Assignment mode/threshold owned by label definition. Document override/exclusion \u003e nearest folder \u003e higher ancestors. Source identities provider/configuration/record scoped; use canonical ancestry, not a separate tree. Ensure Document on Save transaction, source authorization and source-derived permissions, Cancel no identity/assignment creation, no ingestion side effects. Reject changes invalidating used definitions/values. These are the supervised implementation baseline; report unresolved security/product consequences before inventing behavior.\nPreserve existing UI, Action/domain ownership, NodeRouter/Event boundary, version checks, atomic writes and permissions. Extend existing tests and assertions; consolidate duplicates without losing scenarios. Exact old free-text/blank/rejected-auto expectation replacements require requested explicit test approval before edits. No parallel legacy implementation or unrelated refactor. Existing .serena/project.yml edit is user-owned and excluded.\nWork serially through implementation dependencies; scoped tests and mix q per issue; NEVER mix precommit per issue. Independent PR review against requirements and base, repair all evidenced findings, re-review to zero unresolved findings; coverage-upper after review; review coverage changes; required existing E2E; final mix precommit only after all fixes before push. Final push updates existing PR branch; no force push or merge. New consolidated feature E2E remains zaq-kw0.15 UX -\u003e zaq-kw0.16, not self-approved. PR1 completion does not close entire feature.\n",
+  "id": "zaq-kw0.44",
+  "labels": [],
+  "parent": "zaq-kw0",
+  "priority": 2,
+  "status": "open",
+  "title": "Align existing PR1 with revised typed labeling contracts",
+  "type": "epic",
+  "updated_at": "2026-11-11T23:51:38Z"
+}
