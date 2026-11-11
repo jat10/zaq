@@ -19,11 +19,15 @@
     {
       "text": "Parallel initial extraction authorized by user; status advanced with bw update because bw start enforces upstream-merge dependency. Dependency edge retained. Reuse assessment: extend existing Executor/StreamEvents, OpaqueAliases and NotifyPerson/RunAgent Actions with exact source feature delta; reuse AttachDocuments source Action, Contracts.Record and selection/access contracts from PR1, notification/delivery APIs and fixtures from PR2. No new operations or redesign.",
       "timestamp": "2026-11-11T09:09:11Z"
+    },
+    {
+      "text": "Initial extraction applied common-ancestor feature delta (1f63f912..814ca7a8) to upstream baseline 7acdadc6; this preserves upstream additions. Registry source test expected keys adapted only to retain upstream general.evaluate_decisions. PR2 explicitly owns ChannelFileFixtures/ChannelFileDelivery/FileDeliverySMTPStub. Prerequisites: PR1 Outgoing attachments/attachment_error, Record authorization/provenance; PR2 validate_files and notification attachment delivery, delivery support fixtures. No predecessor files copied. Source docs/services/agent.md delta carried with PR3.",
+      "timestamp": "2026-11-11T09:10:14Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.3] PR3: Agent attachment selection and tools",
   "type": "task",
-  "updated_at": "2026-11-11T09:09:11Z"
+  "updated_at": "2026-11-11T09:10:14Z"
 }
