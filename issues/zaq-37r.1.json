@@ -9,9 +9,15 @@
   "id": "zaq-37r.1",
   "labels": [],
   "parent": "zaq-37r",
+  "comments": [
+    {
+      "text": "Completed private consume/3 and start_conversation_agent!/2 extraction. mix q passed; both affected suites passed 46 cases (1 property, 45 tests). All scripts, request handles, stream enumeration points, permissions and teardown remain unchanged.",
+      "timestamp": "2026-11-11T08:30:03Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-37r] Extract agent stream and journey setup helpers",
   "type": "task",
-  "updated_at": "2026-11-11T08:27:45Z"
+  "updated_at": "2026-11-11T08:30:03Z"
 }
