@@ -31,11 +31,15 @@
     {
       "text": "Published incremental stack commit d985b4b9ffea72b4248bfb8f401208f47bc7617e. Fork PR: https://github.com/jat10/zaq/pull/11. Base: zaq-rn4.1/channel-files-contracts. Validation: mix q, focused tests, commit/pre-push hooks passed. Upstream PR1: https://github.com/www-zaq-ai/zaq/pull/935. Keep task open until its upstream PR merges.",
       "timestamp": "2026-11-11T09:36:39Z"
+    },
+    {
+      "text": "User authorized restacking PR2 onto reviewed PR1 b7f3a9b3f and checking moved hunks disappear. Action reuse: no new operations; replay existing delivery slice preserving PR1 boolean accessor, adapter forwarding/pins, real-adapter tests and load-order fix. Preserve unrelated .serena/project.yml local change via rebase autostash. Validate diff, mix q and focused delivery/bridge suites. PR3/4 not in requested restack scope.",
+      "timestamp": "2026-11-11T17:41:20Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.2] PR2: File delivery through channels",
   "type": "task",
-  "updated_at": "2026-11-11T09:36:39Z"
+  "updated_at": "2026-11-11T17:41:20Z"
 }
