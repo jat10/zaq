@@ -29,11 +29,15 @@
     {
       "text": "Applied first review comment locally: Settings.send_on_file_failure?/1 owns unchanged normalization; policy maps boolean to atoms; email form consumes boolean directly. Added default/precedence tests and atom/string-key property; existing expectations unchanged. mix q passed; focused Settings, EmailConnectorSettings and API suites passed (21 checks: 3 properties, 18 tests); git diff --check passed. No commit/push or GitHub reply. Second review comment remains pending; final coverage/precommit gate remains for completed review fixes. Serena-generated project.yml changes were reverted.",
       "timestamp": "2026-11-11T13:50:19Z"
+    },
+    {
+      "text": "Second review fix plan (jfayad discussion 4537424225): extend existing JidoChatBridge.capability_snapshot/1 by forwarding adapter metadata keys :configurable_max_file_size and :attachment_failure_policy from Adapter.capabilities/1 into resolved, matching source #876. Bridge.capability_snapshot/2 already preserves resolved; no new operation or Action is needed. Action reuse assessment: operation is read-only capability projection; candidates JidoChatBridge.capability_snapshot/1, Bridge.capability_snapshot/2, Adapter.capabilities/1, Bridge.required_capabilities/1. Extend JidoChatBridge local projection: config provider map -\u003e {:ok, %{resolved: map}} or adapter lookup error; no actor, side effect, retry, or idempotency concern; consumed through Channels API/NodeRouter by BO and by existing bridge callers; no agent tool/workflow exposure. Verify with new production bridge/normalization test and existing snapshot regressions, preserving all existing test behavior. Dependency adapters currently do not declare these metadata keys, so support remains opt-in. Restack later PRs after PR1 changes.",
+      "timestamp": "2026-11-11T13:56:06Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.1] PR1: Attachment contracts and access policies",
   "type": "task",
-  "updated_at": "2026-11-11T13:50:19Z"
+  "updated_at": "2026-11-11T13:56:06Z"
 }
