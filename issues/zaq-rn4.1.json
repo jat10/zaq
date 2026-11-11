@@ -21,11 +21,15 @@
     {
       "text": "Published incremental stack commit d1a65879384259d33d43ad36b29601f0e3556629. Fork PR: https://github.com/jat10/zaq/pull/10. Base: zaq-rn4/base at upstream baseline. Validation: mix q, focused tests, commit/pre-push hooks passed. Upstream PR1: https://github.com/www-zaq-ai/zaq/pull/935. Keep task open until its upstream PR merges.",
       "timestamp": "2026-11-11T09:36:35Z"
+    },
+    {
+      "text": "Review comment 4537409843: user authorized boolean-accessor refactor only. Action reuse assessment: extend ConnectorConfig.Settings pure projections with send_on_file_failure?/1; policy delegates and EmailConnectorSettings consumes boolean directly. Preserve lookup precedence, default-on behavior, false/string-false handling and all existing assertions. Local domain projection has no side effects, actor requirements, retries or Action/tool exposure. Add accessor contract/property coverage; run mix q and focused settings/email tests. PR second comment remains out of scope.",
+      "timestamp": "2026-11-11T13:48:32Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.1] PR1: Attachment contracts and access policies",
   "type": "task",
-  "updated_at": "2026-11-11T09:36:35Z"
+  "updated_at": "2026-11-11T13:48:32Z"
 }
