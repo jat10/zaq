@@ -9,9 +9,15 @@
   "id": "zaq-58u.2",
   "labels": [],
   "parent": "zaq-58u",
+  "comments": [
+    {
+      "text": "Completed both suite merges, removed two standalone files, and kept async true plus describe-scoped setup. Structural AST comparison (ignoring line metadata) confirms every test/property/setup/private helper body equals the combined original suites. No stale path/module references found in docs/test/configuration. mix q passed; both owning suites and final mix precommit passed 129 cases (12 properties, 117 tests). git diff --check clean. Net LOC this merge is +1 due to describe nesting/formatting; benefit is ownership and two fewer modules, not LOC savings. No production changes or commits.",
+      "timestamp": "2026-11-11T08:38:15Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-58u] Consolidate attachment stream tests and validate",
   "type": "task",
-  "updated_at": "2026-11-11T08:36:20Z"
+  "updated_at": "2026-11-11T08:38:15Z"
 }
