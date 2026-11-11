@@ -9,9 +9,15 @@
   "id": "zaq-6r7.3",
   "labels": [],
   "parent": "zaq-6r7",
+  "comments": [
+    {
+      "text": "Duplicate-block audit across PR tests (filtered to PR-added regions) identifies one remaining substantial exact flow: history ingress capture/admit/finalize in three new continuation/attachment scenarios. Extract a private finalize_answer helper keeping incoming identity, actor, answer and every assertion explicit. Existing capture_delivered is not reusable because it records/associates transport confirmation, a different lifecycle stage. Validate HistoryIngressTest. Other large duplicate matches are pre-existing outside this PR and remain out of scope.",
+      "timestamp": "2026-11-11T08:44:54Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6r7] Audit remaining tests and complete worthwhile consolidation",
   "type": "task",
-  "updated_at": "2026-11-11T08:43:58Z"
+  "updated_at": "2026-11-11T08:44:54Z"
 }
