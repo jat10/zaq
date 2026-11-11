@@ -14,11 +14,15 @@
     {
       "text": "Implemented the approved shared Step.Node.validate_node_map/1 fallback for non-map values and widened its spec to term(). Existing map clause is unchanged. Added arbitrary non-map property coverage plus Iterate/Batch JSON import regressions; kept the six earlier create-workflow regressions and all pre-existing test behavior unchanged. Focused suite passed: 133 checks (4 properties, 129 tests). mix q passed. Final mix precommit is running. Action reuse: existing shared schema validator extended locally; no new operation/Action/tool. Numerical coverage phase remains post-review. No commit/push; unrelated .serena/project.yml untouched.",
       "timestamp": "2026-11-11T17:33:17Z"
+    },
+    {
+      "text": "Final mix precommit completed successfully: 12031 passed (48 doctests, 346 properties, 11637 tests), 1 skipped, 164 excluded; 335.4s test runtime. Formatting, strict Credo and warnings-as-errors compile passed before stale tests. Context Mode RPC returned a host timeout at 300s despite the requested 900000ms tool timeout; the existing precommit process continued and its final log confirmed success, with no remaining precommit VM. Focused suite and mix q also passed. Implementation remains uncommitted for human review; numerical coverage workflow remains post-review.",
+      "timestamp": "2026-11-11T17:38:42Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Reject malformed inline pipeline nodes before workflow persistence",
   "type": "task",
-  "updated_at": "2026-11-11T17:33:17Z"
+  "updated_at": "2026-11-11T17:38:42Z"
 }
