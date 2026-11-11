@@ -49,11 +49,15 @@
     {
       "text": "Dependency-pin validation: mix q passed; new real Mattermost snapshot, stub snapshot, real LiveView controls passed (3 checks); existing Bridge/ChannelsLive/Settings/EmailConnectorSettings regression suites passed (131 checks). Final mix precommit with 900s timeout completed exit 2: 12066/12067 passed (48 doctests, 345 properties, 11673/11674 tests), 1 skipped, 164 excluded. Only failure: existing jido_chat_delivery_test.exs:65 expects Mattermost edit PUT body {id,message}, while pinned adapter transport now emits {id,channel_id,message}; action remains updated, expected PUT occurs, no POST. Original #876 updated precisely this expectation; no existing-test change made pending explicit human approval under docs/testing-approach.md. PR2/.3/.4 carry both moved pins and forwarding hunk and require duplicate removal on restack. No commit/push/GitHub reply.",
       "timestamp": "2026-11-11T16:38:55Z"
+    },
+    {
+      "text": "Human test-behavior approval: user explicitly replied yes go ahead to copying the original #876 Mattermost edit-payload assertion. Approved scope is only jido_chat_delivery_test.exs existing expectation: include channel_id private-room alongside id status-post and message Updated answer, matching pinned adapter transport. Applied that exact source assertion; no other existing test behavior changed. Revalidating focused test, mix q and full precommit.",
+      "timestamp": "2026-11-11T16:40:43Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.1] PR1: Attachment contracts and access policies",
   "type": "task",
-  "updated_at": "2026-11-11T16:38:55Z"
+  "updated_at": "2026-11-11T16:40:43Z"
 }
