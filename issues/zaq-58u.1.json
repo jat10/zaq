@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T08:34:57Z",
+  "description": "Move one property and one example unchanged into RunAgentTest describe attachments; scope Mox verify_on_exit to this describe. Reuse DataCase async true and ExUnitProperties. No new tests or production operations; preserve dynamic mocks and validated Action path. Remove old module after moving scenarios. Validate mix q and run_agent_test.",
+  "id": "zaq-58u.1",
+  "labels": [],
+  "parent": "zaq-58u",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-58u] Consolidate RunAgent attachment tests",
+  "type": "task",
+  "updated_at": "2026-11-11T08:34:57Z"
+}
