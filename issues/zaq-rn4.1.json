@@ -13,11 +13,15 @@
     {
       "text": "Worktree: /Users/jad/Desktop/Jad/workspace/zaq/forks/jat10/zaq-zaq-rn4.1-channel-files-contracts\nBranch: zaq-rn4.1/channel-files-contracts\nInitial baseline: 7acdadc6d72c637406ca8e651c1a434bcb92c371. Reserved checkout only; extraction not started. Before implementation, restack on predecessor tip. Source: 814ca7a83b00356e8f1bd8e2155f159a371ae641. Full environment setup pending: source .claude/settings.local.json is absent; mix setup has not run. Fork PR base: upstream main (first upstream PR)",
       "timestamp": "2026-11-11T09:04:20Z"
+    },
+    {
+      "text": "Initial extraction applied from immutable source 814ca7a against merge-base 1f63f912, using git apply --3way to preserve upstream 7acdadc changes. Ownership: Record.Authorization principal visibility and Provenance effective-principal binding; Settings attachment_failure_policy; complete Outgoing attachment/error/metadata contract; ChannelConfig max_file_size; EmailConnectorSettings and EmailConfig policy persistence; channel modal and SMTP settings/selection UI; six associated contract/settings/LiveView test files; Engine Outgoing documentation. 19 files, 693 insertions, 69 deletions. NotificationSmtpLive DeliveryError alias and formatting clause reserved PR2; attachment_policy_test and channel_file_fixtures reserved PR2. No later-slice prerequisites. Action reuse: extend existing authorization/provenance and Outgoing builders locally; extend existing Engine connector persistence and existing BO Event/NodeRouter settings snapshot, no new operation/API/tool or duplicated side-effect flow. Permission principal precedence remains source behavior and nil is not an implicit grant; copied source provenance tamper/regression tests unchanged. Validation: git diff HEAD --check passes; Code.string_to_quoted parses all 16 changed Elixir source/test files. mix q blocked immediately by absent deps: Unknown dependency :ecto_sql given to :import_deps in formatter. Focused mix test (record, settings, outgoing, channel_config, channels_live, notification_smtp_live) blocked by missing dependencies before compilation. deps and _build absent; no shared mutable build/resources. config/test.exs verified branch-derived isolated DB zaq_test_zaq_rn4_1_channel_files_contracts. No tests executed, no dependency installation, no commit/push/PR/closure. Review, coverage, E2E and final precommit remain pending; this is an initial local extraction only.",
+      "timestamp": "2026-11-11T09:09:06Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.1] PR1: Attachment contracts and access policies",
   "type": "task",
-  "updated_at": "2026-11-11T09:06:57Z"
+  "updated_at": "2026-11-11T09:09:06Z"
 }
