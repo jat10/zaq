@@ -9,9 +9,15 @@
   "id": "zaq-kw0.44.1",
   "labels": [],
   "parent": "zaq-kw0.44",
+  "comments": [
+    {
+      "text": "Three read-only Sol audits completed. Reuse confirmed: Labels definition/deletion; ResourceLabels editing/projection; AssignmentValue validation; ValueManagement delegates ResourceLabels; existing Actions validated by Jido.Exec and confidential Events. Canonical source ref is provider/config_id/record_id (Disk EntryCatalog UUID, remote opaque ID); derive source server-side. Get_file authorizes read, update authority must be checked separately. Disk permissions need list_permissions. Extend ExternalPermissions with strict checked mode reusing principal mapping, retain existing apply/2 defaults. No existing ancestry operation: add bounded authorized Channels record context; Disk delegates Storage EntryCatalog ancestry, remote get_file immediate-parent traversal, no separate tree. Multi-parent conflict/inaccessible ancestry fail closed without leaking labels. Polymorphic storage must preserve database integrity/cleanup/no-chunk availability; stale chunk ID reuse after dynamic reset needs protection. UI reuses existing LabelEditor/LabelValueManager/Chips; folders are configuration scope, NOT definition resource target. Source editor open/cancel read-only, ensure+edit only on Save. Existing tests to extend mapped by audit; exact free-text/blank/automatic-rejection changes requested from human and pending. Migration mapping pending user choice: current dev DB has 3 definitions/7 document assignments. Baseline isolated branch: 64 passed including 4 properties. No application edits.",
+      "timestamp": "2026-11-11T23:55:56Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.1] Audit current contracts, reuse and test migration",
   "type": "task",
-  "updated_at": "2026-11-11T23:53:08Z"
+  "updated_at": "2026-11-11T23:55:56Z"
 }
