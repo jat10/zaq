@@ -17,11 +17,15 @@
     {
       "text": "History helper validated: all 28 HistoryIngress cases pass and mix q passes. Finer duplicate scan identifies the registry whitelist repeated verbatim in two existing tests, both edited by this PR to add attach_document. Consolidate into one literal expected-key module attribute; retain both API assertions and exact ordering. Do not derive expected keys from production. This is the remaining concrete duplication candidate; other short similarities have differing contracts.",
       "timestamp": "2026-11-11T08:46:31Z"
+    },
+    {
+      "text": "Final audit: no remaining exact duplicate blocks \u003e=8 nonblank lines / 220 characters overlap PR test additions. Semantic review retained distinct scopes: async pure notification/selection/preflight suites vs synchronous DB/global-mailer suites; real HTTP/SMTP journeys vs adapter mocks; per-request native lifecycle probe vs ordinary factory tests; DeliveryFiles and AttachDocuments are new owning modules. Smaller fixture similarities preserve different provenance/permission/transport contracts and do not justify new abstraction. Provenance/settings merge and SMTP setup scoping verified with AST body equivalence. All test scenarios retained. Net reduction this task: 97 lines; one additional standalone module removed. No worthwhile additional behavior-preserving consolidation identified within PR scope; older duplicate setup outside PR remains excluded.",
+      "timestamp": "2026-11-11T08:48:07Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6r7] Audit remaining tests and complete worthwhile consolidation",
   "type": "task",
-  "updated_at": "2026-11-11T08:46:31Z"
+  "updated_at": "2026-11-11T08:48:07Z"
 }
