@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T12:02:59Z",
+  "description": "Depends on approved consolidation implementation; run mix q and isolated tests. Do not run mix precommit (user explicitly deferred until before push). Report net PR line totals and contract mapping.",
+  "id": "zaq-h91.2",
+  "labels": [],
+  "parent": "zaq-h91",
+  "priority": 2,
+  "status": "open",
+  "title": "Validate PR876 consolidation and report contract mapping",
+  "type": "task",
+  "updated_at": "2026-11-11T12:02:59Z"
+}
