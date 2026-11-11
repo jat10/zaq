@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-h91.3"
+  ],
   "blocks": [],
   "created": "2026-11-11T12:24:43Z",
   "description": "Depends on shared fixture extraction. Complete affected history strategy and attachment suites, mix q; preserve assertions/security/lifecycle. No precommit per explicit user instruction. Export patches and actual net source totals.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-h91] Validate shared provider journeys",
   "type": "task",
-  "updated_at": "2026-11-11T12:24:43Z"
+  "updated_at": "2026-11-11T12:25:10Z"
 }
