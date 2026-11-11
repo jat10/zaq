@@ -4,14 +4,16 @@
   "blocks": [
     "zaq-h91.2"
   ],
+  "closed_at": "2026-11-11T12:07:41Z",
+  "close_reason": "Implemented approved canonical selection/privacy merge and UI projection reuse; no production behavior changes.",
   "created": "2026-11-11T12:02:43Z",
   "description": "User approves consolidation/migration and duplicate removal, preserving security/lifecycle contracts. Concrete reduction: merge standalone successful privacy and selection matrix into one canonical ingress per provider (add A, add B, repeated add B, remove A), keeping exact persisted/private-history and fresh followup assertions; runtime suite retains replace/clear permutations. Move UI projection checks into existing NotificationLogsLive modal tests; integration keeps exact persisted log payload/status/errors. Keep policy/workflow and denial bodies because extracting their provider/disk helpers would add source. Action reuse not applicable: tests reuse real existing Actions and fixtures, no production operation changes. No commits/push; mix precommit explicitly deferred by user until before push.",
   "id": "zaq-h91.1",
   "labels": [],
   "parent": "zaq-h91",
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Consolidate approved PR876 attachment journey contracts",
   "type": "task",
-  "updated_at": "2026-11-11T12:04:26Z"
+  "updated_at": "2026-11-11T12:07:41Z"
 }
