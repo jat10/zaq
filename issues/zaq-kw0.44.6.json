@@ -11,9 +11,15 @@
   "id": "zaq-kw0.44.6",
   "labels": [],
   "parent": "zaq-kw0.44",
+  "comments": [
+    {
+      "text": "Independent test reuse audit: extend existing value/invalid rollback/catalog/query tests. Consolidate LabelsLive selection styling test into select-all test preserving every toolbar/checkbox/row/modal assertion; keep separate editor Cancel-new vs Cancel-existing and distinct single/bulk/revoked/deletion/lifecycle transactions. Reuse LabelFixtures; no blanket deduplication across layers. Fresh upstream/main is 12 commits ahead; merge preview reports only assets/css/styles.css conflict. Integrate upstream before final review/coverage if still needed, preserve semantic changes, no force push; validation must cover final merged tree.",
+      "timestamp": "2026-11-11T23:59:55Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.44.6] Integrate lifecycle, tests and owning documentation",
   "type": "task",
-  "updated_at": "2026-11-11T23:52:03Z"
+  "updated_at": "2026-11-11T23:59:55Z"
 }
