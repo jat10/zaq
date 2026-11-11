@@ -27,11 +27,15 @@
     {
       "text": "Correction to initial handoff statistics: final patch is 39 files +5228/-156, 36 parsed Elixir files. Added Engine.Api notify_person attachment forwarding/trusted context. Mix dependency checks reverted missing git dependency lock entries during attempted validation; exact source mix.lock hunks reapplied after validation and retained in final /tmp/zaq-rn4.2-delivery.patch. Earlier 38/+5311 statistics were provisional and incorrect. No runtime validation passed.",
       "timestamp": "2026-11-11T09:13:02Z"
+    },
+    {
+      "text": "Published incremental stack commit d985b4b9ffea72b4248bfb8f401208f47bc7617e. Fork PR: https://github.com/jat10/zaq/pull/11. Base: zaq-rn4.1/channel-files-contracts. Validation: mix q, focused tests, commit/pre-push hooks passed. Upstream PR1: https://github.com/www-zaq-ai/zaq/pull/935. Keep task open until its upstream PR merges.",
+      "timestamp": "2026-11-11T09:36:39Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.2] PR2: File delivery through channels",
   "type": "task",
-  "updated_at": "2026-11-11T09:13:02Z"
+  "updated_at": "2026-11-11T09:36:39Z"
 }
