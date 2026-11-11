@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-kw0.44.3"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-kw0.44.5"
+  ],
   "created": "2026-11-11T23:51:50Z",
   "description": "## Functional specifications and files\nStore folder configuration on canonical source identity; resolve applicable inherited/manual/pending/excluded labels deterministically with origin. Descendant reads and edits reflect folder changes and moves without duplicate evaluation or independent ancestry tree; cleanup deletions/tombstones. Persist explicit document overrides/exclusions.\nFiles/owners: Labels owning domain, existing Storage EntryCatalog / Channels Records ancestry contracts, relevant ingestion lifecycle/read projections.\n## Tests to add before implementation\nExtend shared assignment/integration tests for nested precedence, override/exclusion, origin visibility, folder edits/moves/deletion, new descendants, source isolation and permission denial. Property tests deterministic resolution/idempotency.\n## Branches/paths validated\nSuccess, invalid input, nil/denied actor, stale/concurrent write, unavailable/deleted source, lifecycle cleanup and failure rollback where relevant. No hidden cross-service calls.\n## Mocking plan\nReal Repo, validated Actions, NodeRouter and domain boundaries. Mock only external provider/conversion HTTP when relevant; runtime dependencies via existing Zaq.Config opts, no global mutation.\n## Documentation\nUpdate owner module docs and relevant existing service/BO guide alongside behavior; durable evidence here. Follow docs/documentation.md.\n## Action reuse assessment\nExtend existing EditResourceLabels and resource projections for folder scope; domain-local inheritance uses canonical source hierarchy. Folder resource is configuration scope, not definition Document/Chunk applicability. Preserve read/write actor checks and versioned atomic writes.\n## Validation/dependencies\nRead AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and applicable service guides. Scoped tests + mix q only per implementation issue. Final precommit reserved for final child. Supervisor verifies before closure. New feature E2E remains zaq-kw0.15 -\u003e zaq-kw0.16.\n",
   "id": "zaq-kw0.44.4",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-kw0.44.4] Implement folder labels and effective inheritance",
   "type": "task",
-  "updated_at": "2026-11-11T23:51:53Z"
+  "updated_at": "2026-11-11T23:51:56Z"
 }
