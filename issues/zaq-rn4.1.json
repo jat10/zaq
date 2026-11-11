@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T09:04:05Z",
+  "description": "PR 1 of 4 under zaq-rn4.\nUser goal: Files are shared only when the requesting user has access.\nSource implementation: 814ca7a83b00356e8f1bd8e2155f159a371ae641 (feat/channel-files). Copy existing lines and tests; preserve behavior. No independent rewrite.\n\nFunctional specifications covered with associated files to edit/add: lib/zaq/contracts/record/{authorization,provenance}.ex; lib/zaq/connector_config/settings.ex; prerequisite outgoing attachment contract hunks in lib/zaq/engine/messages/outgoing.ex. Include connector persistence and configuration/UI hunks needed to expose attachment settings coherently. This is the initial ownership map; verify source hunks and dependency closure before extraction. Earlier slices own shared prerequisites.\nTests to add before implementation: copy existing source scenarios into this slice with their smallest required fixtures. Record authorization/provenance tests, attachment policy tests, connector settings tests and associated existing configuration/UI tests. Verify allowed/denied/nil identity, provenance, limits/defaults and unchanged settings behavior.\nBranches/paths validated: positive paths, explicit permission rejection, malformed inputs, error propagation and all source regression cases relevant to this slice; standalone compilation against predecessor. Final PR also checks cumulative source parity.\nMocking plan: reuse existing source fixtures/stubs for external APIs; retain real internal boundaries and existing isolation. Do not create redundant fixture frameworks.\nDocumentations to update for both code and docs/ related content: copy source documentation hunks with the behavior they explain; record source mapping, validation and exceptions in this issue/PR. Do not invent new behavior or rewrite unrelated documentation.\nAction reuse assessment: extraction reuses the source implementation's existing Actions/domain operations at the listed paths; no new operation is proposed. Before editing, inspect current module responsibility and dependencies and record reuse evidence for affected operations. Preserve NodeRouter event dispatch, explicit identity checks, configuration resolution and external side-effect boundaries.\n\nAcceptance: slice copies its owned source changes, tests pass independently, no later-PR dependency is missing, source hunks are accounted for, review/coverage/final validation complete, upstream PR merged. Apply epic delivery and restacking instructions. New feature E2E authoring remains subject to the existing zaq-ic9 approval tracking; this split should reuse source tests.\n",
+  "id": "zaq-rn4.1",
+  "labels": [],
+  "parent": "zaq-rn4",
+  "priority": 1,
+  "status": "open",
+  "title": "PR1: Attachment contracts and access policies",
+  "type": "task",
+  "updated_at": "2026-11-11T09:04:05Z"
+}
