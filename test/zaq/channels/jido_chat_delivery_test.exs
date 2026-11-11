@@ -6,13 +6,119 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
 
   alias Jido.Chat.Mattermost.Adapter
   alias Zaq.Accounts.{People, PeopleAuth, PeoplePermissions, PersonLoginChallenge}
-  alias Zaq.Channels.{EmailBridge, JidoChatBridge}
+  alias Zaq.Channels.Api
+  alias Zaq.Channels.{DeliveryError, EmailBridge, JidoChatBridge}
+  alias Zaq.Channels.Materializers.CommunicationMedia
+  alias Zaq.Contracts.Record
   alias Zaq.Engine.{ChannelConfig, Events, PeopleAuthGateway}
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Engine.Notifications.NotificationLog
+  alias Zaq.Event
+  alias Zaq.Events.TrustedContext
   alias Zaq.TestSupport.OpenAIStub
 
+  defmodule FileTransport do
+    alias Jido.Chat.Mattermost.Transport.ReqClient
+
+    def upload_files(channel, [file], opts) do
+      send(self(), {:file_upload, channel, file, opts})
+
+      case URI.parse(opts[:url]).path do
+        "/reported_upload_error" ->
+          {:error, Process.get({__MODULE__, :error})}
+
+        "/upload_failed" ->
+          {:error, :upload_failed}
+
+        "/size_rejected" ->
+          {:error, {413, %{"message" => "private-provider-detail"}}}
+
+        "/upload_timeout" ->
+          {:error, :timeout}
+
+        path when path in ["/notice_failed", "/http_upload_failed"] ->
+          {:error, {400, %{"message" => "private-provider-detail"}}}
+
+        path when path in ["/notice_raised", "/notice_exit"] ->
+          {:error, :upload_failed}
+
+        _ ->
+          {:ok, %{"file_infos" => [%{"id" => "upload-id", "name" => file.filename}]}}
+      end
+    end
+
+    def edit_message(channel, id, text, opts) do
+      if URI.parse(opts[:url]).path == "/reported_publication_error" do
+        send(self(), {:file_edit, channel, id, text, opts})
+        {:error, Process.get({__MODULE__, :error})}
+      else
+        ReqClient.edit_message(channel, id, text, opts)
+      end
+    end
+
+    def send_message(channel, text, opts) do
+      send(self(), {:file_post, channel, text, opts})
+
+      case URI.parse(opts[:url]).path do
+        "/reported_publication_error" ->
+          {:error, Process.get({__MODULE__, :error})}
+
+        "/post_failed" ->
+          {:error, {500, %{"message" => "private-provider-detail"}}}
+
+        "/post_timeout" ->
+          {:error, %Req.TransportError{reason: :timeout}}
+
+        "/missing_post_id" ->
+          {:ok, %{"channel_id" => channel, "file_ids" => opts[:file_ids]}}
+
+        _ ->
+          {:ok,
+           %{"id" => "final-post-id", "channel_id" => channel, "file_ids" => opts[:file_ids]}}
+      end
+    end
+  end
+
+  defmodule DeliveryBridge do
+    alias Zaq.Channels.Bridge
+    alias Zaq.Channels.JidoChatDeliveryTest.FileTransport
+
+    defdelegate bridge_for(provider), to: Bridge
+    defdelegate fetch_channel_config(provider, id), to: Bridge
+
+    def fetch_connection_details_for_config(config) do
+      config
+      |> Bridge.fetch_connection_details_for_config()
+      |> Map.put(:transport, FileTransport)
+    end
+  end
+
+  defmodule FailingEditAdapter do
+    defdelegate send_file(channel, file, opts), to: Adapter
+
+    def edit_message(channel, message_id, text, opts) do
+      send(self(), {:file_status, channel, message_id, text, opts})
+
+      case URI.parse(opts[:url]).path do
+        "/notice_failed" -> {:error, :notice_failed}
+        "/notice_raised" -> raise "status failed"
+        "/notice_exit" -> exit(:status_failed)
+      end
+    end
+  end
+
+  defmodule FileReplyWorker do
+    use Oban.Worker, queue: :default
+    @impl Oban.Worker
+    def perform(_job), do: :ok
+  end
+
+  defmodule ExitingReplyWorker do
+    def new(_args), do: exit(:callback_failed)
+  end
+
   setup do
+    Code.ensure_loaded!(Adapter)
     previous = Application.get_env(:zaq, :channels)
 
     Application.put_env(:zaq, :channels, %{
@@ -22,6 +128,287 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
 
     on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
     {:ok, registry: previous}
+  end
+
+  test "strict policy rejects an adapter with message edits but no policy support before materialization" do
+    adapter = Jido.Chat.Discord.Adapter
+    assert Jido.Chat.Adapter.capabilities(adapter).edit_message == :native
+    channels = Application.get_env(:zaq, :channels)
+
+    Application.put_env(
+      :zaq,
+      :channels,
+      Map.put(channels, :discord, %{adapter: adapter, bridge: JidoChatBridge})
+    )
+
+    outgoing = %{
+      file_outgoing()
+      | provider: :discord,
+        attachments: [
+          %{
+            hd(file_outgoing().attachments)
+            | content: nil,
+              materialization_handle: "invalid-private-handle"
+          }
+        ]
+    }
+
+    assert {:error,
+            %DeliveryError{
+              reason: {:unsupported_attachment_failure_policy, :abort},
+              delivery: :not_sent
+            }} =
+             JidoChatBridge.send_reply(outgoing, %{
+               url: "https://example.test",
+               token: "private",
+               attachment_failure_policy: :abort
+             })
+
+    refute_received {:file_upload, _, _, _}
+    refute_received {:file_post, _, _, _}
+  end
+
+  test "explicit policy reaches attachment create and edit while uploading once" do
+    for message_id <- [nil, "status-id"] do
+      outgoing = %{file_outgoing() | metadata: %{message_id: message_id}}
+      connection = Map.put(file_connection(), :attachment_failure_policy, :abort)
+      assert {:ok, %{confirmation: :confirmed}} = JidoChatBridge.send_reply(outgoing, connection)
+      assert_received {:file_upload, _, _, _}
+      refute_received {:file_upload, _, _, _}
+
+      if message_id,
+        do:
+          assert_received(
+            {:file_status, _, "status-id", "File caption", [file_ids: ["upload-id"]]}
+          ),
+        else: assert_received({:file_post, _, "File caption", _})
+    end
+  end
+
+  test "explicit continue records sanitized upload failure and publishes the original answer once" do
+    connection = Map.put(file_connection("size_rejected"), :attachment_failure_policy, :continue)
+
+    assert {:ok, %{confirmation: :partial, messages: [receipt], failed_files: [failure]} = report} =
+             JidoChatBridge.send_reply(file_outgoing(), connection)
+
+    assert receipt.body == "File caption"
+    assert failure.reason == {:http_error, 413}
+    assert failure.stage in [:upload, :transport]
+    refute inspect(report) =~ "private-provider-detail"
+    assert_received {:file_upload, _, _, _}
+    refute_received {:file_upload, _, _, _}
+    assert_received {:file_post, _, "File caption", _}
+    refute_received {:file_post, _, _, _}
+  end
+
+  for phase <- [:upload, :publication] do
+    @tag :neutral_failure_report
+    @tag failure_phase: phase
+    test "neutral #{phase} failure categories survive create and edit reports without raw transport data",
+         %{failure_phase: phase} do
+      for {reason, category} <- [
+            {{413, %{"message" => "private-provider-detail"}}, {:http_error, 413}},
+            {{:http_error, 413}, {:http_error, 413}},
+            {:timeout, :timeout},
+            {%Req.TransportError{reason: :timeout}, :timeout},
+            {%{token: "private-provider-detail"}, :attachment_delivery_failed}
+          ],
+          policy <- [:abort, :continue],
+          message_id <- [nil, "status-id"] do
+        Process.put({FileTransport, :error}, reason)
+        outgoing = %{file_outgoing() | metadata: %{message_id: message_id}}
+
+        connection =
+          file_connection("reported_#{phase}_error")
+          |> Map.put(:attachment_failure_policy, policy)
+
+        {result, logs} =
+          with_log(fn -> JidoChatBridge.send_reply(outgoing, connection) end)
+
+        report =
+          if phase == :upload and policy == :continue do
+            assert {:ok, %{confirmation: :partial, messages: [%{body: "File caption"}]} = report} =
+                     result
+
+            report
+          else
+            assert {:error, %DeliveryError{reason: {:attachment_delivery_failed, report}}} =
+                     result
+
+            assert report.messages == []
+            assert report.delivery == if(phase == :upload, do: :not_sent, else: :unconfirmed)
+            report
+          end
+
+        assert [%{reason: ^category, stage: stage, delivery: delivery}] = report.failed_files
+        assert stage == if(phase == :upload, do: :upload, else: :transport)
+        assert delivery == if(phase == :upload, do: :not_sent, else: :unconfirmed)
+        refute inspect(report) <> logs =~ "private-provider-detail"
+        refute inspect(report) <> logs =~ "Req.TransportError"
+        assert logs =~ inspect(category)
+        assert_received {:file_upload, _, _, _}
+
+        if phase == :upload and policy == :abort do
+          refute_received {:file_post, _, _, _}
+          refute_received {:file_status, _, _, _, _}
+          refute_received {:file_edit, _, _, _, _}
+        else
+          if message_id do
+            if phase == :publication,
+              do: assert_received({:file_edit, _, "status-id", "File caption", _}),
+              else: assert_received({:file_status, _, "status-id", "File caption", []})
+          else
+            assert_received {:file_post, _, "File caption", _}
+          end
+        end
+
+        refute_received {:file_upload, _, _, _}
+        refute_received {:file_post, _, _, _}
+        refute_received {:file_status, _, _, _, _}
+        refute_received {:file_edit, _, _, _, _}
+      end
+    end
+  end
+
+  test "policy-mode final create and edit failures stay unconfirmed without replacement delivery" do
+    for message_id <- [nil, "status-id"] do
+      outgoing = %{file_outgoing() | metadata: %{message_id: message_id}}
+
+      assert {:error,
+              %DeliveryError{
+                delivery: :unconfirmed,
+                reason:
+                  {:attachment_delivery_failed,
+                   %{stage: :transport, messages: [], delivery: :unconfirmed}}
+              }} =
+               deliver_outgoing(outgoing, file_connection("post_failed"))
+
+      assert_received {:file_upload, _, _, _}
+
+      if message_id,
+        do:
+          assert_received({:file_edit, _, "status-id", "File caption", [file_ids: ["upload-id"]]}),
+        else: assert_received({:file_post, _, "File caption", _})
+
+      refute_received {:file_upload, _, _, _}
+      refute_received {:file_edit, _, _, _, _}
+      refute_received {:file_post, _, _, _}
+      refute_received {:file_status, _, _, _, _}
+    end
+  end
+
+  for {operation, message_id} <- [create: nil, edit: "existing-placeholder"] do
+    @strict_operation operation
+    @strict_message_id message_id
+
+    test "persisted strict policy prevents #{@strict_operation} HTTP publication after a later upload group fails" do
+      {:ok, person} = People.create_person(%{full_name: "Strict file delivery"})
+      endpoint = strict_upload_server()
+
+      config =
+        %ChannelConfig{}
+        |> ChannelConfig.changeset(%{
+          name: "Strict file delivery",
+          provider: "mattermost",
+          kind: "retrieval",
+          enabled: true,
+          url: endpoint,
+          token: "synthetic-token",
+          settings: %{"max_file_size" => 64_000, "send_on_file_failure" => false}
+        })
+        |> Repo.insert!()
+
+      %ChannelConfig{}
+      |> ChannelConfig.changeset(%{
+        name: "Other permissive connector",
+        provider: "mattermost",
+        kind: "retrieval",
+        enabled: true,
+        url: endpoint <> "/other-connector",
+        token: "other-token",
+        settings: %{"max_file_size" => 64_000, "send_on_file_failure" => true}
+      })
+      |> Repo.insert!()
+
+      assert Repo.get!(ChannelConfig, config.id).settings["send_on_file_failure"] == false
+
+      files =
+        for index <- 1..11 do
+          %Record{
+            id: "file-#{index}",
+            kind: :file,
+            name: "file-#{index}.txt",
+            mime_type: "text/plain",
+            content: "selected file #{index}"
+          }
+        end
+
+      outgoing = %{
+        file_outgoing()
+        | attachments: files,
+          routing_context: %{channel_config_id: config.id},
+          metadata: %{
+            "message_id" => @strict_message_id,
+            "on_reply" => %{
+              "module" => Atom.to_string(FileReplyWorker),
+              "args" => %{"strict_operation" => to_string(@strict_operation)}
+            }
+          }
+      }
+
+      stub(Zaq.NodeRouterMock, :dispatch, fn event ->
+        send(self(), {:unexpected_strict_confirmation, event})
+        %{event | response: {:ok, event.request.receipt}}
+      end)
+
+      event =
+        Event.new(outgoing, :channels,
+          actor: %{person_id: person.id},
+          opts: [action: :deliver_outgoing, delivery_node_router: Zaq.NodeRouterMock]
+        )
+
+      assert {:error,
+              %DeliveryError{
+                delivery: :not_sent,
+                reason: {:attachment_delivery_failed, report}
+              }} = Api.handle_event(event, :deliver_outgoing, nil).response
+
+      assert report.stage == :upload
+      assert report.messages == []
+
+      assert report.uploaded_files ==
+               Enum.map(1..10, &%{filename: "file-#{&1}.txt", file_id: "uploaded-#{&1}"})
+
+      assert [
+               %{
+                 filename: "file-11.txt",
+                 delivery: :not_sent,
+                 stage: :upload,
+                 reason: {:http_error, 413}
+               }
+             ] =
+               report.failed_files
+
+      refute inspect(report) =~ "synthetic later-group upload rejection"
+
+      assert_received {:openai_request, "POST", "/api/v4/files", "", first_upload}
+      assert_received {:openai_request, "POST", "/api/v4/files", "", failed_upload}
+
+      assert Regex.scan(~r/filename="([^"]+)"/, first_upload, capture: :all_but_first) ==
+               Enum.map(1..10, &["file-#{&1}.txt"])
+
+      assert Regex.scan(~r/filename="([^"]+)"/, failed_upload, capture: :all_but_first) ==
+               [["file-11.txt"]]
+
+      refute_received {:openai_request, "POST", "/api/v4/posts", _, _}
+      refute_received {:openai_request, "PUT", _, _, _}
+      refute_received {:openai_request, "PATCH", _, _, _}
+      refute_received {:openai_request, _, _, _, _}
+      refute_received {:unexpected_strict_confirmation, _}
+      assert Oban.Testing.all_enqueued(repo: Repo, worker: FileReplyWorker) == []
+      assert outgoing.attachments == files
+      assert event.actor == %{person_id: person.id}
+    end
   end
 
   for provider <- ["mattermost", :mattermost], thread_id <- [nil, "root-post"] do
@@ -72,13 +459,836 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     refute_received {:openai_request, "POST", _, _, _}
   end
 
+  test "files use exact bytes, filename, MIME, caption and thread then return the final post ID" do
+    bytes = <<255, 0, 128, 10>>
+    outgoing = file_outgoing(bytes)
+
+    assert {:ok, %{confirmation: :confirmed, action: :created, message_id: "final-post-id"}} =
+             JidoChatBridge.send_reply(outgoing, file_connection())
+
+    assert_received {:file_upload, "private-room", upload, upload_opts}
+    assert upload == %{body: bytes, filename: "résumé.pdf", content_type: "application/pdf"}
+    assert upload_opts[:thread_id] == "root-post"
+    assert_received {:file_post, "private-room", "File caption", post_opts}
+    assert post_opts[:thread_id] == "root-post"
+    assert post_opts[:file_ids] == ["upload-id"]
+    refute_received {:file_upload, _, _, _}
+    refute_received {:file_post, _, _, _}
+  end
+
+  test "confirmed files reuse incoming media descriptors for history on create and edit" do
+    {child, endpoint} =
+      OpenAIStub.server(
+        fn conn, body ->
+          case conn.request_path do
+            "/api/v4/files" ->
+              {201,
+               %{
+                 "file_infos" => [
+                   %{
+                     "id" => "channel-file",
+                     "name" => "image.png",
+                     "mime_type" => "image/png",
+                     "size" => 2
+                   }
+                 ]
+               }}
+
+            _ ->
+              {200,
+               Map.merge(Jason.decode!(body), %{
+                 "id" => "delivered-post",
+                 "user_id" => "bot-author"
+               })}
+          end
+        end,
+        self()
+      )
+
+    start_supervised!(child)
+
+    connection = %{
+      url: String.trim_trailing(endpoint, "/v1"),
+      max_file_size: 307_200,
+      token: "synthetic-token"
+    }
+
+    for metadata <- [%{}, %{message_id: "delivered-post"}] do
+      outgoing = %{
+        file_outgoing()
+        | metadata: metadata,
+          routing_context: %{channel_config_id: 10}
+      }
+
+      assert {:ok, %{attachments: [descriptor]}} = JidoChatBridge.send_reply(outgoing, connection)
+      assert descriptor["id"] == "channel-file"
+      assert descriptor["mime_type"] == "image/png"
+      source = descriptor["attributes"]["materialization_source"]["locator"]
+      assert source["reference"] == "channel-file"
+      assert source["source_author_id"] == "bot-author"
+      assert source["source_message_id"] == "delivered-post"
+      assert source["channel_config_id"] == "10"
+      refute Map.has_key?(descriptor, "content")
+      refute Map.has_key?(descriptor, "materialization_handle")
+
+      assert {:ok, hydrated} =
+               CommunicationMedia.hydrate(
+                 %{
+                   descriptor: descriptor,
+                   transcript_id: Ecto.UUID.generate(),
+                   message_id: Ecto.UUID.generate()
+                 },
+                 %{actor: %{person: %{id: 9}}}
+               )
+
+      assert hydrated.id == "channel-file"
+      assert is_binary(hydrated.materialization_handle)
+      assert hydrated.content == nil
+    end
+  end
+
+  test "final attachments update the streamed answer instead of creating a duplicate post" do
+    {child, endpoint} =
+      OpenAIStub.server(
+        fn conn, body ->
+          case {conn.method, conn.request_path} do
+            {"POST", "/api/v4/files"} ->
+              {201, %{"file_infos" => [%{"id" => "uploaded-file"}]}}
+
+            {"POST", "/api/v4/posts"} ->
+              payload = Jason.decode!(body)
+              id = if payload["file_ids"], do: "duplicate-post", else: "streamed-post"
+              {201, Map.put(payload, "id", id)}
+
+            {"PUT", "/api/v4/posts/streamed-post"} ->
+              {200, Map.put(Jason.decode!(body), "id", "streamed-post")}
+          end
+        end,
+        self()
+      )
+
+    start_supervised!(child)
+
+    connection = %{
+      url: String.trim_trailing(endpoint, "/v1"),
+      max_file_size: 307_200,
+      token: "synthetic-token"
+    }
+
+    outgoing = file_outgoing()
+
+    assert {:ok, %{message_id: "streamed-post"}} =
+             JidoChatBridge.upsert_message(
+               %{provider: "mattermost", provider_atom: :mattermost},
+               %{
+                 channel_id: outgoing.channel_id,
+                 thread_id: outgoing.thread_id,
+                 body: outgoing.body
+               },
+               connection
+             )
+
+    assert_received {:openai_request, "POST", "/api/v4/posts", "", streamed_body}
+    assert Jason.decode!(streamed_body)["message"] == outgoing.body
+
+    assert {:ok, receipt} =
+             JidoChatBridge.send_reply(
+               %{
+                 outgoing
+                 | metadata: %{
+                     "message_id" => "streamed-post",
+                     "on_reply" => %{"module" => Atom.to_string(FileReplyWorker), "args" => %{}}
+                   }
+               },
+               connection
+             )
+
+    assert_received {:openai_request, "POST", "/api/v4/files", "", _upload}
+    refute_received {:openai_request, "POST", "/api/v4/posts", "", _duplicate}
+    assert_received {:openai_request, "PUT", "/api/v4/posts/streamed-post", "", final_body}
+    assert Jason.decode!(final_body)["message"] == outgoing.body
+    assert Jason.decode!(final_body)["file_ids"] == ["uploaded-file"]
+    assert receipt.message_id == "streamed-post"
+    assert receipt.confirmation == :confirmed
+
+    assert [%{args: %{"post_id" => "streamed-post"}}] =
+             Oban.Testing.all_enqueued(repo: Repo, worker: FileReplyWorker)
+  end
+
+  test "recording failure never resends files and a repeated caller submission remains another send" do
+    {child, endpoint} =
+      OpenAIStub.server(
+        fn conn, _body ->
+          case conn.request_path do
+            "/api/v4/files" ->
+              {201, %{"file_infos" => [%{"id" => "uploaded-file"}]}}
+
+            "/api/v4/posts" ->
+              {201,
+               %{
+                 "id" => "accepted-post",
+                 "channel_id" => "private-room",
+                 "file_ids" => ["uploaded-file"]
+               }}
+          end
+        end,
+        self()
+      )
+
+    start_supervised!(child)
+
+    assert {:ok, config} =
+             ChannelConfig.upsert_by_provider("mattermost", %{
+               name: "File confirmation lifecycle",
+               settings: %{"max_file_size" => 307_200},
+               kind: "retrieval",
+               enabled: true,
+               url: String.trim_trailing(endpoint, "/v1"),
+               max_file_size: 307_200,
+               token: "synthetic-token"
+             })
+
+    outgoing = %{
+      file_outgoing()
+      | routing_context: %{channel_config_id: config.id},
+        metadata: %{assistant_message_id: "persisted-answer"}
+    }
+
+    event =
+      Event.new(outgoing, :channels,
+        opts: [action: :deliver_outgoing, delivery_node_router: Zaq.NodeRouterMock]
+      )
+
+    expect(Zaq.NodeRouterMock, :dispatch, 2, fn confirmation ->
+      send(self(), {:file_confirmation, confirmation})
+      %{confirmation | response: {:error, :engine_unavailable}}
+    end)
+
+    for _submission <- 1..2 do
+      assert {:ok,
+              %{
+                confirmation: :confirmed,
+                message_id: "accepted-post",
+                confirmation_recording: :unavailable
+              }} =
+               Api.handle_event(event, :deliver_outgoing, nil).response
+
+      assert_received {:openai_request, "POST", "/api/v4/files", "", _upload}
+      assert_received {:openai_request, "POST", "/api/v4/posts", "", post}
+      assert Jason.decode!(post)["file_ids"] == ["uploaded-file"]
+      assert_received {:file_confirmation, confirmation}
+      assert confirmation.opts[:action] == :record_delivery_confirmation
+      [original_attachment] = outgoing.attachments
+      assert confirmation.request.outgoing.attachments == [%{original_attachment | content: nil}]
+      assert confirmation.request.outgoing.metadata == %{assistant_message_id: "persisted-answer"}
+      assert confirmation.request.receipt.message_id == "accepted-post"
+      refute_received {:openai_request, _, _, _, _}
+    end
+
+    verify!(Zaq.NodeRouterMock)
+  end
+
+  test "files update the existing post without duplicating the answer or appending success text" do
+    outgoing = %{file_outgoing() | metadata: %{message_id: "status-id", format: :markdown}}
+
+    assert {:ok, %{action: :updated, message_id: "status-id"}} =
+             JidoChatBridge.send_reply(outgoing, file_connection())
+
+    assert_received {:file_upload, _, _, _}
+    assert_received {:file_status, _, "status-id", "File caption", [file_ids: ["upload-id"]]}
+    refute_received {:file_upload, _, _, _}
+    refute_received {:file_post, _, _, _}
+    refute_received {:file_status, _, _, _, _}
+  end
+
+  test "configured limit reaches the adapter for create and edit without bridge file planning" do
+    connection =
+      batch_connection()
+      |> Map.delete(:max_file_size)
+      |> Map.put(:settings, %{"max_file_size" => 307_200})
+
+    for metadata <- [%{}, %{message_id: "existing-post"}] do
+      outgoing = %{batch_outgoing(10) | metadata: metadata}
+      assert {:ok, receipt} = JidoChatBridge.send_reply(outgoing, connection)
+      assert length(receipt.attachments) == 10
+      refute Map.has_key?(receipt, :messages)
+    end
+
+    assert_received {:batch_post, _, ids, _}
+    assert length(ids) == 10
+    assert_received {:batch_edit, "existing-post", ids}
+    assert length(ids) == 10
+    refute_received {:batch_post, _, _, _}
+  end
+
+  test "adapter-owned splitting returns separate receipts for all fifteen files" do
+    assert {:ok, %{confirmation: :confirmed, messages: [first, second]}} =
+             JidoChatBridge.send_reply(batch_outgoing(15), batch_connection())
+
+    assert length(first.attachments) == 10
+    assert length(second.attachments) == 5
+    assert first.message_id != second.message_id
+    assert second.body == "Additional files (2/2)."
+    assert_received {:batch_post, _, first_ids, _}
+    assert length(first_ids) == 10
+    assert_received {:batch_post, _, second_ids, _}
+    assert length(second_ids) == 5
+  end
+
+  test "adapter partial delivery remains partial through the bridge" do
+    Process.put(:fail_batch_post, 2)
+
+    assert {:ok, %{confirmation: :partial, messages: [first], failed_files: failures}} =
+             JidoChatBridge.send_reply(batch_outgoing(15), batch_connection())
+
+    assert length(first.attachments) == 10
+    assert length(failures) == 5
+    assert Enum.all?(failures, &(&1.reason == :timeout))
+  end
+
+  test "provider upload rejection retains safe failure evidence and updates the original answer once" do
+    outgoing = %{file_outgoing() | metadata: %{message_id: "status-id"}}
+
+    assert {:ok, %{confirmation: :partial, failed_files: [failure]} = report} =
+             deliver_outgoing(outgoing, file_connection("size_rejected"))
+
+    assert failure.reason == {:http_error, 413}
+    assert failure.stage == :upload
+    assert report.uploaded_files == []
+    refute inspect(report) =~ "private-provider-detail"
+
+    assert_received {:file_upload, _, _, _}
+    assert_received {:file_status, _, _, status, _}
+
+    assert status == "File caption"
+
+    refute status =~ "private-provider-detail"
+    refute_received {:file_post, _, _, _}
+    refute_received {:file_upload, _, _, _}
+  end
+
+  test "upload failure continues once while final attachment update failure stays unconfirmed" do
+    for {failure, expected} <- [
+          {"upload_failed", {:partial, :upload_failed}},
+          {"post_failed", :unconfirmed}
+        ] do
+      result = assert_attachment_failure(failure, expected)
+      refute inspect(result) =~ "private-provider-detail"
+    end
+  end
+
+  test "upload timeout continues once while final attachment update timeout never sends again" do
+    for {failure, expected} <- [
+          {"upload_timeout", {:partial, :timeout}},
+          {"post_timeout", :unconfirmed}
+        ] do
+      assert_attachment_failure(failure, expected)
+    end
+  end
+
+  test "file delivery without a provider post ID is unconfirmed and does not invoke callbacks" do
+    outgoing = %{
+      file_outgoing()
+      | metadata: %{
+          "on_reply" => %{"module" => Atom.to_string(FileReplyWorker), "args" => %{}}
+        }
+    }
+
+    assert {:error,
+            %DeliveryError{
+              reason: :unconfirmed_delivery,
+              stage: :transport,
+              delivery: :unconfirmed
+            }} =
+             JidoChatBridge.send_reply(outgoing, file_connection("missing_post_id"))
+
+    assert Oban.Testing.all_enqueued(repo: Repo, worker: FileReplyWorker) == []
+
+    assert_received {:file_upload, _, _, _}
+    assert_received {:file_post, _, _, _}
+    refute_received {:file_status, _, _, _, _}
+    refute_received {:file_upload, _, _, _}
+    refute_received {:file_post, _, _, _}
+  end
+
+  test "confirmed delivery survives status errors, exceptions and exits with one upload and post" do
+    for failure <- ["status_failed", "status_raised", "status_exit"] do
+      outgoing = file_outgoing()
+
+      capture_log(fn ->
+        assert {:ok, %{confirmation: :confirmed, message_id: "final-post-id"}} =
+                 JidoChatBridge.send_reply(outgoing, file_connection(failure))
+      end)
+
+      assert_received {:file_upload, _, _, _}
+      assert_received {:file_post, _, _, _}
+      refute_received {:file_status, _, _, _, _}
+      refute_received {:file_upload, _, _, _}
+      refute_received {:file_post, _, _, _}
+    end
+  end
+
+  test "on_reply tracks the final post ID and callback exits cannot repeat the send" do
+    for worker <- [FileReplyWorker, ExitingReplyWorker] do
+      outgoing = %{
+        file_outgoing()
+        | metadata: %{"on_reply" => %{"module" => Atom.to_string(worker), "args" => %{}}}
+      }
+
+      capture_log(fn ->
+        assert {:ok, %{confirmation: :confirmed, message_id: "final-post-id"}} =
+                 JidoChatBridge.send_reply(outgoing, file_connection())
+      end)
+
+      if worker == FileReplyWorker do
+        assert [%{args: %{"post_id" => "final-post-id"}}] =
+                 Oban.Testing.all_enqueued(repo: Repo, worker: FileReplyWorker)
+      end
+
+      assert_received {:file_upload, _, _, _}
+      assert_received {:file_post, _, _, _}
+      refute_received {:file_upload, _, _, _}
+      refute_received {:file_post, _, _, _}
+    end
+  end
+
+  test "denied preparation continues with the original answer while unsupported bodies remain rejected" do
+    assert {:ok, handle} =
+             CommunicationMedia.issue("mattermost", "private-file", %{
+               "source_author_id" => "owner"
+             })
+
+    cases = [
+      {%{file_outgoing() | attachments: nil}, :invalid_attachments},
+      {%{
+         file_outgoing()
+         | attachments: [
+             %{hd(file_outgoing().attachments) | content: nil, materialization_handle: handle}
+           ]
+       }, "Attachment preparation failed: :unauthorized_materialization_handle"},
+      {%{file_outgoing() | body: 123}, :invalid_postable},
+      {%{file_outgoing() | body: %{text: "hidden file", attachments: [%{path: "/private/file"}]}},
+       :invalid_postable},
+      {%{file_outgoing() | body: 123, attachments: []}, :invalid_postable}
+    ]
+
+    for {outgoing, reason} <- cases do
+      result = deliver_outgoing(outgoing, file_connection())
+
+      if is_binary(reason) do
+        assert {:ok,
+                %{
+                  confirmation: :partial,
+                  failed_files: [%{stage: :preparation, reason: safe_reason}]
+                }} = result
+
+        assert safe_reason == "The attachment content could not be accessed."
+      else
+        assert {:error, %DeliveryError{reason: ^reason}} = result
+      end
+
+      refute_received {:file_upload, _, _, _}
+
+      if is_binary(outgoing.body) do
+        assert_received {:file_post, _, text, opts}
+
+        expected =
+          if reason == :invalid_attachments,
+            do: "File caption\n\nThe attachment data is invalid.",
+            else: "File caption"
+
+        assert text == expected
+
+        assert opts[:file_ids] == nil
+      end
+
+      refute_received {:file_post, _, _, _}
+    end
+  end
+
+  test "unconfirmed delivery without a placeholder never reposts the answer or invokes callbacks" do
+    outgoing = %{
+      file_outgoing()
+      | metadata: %{"on_reply" => %{"module" => Atom.to_string(FileReplyWorker), "args" => %{}}}
+    }
+
+    assert {:error,
+            %DeliveryError{
+              delivery: :unconfirmed,
+              reason: {:attachment_delivery_failed, %{messages: []}}
+            }} =
+             deliver_outgoing(outgoing, file_connection("post_timeout"))
+
+    assert_received {:file_upload, _, _, _}
+    assert_received {:file_post, _, "File caption", _}
+    assert Oban.Testing.all_enqueued(repo: Repo, worker: FileReplyWorker) == []
+    refute_received {:file_upload, _, _, _}
+    refute_received {:file_post, _, _, _}
+    refute_received {:file_status, _, _, _, _}
+  end
+
+  test "pipeline attachment mistakes reach delivery without losing the answer" do
+    incoming = %Zaq.Engine.Messages.Incoming{
+      content: "Send the file",
+      provider: :mattermost,
+      channel_id: "private-room"
+    }
+
+    connection = file_connection()
+
+    for attachments <- [nil, [%{id: "not-a-record"}]] do
+      outgoing =
+        Outgoing.from_pipeline_result(incoming, %{
+          answer: "Keep this answer",
+          attachments: attachments
+        })
+
+      result = deliver_outgoing(outgoing, connection)
+
+      if is_nil(attachments) do
+        assert {:error, %DeliveryError{reason: :invalid_attachments}} = result
+      else
+        assert {:ok,
+                %{
+                  confirmation: :partial,
+                  failed_files: [
+                    %{stage: :preparation, reason: "The attachment data is invalid."}
+                  ]
+                }} = result
+      end
+
+      assert_received {:file_post, "private-room", text, opts}
+
+      assert text ==
+               if(is_nil(attachments),
+                 do: "Keep this answer\n\nThe attachment data is invalid.",
+                 else: "Keep this answer"
+               )
+
+      assert opts[:file_ids] == nil
+      refute_received {:file_upload, _, _, _}
+      refute_received {:file_post, _, _, _}
+    end
+  end
+
+  test "legacy adapters without policy support preserve original errors when failure notices fail" do
+    registry = Application.fetch_env!(:zaq, :channels)
+
+    for scenario <- ["notice_failed", "notice_raised", "notice_exit"] do
+      Application.put_env(
+        :zaq,
+        :channels,
+        put_in(registry, [:mattermost, :adapter], FailingEditAdapter)
+      )
+
+      refute Jido.Chat.Adapter.capabilities(FailingEditAdapter)[:attachment_failure_policy] ==
+               :native
+
+      outgoing = %{file_outgoing() | metadata: %{message_id: "status-id"}}
+
+      original_error =
+        if scenario == "notice_failed",
+          do: {400, %{"message" => "private-provider-detail"}},
+          else: :upload_failed
+
+      capture_log(fn ->
+        assert {:error, %DeliveryError{reason: ^original_error}} =
+                 deliver_outgoing(outgoing, file_connection(scenario))
+      end)
+
+      assert_received {:file_upload, _, _, _}
+      assert_received {:file_status, _, "status-id", text, _}
+
+      assert text ==
+               "File caption\n\nAttachment delivery was not confirmed. Check the conversation before sending again."
+
+      refute_received {:file_upload, _, _, _}
+      refute_received {:file_post, _, _, _}
+      refute_received {:file_status, _, _, _, _}
+    end
+  end
+
+  property "continuing after upload failure preserves the complete original answer, including empty text" do
+    connection = file_connection("http_upload_failed")
+
+    check all(body <- one_of([constant(""), string(:printable, max_length: 256)])) do
+      outgoing = %{file_outgoing() | body: body, metadata: %{message_id: "status-id"}}
+
+      assert {:ok,
+              %{
+                confirmation: :partial,
+                failed_files: [%{reason: {:http_error, 400}, stage: :upload}],
+                uploaded_files: []
+              } = report} =
+               deliver_outgoing(outgoing, connection)
+
+      assert_received {:file_upload, _, _, _}
+      assert_received {:file_status, _, "status-id", text, _}
+
+      assert text == body
+      assert [%{body: ^body, confirmation: :confirmed}] = report.messages
+      refute inspect(report.failed_files) =~ "private-provider-detail"
+      refute_received {:file_upload, _, _, _}
+      refute_received {:file_post, _, _, _}
+      refute_received {:file_status, _, _, _, _}
+    end
+  end
+
+  test "direct bridge failures return the original error without a fallback operation" do
+    outgoing = %{file_outgoing() | metadata: %{message_id: "status-id"}}
+
+    assert {:error,
+            %DeliveryError{
+              reason: {413, %{"message" => "private-provider-detail"}},
+              stage: :transport,
+              delivery: :unconfirmed
+            }} =
+             JidoChatBridge.send_reply(outgoing, file_connection("size_rejected"))
+
+    assert_received {:file_upload, _, _, _}
+    refute_received {:file_upload, _, _, _}
+    refute_received {:file_status, _, _, _, _}
+    refute_received {:file_post, _, _, _}
+  end
+
+  defmodule BatchTransport do
+    def upload_files(_channel, files, _opts) do
+      send(self(), {:batch_upload, files})
+
+      {:ok,
+       %{
+         "file_infos" =>
+           Enum.map(
+             files,
+             &%{
+               "id" => &1.filename,
+               "name" => &1.filename,
+               "size" => byte_size(&1.body),
+               "mime_type" => "text/plain"
+             }
+           )
+       }}
+    end
+
+    def send_message(channel, text, opts) do
+      count = Process.get(:batch_post_count, 0) + 1
+      Process.put(:batch_post_count, count)
+      send(self(), {:batch_post, text, opts[:file_ids], opts})
+
+      if Process.get(:fail_batch_post) == count,
+        do: {:error, :timeout},
+        else:
+          {:ok,
+           %{
+             "id" => "post-#{count}",
+             "channel_id" => channel,
+             "user_id" => "bot",
+             "file_ids" => opts[:file_ids]
+           }}
+    end
+
+    def edit_message(channel, id, _text, opts) do
+      send(self(), {:batch_edit, id, opts[:file_ids]})
+
+      {:ok,
+       %{"id" => id, "channel_id" => channel, "user_id" => "bot", "file_ids" => opts[:file_ids]}}
+    end
+  end
+
+  defp assert_attachment_failure(scenario, expected) do
+    outgoing = %{file_outgoing() | metadata: %{message_id: "status-id"}}
+    result = deliver_outgoing(outgoing, file_connection(scenario))
+    assert_received {:file_upload, _, _, _}
+
+    case expected do
+      {:partial, reason} ->
+        assert {:ok, %{confirmation: :partial, failed_files: [%{reason: ^reason}]}} = result
+        assert_received {:file_status, _, "status-id", "File caption", []}
+
+      :unconfirmed ->
+        assert {:error,
+                %DeliveryError{
+                  delivery: :unconfirmed,
+                  reason: {:attachment_delivery_failed, %{messages: []}}
+                }} = result
+
+        assert_received {:file_edit, _, "status-id", "File caption", [file_ids: ["upload-id"]]}
+    end
+
+    refute_received {:file_upload, _, _, _}
+    refute_received {:file_post, _, _, _}
+    refute_received {:file_edit, _, _, _, _}
+    refute_received {:file_status, _, _, _, _}
+    result
+  end
+
+  defp batch_outgoing(count) do
+    %{
+      file_outgoing()
+      | routing_context: %{channel_config_id: 10},
+        attachments:
+          for(
+            i <- 1..count,
+            do: %Record{
+              id: "record-#{i}",
+              kind: :file,
+              content: "contents",
+              name: "file-#{i}.txt",
+              mime_type: "text/plain"
+            }
+          )
+    }
+  end
+
+  defp batch_connection,
+    do: %{
+      url: "https://example.test",
+      token: "test-token",
+      max_file_size: 307_200,
+      transport: BatchTransport,
+      trusted_context: %TrustedContext{}
+    }
+
+  defp deliver_outgoing(outgoing, connection) do
+    assert {:ok, config} =
+             ChannelConfig.upsert_by_provider("mattermost", %{
+               name: "Attachment failure notice",
+               kind: "retrieval",
+               enabled: true,
+               url: connection.url,
+               token: connection.token,
+               settings: %{"max_file_size" => 307_200}
+             })
+
+    event =
+      Event.new(%{outgoing | routing_context: %{channel_config_id: config.id}}, :channels,
+        opts: [action: :deliver_outgoing, bridge_module: DeliveryBridge]
+      )
+
+    Api.handle_event(event, :deliver_outgoing, nil).response
+  end
+
+  defp file_outgoing(content \\ <<255, 0, 128>>) do
+    %Outgoing{
+      provider: :mattermost,
+      channel_id: "private-room",
+      thread_id: "root-post",
+      body: "File caption",
+      attachments: [
+        %Record{
+          id: "explicit-file",
+          kind: :file,
+          content: content,
+          name: "résumé.pdf",
+          mime_type: "application/pdf"
+        }
+      ]
+    }
+  end
+
+  defp file_connection(scenario \\ "success") do
+    owner = self()
+
+    {child, endpoint} =
+      OpenAIStub.server(
+        fn conn, body ->
+          assert Plug.Conn.get_req_header(conn, "authorization") == ["Bearer synthetic-token"]
+          file_http_response(conn, body, scenario, owner)
+        end,
+        owner
+      )
+
+    start_supervised!(Supervisor.child_spec(child, id: make_ref()))
+
+    %{
+      url: String.trim_trailing(endpoint, "/v1") <> "/#{scenario}",
+      max_file_size: 307_200,
+      token: "synthetic-token",
+      transport: FileTransport,
+      trusted_context: %TrustedContext{}
+    }
+  end
+
+  defp strict_upload_server do
+    {_server, endpoint} =
+      OpenAIStub.start!(
+        fn
+          %{method: "POST", request_path: "/api/v4/files"} = conn, body ->
+            assert Plug.Conn.get_req_header(conn, "authorization") == ["Bearer synthetic-token"]
+
+            if String.contains?(body, "filename=\"file-11.txt\"") do
+              {413, %{"message" => "synthetic later-group upload rejection"}}
+            else
+              {201,
+               %{
+                 "file_infos" =>
+                   Enum.map(1..10, &%{"id" => "uploaded-#{&1}", "name" => "file-#{&1}.txt"})
+               }}
+            end
+
+          _conn, _body ->
+            {500, %{"message" => "unexpected publication request"}}
+        end,
+        self()
+      )
+
+    String.trim_trailing(endpoint, "/v1")
+  end
+
+  defp file_http_response(%{method: "POST"} = conn, body, scenario, owner) do
+    assert conn.request_path == "/#{scenario}/api/v4/files"
+    assert body =~ "private-room"
+    send(owner, {:file_upload, "private-room", %{multipart: body}, []})
+
+    case scenario do
+      scenario when scenario in ["upload_failed", "notice_failed"] ->
+        {400, %{"message" => "private-provider-detail"}}
+
+      "size_rejected" ->
+        {413, %{"message" => "private-provider-detail"}}
+
+      "upload_timeout" ->
+        file_http_timeout()
+
+      _ ->
+        {201, %{"file_infos" => [%{"id" => "upload-id", "name" => "résumé.pdf"}]}}
+    end
+  end
+
+  defp file_http_response(%{method: "PUT"} = conn, body, scenario, owner) do
+    assert conn.request_path in [
+             "/#{scenario}/api/v4/posts/status-id",
+             "/#{scenario}/api/v4/posts/status-id/patch"
+           ]
+
+    payload = Jason.decode!(body)
+    assert payload["id"] == "status-id"
+    files = if payload["file_ids"], do: [file_ids: payload["file_ids"]], else: []
+    failing_attachment? = files != [] and scenario in ["post_failed", "post_timeout"]
+    event = if failing_attachment?, do: :file_edit, else: :file_status
+    send(owner, {event, "private-room", payload["id"], payload["message"], files})
+
+    case {scenario, failing_attachment?} do
+      {"post_failed", true} -> {500, %{"message" => "private-provider-detail"}}
+      {"post_timeout", true} -> file_http_timeout()
+      {"notice_failed", _} -> {400, %{"message" => "synthetic edit rejection"}}
+      _ -> {200, Map.put(payload, "channel_id", "private-room")}
+    end
+  end
+
+  defp file_http_timeout do
+    # Exercise Req's actual receive timeout without injecting a bridge transport.
+    Process.sleep(16_000)
+    {200, %{}}
+  end
+
   test "unsupported providers retain the controlled delivery error without interning strings" do
     unknown = "unregistered-provider-#{System.unique_integer([:positive])}"
 
     for provider <- [unknown, nil, :unsupported] do
       outgoing = %Outgoing{provider: provider, channel_id: "private-room", body: "Harmless"}
 
-      assert {:error, {:unsupported_provider, ^provider}} =
+      assert {:error, %DeliveryError{reason: {:unsupported_provider, ^provider}}} =
                JidoChatBridge.send_reply(outgoing, %{url: "http://unused.invalid", token: "test"})
     end
 
@@ -213,7 +1423,12 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
       )
 
     start_supervised!(child)
-    %{url: String.trim_trailing(endpoint, "/v1"), token: "synthetic-token"}
+
+    %{
+      url: String.trim_trailing(endpoint, "/v1"),
+      max_file_size: 307_200,
+      token: "synthetic-token"
+    }
   end
 
   defp authentication_person(connection) do
@@ -223,7 +1438,8 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
         kind: "retrieval",
         enabled: true,
         url: connection.url,
-        token: connection.token
+        token: connection.token,
+        settings: %{"max_file_size" => 307_200}
       })
 
     {:ok, person} =

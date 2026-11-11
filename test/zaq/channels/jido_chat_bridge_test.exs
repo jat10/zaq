@@ -2486,7 +2486,8 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
 
       log =
         capture_log(fn ->
-          assert {:error, :missing_connection_details} = JidoChatBridge.send_reply(outgoing, %{})
+          assert {:error, %Zaq.Channels.DeliveryError{reason: :missing_connection_details}} =
+                   JidoChatBridge.send_reply(outgoing, %{})
         end)
 
       assert log =~ "send_reply called without connection details"
@@ -2522,7 +2523,8 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
         metadata: %{}
       }
 
-      assert {:error, {:unsupported_provider, :no_such_provider}} =
+      assert {:error,
+              %Zaq.Channels.DeliveryError{reason: {:unsupported_provider, :no_such_provider}}} =
                JidoChatBridge.do_send_reply(outgoing, %{
                  url: "https://mm.example.com",
                  token: "tok"
@@ -2654,7 +2656,7 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
         metadata: %{}
       }
 
-      assert {:error, :send_failed} =
+      assert {:error, %Zaq.Channels.DeliveryError{reason: :send_failed}} =
                JidoChatBridge.do_send_reply(outgoing, %{
                  url: "https://mm.example.com",
                  token: "tok"
@@ -2770,7 +2772,7 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
         metadata: %{message_id: "msg-1", request_id: "req-1"}
       }
 
-      assert {:error, :edit_failed} =
+      assert {:error, %Zaq.Channels.DeliveryError{reason: :edit_failed}} =
                JidoChatBridge.do_send_reply(outgoing, %{
                  url: "https://mm.example.com",
                  token: "tok"
@@ -2839,6 +2841,30 @@ defmodule Zaq.Channels.JidoChatBridgeTest do
       assert snapshot.resolved[:file] == :native
       assert snapshot.resolved[:configurable_max_file_size] == :native
       assert snapshot.resolved[:attachment_failure_policy] == :fallback
+    end
+
+    test "upload size configuration follows the adapter declaration, not file support or provider name" do
+      previous = Application.get_env(:zaq, :channels, %{})
+      on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
+
+      for {adapter, expected} <- [
+            {Jido.Chat.Mattermost.Adapter, :native},
+            {Jido.Chat.Discord.Adapter, nil},
+            {Jido.Chat.Telegram.Adapter, nil},
+            {StubAdapterCapabilitiesMedia, nil}
+          ] do
+        Application.put_env(:zaq, :channels, %{
+          discord: %{bridge: JidoChatBridge, adapter: adapter, ingress_mode: :gateway}
+        })
+
+        assert {:ok, %{resolved: resolved}} =
+                 Bridge.capability_snapshot("discord", %{scope: :provider})
+
+        assert resolved[:file] in [:native, :fallback, true]
+        assert resolved[:configurable_max_file_size] == expected
+
+        if is_nil(expected), do: refute(Map.has_key?(resolved, :configurable_max_file_size))
+      end
     end
 
     test "resolves required capabilities and filters absent keys" do
