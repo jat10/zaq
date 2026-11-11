@@ -9,9 +9,15 @@
   "id": "zaq-37r.2",
   "labels": [],
   "parent": "zaq-37r",
+  "comments": [
+    {
+      "text": "Complete. Shared failure/timeout helper preserves partial upload reason, unconfirmed publication error, exact upload/edit/status messages, no extra sends, and failure-only privacy assertion. Both test declarations and all four cases remain. mix q passed; focused suites passed 46 agent cases plus 38 delivery cases; final mix precommit passed 84 cases (3 properties, 81 tests). git diff --check clean and test declarations/tags unchanged. This pass removes 54 lines net: 36 stream, 9 startup, 9 delivery; 75 lines total with previous consolidation. No production edits, commits, or pushes; earlier notify_person changes preserved.",
+      "timestamp": "2026-11-11T08:32:28Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-37r] Share delivery failure assertions and validate final changes",
   "type": "task",
-  "updated_at": "2026-11-11T08:30:05Z"
+  "updated_at": "2026-11-11T08:32:28Z"
 }
