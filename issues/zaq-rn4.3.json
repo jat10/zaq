@@ -23,11 +23,15 @@
     {
       "text": "Initial extraction applied common-ancestor feature delta (1f63f912..814ca7a8) to upstream baseline 7acdadc6; this preserves upstream additions. Registry source test expected keys adapted only to retain upstream general.evaluate_decisions. PR2 explicitly owns ChannelFileFixtures/ChannelFileDelivery/FileDeliverySMTPStub. Prerequisites: PR1 Outgoing attachments/attachment_error, Record authorization/provenance; PR2 validate_files and notification attachment delivery, delivery support fixtures. No predecessor files copied. Source docs/services/agent.md delta carried with PR3.",
       "timestamp": "2026-11-11T09:10:14Z"
+    },
+    {
+      "text": "Validation: git diff --check passes. mix q exits 1: Unknown dependency :ecto_sql given to :import_deps in formatter (deps absent). Scoped mix test exits 1: dependencies unavailable. Fresh worktree has no deps/_build, thus no shared mutable symlinks; config/test.exs branch-derived DB is zaq_test_zaq_rn4_3_channel_files_agent. No database/test mutations occurred. Serena activation succeeded but overview did not return; used bounded Git/source fallback; restored Serena automatic project.yml rewrite. Precommit/coverage remain integration prerequisites, not claimed passed.",
+      "timestamp": "2026-11-11T09:10:38Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.3] PR3: Agent attachment selection and tools",
   "type": "task",
-  "updated_at": "2026-11-11T09:10:14Z"
+  "updated_at": "2026-11-11T09:10:38Z"
 }
