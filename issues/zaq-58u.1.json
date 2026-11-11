@@ -9,9 +9,15 @@
   "id": "zaq-58u.1",
   "labels": [],
   "parent": "zaq-58u",
+  "comments": [
+    {
+      "text": "Moved unchanged property and example into describe attachments; verification setup is describe-scoped. mix q and all 64 RunAgent cases passed (3 properties, 61 tests). Removed standalone attachment test file; no scenario removed.",
+      "timestamp": "2026-11-11T08:36:18Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-58u] Consolidate RunAgent attachment tests",
   "type": "task",
-  "updated_at": "2026-11-11T08:35:16Z"
+  "updated_at": "2026-11-11T08:36:18Z"
 }
