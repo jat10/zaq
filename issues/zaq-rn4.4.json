@@ -21,11 +21,15 @@
     {
       "text": "Cumulative PR1–PR4 validation after isolated deps/_build/Python setup: ERL_FLAGS=+S 4:4 mix deps.get succeeded without unstaged mix.lock changes; mix q passed (hooks, compile, Credo no issues, docs). Focused source-owned suites attachment_agent_journey, email_confirmation_integration, telegram_history_delivery, history/delivery and history_ingress passed: 77 passed (2 properties, 75 tests), 39.7s, seed 218520. SMTP stub logged accept task closed during shutdown without test failure. Logs: /tmp/zaq-stack-publish/pr4-deps.log, pr4-q.log, pr4-tests.log. Excluded Serena tooling drift restored to HEAD at coordinator request. No source fixes, commits, pushes or reset; final precommit owned by coordinator.",
       "timestamp": "2026-11-11T09:29:18Z"
+    },
+    {
+      "text": "Published incremental stack commit 5947bbf3967175f3fd5313d480d14a64c8240a8c. Fork PR: https://github.com/jat10/zaq/pull/13. Base: zaq-rn4.3/channel-files-agent. Validation: mix q, focused tests, commit/pre-push hooks passed. Upstream PR1: https://github.com/www-zaq-ai/zaq/pull/935. Keep task open until its upstream PR merges.",
+      "timestamp": "2026-11-11T09:36:47Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.4] PR4: Conversation history and complete attachment journeys",
   "type": "task",
-  "updated_at": "2026-11-11T09:29:18Z"
+  "updated_at": "2026-11-11T09:36:47Z"
 }
