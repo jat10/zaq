@@ -43,11 +43,15 @@
     {
       "text": "Published incremental stack commit d5bc610b253a7c3be59b0252914765bd305f88d8. Fork PR: https://github.com/jat10/zaq/pull/12. Base: zaq-rn4.2/channel-files-delivery. Validation: mix q, focused tests, commit/pre-push hooks passed. Upstream PR1: https://github.com/www-zaq-ai/zaq/pull/935. Keep task open until its upstream PR merges.",
       "timestamp": "2026-11-11T09:36:43Z"
+    },
+    {
+      "text": "2026-11-11 PR2 review-fix restack: rebased PR3 only from old PR2 d985b4b9ffea72b4248bfb8f401208f47bc7617e onto new PR2 281ac5d76375da7b3e211cb187ec2b70f39477c3. Old PR3 d5bc610b253a7c3be59b0252914765bd305f88d8 -\u003e new PR3 2963f1c7f949bd4d407155c291f275a1a9600073. No conflicts; stable patch-id 28b23179e274f3a66b5df6d12801f3d000927def and identical 21-file incremental slice. New PR2 review fixes retained (6 files, 105 additions, 4 deletions). Known .serena/project.yml local change preserved via stash/pop; backup ref backup/zaq-rn4.3-before-pr2-restack. Validation: mix q passed; focused PR3 suite 324 passed (6 doctests, 19 properties, 299 tests); git diff --check passed; pre-push format passed. Pushed with exact old remote SHA --force-with-lease. Action reuse: not applicable to history-only restack; no executable operation changed in PR3 patch. Downstream PR4 must rebase onto 2963f1c7f949bd4d407155c291f275a1a9600073.",
+      "timestamp": "2026-11-11T17:48:07Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.3] PR3: Agent attachment selection and tools",
   "type": "task",
-  "updated_at": "2026-11-11T09:36:43Z"
+  "updated_at": "2026-11-11T17:48:07Z"
 }
