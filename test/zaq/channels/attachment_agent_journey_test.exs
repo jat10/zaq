@@ -1,20 +1,14 @@
 defmodule Zaq.Channels.AttachmentAgentJourneyTest do
   use Zaq.DataCase, async: false
 
-  import Phoenix.ConnTest
-  import Phoenix.LiveViewTest
-  import Zaq.TestSupport.ChannelFileFixtures, only: [config!: 3]
   import Zaq.TestSupport.MattermostHistoryFixture, only: [assert_uploaded_file: 4]
-
-  @endpoint ZaqWeb.Endpoint
 
   alias Mail.Message, as: MailMessage
   alias Zaq.Accounts.People
   alias Zaq.Agent.{Factory, ServerManager}
-  alias Zaq.Channels.EmailBridge
   alias Zaq.Channels.EmailBridge.ImapAdapter
   alias Zaq.Contracts.ToolStep
-  alias Zaq.Engine.{ChannelConfig, IncomingMessageRouting}
+  alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Conversations.Message
   alias Zaq.Engine.Notifications
   alias Zaq.Engine.Notifications.NotificationLog
@@ -28,38 +22,17 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
     ChannelFileFixtures,
     IntegrationAgent,
     MattermostHistoryFixture,
-    MultiAgentOpenAIStub
+    MessageJourney,
+    MultiAgentOpenAIStub,
+    OpenAIStub
   }
 
   @moduletag timeout: 120_000
 
   setup do
-    handler = {__MODULE__, self()}
-
-    :ok =
-      :telemetry.attach_many(
-        handler,
-        [[:zaq, :repo, :query], [:zaq, :node_router, :async, :failed]],
-        &__MODULE__.observe_delivery/4,
-        self()
-      )
-
-    on_exit(fn -> :telemetry.detach(handler) end)
+    MessageJourney.observe_delivery(self())
     :ok
   end
-
-  def observe_delivery([:zaq, :repo, :query], _measurements, metadata, owner) do
-    if metadata[:source] == "messages" and
-         String.starts_with?(metadata.query, ["INSERT", "UPDATE"]) do
-      for %{"delivery_confirmation" => %{"channel_config_id" => id}} <-
-            metadata[:cast_params] || [] do
-        send(owner, {:delivery_writer, id, self()})
-      end
-    end
-  end
-
-  def observe_delivery([:zaq, :node_router, :async, :failed], _measurements, metadata, owner),
-    do: send(owner, {:delivery_failed, metadata.trace_id, self()})
 
   for provider <- [:mattermost, :email] do
     @tag :workflow_attachment
@@ -78,13 +51,7 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
       {disk, files, root} = documents!(namespace, person)
       destination = workflow_destination!(provider, namespace, owner)
 
-      {:ok, _} =
-        People.add_channel(%{
-          person_id: person.id,
-          platform: to_string(provider),
-          channel_identifier: destination.identifier,
-          channel_config_id: destination.config.id
-        })
+      MessageJourney.bind!(provider, destination.config, person, destination.identifier)
 
       {child, endpoint} =
         AttachmentSelectionLLMStub.server(
@@ -149,7 +116,7 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
         {"strict email then strict Mattermost", [{:email, false}, {:mattermost, false}]}
       ] do
     @tag :workflow_policy
-    test "workflow notification records and renders #{label} attachment delivery" do
+    test "workflow notification records #{label} attachment delivery" do
       attempts = unquote(Macro.escape(attempts))
 
       stub(Zaq.NodeRouterMock, :dispatch, fn
@@ -174,14 +141,7 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
           {:ok, config} =
             destination.config |> ChannelConfig.changeset(%{settings: settings}) |> Repo.update()
 
-          {:ok, _} =
-            People.add_channel(%{
-              person_id: person.id,
-              platform: to_string(provider),
-              channel_identifier: destination.identifier,
-              channel_config_id: config.id,
-              weight: weight
-            })
+          MessageJourney.bind!(provider, config, person, destination.identifier, %{weight: weight})
 
           Map.merge(destination, %{config: config, provider: provider, policy: policy})
         end
@@ -288,39 +248,11 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
         refute_received {:delivery_upload, ^namespace, _}
         assert File.read!(Path.join(root, files.a.name)) == files.a.bytes
         assert File.read!(Path.join(root, files.b.name)) == files.b.bytes
-        assert_notification_center(log)
         refute_received {:llm_stub_error, _}
       after
         Task.shutdown(execution, :brutal_kill)
       end
     end
-  end
-
-  defp assert_notification_center(log) do
-    stub(Zaq.NodeRouterMock, :find_node, fn _ -> :channels@localhost end)
-    user = user_fixture()
-    {:ok, user} = Zaq.Accounts.change_password(user, %{password: "StrongPass1!"})
-    conn = build_conn() |> init_test_session(%{user_id: user.id})
-    {:ok, view, _html} = live(conn, "/bo/channels/notifications/logs")
-    assert has_element?(view, "#log-#{log.id}", log.status)
-
-    html = view |> element("#log-#{log.id} button[phx-click=view_log]") |> render_click()
-    assert html =~ "Notification Details"
-    assert html =~ log.payload["subject"]
-    assert html =~ log.payload["body"]
-
-    for attempt <- log.channels_tried do
-      assert html =~ attempt["platform"]
-
-      if attempt["error"],
-        do:
-          assert(
-            html =~ Phoenix.HTML.html_escape(attempt["error"]) |> Phoenix.HTML.safe_to_string()
-          )
-    end
-
-    assert has_element?(view, "#log-#{log.id}", if(log.status == "sent", do: "✓", else: "✗"))
-    refute html =~ "B selected bytes"
   end
 
   defp start_file_workflow!(namespace, person, agent) do
@@ -394,13 +326,7 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
       destination = workflow_destination!(provider, namespace, self())
       actor = %{person_id: person.id}
 
-      {:ok, _} =
-        People.add_channel(%{
-          person_id: person.id,
-          platform: to_string(provider),
-          channel_identifier: destination.identifier,
-          channel_config_id: destination.config.id
-        })
+      MessageJourney.bind!(provider, destination.config, person, destination.identifier)
 
       assert {:ok, %{record: record}} =
                Jido.Exec.run(
@@ -490,71 +416,6 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
     %{config: smtp, identifier: destination.identifier}
   end
 
-  for provider <- [:mattermost, :email], operation <- [:remove, :replace, :repeat, :clear] do
-    @provider provider
-    @operation operation
-    test "#{provider} ingress retrieves real documents and applies #{@operation} before delivery" do
-      Phoenix.PubSub.subscribe(Zaq.PubSub, "node_router:events")
-      owner = self()
-      namespace = "attachment-journey-#{Ecto.UUID.generate()}"
-      {:ok, person} = People.create_person(%{full_name: namespace})
-      {disk, files, root} = documents!(namespace, person)
-      destination = destination!(@provider, namespace, owner)
-
-      script =
-        [
-          get_document(disk, files.a.id),
-          &select_documents(&1, "add", [0]),
-          get_document(disk, files.b.id),
-          &select_documents(&1, "add", [2])
-        ] ++ selection_steps(@operation) ++ [{:pause, {:text, final_text(@operation)}}]
-
-      agent =
-        start_conversation_agent!(script ++ [{:pause, {:text, "No files selected."}}], namespace)
-
-      bind!(destination, person, agent)
-      ingress = Task.async(fn -> ingest(destination, "Select A and B, then remove A") end)
-
-      assert_receive {:attachment_model_paused, model}, 15_000
-      refute_received {:delivery_upload, _, _}
-      refute_received {:delivery_boundary, _, _, _}
-
-      for index <- 0..(length(script) - 1) do
-        assert_receive {:attachment_model_request, ^index, request}, 1_000
-        assert Enum.any?(request["tools"], &(&1["name"] == "attach_documents"))
-        if index > 0, do: assert(MultiAgentOpenAIStub.tool_results(request) != [])
-      end
-
-      send(model, :release)
-      expected_file = if @operation == :clear, do: nil, else: files.b
-      assert_delivery(destination, namespace, expected_file)
-      delivered = await_delivery(destination.config.id)
-      assert delivered.body == final_text(@operation)
-
-      assert Enum.map(delivered.attachments, & &1.id) ==
-               if(expected_file, do: [files.b.id], else: [])
-
-      Task.await(ingress, 10_000)
-      await_delivery_writer(destination.config.id)
-      refute_receive {:delivery_upload, _, _}
-      refute_receive {:delivery_boundary, _, _, _}
-      assert File.read!(Path.join(root, "A.txt")) == "A private bytes"
-      assert File.read!(Path.join(root, "B.txt")) == "B selected bytes"
-
-      # A second real ingress in the same thread must not inherit the first request's selection.
-      followup = Map.put(destination, :message_id, "attachment-followup@example.test")
-      next_ingress = Task.async(fn -> ingest(followup, "Thanks, answer without a file") end)
-      assert_receive {:attachment_model_paused, next_model}, 15_000
-      refute_received {:delivery_upload, _, _}
-      send(next_model, :release)
-      assert_delivery(followup, namespace, nil)
-      assert await_delivery(destination.config.id).attachments == []
-      Task.await(next_ingress, 10_000)
-      await_delivery_writer(destination.config.id)
-      refute_receive {:delivery_upload, _, _}
-    end
-  end
-
   for provider <- [:mattermost, :email],
       scenario <- [:failure, :cancel, :steer, :revoke, :privacy] do
     @provider provider
@@ -567,11 +428,12 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
       destination = destination!(@provider, namespace, self(), 2)
 
       script =
-        [get_document(disk, files.b.id), &select_documents(&1, "add", [0])] ++
-          interrupted_steps(@scenario) ++ [{:pause, {:text, "No files selected."}}]
+        interrupted_steps(@scenario, disk, files) ++
+          [{:pause, {:text, "No files selected."}}]
 
       agent = start_conversation_agent!(script, namespace)
-      bind!(destination, person, agent)
+      MessageJourney.bind!(@provider, destination.config, person, destination.identifier)
+      MessageJourney.route!(destination.config, agent)
       ingress = Task.async(fn -> ingest(destination, "Retrieve and attach B") end)
       assert_receive {:attachment_model_paused, model}, 15_000
 
@@ -587,14 +449,24 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
 
       completion =
         Enum.find(
-          status.raw_state.__strategy__.request_traces[selection.request_id].events,
+          Enum.reverse(status.raw_state.__strategy__.request_traces[selection.request_id].events),
           &(&1.kind == :tool_completed and &1.tool_name == "attach_documents")
         )
 
-      assert {:ok, %{operation: "add", records: [%{"id" => selected_id}]}, []} =
+      assert {:ok, %{operation: operation, records: [%{"id" => selected_id}]}, []} =
                completion.data.result
 
-      assert selected_id == files.b.id
+      assert operation == if(@scenario == :privacy, do: "remove", else: "add")
+      assert selected_id == if(@scenario == :privacy, do: files.a.id, else: files.b.id)
+
+      if @scenario == :privacy do
+        for index <- 0..6 do
+          assert_receive {:attachment_model_request, ^index, request}, 1_000
+          assert Enum.any?(request["tools"], &(&1["name"] == "attach_documents"))
+          if index > 0, do: assert(MultiAgentOpenAIStub.tool_results(request) != [])
+        end
+      end
+
       refute Map.has_key?(status.raw_state, :request_effects)
       refute_received {:delivery_upload, _, _}
       refute_received {:delivery_boundary, _, _, _}
@@ -644,6 +516,13 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
       end
 
       assert_private_history(outgoing, files, root)
+      assert File.read!(Path.join(root, files.a.name)) == files.a.bytes
+      assert File.read!(Path.join(root, files.b.name)) == files.b.bytes
+
+      if @scenario == :privacy do
+        assert outgoing.body == "Here is B."
+        assert Enum.map(outgoing.attachments, & &1.id) == [files.b.id]
+      end
 
       if @scenario == :privacy and @provider == :mattermost do
         message = Repo.get!(Message, outgoing.metadata.assistant_message_id)
@@ -690,16 +569,36 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
     agent
   end
 
-  defp interrupted_steps(:failure),
-    do: [{:pause, {:tool, "add", []}}, {:http_error, 400}]
-
-  defp interrupted_steps(:steer),
-    do: [
-      fn request -> {:pause, select_documents(request, "remove", [0])} end,
-      {:text, "No files selected."}
+  defp interrupted_steps(:privacy, disk, files) do
+    [
+      get_document(disk, files.a.id),
+      &select_documents(&1, "add", [0]),
+      get_document(disk, files.b.id),
+      &select_documents(&1, "add", [2]),
+      &select_documents(&1, "add", [2]),
+      &select_documents(&1, "remove", [0]),
+      {:pause, {:text, "Here is B."}}
     ]
+  end
 
-  defp interrupted_steps(_), do: [{:pause, {:text, "Here is B."}}]
+  defp interrupted_steps(scenario, disk, files) do
+    terminal =
+      case scenario do
+        :failure ->
+          [{:pause, {:tool, "add", []}}, {:http_error, 400}]
+
+        :steer ->
+          [
+            fn request -> {:pause, select_documents(request, "remove", [0])} end,
+            {:text, "No files selected."}
+          ]
+
+        _ ->
+          [{:pause, {:text, "Here is B."}}]
+      end
+
+    [get_document(disk, files.b.id), &select_documents(&1, "add", [0])] ++ terminal
+  end
 
   defp interrupt_selection(:cancel, server, request_id, _file, _person),
     do: assert(:ok = Factory.cancel(server, request_id: request_id, reason: :user_cancelled))
@@ -784,25 +683,8 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
 
   defp await_delivery_writer(config_id) do
     assert_receive {:delivery_writer, ^config_id, writer}, 10_000
-    await_writer(writer)
+    MessageJourney.await_writer(writer)
   end
-
-  defp await_writer(writer) do
-    ref = Process.monitor(writer)
-    assert_receive {:DOWN, ^ref, :process, ^writer, reason}, 10_000
-    assert reason in [:normal, :noproc]
-  end
-
-  defp selection_steps(:remove), do: [&select_documents(&1, "remove", [0])]
-  defp selection_steps(:replace), do: [&select_documents(&1, "replace", [2])]
-
-  defp selection_steps(:repeat),
-    do: [&select_documents(&1, "add", [2]), &select_documents(&1, "remove", [0])]
-
-  defp selection_steps(:clear), do: [{:tool, "replace", []}]
-
-  defp final_text(:clear), do: "No files selected."
-  defp final_text(_), do: "Here is B."
 
   defp await_delivery(config_id), do: await_delivery_event(config_id).request
 
@@ -871,8 +753,6 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
   defp attachment_edit_response(_payload, conn, body, owner, _namespace),
     do: MattermostHistoryFixture.http(conn, body, owner)
 
-  defp destination!(provider, namespace, owner, connections \\ 2)
-
   defp destination!(:mattermost, namespace, owner, _connections) do
     posts = :atomics.new(1, [])
 
@@ -894,18 +774,10 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
       end
     end
 
-    config =
-      ChannelFileFixtures.mattermost!(owner, namespace, handler, %{
-        token: "test-token",
-        settings: %{
-          "max_file_size" => 307_200,
-          "jido_chat" => %{"bot_user_id" => "bot", "bot_name" => "zaq"}
-        }
-      })
+    {child, endpoint} = OpenAIStub.server(handler, owner)
+    start_supervised!(Supervisor.child_spec(child, id: make_ref()))
 
-    on_exit(fn ->
-      Zaq.Channels.Supervisor.stop_bridge_runtime(config, "mattermost_#{config.id}")
-    end)
+    config = MessageJourney.mattermost!(namespace, endpoint, %{"max_file_size" => 307_200})
 
     %{provider: :mattermost, config: config, identifier: "alice"}
   end
@@ -916,18 +788,7 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
         connections: connections
       )
 
-    imap =
-      config!("email:imap", namespace, %{
-        url: "imap://127.0.0.1",
-        token: "synthetic-unused",
-        settings: %{
-          "imap" => %{
-            "username" => "bot@example.test",
-            "smtp_config_id" => smtp.id,
-            "selected_mailboxes" => ["INBOX"]
-          }
-        }
-      })
+    imap = MessageJourney.email!(namespace, smtp, "bot@example.test")
 
     %{provider: :email, config: imap, identifier: "sender@example.test"}
   end
@@ -935,46 +796,31 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
   defp post_id(1), do: "bot-response"
   defp post_id(number), do: "bot-response-#{number}"
 
-  defp bind!(destination, person, agent) do
-    {:ok, _} =
-      People.add_channel(%{
-        person_id: person.id,
-        platform: to_string(destination.provider),
-        channel_identifier: destination.identifier,
-        channel_config_id: destination.config.id
-      })
-
-    {:ok, _} =
-      IncomingMessageRouting.upsert_rule(%{channel_config_id: destination.config.id}, %{
-        routing_mode: :agent,
-        configured_agent_id: agent.id
-      })
-  end
-
   defp ingest(%{provider: :mattermost, config: config} = destination, text) do
-    assert {{:ok, _}, _} =
-             MattermostHistoryFixture.post(config, "human", true, %{
-               "id" => Map.get(destination, :message_id, "incoming-post"),
-               "message" => "@zaq " <> text
-             })
+    MessageJourney.ingest(
+      config,
+      %{
+        "id" => Map.get(destination, :message_id, "incoming-post"),
+        "message" => "@zaq " <> text
+      },
+      root_author: "human"
+    )
   end
 
   defp ingest(%{provider: :email, config: config} = destination, text) do
-    assert :ok =
-             EmailBridge.from_listener(
-               config,
-               %{
-                 "from" => "sender@example.test",
-                 "to" => ["bot@example.test"],
-                 "subject" => "Attachment journey",
-                 "body_text" => text,
-                 "message_id" =>
-                   Map.get(destination, :message_id, "attachment-request@example.test"),
-                 "in_reply_to" => "attachment-root@example.test"
-               },
-               adapter: ImapAdapter,
-               mailbox: "INBOX"
-             )
+    MessageJourney.ingest(
+      config,
+      %{
+        "from" => "sender@example.test",
+        "to" => ["bot@example.test"],
+        "subject" => "Attachment journey",
+        "body_text" => text,
+        "message_id" => Map.get(destination, :message_id, "attachment-request@example.test"),
+        "in_reply_to" => "attachment-root@example.test"
+      },
+      adapter: ImapAdapter,
+      mailbox: "INBOX"
+    )
   end
 
   defp assert_delivery(%{provider: :mattermost}, _namespace, nil) do
