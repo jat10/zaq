@@ -9,9 +9,15 @@
   "id": "zaq-6r7.1",
   "labels": [],
   "parent": "zaq-6r7",
+  "comments": [
+    {
+      "text": "Complete: three confirmation capture flows and two recording-failure flows share private helpers; failure callbacks and assertions preserved. DeliveryErrorTest SMTP setup scoped to email describe, leaving preparation property free of mailer mutation. mix q and 14 isolated cases passed (3 properties, 11 tests).",
+      "timestamp": "2026-11-11T08:42:51Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6r7] Share confirmation flows and scope SMTP setup",
   "type": "task",
-  "updated_at": "2026-11-11T08:41:45Z"
+  "updated_at": "2026-11-11T08:42:51Z"
 }
