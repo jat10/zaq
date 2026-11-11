@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-6r7.2"
   ],
+  "closed_at": "2026-11-11T08:42:52Z",
   "created": "2026-11-11T08:41:11Z",
   "description": "Private capture_confirmation helper for identical Mox/record/capture flow, and shared assertion for exception/exit confirmation failures with explicit callback. Scope DeliveryErrorTest mailer mutation and connector to email describe; pure preparation property retains exact generator/assertions without irrelevant SMTP setup. User approved these candidates. Tests: existing delivery_confirmation and delivery_error suites, mix q. Action reuse local-only, preserve exact Mox expectations and delivery contracts.",
   "id": "zaq-6r7.1",
@@ -16,8 +17,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6r7] Share confirmation flows and scope SMTP setup",
   "type": "task",
-  "updated_at": "2026-11-11T08:42:51Z"
+  "updated_at": "2026-11-11T08:42:52Z"
 }
