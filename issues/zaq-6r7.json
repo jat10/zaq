@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T08:40:50Z",
+  "description": "User authorized repeated refactor/consolidation rounds until no further worthwhile behavior-preserving opportunities remain in PR #876 tests. Preserve all scenarios/assertions, runtime/auth boundaries, async modes and existing work. Round 1: delivery confirmation helpers and SMTP-only setup scoping. Round 2: provenance scenarios into RecordTest and policy settings into SettingsTest. Round 3: audit all remaining PR test additions for repeated code and compatible owning suites; implement evidence-backed improvements, record rejected candidates. Action reuse local-only test maintenance; reuse established helpers and real execution paths, no production changes or Actions. Existing tests validate changes; no new E2E or numerical production coverage needed.",
+  "id": "zaq-6r7",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Iteratively consolidate attachment tests and remove remaining useful duplication",
+  "type": "epic",
+  "updated_at": "2026-11-11T08:40:50Z"
+}
