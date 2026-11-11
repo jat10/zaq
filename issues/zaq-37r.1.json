@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-37r.2"
   ],
+  "closed_at": "2026-11-11T08:30:04Z",
   "created": "2026-11-11T08:27:36Z",
   "description": "Replace 11 identical StreamEvents.consume option lists with private consume(events, request, server), preserving assertions and lazy/eager streams. Share the two identical conversational-agent startup paths in attachment_agent_journey; keep scripts, binding and interruption outside. Existing test suites verify all lifecycle scenarios. Action reuse: local-only helpers reuse StreamEvents and IntegrationAgent without changing scope or cleanup. Documentation: no public API changes; descriptive helper names. Validate mix q and these two isolated test suites.",
   "id": "zaq-37r.1",
@@ -16,8 +17,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-37r] Extract agent stream and journey setup helpers",
   "type": "task",
-  "updated_at": "2026-11-11T08:30:03Z"
+  "updated_at": "2026-11-11T08:30:04Z"
 }
