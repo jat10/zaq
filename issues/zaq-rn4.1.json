@@ -45,11 +45,15 @@
     {
       "text": "Follow-up to second review fix: original #876 uses jido_chat git commit 2438ddc plus jat10/jido_chat_mattermost ref 086127a; the latter declares both attachment_failure_policy and configurable_max_file_size native. PR1 omitted both pins, so forwarding alone was insufficient for actual Mattermost. Moved exact source mix.exs/mix.lock pins into PR1 and fetched dependencies, verifying checkout SHAs. Action reuse assessment unchanged: reuse adapter capabilities and existing JidoChatBridge/Bridge snapshot projection, no new Action, side effect, or tool exposure. Add new real adapter snapshot and LiveView visibility tests; preserve existing test behavior. Restack PR2/.3/.4 to drop duplicate dependency pins and forwarding.",
       "timestamp": "2026-11-11T16:29:22Z"
+    },
+    {
+      "text": "Dependency-pin validation: mix q passed; new real Mattermost snapshot, stub snapshot, real LiveView controls passed (3 checks); existing Bridge/ChannelsLive/Settings/EmailConnectorSettings regression suites passed (131 checks). Final mix precommit with 900s timeout completed exit 2: 12066/12067 passed (48 doctests, 345 properties, 11673/11674 tests), 1 skipped, 164 excluded. Only failure: existing jido_chat_delivery_test.exs:65 expects Mattermost edit PUT body {id,message}, while pinned adapter transport now emits {id,channel_id,message}; action remains updated, expected PUT occurs, no POST. Original #876 updated precisely this expectation; no existing-test change made pending explicit human approval under docs/testing-approach.md. PR2/.3/.4 carry both moved pins and forwarding hunk and require duplicate removal on restack. No commit/push/GitHub reply.",
+      "timestamp": "2026-11-11T16:38:55Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.1] PR1: Attachment contracts and access policies",
   "type": "task",
-  "updated_at": "2026-11-11T16:29:22Z"
+  "updated_at": "2026-11-11T16:38:55Z"
 }
