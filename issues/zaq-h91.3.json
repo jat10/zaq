@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-h91.4"
   ],
+  "closed_at": "2026-11-11T12:35:13Z",
   "created": "2026-11-11T12:24:34Z",
   "description": "User explicitly authorizes behavior-preserving extraction/migration of existing history and attachment journeys. Own shared provider ingress, connector/person binding and delivery completion synchronization in test support; keep arithmetic and attachment contracts in suites. Action reuse: local-only test fixture; existing MattermostHistoryFixture/ChannelFileFixtures and real ingress/agent/delivery APIs reused; no production Actions or exposure change. Existing assertions remain. Tests: complete history strategy and attachment suites plus support consumers; mix q. No docs behavior change. Roll back if production changes or weaker assertions required. Preserve current two-file patch. No precommit, commit or push; user explicitly defers precommit until before push.",
   "id": "zaq-h91.3",
@@ -20,8 +21,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-h91] Share provider message journey infrastructure",
   "type": "task",
-  "updated_at": "2026-11-11T12:35:12Z"
+  "updated_at": "2026-11-11T12:35:13Z"
 }
