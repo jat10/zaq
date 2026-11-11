@@ -2,6 +2,7 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-11T11:30:38Z",
   "created": "2026-11-11T11:26:43Z",
   "description": "Read-only report: measure test additions against the PR merge base, map new scenarios to existing tests, and propose reductions preserving contracts. Action reuse: not applicable — no executable operations change.",
   "id": "zaq-do1",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Audit PR 876 test growth and consolidation opportunities",
   "type": "task",
-  "updated_at": "2026-11-11T11:30:36Z"
+  "updated_at": "2026-11-11T11:30:38Z"
 }
