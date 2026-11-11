@@ -4,6 +4,7 @@
     "zaq-oy9.1"
   ],
   "blocks": [],
+  "closed_at": "2026-11-11T08:21:34Z",
   "created": "2026-11-11T08:11:58Z",
   "description": "Extract identical multipart filename/MIME/bytes assertions into existing MattermostHistoryFixture and reuse MIME attachment assertions only where semantics match. Preserve transport messages, timeouts, receipts, threading and denial assertions. Existing affected suites remain regression oracle; no new scenarios or assertion weakening. Action reuse: local-only test assertions; extend current capture fixture with explicit expected values. Review net LOC and verify no test declarations removed. Run mix q, focused suites, and final mix precommit; no production coverage target or new E2E for test-only refactor.",
   "id": "zaq-oy9.2",
@@ -20,8 +21,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-oy9] Reuse captured file assertions and validate consolidation",
   "type": "task",
-  "updated_at": "2026-11-11T08:21:33Z"
+  "updated_at": "2026-11-11T08:21:34Z"
 }
