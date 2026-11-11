@@ -9,9 +9,15 @@
   "id": "zaq-h91.4",
   "labels": [],
   "parent": "zaq-h91",
+  "comments": [
+    {
+      "text": "Final mix q0; final mix test --include integration history_strategy_full_flow,attachment_agent_journey,attachment_selection,notification_logs_live:102 passed (1property101tests),21 existing real_browser executions excluded,45.2s. diff --check and incremental patch apply --check pass. Existing SMTP cleanup/license warning only. /tmp/pr-876-message-journey-reuse-report.md has exact counts and artifacts. Precommit explicitly deferred until before push; no commit/push.",
+      "timestamp": "2026-11-11T12:35:16Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h91] Validate shared provider journeys",
   "type": "task",
-  "updated_at": "2026-11-11T12:35:15Z"
+  "updated_at": "2026-11-11T12:35:16Z"
 }
