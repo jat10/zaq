@@ -19,11 +19,15 @@
     {
       "text": "Extraction in progress from immutable 814ca7a using merge-base 1f63f912 hunks; all scoped patch hunks applied cleanly to 7acdadc6, preserving newer upstream. Action reuse: extend existing Channels.Api/Bridge/JidoChatBridge/EmailBridge send_reply + adapter validation; DeliveryFiles reuses Record authorization and Materialization.materialize; DeliveryConfirmation reuses Event dispatch; Notifications retains inline dispatch and explicit trusted context. No new tool exposure. PR1 prerequisite owns Outgoing attachments/error, Records authorization/provenance, settings and email config persistence. PR2 owns transport errors/preparation/delivery, notification attachment dispatch, adapters/dependency pins, shared delivery fixtures (including Mattermost capture additions). PR4 owns canonical-history email_confirmation_integration and telegram_history_delivery. bw start refused open predecessor merge dependency; status set in_progress for authorized parallel extraction while dependency stays open. mix q blocked missing ecto_sql formatter import; focused delivery_files/delivery_confirmation/email_file_delivery tests blocked unavailable deps. 35 changed Elixir files parse, git diff --check passes. No commit/push/PR/closure.",
       "timestamp": "2026-11-11T09:11:06Z"
+    },
+    {
+      "text": "Initial extraction handoff complete: 38 local files, +5311/-154 including untracked additions; patch /tmp/zaq-rn4.2-delivery.patch. file_validation_test belongs wholly to PR3 since shared setup and 8 tests invoke AttachDocuments; no copy in PR2. PR1 owns channels.md initial Outgoing paragraph and final max_file_size configuration docs; PR2 preserves those baseline passages while adding delivery docs. SMTP LiveView only DeliveryError alias/format clause in PR2; rest PR1. Dependency source changes apply cleanly, baseline does not have conflicting newer pins. Build path absent (local default), deps local directory; test config derives isolated zaq_test_zaq_rn4_2_channel_files_delivery. Serena semantic overview stalled \u003e several minutes and was terminated; bounded source/diff fallback used. Syntax/diff checks passed; mix q and focused tests blocked missing deps. Review/coverage/precommit and runtime validation pending, issue remains open in_progress.",
+      "timestamp": "2026-11-11T09:12:20Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.2] PR2: File delivery through channels",
   "type": "task",
-  "updated_at": "2026-11-11T09:11:06Z"
+  "updated_at": "2026-11-11T09:12:20Z"
 }
