@@ -53,11 +53,15 @@
     {
       "text": "Human test-behavior approval: user explicitly replied yes go ahead to copying the original #876 Mattermost edit-payload assertion. Approved scope is only jido_chat_delivery_test.exs existing expectation: include channel_id private-room alongside id status-post and message Updated answer, matching pinned adapter transport. Applied that exact source assertion; no other existing test behavior changed. Revalidating focused test, mix q and full precommit.",
       "timestamp": "2026-11-11T16:40:43Z"
+    },
+    {
+      "text": "Approved assertion applied. Focused isolated delivery test exposed that JidoChatBridge.supports_message_updates?/1 uses function_exported?/3 before the pinned Mattermost module is loaded, choosing create despite existing message_id. Extended local bridge capability check with Code.ensure_loaded?/1 first, consistent with Jido.Chat.Adapter callback checks. No new Action/tool or actor/side-effect behavior; restores existing edit contract on cold module load. Existing isolated test is the regression witness without modifying its scenario. Focused delivery and real adapter/LiveView tests pass; mix q passes. Final precommit rerun in progress with 900s timeout.",
+      "timestamp": "2026-11-11T16:43:24Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.1] PR1: Attachment contracts and access policies",
   "type": "task",
-  "updated_at": "2026-11-11T16:40:43Z"
+  "updated_at": "2026-11-11T16:43:24Z"
 }
