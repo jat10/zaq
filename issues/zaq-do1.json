@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-11T11:26:43Z",
+  "description": "Read-only report: measure test additions against the PR merge base, map new scenarios to existing tests, and propose reductions preserving contracts. Action reuse: not applicable — no executable operations change.",
+  "id": "zaq-do1",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Audit PR 876 test growth and consolidation opportunities",
+  "type": "task",
+  "updated_at": "2026-11-11T11:26:43Z"
+}
