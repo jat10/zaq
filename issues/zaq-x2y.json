@@ -6,9 +6,15 @@
   "description": "User requested tests for review discussion_r4513073084. Add new regression cases for null, numeric and string post_process nodes in Iterate and Batch; assert validation errors and no persistence. Preserve existing tests and production code. Action reuse: not applicable — tests only, exercising existing workflow persistence APIs. No new E2E needed; DataCase integration coverage is sufficient. Run focused tests to confirm the reported failure and mix q.",
   "id": "zaq-x2y",
   "labels": [],
+  "comments": [
+    {
+      "text": "Added six JSON-round-trip persistence regressions in workflows_test.exs for null, numeric and string post_process entries across Iterate and Batch, after a valid entry to verify index reporting. All six reproduce FunctionClauseError in Step.Node.validate_node_map/1. mix q passed. Production fix intentionally outside user request; tests remain red. Existing test behavior unchanged. Concrete reported examples only; broader property coverage belongs with implementation fix.",
+      "timestamp": "2026-11-11T17:26:16Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Add PR 910 malformed pipeline entry regression tests",
   "type": "task",
-  "updated_at": "2026-11-11T17:24:27Z"
+  "updated_at": "2026-11-11T17:26:16Z"
 }
