@@ -11,9 +11,15 @@
   "id": "zaq-6r7.2",
   "labels": [],
   "parent": "zaq-6r7",
+  "comments": [
+    {
+      "text": "Completed principal provenance merge into existing RecordTest Provenance describe and settings policy move to SettingsTest. All 47 isolated cases passed (5 properties, 42 tests); mix q passed. Remaining duplicate scan found mostly pre-existing code outside PR scope; next round will filter matches to added test regions.",
+      "timestamp": "2026-11-11T08:43:56Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6r7] Merge provenance and settings scenarios into existing owners",
   "type": "task",
-  "updated_at": "2026-11-11T08:42:53Z"
+  "updated_at": "2026-11-11T08:43:56Z"
 }
