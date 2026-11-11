@@ -33,11 +33,15 @@
     {
       "text": "Second review fix plan (jfayad discussion 4537424225): extend existing JidoChatBridge.capability_snapshot/1 by forwarding adapter metadata keys :configurable_max_file_size and :attachment_failure_policy from Adapter.capabilities/1 into resolved, matching source #876. Bridge.capability_snapshot/2 already preserves resolved; no new operation or Action is needed. Action reuse assessment: operation is read-only capability projection; candidates JidoChatBridge.capability_snapshot/1, Bridge.capability_snapshot/2, Adapter.capabilities/1, Bridge.required_capabilities/1. Extend JidoChatBridge local projection: config provider map -\u003e {:ok, %{resolved: map}} or adapter lookup error; no actor, side effect, retry, or idempotency concern; consumed through Channels API/NodeRouter by BO and by existing bridge callers; no agent tool/workflow exposure. Verify with new production bridge/normalization test and existing snapshot regressions, preserving all existing test behavior. Dependency adapters currently do not declare these metadata keys, so support remains opt-in. Restack later PRs after PR1 changes.",
       "timestamp": "2026-11-11T13:56:06Z"
+    },
+    {
+      "text": "Second review fix applied locally: copied source #876 adapter metadata forwarding into JidoChatBridge.capability_snapshot/1 and added a new production Bridge.capability_snapshot/2 regression with an opt-in adapter. Existing fixtures/assertions unchanged. mix q passed; focused JidoChatBridge, Bridge, Settings and EmailConnectorSettings checks passed (61: 3 properties, 58 tests); git diff --check passed. PR2/.3/.4 worktrees already carry the same forwarding hunk; drop it as duplicate when restacking on PR1. No sibling edits, commit, push, or GitHub reply. Final mix precommit was started with 900s subprocess timeout, but Context Mode RPC timed out after 300s while the process remained active; final result pending.",
+      "timestamp": "2026-11-11T14:04:04Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.1] PR1: Attachment contracts and access policies",
   "type": "task",
-  "updated_at": "2026-11-11T13:56:06Z"
+  "updated_at": "2026-11-11T14:04:04Z"
 }
