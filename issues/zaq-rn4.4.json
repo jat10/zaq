@@ -17,11 +17,15 @@
     {
       "text": "Initial parallel extraction complete, uncommitted and staged: 9 files +1747/-6. Source commit 814ca7a83; all 9 files exact source blobs, applied via original-base diff with 3-way upstream preservation. Owned Engine HistoryIngress, TranscriptHistory and History.Delivery plus history tests, attachment_agent_journey, email_confirmation_integration, telegram_history_delivery and docs/e2e-testing. Action reuse assessment: reuse existing HistoryIngress capture/confirmation, TranscriptHistory canonical storage/prepared response and History.Delivery capture; these are existing internal Engine domain operations, not new Actions or agent tools. Module docs inspected; normalized confirmation evidence remains Channels-owned and authorization/canonical persistence remains Engine-owned. Source history delta adds separate attachment delivery facts, response-source binding and prepared response attachment preservation without changing execution boundaries. Prerequisites: PR1 full Outgoing/authorization/settings/contracts; PR2 transport confirmations/file delivery, ChannelFileFixtures/FileDeliverySmtpStub/MattermostHistoryFixture; PR3 attachment selection tool/StreamEvents and AttachmentSelectionLLMStub/OpenAI support. PR2 owns full Channels docs and Mattermost fixture. No predecessor code copied. git diff --cached --check and dependency-free parsing of 8 Elixir files passed. mix q blocked absent ecto_sql formatter dependency; scoped five-suite mix test blocked unchecked/missing deps. No deps install, DB use, commit, push, PR, closure or final approval. Stack integration and full validation remain pending.",
       "timestamp": "2026-11-11T09:11:42Z"
+    },
+    {
+      "text": "Cumulative PR1–PR4 validation after isolated deps/_build/Python setup: ERL_FLAGS=+S 4:4 mix deps.get succeeded without unstaged mix.lock changes; mix q passed (hooks, compile, Credo no issues, docs). Focused source-owned suites attachment_agent_journey, email_confirmation_integration, telegram_history_delivery, history/delivery and history_ingress passed: 77 passed (2 properties, 75 tests), 39.7s, seed 218520. SMTP stub logged accept task closed during shutdown without test failure. Logs: /tmp/zaq-stack-publish/pr4-deps.log, pr4-q.log, pr4-tests.log. Excluded Serena tooling drift restored to HEAD at coordinator request. No source fixes, commits, pushes or reset; final precommit owned by coordinator.",
+      "timestamp": "2026-11-11T09:29:18Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.4] PR4: Conversation history and complete attachment journeys",
   "type": "task",
-  "updated_at": "2026-11-11T09:11:42Z"
+  "updated_at": "2026-11-11T09:29:18Z"
 }
