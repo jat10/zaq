@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-11T11:53:14Z",
@@ -7,8 +7,8 @@
   "id": "zaq-h91",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Audit reuse of existing journeys for PR 876 attachment tests",
   "type": "task",
-  "updated_at": "2026-11-11T11:53:14Z"
+  "updated_at": "2026-11-11T11:54:06Z"
 }
