@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-kw0.44.7"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-kw0.44.9"
+  ],
   "created": "2026-11-11T23:52:04Z",
   "description": "## Functional specifications and files\nRun coverage-upper after clean review; fresh coveralls report then coverup, focused meaningful coverage fixes. Review all changes, repeat affected checks; run required existing E2E and resolve regressions.\nFiles/owners: Changed-file tests and owning production code only if a real defect; coverage receipts in issue.\n## Tests to add before implementation\nPrefer augment existing tests; no implementation mirrors, assertion weakening or global mutable setup. Fresh coverage timeout 600000ms. Re-review fixes to zero findings.\n## Branches/paths validated\nSuccess, invalid input, nil/denied actor, stale/concurrent write, unavailable/deleted source, lifecycle cleanup and failure rollback where relevant. No hidden cross-service calls.\n## Mocking plan\nReal Repo, validated Actions, NodeRouter and domain boundaries. Mock only external provider/conversion HTTP when relevant; runtime dependencies via existing Zaq.Config opts, no global mutation.\n## Documentation\nUpdate owner module docs and relevant existing service/BO guide alongside behavior; durable evidence here. Follow docs/documentation.md.\n## Action reuse assessment\nVerification-only; extend existing test fixtures and public contract tests, no production API solely for tests.\n## Validation/dependencies\nRead AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and applicable service guides. Scoped tests + mix q only per implementation issue. Final precommit reserved for final child. Supervisor verifies before closure. New feature E2E remains zaq-kw0.15 -\u003e zaq-kw0.16.\n",
   "id": "zaq-kw0.44.8",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-kw0.44.8] Post-review coverage and regression validation",
   "type": "task",
-  "updated_at": "2026-11-11T23:52:07Z"
+  "updated_at": "2026-11-11T23:52:11Z"
 }
