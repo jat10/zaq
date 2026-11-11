@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-oy9.1"
   ],
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-oy9",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-oy9] Reuse captured file assertions and validate consolidation",
   "type": "task",
-  "updated_at": "2026-11-11T08:12:05Z"
+  "updated_at": "2026-11-11T08:17:54Z"
 }
