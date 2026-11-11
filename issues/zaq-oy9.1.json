@@ -9,9 +9,15 @@
   "id": "zaq-oy9.1",
   "labels": [],
   "parent": "zaq-oy9",
+  "comments": [
+    {
+      "text": "Fixture consumers pass: 56 tests/properties. Extend same extraction to identical connector! builders in outbound_connection and email_confirmation integration tests and SMTP builder in outgoing_attachments. Existing suites cover these consumers; no expected values or scenarios change.",
+      "timestamp": "2026-11-11T08:15:38Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-oy9] Share private document and connector fixture construction",
   "type": "task",
-  "updated_at": "2026-11-11T08:12:07Z"
+  "updated_at": "2026-11-11T08:15:38Z"
 }
