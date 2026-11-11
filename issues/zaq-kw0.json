@@ -22,11 +22,15 @@
     {
       "text": "PR 1 local implementation complete. Final results: mix q passes; 446 scoped tests pass including 12 properties; migration rollback/reapply passes; Chromium catalog/editor/save/chip inspection succeeds. Full precommit: 11,750 of 11,763 pass, with 13 failures confined to unchanged Python conversion/pipeline tests and local crawler fixtures. Existing browser journeys: 141 pass, 2 existing skips, 1 WebKit System Config navigation timeout; Firefox absent. Gate zaq-kw0.19 remains in progress for validation/review/coverage. No final approval, commit or push requested/performed.",
       "timestamp": "2026-11-03T09:01:48Z"
+    },
+    {
+      "text": "User authorized revised PR1 implementation on existing PR #918. New reconciliation epic zaq-kw0.44 supersedes old PR1 free-text/separate-assignment/automatic-rejection contracts; old closed tasks remain historical. PR2 thresholds/selection/scheduling require later reconciliation, not implementation in this PR1 epic. Final push authorized after tests/review/coverage/precommit. No merge.",
+      "timestamp": "2026-11-11T23:52:15Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0] Implement document and chunk labeling",
   "type": "epic",
-  "updated_at": "2026-11-04T04:19:22Z"
+  "updated_at": "2026-11-11T23:52:15Z"
 }
