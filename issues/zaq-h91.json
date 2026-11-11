@@ -2,13 +2,14 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-11T11:58:15Z",
   "created": "2026-11-11T11:53:14Z",
   "description": "Read-only audit completed at HEAD 814ca7a83 against base 1f63f912e. Report: /tmp/pr-876-journey-reuse-audit.md. Strongest baseline reuse: unchanged history_strategy_full_flow_test.exs already runs both Mattermost and email ingress through real agent/tool, delivery, persisted history and warm followup. Five generated families have 32 cases in 494 source lines; remaining 525 lines are setup/helpers/closing. Source-denial family calls Notifications directly, not workflow or agent selection. Keep real RunAgent-to-NotifyPerson workflow seam; existing Send Leads test stubs agent. Recommend four successful canonical wiring executions plus representative strict failure/fallback workflow checks, with targeted interruption regressions preserved. No justified net source reduction estimate without migration diff; moving helpers is not removal. No application tests or source edits performed. Action reuse not applicable: no operation changes.",
   "id": "zaq-h91",
   "labels": [],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Audit reuse of existing journeys for PR 876 attachment tests",
   "type": "task",
-  "updated_at": "2026-11-11T11:58:13Z"
+  "updated_at": "2026-11-11T11:58:15Z"
 }
