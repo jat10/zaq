@@ -13,11 +13,15 @@
     {
       "text": "Implemented shared MessageJourney fixture used by history and attachment suites: connector cleanup, paired email configs, actor/channel binding, configured-agent routing, ingress dispatch, delivery/admission transaction telemetry and writer termination. Exact consumer adapter opts/credentials/timeouts retained. Existing arithmetic/attachment/security/lifecycle assertions retained. Final complete suites and mix q underway; precommit deliberately deferred per user. Current all-file total vs HEAD -47, incremental vs authorized starting patch +14, including new149-line fixture; report this honestly.",
       "timestamp": "2026-11-11T12:34:18Z"
+    },
+    {
+      "text": "Final mix q passed, complete consumer suites with --include integration passed102 (1property101tests),21 real_browser exclusions. Exported full/incremental patches and report /tmp/pr-876-message-journey-reuse-report.md. Cumulative net -47 vs HEAD, incremental +14 vs starting authorized tree including149-line helper; no false reduction claim. No production behavior changes, weakened assertions, precommit, commit or push.",
+      "timestamp": "2026-11-11T12:35:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h91] Share provider message journey infrastructure",
   "type": "task",
-  "updated_at": "2026-11-11T12:34:18Z"
+  "updated_at": "2026-11-11T12:35:12Z"
 }
