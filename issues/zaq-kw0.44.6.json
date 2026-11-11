@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-kw0.44.5"
+  ],
   "blocks": [],
   "created": "2026-11-11T23:51:57Z",
   "description": "## Functional specifications and files\nAudit all changed consumers end-to-end; consolidate duplicate tests while retaining scenario/permission/race assertions. Update ingestion/BO contracts and PR pending PR2/3 boundaries. Reconcile legacy epic and PR2 contradictory plan references without claiming implementation there.\nFiles/owners: Existing source/lifecycle/query/LiveView tests, docs/services/ingestion.md, docs/bo-components.md only relevant sections, Beadwork notes.\n## Tests to add before implementation\nFocused full label/query/source lifecycle suite; existing E2E as required; migration fresh and upgrade paths; no new feature E2E before UX gate. Audit queries and UI do not expose inherited labels from unauthorized sources.\n## Branches/paths validated\nSuccess, invalid input, nil/denied actor, stale/concurrent write, unavailable/deleted source, lifecycle cleanup and failure rollback where relevant. No hidden cross-service calls.\n## Mocking plan\nReal Repo, validated Actions, NodeRouter and domain boundaries. Mock only external provider/conversion HTTP when relevant; runtime dependencies via existing Zaq.Config opts, no global mutation.\n## Documentation\nUpdate owner module docs and relevant existing service/BO guide alongside behavior; durable evidence here. Follow docs/documentation.md.\n## Action reuse assessment\nReuse verification across operations; docs-only portions not applicable. No second implementation for bulk, query or UI; test real Actions/Repo/Events, external edges only mocked.\n## Validation/dependencies\nRead AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and applicable service guides. Scoped tests + mix q only per implementation issue. Final precommit reserved for final child. Supervisor verifies before closure. New feature E2E remains zaq-kw0.15 -\u003e zaq-kw0.16.\n",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.44.6] Integrate lifecycle, tests and owning documentation",
   "type": "task",
-  "updated_at": "2026-11-11T23:51:59Z"
+  "updated_at": "2026-11-11T23:52:00Z"
 }
