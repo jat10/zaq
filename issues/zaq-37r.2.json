@@ -4,6 +4,7 @@
     "zaq-37r.1"
   ],
   "blocks": [],
+  "closed_at": "2026-11-11T08:32:29Z",
   "created": "2026-11-11T08:27:38Z",
   "description": "Share duplicate upload/post failure and timeout test flow using explicit scenario and expected upload reason. Retain both test declarations and extra privacy assertion for failure case. Preserve exact no-extra-send assertions. Existing JidoChatDeliveryTest verifies all four cases. Action reuse: local-only helper reuses file_outgoing, file_connection and deliver_outgoing. Validate mix q, affected tests, unchanged test declarations and final mix precommit. No new E2E or production coverage needed.",
   "id": "zaq-37r.2",
@@ -16,8 +17,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-37r] Share delivery failure assertions and validate final changes",
   "type": "task",
-  "updated_at": "2026-11-11T08:32:28Z"
+  "updated_at": "2026-11-11T08:32:29Z"
 }
