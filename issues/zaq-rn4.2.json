@@ -35,11 +35,15 @@
     {
       "text": "User authorized restacking PR2 onto reviewed PR1 b7f3a9b3f and checking moved hunks disappear. Action reuse: no new operations; replay existing delivery slice preserving PR1 boolean accessor, adapter forwarding/pins, real-adapter tests and load-order fix. Preserve unrelated .serena/project.yml local change via rebase autostash. Validate diff, mix q and focused delivery/bridge suites. PR3/4 not in requested restack scope.",
       "timestamp": "2026-11-11T17:41:20Z"
+    },
+    {
+      "text": "Restacked and published PR2 on PR1 b7f3a9b3f: old tip d985b4b9f -\u003e 281ac5d76. One conflict in capability_snapshot tests resolved by preserving both PR1 new tests and PR2 existing test without assertion changes. mix.exs/mix.lock now identical to PR1; forwarding is absent from PR2 added lines. Diff shrank 39 files +5228/-156 to 37 files +5207/-151. mix q passed; 263 focused checks passed (9 properties, 254 tests); diff --check passed. Full precommit not rerun for this restack. Existing local .serena/project.yml change preserved with autostash. Pushed using exact old-tip force-with-lease. Backup branch backup/zaq-rn4.2-before-pr1-review retains old tip. PR3/4 left untouched and require subsequent restack.",
+      "timestamp": "2026-11-11T17:43:06Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.2] PR2: File delivery through channels",
   "type": "task",
-  "updated_at": "2026-11-11T17:41:20Z"
+  "updated_at": "2026-11-11T17:43:06Z"
 }
