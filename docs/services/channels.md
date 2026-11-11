@@ -504,22 +504,141 @@ and the Notification center. Delivered through
 
 When routed across nodes, this payload is typically returned in `%Zaq.Event.response`.
 
-```elixir
-@enforce_keys [:body, :channel_id, :provider]
+`Outgoing.from_pipeline_result/2` copies routing fields and merges metadata from
+an `%Incoming{}` and pipeline result. Its explicit atom-keyed `:attachments`
+result is copied unchanged; omission defaults to `[]`. Producers own the list-of-Records
+contract, while chat and email validate attachments through `DeliveryFiles` during
+preparation. The builder does not reject the answer for malformed attachments. Incoming
+attachments are never echoed automatically. Attachment collections are excluded
+from metadata, so file bytes and handles do not travel there.
 
-defstruct [
-  :body,          # String — response text
-  :channel_id,    # String
-  :thread_id,     # String | nil
-  :author_id,     # String | nil
-  :author_name,   # String | nil
-  :provider,      # atom | String
-  :in_reply_to,   # String | nil — message_id being replied to
-  metadata: %{}
-]
-```
+`Zaq.Channels.DeliveryFiles` prepares supplied files in memory for both chat and
+email. Lazy materialization requires trusted Event actor or bypass context; source
+paths, handles and credentials are not forwarded to the transport. Preparation
+creates no temporary files and never deletes source files. It acquires whole file
+contents in memory; acquisition budgets are tracked separately in [#875](https://github.com/www-zaq-ai/zaq/issues/875).
+Delivery confirmation forwards an outgoing copy with each attachment Record's
+`content` cleared; all other Record fields, including materialization handles,
+are preserved in that transient copy. Mattermost receipts additionally carry
+content-free descriptors of the delivered channel files, normalized through the
+same media path as incoming attachments. Engine persists those descriptors on
+the existing assistant message and includes them in confirmation replay checks.
+History hydration uses the existing canonical transcript authorization path;
+source Disk handles and file contents are not stored as channel attachments.
+Providers without normalized delivered-media evidence do not fabricate channel
+attachment references.
 
-`Outgoing.from_pipeline_result/2` builds an `%Outgoing{}` from an `%Incoming{}` and a pipeline result map, copying routing fields and merging metadata.
+Chat sends files as documents. With an existing streamed message ID, adapters
+declaring native `edit_attachments` update that post with the answer and file;
+otherwise delivery creates a final post. Mattermost uploads the file and patches
+the existing post, requiring the returned file IDs to confirm attachment delivery.
+Text-only edits preserve attachments. Adapter/provider errors own
+file count and size restrictions. Native `post_message` adapters own multi-file
+delivery; Mattermost splits files across posts as needed. The Jido fallback path
+rejects multiple attachments, while SMTP accepts a list. Text and file replies
+share preparation and sending;
+file replies use attachment editing only when the adapter explicitly supports it.
+Both text and file creation return Jido's `post.id`, preserving its generated-ID
+fallback when an adapter reports success without a provider message ID.
+Successful file delivery adds no status notice. Attachment edits retain the original
+post ID for delivery confirmation and reply callbacks.
+
+Jido chat and email bridges return `{:error, %Zaq.Channels.DeliveryError{}}` with
+`reason` (the original internal error), `message` (safe presentation text),
+`stage` (`:selection`, `:preparation` or `:transport`) and `delivery` (`:not_sent` or
+`:unconfirmed`). The struct owns no mapping or delivery logic. `DeliveryFiles`
+maps shared selection and preparation errors; each bridge maps its own transport errors.
+SMTP mappings retain safe authentication, connection, rejection and timeout details.
+Jido transport failures use a generic unconfirmed message until shared upstream
+classification is available, tracked in [#893](https://github.com/www-zaq-ai/zaq/issues/893).
+Raw transport reasons are not displayed or included in the struct's inspection.
+
+`Zaq.Channels.Api` resolves `settings.send_on_file_failure` from the selected
+connector once per attachment attempt. Missing settings default to true;
+boolean or form-string false selects `:abort`, otherwise `:continue`. The resolved
+`attachment_failure_policy` travels in existing connection details. Text-only
+delivery has no attachment policy. Direct bridge calls without that supplied
+policy retain their fail-fast preparation contract.
+
+Attachment delivery uses the existing `fetch_connection_details_for_config`
+lookup. Its outbound two-argument form returns resolved details or a binding error;
+the one-argument projection remains unchanged for ingress and other callers.
+`EmailBridge` extends the outbound lookup to bind the SMTP connector and its policy. An IMAP inbox's
+binding still controls SMTP selection; its own failure setting does not override
+the sender's setting. Channels retains the original IMAP routing/history identity
+and freezes the SMTP ID and policy for the attempt. Submission revalidates that
+same SMTP ID through the existing sender. The SMTP configuration screen exposes
+the default-on switch under **Advanced SMTP**; the IMAP form is unchanged.
+
+`JidoChatBridge` inherits the shared outbound lookup to resolve attachment policy
+from its selected connector, retaining transport details from the configured
+resolver and any explicitly resolved policy. Both bridges use their existing `send_reply/2`
+paths; connection resolution does not validate, materialize or upload files.
+
+Continue mode retains files that can be prepared and reports omitted files by
+original index, stage and safe reason. Email applies the decision before one
+SMTP submission. Its receipt carries transient successful attachment indices;
+`DeliveryConfirmation` filters the original content-free Records and removes those
+indices before Engine dispatch. EmailBridge supplies receipt display metadata from
+the prepared files, so filenames, MIME types and sizes describe the submitted
+representation. SMTP metadata and the shared source-record fallback exclude source
+document IDs, attributes, paths, bytes and handles.
+Existing provider attachment evidence remains authoritative. SMTP descriptors do not
+invent a remote download reference.
+An unsplit email receipt omits a per-part body so confirmation keeps the original
+canonical assistant content. Split chat receipts retain their explicit part bodies.
+Successful fallback notices also confirm the original canonical answer with no
+attachments; the appended transport notice does not replace canonical content.
+Chat passes the policy through existing send/edit options only when the adapter
+declares `attachment_failure_policy: :native`. Strict mode without explicit support
+fails before materialization or transport; message-edit support alone is insufficient.
+The connector toggle is shown when the channel declares native file sending.
+Policy support is checked during delivery and does not control toggle visibility.
+
+Mattermost enforces the supplied policy within one adapter invocation. Strict mode
+uploads every planned post's files before the first final create/update. Continue
+mode publishes usable uploads, or text when none succeed. Provider reports keep
+uploaded files separate from confirmed posts; publication can still be partial
+or uncertain, and no automatic replacement send follows that result. Uploads
+and already streamed text can remain after a failed strict attempt. This requires
+the Mattermost adapter revision declaring the policy capability.
+
+Adapters classify transport failures in their structured `failed_files` reports.
+Reasons are neutral atom categories or `{:http_error, status}`; reports omit raw
+provider bodies and transport exceptions. Channels validates these reported shapes
+and retains partial successes without interpreting provider transport errors.
+
+`Zaq.Channels.Api` owns fallback policy. A rejected runtime selection arrives as
+`Outgoing.attachment_error`, independently of answer success. Channels maps it to
+a selection delivery error and, in continue mode, sends the answer with a safe notice, without a file
+attempt. A later valid selection clears the runtime error before delivery.
+Abort mode suppresses attachment fallback notices. Legacy bridge preparation failures may send the answer with the safe explanation
+and no attachments. Unconfirmed transport
+outcomes may only update an existing placeholder via the bridge's update callback;
+they never create a replacement post. SMTP transport failures never trigger another
+email send. Notice failures preserve the original structured error. Notices do not
+retry attachments, invoke reply callbacks or confirm successful attachment delivery.
+Confirmed notice receipts are recorded through the existing delivery confirmation
+path with the canonical answer and no attachments; the original attachment error
+remains the caller's result even if notice delivery or confirmation recording fails.
+Direct bridge calls return failures without initiating fallback operations.
+Legacy unstructured errors do not trigger automatic fallback.
+A provider upload may persist
+even if sending fails; there is no exactly-once guarantee and an explicit resubmit
+sends again. Confirmation or status bookkeeping failure does not retry the send.
+Email delivery builds in-memory Swoosh attachments and sends synchronously.
+
+Channels regression scenarios enter through an authorized Outgoing Event and run
+in the normal test suite: `disk_file_delivery_integration_test.exs` and
+`email_file_delivery_integration_test.exs`. Private loopback Mattermost HTTP and
+SMTP stubs capture actual multipart uploads, final posts, envelopes and raw MIME.
+A barrier holds final transport responses until every concurrent journey reaches
+its boundary; assertions cover selected bytes, filename/MIME, threading, receipts,
+source preservation and independent cleanup. These tests require only ZAQ’s test
+database, with no external provider containers or bootstrap credentials. Stub
+acceptance is contract evidence, not actual recipient inbox acceptance. Real
+Mattermost server compatibility belongs in `jido_chat_mattermost`. Later Agent
+journeys extend these same two Channels modules while retaining the scenarios.
 
 Agent failure payloads use the canonical `Zaq.Agent.ErrorMessage` mapping. Their
 metadata may include an allowlisted reason, recovery category and retryability flag,
@@ -537,6 +656,15 @@ broken link. The non-secret lookup uses a normal observable event. This formatti
 contract does not own People authentication or post-login redirection.
 
 ### Communication media attachments
+
+The `:validate_files` Channels event accepts an `Outgoing` containing selected
+lazy Records. It reuses delivery's connector lookup and delegates to the optional
+bridge `validate_files/3` callback. `JidoChatBridge` passes the Records and resolved
+adapter options to the adapter's `validate_files/2` extension. Mattermost checks
+declared size against `max_file_size`; unknown sizes and oversized files return
+errors before selection succeeds. If an adapter does not export `validate_files/2`,
+the bridge returns `:ok` regardless of its declared capabilities. File-size checks
+remain adapter-owned during validation and delivery.
 
 Communication bridges map inbound media to lazy `Zaq.Contracts.Record` values in
 `Incoming.attachments`. `Record.attachment_metadata/1` persists bounded display
@@ -993,7 +1121,7 @@ Called by channels delivery routing (`Channels.Api` -> bridge-specific `send_rep
 
 1. `send_reply/2` receives `%Outgoing{}` and connection details `%{url, token}`.
 2. Resolves the adapter module for the provider.
-3. Builds a `Jido.Chat.Thread` and calls `Chat.Thread.post/3`.
+3. Builds a `Jido.Chat.Thread` and calls `Chat.Thread.post/3`; file delivery uses a new post.
 4. If `outgoing.metadata` contains an `"on_reply"` key, dispatches an Oban job for reply tracking (used by the Notification center).
 
 ### Thread watch management
@@ -1320,6 +1448,18 @@ continues starting bridge infrastructure.
 ---
 
 ## Channel Config
+
+Adapters may declare `configurable_max_file_size: :native` in their existing
+Jido Chat capability matrix when they enforce a configured upload limit.
+`JidoChatBridge` forwards that declaration through the provider capability snapshot as
+`resolved.configurable_max_file_size`; the BO New/Edit modal uses it to show
+**Advanced settings → Maximum file size (bytes)**. File-upload support alone does
+not imply this capability. Mattermost currently declares it; adapters without the
+declaration do not show this setting. No provider registration flag is needed.
+The setting is persisted as
+`settings["max_file_size"]`, validated as a positive integer for any provider, and
+forwarded through adapter opts. Blank clears it; adapter-owned validation still
+determines whether file delivery requires the setting.
 
 Configuration persistence is owned by [`Zaq.Engine.ChannelConfig`](engine.md#connector-configuration-persistence).
 The `channel_configs` table and identity FKs are unchanged. Legacy Channels
