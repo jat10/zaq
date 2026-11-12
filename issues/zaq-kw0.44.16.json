@@ -2,6 +2,7 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-12T09:53:12Z",
   "created": "2026-11-12T09:37:49Z",
   "description": "User review: compare main folder size behavior. If main does not calculate folder contents size, render no size placeholder for folders; retain file sizes. Reuse existing list/grid components; local-only presentation, no Action. Minimal change, existing tests/assertions when applicable; do not add folder size calculation. No precommit per issue.",
   "id": "zaq-kw0.44.16",
@@ -18,8 +19,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Remove folder size placeholder when main has no folder size",
   "type": "task",
-  "updated_at": "2026-11-12T09:52:29Z"
+  "updated_at": "2026-11-12T09:53:12Z"
 }
