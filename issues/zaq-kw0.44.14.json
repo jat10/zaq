@@ -12,9 +12,15 @@
   "id": "zaq-kw0.44.14",
   "labels": [],
   "parent": "zaq-kw0.44",
+  "comments": [
+    {
+      "text": "Typed editor-only implementation ready for supervisor review in typed-controls after stable ac24cd73 merge17ff9565e. Four files: Components.LabelEditor native staging/shared parser and failed-serialization save guard, DSM LabelEditor typed-only renderer without suggestion/create legacy path, approved editor tests/fixtures, mechanical LabelEvents test Assignment/state conversion. Domain validation remains authoritative for required/range/grid/option semantics; no source/folder/browser/inheritance code. Preserved Cancel/no writes, changed-only edits, stale/reload, explicit exclusions; added false/zero persistence/no-op versions, pending-\u003emanual, atomic unknown-option rollback with staging recovery, invalid syntax recovery, read-only/missing actors and revoked-update save failure. Final mix q passed; editor+LabelEvents+catalog suites41passed(40tests1property). Obsolete component suggestion/create and old schema references removed from owned scope. No precommit/push/implementation commit; independent review pending.",
+      "timestamp": "2026-11-12T01:17:39Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Complete typed staging in the existing resource label editor",
   "type": "task",
-  "updated_at": "2026-11-12T01:07:46Z"
+  "updated_at": "2026-11-12T01:17:39Z"
 }
