@@ -15,11 +15,15 @@
     {
       "text": "Implementation plan/reuse: extend DataSourceBridge.record_context/3 with ordered all-or-error record_contexts/3 and confidential batch Event/Api. Single delegates to shared engine. Native Disk batch callback delegates metadata/authority to Storage.document_contexts, reusing EntryCatalog.ancestors_many and Permissions.list_effective_many once per config group; add by_ids for target metadata selection. Remote uses per-request scoped record/resolved-chain memo, no persistent/global cache. Limits500 input refs,64 ancestors each,1024 distinct scoped ancestry nodes; errors contain no partial/denied ancestor metadata. Root declined speculative page-seed API because no current same-operation caller; document one fetch per distinct remote target and ancestor. Tests extend existing suites for shared-ancestor call budgets, duplicate/order parity, config/request isolation, missing actor/denied ancestry, count/depth/cycle/node caps; preserve all existing assertions. No new Action or tool: read-only source operation stays behind existing Channels/Storage Events; no direct cross-role calls.",
       "timestamp": "2026-11-12T01:13:32Z"
+    },
+    {
+      "text": "Implementation ready for independent review in isolated implementation worktree (uncommitted). record_contexts/3 returns ordered all-or-error contexts; single path delegates to shared engine. Confidential Events/Api accept references only; native Disk Storage batch reuses ancestors_many/effective grants, remote request-scoped record/relative-chain memo. Guards500 refs/64depth/1024 scoped ancestors; identity-free actor denied even explicit skip using existing actor semantics locally. Existing-suite regressions cover native malformed/reordered outputs, remote shared calls/duplicates/config+request isolation, denied ancestors/no partial results, cache read-vs-update, rebased depth/cached suffix cap, exact1024 ancestor budget, configured Disk volume UUID isolation, confidential envelopes and original single parity. mix q passes; focused DataSourceBridge/DiskBridge/Events/EntryCatalog/Storage/NodeRouter suites295 checks pass (7properties,288tests). No existing assertions weakened; no speculative seed API or persistent cache. Tool-generated isolated Serena config restored; original user worktree untouched. Parent owns review/commit/integration/issue state; no precommit/push.",
+      "timestamp": "2026-11-12T01:32:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Batch authorized source ancestry for effective label reads",
   "type": "task",
-  "updated_at": "2026-11-12T01:13:32Z"
+  "updated_at": "2026-11-12T01:32:18Z"
 }
