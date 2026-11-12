@@ -35,11 +35,15 @@
     {
       "text": "User clarified existing labeling is not production-ready and does not require migrating old values into new tables. This supersedes prior lossless legacy assignment conversion approval. Remove old-value copying, deterministic legacy options, conversion preflight and lossless rollback machinery/tests. Use straightforward schema transition with new shared assignment storage; do not promote old private values into global definitions. Preserve unrelated documents/content/permissions. Typed contract tests remain; validate fresh schema and transition without elaborate legacy migration infrastructure. Pending visibility question is resolved by eliminating conversion, not by broadening permissions.",
       "timestamp": "2026-11-12T00:45:40Z"
+    },
+    {
+      "text": "User-directed simplified transition: retain definition IDs/names/descriptions/revisions/timestamps and Document/Chunk applicability; initialize definitions as manual Boolean with empty config; discard old assignment tables/values/exclusions and create empty shared assignment store. Down creates empty old assignment tables and drops typed storage/config; no value translation or copy/restore metadata. Documents/content/permissions untouched. Obsolete lossless migration regression/helpers removed; fresh-schema and transition smoke replace them; typed/auth/lifecycle tests retained. Root accepted this scope based on latest explicit user clarification.",
+      "timestamp": "2026-11-12T00:48:04Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.2] Implement typed definition and shared assignment foundation",
   "type": "task",
-  "updated_at": "2026-11-12T00:45:40Z"
+  "updated_at": "2026-11-12T00:48:04Z"
 }
