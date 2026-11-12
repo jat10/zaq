@@ -11,9 +11,15 @@
   "id": "zaq-kw0.44.11",
   "labels": [],
   "parent": "zaq-kw0.44",
+  "comments": [
+    {
+      "text": "Root independent review found no additional production defect in final source ownership/signed projection/checked worker flow. Validation: 202/203 focused cases pass, 1 existing skip; mix q passes. Existing ingestion_test.exs:392 expects grants from unsigned owners and role-only permissions. Proposed fixture supplies same owner/reader/writer grants in signed normalized permission entries, retaining all assertions; new tampering test rejects unsigned authority. Explicit approval requested asynchronously under docs/testing-approach.md existing-test-behavior gate; fixture change pending. Other work continues.",
+      "timestamp": "2026-11-12T00:50:36Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.11] Preserve canonical source ACL ownership through ensure and ingestion",
   "type": "task",
-  "updated_at": "2026-11-12T00:32:29Z"
+  "updated_at": "2026-11-12T00:50:36Z"
 }
