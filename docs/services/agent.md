@@ -596,6 +596,77 @@ without safe permission mutation support return `:unsupported`.
   exception module and source module/function/arity; raw reasons and arguments are omitted.
   They return safe, non-retryable structured execution errors. Ordinary error strings remain compatible.
 
+### Resource queries (`Zaq.Agent.Tools.Resources.QueryResources`, key `resources.query`)
+
+The existing read-only Action supports `describe`, get by ID, text search, exact
+filters, field selection, sorting and pagination over the resource allowlist in
+`Zaq.Agent.Tools.Resources.Registry`. It also supports these Ingestion resources:
+
+- `label`: definition ID, name, description, resource types and timestamps. Search
+  matches name/description; an exact `name` filter is available. Ordinary callers
+  can discover only labels assigned or pending on at least one document they can
+  read. Unassigned labels and labels only on unreadable documents are hidden.
+- `document`: indexed-document metadata (ID, title, source, content type and
+  timestamps), plus `labels` with ID, name, native value, state, value type and
+  value configuration. Pending assignments return `value: null`. The label projection
+  is batched for the authorized result page. Search matches title/source, with
+  exact source/content-type filters.
+  Content, arbitrary metadata, watch errors and chunk data are not exposed.
+  Document IDs are local Ingestion IDs, not provider file IDs.
+
+Document filters additionally accept `label_ids` (at most 100 positive integer
+IDs), `label_values` (at most 100 `{label_id, value}` pairs), and `label_match`
+(`any` by default, or `all`). Value filters match concrete assigned Boolean,
+numeric or option-ID values. Numeric equivalents such as `1` and `1.0` match
+equally; duplicate equivalent pairs do not affect matching. Pending assignments
+match key-presence filters only; null or blank filters do not match them.
+When both ID and value filters are supplied, both groups must match, with
+`label_match` applied within each group. Duplicate IDs do not affect
+matching. An omitted ID list leaves results unfiltered by label; an empty list
+matches nothing. Unknown IDs cannot broaden results. Manual exclusions
+(`state: excluded`) and chunk assignments never count as document labels.
+`label_match` without either label filter, invalid modes, and malformed IDs/pairs return filter
+errors. Document get-by-ID also respects supplied search and label filters.
+
+```json
+{
+  "resource_type": "document",
+  "filters": {"label_ids": [12, 18], "label_match": "all"},
+  "fields": ["id", "title", "source"],
+  "limit": 20
+}
+```
+
+To find documents with `Location: Paris`, first discover the Location label ID,
+then query:
+
+```json
+{
+  "resource_type": "document",
+  "filters": {"label_values": [{"label_id": 12, "value": "Paris"}]},
+  "fields": ["id", "title", "labels"]
+}
+```
+
+Read grants for the trusted person, teams, and Everyone are applied before
+filtering, counts and pagination. Update-only grants do not permit reads.
+Only explicit `skip_permissions: true` in trusted execution context bypasses
+permissions and exposes the full label catalog; tool arguments cannot request it.
+The two resources use ID as a stable sort tie-breaker and retain the existing
+default page size of 20 and cap of 100. No mutation or additional tool key is added.
+
+Document and label queries dispatch a confidential `:query_resources` Event via
+`Zaq.Ingestion.Events` and `NodeRouter` to the Ingestion role. Ingestion resolves
+its own static descriptor allowlist and executes authorization, SQL filtering,
+counts, pagination and label projection in `Zaq.Ingestion.ResourceQuery`.
+`Zaq.Ingestion.Document` validates and composes label filters using assignment
+matching subqueries owned by `Zaq.Ingestion.Labels`. Agent shares
+only the static discovery descriptors; `describe` requires no database access.
+Identity and explicit bypass travel in the event envelope, never query parameters.
+Router failures are returned without falling back to local database reads.
+`Zaq.Resources.QuerySupport` shares field validation, read-grant semantics and
+response conventions with the existing queries for other resource types.
+
 ### BO User Notification Tool (`Zaq.Agent.Tools.Accounts.NotifyUsers`, key `accounts.notify_users`)
 - Sends one subject/body to BO users selected with `resources.query` by dispatching a `:notify_users` event to the Engine node.
 - The tool accepts the `resources` list from `resources.query` with `resource_type: "user"`; only each user's `id` is trusted, and Engine resolves canonical account emails before Channels delivery.
@@ -852,6 +923,10 @@ hierarchy/origin metadata, never a native ID prefix or a tool-name guess.
   adding provider-specific ReqLLM behavior does not add branches to the facade
 - Keeps OAuth protocol and selected-grant identity in Connect's separate OAuth behavior
 - Builds provider spec maps and generation options consumed by `Factory`
+- Dedicated decision evaluation requires catalog execution metadata and a compatible
+  ReqLLM evaluation adapter; it never uses generation-provider fallback. Generation-only
+  sampling options are omitted. ZAQRouter declares runtime and operation metadata and
+  delegates decision and reranking execution to ReqLLM's shared catalog gateway.
 - Dedicated reranking resolves catalog models before generation-provider fallback,
   retaining provider identity, aliases and execution contracts for ReqLLM's shared
   adapters. Generation rejects catalog models explicitly marked non-chat; native
@@ -865,6 +940,43 @@ hierarchy/origin metadata, never a native ID prefix or a tool-name guess.
   Connect result and does not query System or select Person versus global grants
 - Keeps OpenAI-compatible fallback behavior in the default runtime implementation so
   other modules do not branch by provider
+
+### Decision evaluation (`Zaq.Agent.Actions.EvaluateDecisions`)
+
+Evaluates supplied text or JSON state against named questions using the global
+decision model. It is one reusable Workflow Action; agent use requires explicit
+enablement of `general.evaluate_decisions`. It does not fetch data, grant access,
+or replace the invoking agent's chat model.
+
+`questions` maps string IDs to `type`, `instructions` and type-specific fields:
+`choice` uses named `criteria`, `score` uses an ordered list of distinct rubric
+labels, and `boolean` optionally sets a probability `threshold` (default `0.5`).
+Boolean values use an inclusive `probability >= threshold` comparison. Scores
+may be fractional indices between zero and the last rubric index.
+
+Successful output is `%{decisions: answers}`. Each named answer contains `type`
+and `value`. Choice/score answers include nullable `confidence` and
+`probabilities`; choice probabilities are keyed by option ID and score
+probabilities by zero-based index strings. Partial distributions remain partial,
+zero is preserved, and missing probabilities are never invented or renormalized.
+Boolean answers retain `probability` and the applied `threshold`.
+
+The model-facing tool schema includes the full question union, required fields,
+typed choice criteria and examples. Zoi remains the runtime validator; the Action
+exports the two dynamic map-value schemas explicitly because Zoi's key/value-map
+JSON encoder omits them. Parameter validation applies through both Jido and direct
+workflow execution. It does not infer types or repair malformed question shapes.
+
+No model selection, endpoint, credential or sampling override is accepted in
+tool arguments. System/Connect and ProviderSpec resolve the configured runtime;
+ReqLLM owns inference and wire protocols. Invalid inputs fail before inference.
+Missing configuration, refusals, malformed/incomplete answers and provider errors
+fail the whole operation with bounded `decision_*` errors, without raw provider
+content. HTTP and Action failures are marked non-retryable; an explicit workflow
+retry is a separate potentially billable invocation. Trusted callers can bound
+HTTP execution with a monotonic `decision_deadline`; normal Jido execution owns
+the outer timeout and cancellation. See [system configuration](system-config.md)
+for model ownership and migration.
 
 ### Query Filters (`Zaq.Agent.QueryFilters`)
 - Canonical helper module for retrieval filter normalization and composition
