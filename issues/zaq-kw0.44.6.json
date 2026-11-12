@@ -23,11 +23,15 @@
     {
       "text": "Cleanup audit after typed UI integration: virtual Label.targets and input targets alias remain temporary and have no current catalog/editor consumer. The old :label_value_suggestions route/delegate/ResourceLabels functions now have only test consumers in inspected label UI/domain paths; they retain permission/escaping/limit cases. Decide removal vs justified retained public typed usage API after full reference audit; do not silently delete security coverage or introduce another suggestion engine. Prefer moving reusable assertions to existing value-usage tests if obsolete route removal is within approved typed-contract scope.",
       "timestamp": "2026-11-12T01:48:52Z"
+    },
+    {
+      "text": "Final scope consolidation removes unused batch source APIs and reconciles existing typed-label documentation. Existing suggestion API/test coverage retained; no new parallel UI or inheritance API shipped. Source Save reuses existing EditResourceLabels Action, single Channels source context Event, canonical Document identity and checked ExternalPermissions projection.",
+      "timestamp": "2026-11-12T02:15:45Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.44.6] Integrate lifecycle, tests and owning documentation",
   "type": "task",
-  "updated_at": "2026-11-12T01:48:52Z"
+  "updated_at": "2026-11-12T02:15:45Z"
 }
