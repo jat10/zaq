@@ -23,11 +23,15 @@
     {
       "text": "Approval still pending for explicit test-observability correction; do not apply /tmp/zaq-confidential-source-observer.patch before user answer. Durable full E2E rerun active PID20114; progress191passed0failed, enteredWebKit. Recover via /tmp/zaq-final-e2e.log and /tmp/zaq-final-e2e.exit, not a new run. Current HEADfdc5357b0, only preexisting .serena dirty. After approval: apply patch, focused tests+q, independent re-review, fresh successful coveralls then coverup, required coverage work, final precommit900000 and push origin feat/labeling/updatePR918. Do not claim complete or close final gate yet.",
       "timestamp": "2026-11-12T02:40:58Z"
+    },
+    {
+      "text": "User explicitly approved confidential source observer test correction. Applied reviewed /tmp/zaq-confidential-source-observer.patch: preserve actor/action/permissions/content/revocation coverage via existing observers, assert confidential metadata absence. Continue scoped validation/review then fresh coverage, precommit and push.",
+      "timestamp": "2026-11-12T02:45:13Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.8] Post-review coverage and regression validation",
   "type": "task",
-  "updated_at": "2026-11-12T02:40:58Z"
+  "updated_at": "2026-11-12T02:45:13Z"
 }
