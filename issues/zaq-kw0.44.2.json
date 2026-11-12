@@ -7,6 +7,8 @@
     "zaq-kw0.44.14",
     "zaq-kw0.44.3"
   ],
+  "closed_at": "2026-11-12T01:30:37Z",
+  "close_reason": "Independent review fixes committed d50f85ee: JSON numeric equality dedupe preserves native values and exact Boolean/option IDs; generated QueryResources guidance corrected. Root reviewed repair;106 owner checks (5properties101tests), mix q and hooks pass. Earlier structural-only schema/domain foundation remains accepted. Merge of repair into integration pending .13 completion; full PR review remains .7.",
   "created": "2026-11-11T23:51:43Z",
   "description": "## Functional specifications and files\nAdd definition value_type/value_config/resources/assignment_type/threshold, typed persisted value, origin/state/version/metadata in one assignment store. Adapt existing domain operations/read consumers and transactional cleanup coherently; preserve existing installation data or fail safely with documented migration policy.\nFiles/owners: lib/zaq/ingestion/labels*, actions/*label*, document.ex, chunk.ex, label migration and label query projections.\n## Tests to add before implementation\nExtend catalog/resource/value/lifecycle suites and shared fixtures: Boolean false, scale zero/step/range, option membership, invalid config/in-use edits, pending/excluded distinctions, atomic bulk/stale writes, FK replacement cleanup and resource ID isolation. Property invariants; migration up/down/reapply.\n## Branches/paths validated\nSuccess, invalid input, nil/denied actor, stale/concurrent write, unavailable/deleted source, lifecycle cleanup and failure rollback where relevant. No hidden cross-service calls.\n## Mocking plan\nReal Repo, validated Actions, NodeRouter and domain boundaries. Mock only external provider/conversion HTTP when relevant; runtime dependencies via existing Zaq.Config opts, no global mutation.\n## Documentation\nUpdate owner module docs and relevant existing service/BO guide alongside behavior; durable evidence here. Follow docs/documentation.md.\n## Action reuse assessment\nExtend existing Actions/domain contexts; schema validation local to owning Labels domain. Reuse permission and transaction boundaries, no duplicated mutation implementation. Typed resource/version/edit inputs -\u003e existing success/typed errors; automatic configuration has no model effects.\n## Validation/dependencies\nRead AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and applicable service guides. Scoped tests + mix q only per implementation issue. Final precommit reserved for final child. Supervisor verifies before closure. New feature E2E remains zaq-kw0.15 -\u003e zaq-kw0.16.\n",
   "id": "zaq-kw0.44.2",
@@ -55,8 +57,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-kw0.44.2] Implement typed definition and shared assignment foundation",
   "type": "task",
-  "updated_at": "2026-11-12T01:29:24Z"
+  "updated_at": "2026-11-12T01:30:37Z"
 }
