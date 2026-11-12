@@ -9,7 +9,7 @@
   "parent": "zaq-kw0.44",
   "priority": 2,
   "status": "open",
-  "title": "Preserve canonical source ACL ownership through ensure and ingestion",
+  "title": "[zaq-kw0.44.11] Preserve canonical source ACL ownership through ensure and ingestion",
   "type": "task",
-  "updated_at": "2026-11-12T00:32:17Z"
+  "updated_at": "2026-11-12T00:32:26Z"
 }
