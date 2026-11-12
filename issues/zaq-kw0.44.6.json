@@ -15,11 +15,15 @@
     {
       "text": "Independent test reuse audit: extend existing value/invalid rollback/catalog/query tests. Consolidate LabelsLive selection styling test into select-all test preserving every toolbar/checkbox/row/modal assertion; keep separate editor Cancel-new vs Cancel-existing and distinct single/bulk/revoked/deletion/lifecycle transactions. Reuse LabelFixtures; no blanket deduplication across layers. Fresh upstream/main is 12 commits ahead; merge preview reports only assets/css/styles.css conflict. Integrate upstream before final review/coverage if still needed, preserve semantic changes, no force push; validation must cover final merged tree.",
       "timestamp": "2026-11-11T23:59:55Z"
+    },
+    {
+      "text": "Final consolidation must remove temporary Label.targets projection/targets input alias and legacy free-text DSM rendering once all consumers use typed resources/value_config. User clarified labeling is unreleased: no old-value migration or backward-compatibility infrastructure needed. Preserve unrelated existing source/local permission behavior and existing authorization/concurrency assertions. Verify no old assignment schemas/tables or free-text bulk/editor paths remain in production consumers.",
+      "timestamp": "2026-11-12T00:47:07Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.44.6] Integrate lifecycle, tests and owning documentation",
   "type": "task",
-  "updated_at": "2026-11-11T23:59:55Z"
+  "updated_at": "2026-11-12T00:47:07Z"
 }
