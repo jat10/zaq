@@ -47,11 +47,15 @@
     {
       "text": "Upstream main integrated during PR1 now provides global Decision model and reusable EvaluateDecisions Action. PR2 must reuse current owner rather than older RAG/global threshold assumptions. Current Action threshold comparison is inclusive; issue598 revised acceptance says strictly above label threshold, so reconcile explicitly in PR2. PR1 persists label-level threshold/pending config only and performs no model call.",
       "timestamp": "2026-11-12T00:48:06Z"
+    },
+    {
+      "text": "PR2 lifecycle note from current source: Chunk.drop_table/0 clears documents.content globally during embedding reset. Once PR2 stores independently converted Markdown in Document.content without chunks, reconcile this reset contract so canonical converted content is not erased merely by embedding/table reset. PR1 label-only identities contain no converted content and do not add conversion. Reuse conversion owner and preserve original-content/citation contract; no extra file artifact implied.",
+      "timestamp": "2026-11-12T01:16:58Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.42] PR2 generic classification and automatic labeling",
   "type": "epic",
-  "updated_at": "2026-11-12T00:48:06Z"
+  "updated_at": "2026-11-12T01:16:58Z"
 }
