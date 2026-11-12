@@ -7,9 +7,15 @@
   "id": "zaq-kw0.44.15",
   "labels": [],
   "parent": "zaq-kw0.44",
+  "comments": [
+    {
+      "text": "Reviewed transfer0941d4dc7 integrated uncommitted into originalworktree for one combinedreviewfixcommit. Exact catalogschemasmatch oldtwo vsnewone with/withoutchunks; rollback/recreation preserves unrelated document/content/chunk/permission data;9lifecyclechecks+mixqpass. Original/devDBuntouched. Userexplicitconsolidation authorizes replacing legacy-conversion testscenario with directschema lifecycle.",
+      "timestamp": "2026-11-12T09:44:58Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Consolidate labeling schema into one migration",
   "type": "task",
-  "updated_at": "2026-11-12T09:38:07Z"
+  "updated_at": "2026-11-12T09:44:58Z"
 }
