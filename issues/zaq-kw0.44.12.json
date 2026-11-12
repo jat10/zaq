@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-12T00:41:49Z",
+  "description": "Independent UI slice extracted from .44.5: adapt existing LabelsLive definition create/edit and value-management presentation to stable typed Label contract (Boolean, scale min/max/increment, defined option IDs/display names, manual/automatic and percentage threshold). Reuse DSM controls from .44.10 and existing NodeRouter/Actions; no duplicate editor, validation engine, backend or folder assumptions. Preserve existing authorization/delete/rollback tests; user approved replacing optional/free-text and rejected-automatic expectations with required typed/pending semantics. Add assertions to existing tests; consolidate genuine duplicates without losing coverage. Read AGENTS.md, DESIGN.md, docs/bo-components.md, docs/testing-approach.md, docs/action-reuse.md, docs/WORKFLOW_AGENT.md, code-quality/design skills. Scoped tests and mix q; no precommit/push. Folder/source editor integration remains .44.5 after .44.4. Global legacy-value visibility is a separate pending migration decision, not new UI ACL scope.",
+  "id": "zaq-kw0.44.12",
+  "labels": [],
+  "parent": "zaq-kw0.44",
+  "priority": 2,
+  "status": "open",
+  "title": "Adapt existing label catalog to typed definition settings",
+  "type": "task",
+  "updated_at": "2026-11-12T00:41:49Z"
+}
