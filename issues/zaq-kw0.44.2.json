@@ -23,11 +23,15 @@
     {
       "text": "Independent re-review approves interim foundation: both findings resolved, no new defect found. Reviewer reproduced original10^37 off-grid rejection and alternative negative10^80/decimal cases even with Decimal precision1, without app/DB startup. Definition-only edits now skip scans; resource removal/config/pending-mode validation retained. Author q and8 focused tests1property pass. This is NOT final PR approval or issue completion: legacy mapping and existing-suite behavioral conversion are still pending; source/folder/UI integration later.",
       "timestamp": "2026-11-12T00:18:39Z"
+    },
+    {
+      "text": "User explicitly approved both test-contract migrations and legacy options mapping in latest conversation message Approved. Implement deterministic option IDs preserving exact normalized legacy text/display labels, explicit Unspecified for selected nil, preserve exclusions/versions/timestamps. No arbitrary Boolean/scale inference; no data discard. Migrate existing test suites/fixtures within approved scope, retain auth/concurrency/rollback coverage; extend and consolidate existing tests.",
+      "timestamp": "2026-11-12T00:24:04Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.2] Implement typed definition and shared assignment foundation",
   "type": "task",
-  "updated_at": "2026-11-12T00:18:39Z"
+  "updated_at": "2026-11-12T00:24:04Z"
 }
