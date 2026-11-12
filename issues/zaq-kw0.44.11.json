@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-kw0.44.3"
   ],
+  "closed_at": "2026-11-12T01:49:41Z",
+  "close_reason": "User approved exact signed-permission fixture; root reviewed db73e506b diff, all assertions retained. Production checkpoint b5998132 +fixture db73e506b:234 focused checks (6properties228tests),1 existing skip; formerly failing scenario passes, mix q/hooks clean. Source ACL ownership, signed projections and checked post-mutation invalidation reviewed. Integration into current implementation and full PR validation follow.",
   "created": "2026-11-12T00:32:17Z",
   "description": "Independent source-permission prerequisite for .3. Functional/files: extend ExternalPermissions shared principal mapping with checked source-key reconciliation for verified canonical source Records, reused by ensure and normal IngestWorker apply path. Translate canonical remote edit to document update only, union duplicate principal rights, preserve manual and other-source grants, reconcile only authoritative source_key. Verify record canonical identity matches target document. Keep existing no-source compatibility behavior only for genuinely non-source documents; reject missing/untrusted provenance on canonical data_source documents before legacy pruning. No duplicate permission mapper, metadata marker or caller-supplied ownership key. Tests before implementation: extend external_permissions_test and relevant worker tests with canonical source grants successive refresh/revocation, manual/other-source preservation, duplicate union, edit/update rights, mismatch/untrusted refs, strict rollback, later ingestion after label ensure; preserve existing unsigned/no-source scenario assertions. Real Repo/Permissions and mapping, stub only external providers. Documentation: owning module docs/service contract. Reuse decision: extend ExternalPermissions and existing generic Permissions grant/revoke/replace ownership primitives; IngestWorker existing caller remains thin. No new Action/tool (domain permission projection primitive). Inputs trusted record+matching Document, results checked success/error; ensure outer transaction rolls back all failures. Read AGENTS/tool/workflow/test/action/ingestion/permissions conventions. Focused tests+q; no precommit/push. Root review and isolated commit required before closure.",
   "id": "zaq-kw0.44.11",
@@ -38,8 +40,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-kw0.44.11] Preserve canonical source ACL ownership through ensure and ingestion",
   "type": "task",
-  "updated_at": "2026-11-12T01:49:27Z"
+  "updated_at": "2026-11-12T01:49:41Z"
 }
