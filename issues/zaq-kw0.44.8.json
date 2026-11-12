@@ -47,11 +47,15 @@
     {
       "text": "Freshfullcoverage84cb7f9ac exit2:12298/12305 passed,1skip167excluded,seed218210. Six40P01deadlocks fromexisting asyncsharedChunkDDL (documentaccess/Chunk/overview/onboarding); no changedlabelingpath stack. One genuine flakyPRproperty generator uniq_list_of0..2 reproducedalone withseed218210. Mechanicalfix list_ofsamerange/minmax |\u003eEnum.uniq preservesEXACTsame nonemptyordereduniqueinputdomain,12runs,andallassertions. Independentreviewapproved, no behavior weakening. Targetedseed+q running; amendunpublishedsinglefixcommit thenfreshcoverage --max-cases1 toavoidsharedDDLfixturedeadlocks. Interrupted premature retryreceipt preserved, nofailedreportconsumed.",
       "timestamp": "2026-11-12T10:06:56Z"
+    },
+    {
+      "text": "Freshserializedcoverage on47dd6917c SUCCESSexit0:12305passed(48doctests359properties11898tests),1existing skip167excluded,97.0%total. Seed119362 maxcases1 elapsed396.1s. Freshreportthenmixcoverup exit0. ALL changed executable linescovered; list/grid100%. Documented preexistingwholefileexceptions LabelChips78.26%(unchangedhidden+N lines44,49-51,53), IngestionLive94.86%(43unchangedlinesoutside newhandler/fallback). No newbehaviorgap/no additionaltests warranted. Migration catalog/rollback proof+9lifecycle retained. Full existingE2E nowrunningsequentially, durable/tmp/zaq-label-review-e2e-47dd6917c.log/.exit.",
+      "timestamp": "2026-11-12T10:16:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.8] Post-review coverage and regression validation",
   "type": "task",
-  "updated_at": "2026-11-12T10:06:56Z"
+  "updated_at": "2026-11-12T10:16:38Z"
 }
