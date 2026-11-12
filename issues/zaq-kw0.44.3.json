@@ -13,9 +13,15 @@
   "id": "zaq-kw0.44.3",
   "labels": [],
   "parent": "zaq-kw0.44",
+  "comments": [
+    {
+      "text": "Approved public contract: reuse existing resource_editor/edit_resource Events and EditResourceLabels Action with selector %{type: \"source\", source_ref: %{provider, config_id, record_id}}. Source open resolves canonical Channels context with read authority and returns typed projection, canonical selector, document_id nil|id and source_kind without persistence. Save freshly resolves update-authorized context, rejects deleted/mismatched/folder targets until .4, and atomically insert_new canonical Document, lock row, apply shared checked source ACL, then reuse versioned document assignment editor. No content conversion/jobs/model, no authorization marker, no separate tree. Evaluate explicit current-super-admin event permission opt-in only from verified BOActor; never trust actor bypass or infer update from read. Read-only design prepared while .11 fixture approval is pending. Sourcecontext ae69cee2 integrated as ac24cd73c; q and 284 focused integration tests pass.",
+      "timestamp": "2026-11-12T00:55:28Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.44.3] Ensure authorized labelable Document before ingestion",
   "type": "task",
-  "updated_at": "2026-11-12T00:32:28Z"
+  "updated_at": "2026-11-12T00:55:28Z"
 }
