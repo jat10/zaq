@@ -11,9 +11,15 @@
   "id": "zaq-kw0.44.12",
   "labels": [],
   "parent": "zaq-kw0.44",
+  "comments": [
+    {
+      "text": "Catalog-only implementation ready for supervisor review in typed-controls worktree after authorized merge 717e934eb. Files: LabelsLive typed definition controls (Boolean/scale/options stable IDs, mode/threshold/resources), LabelValueManager shared native control/parser/formatter and pending state, scoped LabelEvents error presentation, existing LabelsLive tests. Reuse: existing confidential LabelEvents/NodeRouter/Actions own persistence and domain validation; LabelValue handles HTML scalar serialization; no new Action/backend/ACL/source/folder contract. Typed old fixtures/assertions converted within approved scope. Consolidated duplicate selection-style/select-all tests preserving toolbar/row/checkbox assertions. Focused suite20passed incl invalid scale retention, stable option rename/used-removal rejection, false/zero confirmed bulk, pending automatic bulk, original auth/stale/deletion/pagination cases. mix q passed; diff check clean. No precommit/push; implementation commit awaits review. Resource editor legacy path remains .44.5 scope.",
+      "timestamp": "2026-11-12T00:55:24Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Adapt existing label catalog to typed definition settings",
   "type": "task",
-  "updated_at": "2026-11-12T00:42:04Z"
+  "updated_at": "2026-11-12T00:55:24Z"
 }
