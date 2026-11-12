@@ -4,6 +4,7 @@
     "zaq-kw0.44.1"
   ],
   "blocks": [
+    "zaq-kw0.44.14",
     "zaq-kw0.44.3"
   ],
   "closed_at": "2026-11-12T00:52:53Z",
@@ -51,5 +52,5 @@
   "status": "closed",
   "title": "[zaq-kw0.44.2] Implement typed definition and shared assignment foundation",
   "type": "task",
-  "updated_at": "2026-11-12T00:52:53Z"
+  "updated_at": "2026-11-12T01:07:42Z"
 }
