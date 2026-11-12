@@ -15,11 +15,15 @@
     {
       "text": "Root independent review found no additional production defect in final source ownership/signed projection/checked worker flow. Validation: 202/203 focused cases pass, 1 existing skip; mix q passes. Existing ingestion_test.exs:392 expects grants from unsigned owners and role-only permissions. Proposed fixture supplies same owner/reader/writer grants in signed normalized permission entries, retaining all assertions; new tampering test rejects unsigned authority. Explicit approval requested asynchronously under docs/testing-approach.md existing-test-behavior gate; fixture change pending. Other work continues.",
       "timestamp": "2026-11-12T00:50:36Z"
+    },
+    {
+      "text": "Scope refinement from lifecycle review: source ACL mutations commit before local refresh. Existing code returns sync error but leaves old grants and stops at first failed document. Approved narrow fix: Channels emits server-owned confirmed-mutation Event opts only after authorized mutation succeeds; Ingestion consumes opts (never body), attempts all affected docs, invalidates matching source-owned grants for each failed refresh, preserves manual/other-source grants, returns original first error. Standalone refresh must never invalidate on failure. Test confirmed mutation, later docs after first failure, and unauthorized standalone failure. Routing outage before Ingestion delivery remains pre-existing distributed handoff limitation; no scheduler/stale-marker added.",
+      "timestamp": "2026-11-12T01:03:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.11] Preserve canonical source ACL ownership through ensure and ingestion",
   "type": "task",
-  "updated_at": "2026-11-12T00:50:36Z"
+  "updated_at": "2026-11-12T01:03:12Z"
 }
