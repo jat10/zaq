@@ -21,11 +21,15 @@
     {
       "text": "Implementation ready for independent review in isolated implementation worktree (uncommitted). record_contexts/3 returns ordered all-or-error contexts; single path delegates to shared engine. Confidential Events/Api accept references only; native Disk Storage batch reuses ancestors_many/effective grants, remote request-scoped record/relative-chain memo. Guards500 refs/64depth/1024 scoped ancestors; identity-free actor denied even explicit skip using existing actor semantics locally. Existing-suite regressions cover native malformed/reordered outputs, remote shared calls/duplicates/config+request isolation, denied ancestors/no partial results, cache read-vs-update, rebased depth/cached suffix cap, exact1024 ancestor budget, configured Disk volume UUID isolation, confidential envelopes and original single parity. mix q passes; focused DataSourceBridge/DiskBridge/Events/EntryCatalog/Storage/NodeRouter suites295 checks pass (7properties,288tests). No existing assertions weakened; no speculative seed API or persistent cache. Tool-generated isolated Serena config restored; original user worktree untouched. Parent owns review/commit/integration/issue state; no precommit/push.",
       "timestamp": "2026-11-12T01:32:18Z"
+    },
+    {
+      "text": "Committed approved batch implementation aa534e4b43b1e89433d932c869e6f8af591bf665 after reviewer-proven read-parity fix and rereview approval. Source metadata targets require read plus requested right through internal-only target-right policy; ancestry-only API retains requested-right behavior; both share one grants read. Independent rereview76checks pass, probes removed. Integrated reviewed numeric query fix as df662fe603921fa5370f7c9d9aecdbcd700057ab and typed-controls branch through34cbef472 using clean merge220821518c6d8cd2f918673d448298b6eab69893, no conflicts. Composition validation: mix q PASS; combined label domain/lifecycle +native query/registry +LabelEditor/LabelsLive/LabelEvents +source/Storage/NodeRouter suites456checks PASS (17properties,439tests). Worktree clean; normal commit hooks passed; no final precommit or push. Source ACL b5998132 remains unintegrated pending fixture approval; no .3 dependent production work. Parent owns issue closure/integration.",
+      "timestamp": "2026-11-12T01:43:33Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "Batch authorized source ancestry for effective label reads",
   "type": "task",
-  "updated_at": "2026-11-12T01:42:15Z"
+  "updated_at": "2026-11-12T01:43:33Z"
 }
