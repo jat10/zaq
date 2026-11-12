@@ -39,11 +39,15 @@
     {
       "text": "User-directed simplified transition: retain definition IDs/names/descriptions/revisions/timestamps and Document/Chunk applicability; initialize definitions as manual Boolean with empty config; discard old assignment tables/values/exclusions and create empty shared assignment store. Down creates empty old assignment tables and drops typed storage/config; no value translation or copy/restore metadata. Documents/content/permissions untouched. Obsolete lossless migration regression/helpers removed; fresh-schema and transition smoke replace them; typed/auth/lifecycle tests retained. Root accepted this scope based on latest explicit user clarification.",
       "timestamp": "2026-11-12T00:48:04Z"
+    },
+    {
+      "text": "User 2026-11-12 superseded legacy-value migration: retain definition IDs, names, descriptions, revisions, timestamps and resource applicability; initialize standard manual Boolean definitions with empty config. Drop old document/chunk assignment rows, values and exclusions; create empty shared assignments. Structural rollback also restores empty old assignment tables and discards typed assignments/config. No old text becomes shared choices. Documents, content, source mappings and permissions remain intact. Removed only obsolete lossless-copy/rollback regression; transition and fresh/no-embedding smoke retain typed/auth/lifecycle coverage. No original dev DB writes.",
+      "timestamp": "2026-11-12T00:49:52Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.2] Implement typed definition and shared assignment foundation",
   "type": "task",
-  "updated_at": "2026-11-12T00:48:04Z"
+  "updated_at": "2026-11-12T00:49:52Z"
 }
