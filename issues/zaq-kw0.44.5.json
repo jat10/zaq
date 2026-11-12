@@ -3,6 +3,7 @@
   "blocked_by": [
     "zaq-kw0.44.10",
     "zaq-kw0.44.12",
+    "zaq-kw0.44.14",
     "zaq-kw0.44.4"
   ],
   "blocks": [
@@ -17,5 +18,5 @@
   "status": "open",
   "title": "[zaq-kw0.44.5] Adapt catalog, editor and source browser to typed contracts",
   "type": "task",
-  "updated_at": "2026-11-12T00:42:04Z"
+  "updated_at": "2026-11-12T01:07:45Z"
 }

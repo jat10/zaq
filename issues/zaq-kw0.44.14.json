@@ -4,7 +4,9 @@
     "zaq-kw0.44.12",
     "zaq-kw0.44.2"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-kw0.44.5"
+  ],
   "created": "2026-11-12T01:07:33Z",
   "description": "Independent editor slice from .5, following completed typed domain and shared controls. Update existing Components.LabelEditor staging/events to native Boolean/scale/defined option values, preserve false/zero, pending automatic selections and explicit exclusions; parse only HTML wire values through shared LabelValue, domain retains validation. Remove obsolete free-text suggestion/create presentation path and temporary DSM legacy branch. Preserve Save/Cancel atomic/no-write behavior, stale/permission errors, selected-only edits; no parallel editor. Extend/consolidate existing editor/component/event tests under user-approved typed-required/pending contract, retain authorization/concurrency/rollback assertions. No source/folder/browser/inherited-token implementation yet: those remain .5 after .3/.4, with agreed contract carried forward. Read current AGENTS, DESIGN, bo-components, testing-approach, WORKFLOW_AGENT, action-reuse/code-quality and design skill. Reuse .10 controls and .12 parser/error presentation. Focused tests and mix q, independent review, scoped commit; no precommit/push.",
   "id": "zaq-kw0.44.14",
@@ -14,5 +16,5 @@
   "status": "open",
   "title": "Complete typed staging in the existing resource label editor",
   "type": "task",
-  "updated_at": "2026-11-12T01:07:44Z"
+  "updated_at": "2026-11-12T01:07:45Z"
 }
