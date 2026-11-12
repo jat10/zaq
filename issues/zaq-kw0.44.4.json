@@ -31,8 +31,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "deferred",
   "title": "[zaq-kw0.44.4] Implement folder labels and effective inheritance",
   "type": "task",
-  "updated_at": "2026-11-12T02:01:47Z"
+  "updated_at": "2026-11-12T02:14:51Z"
 }
