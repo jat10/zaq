@@ -1,6 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [
+    "zaq-kw0.44.11",
     "zaq-kw0.44.2",
     "zaq-kw0.44.3.1"
   ],
@@ -16,5 +17,5 @@
   "status": "open",
   "title": "[zaq-kw0.44.3] Ensure authorized labelable Document before ingestion",
   "type": "task",
-  "updated_at": "2026-11-11T23:57:49Z"
+  "updated_at": "2026-11-12T00:32:28Z"
 }
