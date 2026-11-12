@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-12T01:01:25Z",
+  "description": "Prerequisite extracted from .4 to reuse source ownership and avoid per-label/per-ancestor repeated calls. Extend existing DataSourceBridge.record_context and confidential Events/Api with source-owned batch context (up to existing chips bound500 refs, depth64). Disk reuses EntryCatalog.ancestors_many plus effective-grants batching; remote paths reuse existing bridge authorization and per-request ancestor/target memoization, max1024 distinct ancestry nodes, explicit incomplete/budget errors without partial inheritance. Remote providers lack generic batch-get: one fetch per distinct target may remain; acknowledge and test call counts, no N-times-depth traversal. Reuse current canonical identity/provenance/permissions contract, reject untrusted client-supplied records/ancestry; freshly authorized source-page records may seed internally only if coherent existing boundary permits. No new hierarchy table, persisted inheritance copies, generic cache or agent tool. Preserve single-context API and current permissions. Read AGENTS, agent-tools, WORKFLOW_AGENT, action-reuse, testing-approach, code-quality and Channels/Storage ownership docs; module-context first. Extend existing tests with batch scope isolation, denied ancestors, cycle/depth/budget, duplicate shared ancestry call counts, parity with single result; retain current assertions. Focused tests and mix q only, no precommit/push. .4 will reuse for source chips and exact pre-pagination filters; direct-only paths retain SQL fast path.",
+  "id": "zaq-kw0.44.13",
+  "labels": [],
+  "parent": "zaq-kw0.44",
+  "priority": 2,
+  "status": "open",
+  "title": "Batch authorized source ancestry for effective label reads",
+  "type": "task",
+  "updated_at": "2026-11-12T01:01:25Z"
+}
