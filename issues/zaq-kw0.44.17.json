@@ -15,11 +15,15 @@
     {
       "text": "Action reuse assessment: reuse existing LabelEditor, LabelEvents get_resource_labels/edit_resource_labels NodeRouter Events and Labels.SourceLabels. Current provider-browser file identity supplies source_ref; no new backend operation or tool exposure. Opening/canceling remain read-only; Save rechecks source authority and existing backend atomic Document/ACL/typed assignment transaction. Extend list/grid LabelChips selector support backward compatibly. Verification adds real-disk LiveView open/cancel, false Save, permission revocation/staging retention, no chunks/jobs, refreshed chips and existing editor reopening. Folder and unknown source event selectors reject before open. Isolated /private/tmp/zaq-label-review-uningested branch zaq-kw0.44.17/review; validation pending serialized slot.",
       "timestamp": "2026-11-12T09:43:32Z"
+    },
+    {
+      "text": "Implemented and root-reviewed scoped transfer commit ba9a76b1b in isolated zaq-kw0.44.17/review worktree. Source browser list/grid reuse shared label editor with canonical server-derived selector; no ingestion performed; documentation deferred-browser statement corrected. Validation: full IngestionLive/shared LabelEditor suites 220 passed (219 tests + 1 property); mix q passed, Credo 1802 files no issues; commit qf/message hooks passed. Slot released. Root owns cherry-pick/final integration and final precommit/E2E lifecycle.",
+      "timestamp": "2026-11-12T09:49:41Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Enable labels for uningested document browser rows",
   "type": "task",
-  "updated_at": "2026-11-12T09:43:32Z"
+  "updated_at": "2026-11-12T09:49:41Z"
 }
