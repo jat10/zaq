@@ -7,9 +7,15 @@
   "id": "zaq-kw0.44.16",
   "labels": [],
   "parent": "zaq-kw0.44",
+  "comments": [
+    {
+      "text": "Compared fetched upstream/main64768dc20: provider record status supplies total_size0, list/grid onlyformat supplied total_size; no folder contents-size calculation. User explicitly requested remove folder(-) in this case; directly authorizes changing existing fallback-dash test expectation to absent. Preserve positive supplied folder totals/file sizes. ActionreuseN/A presentationonly; existing DSM spans, no operation changes.",
+      "timestamp": "2026-11-12T09:41:09Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Remove folder size placeholder when main has no folder size",
   "type": "task",
-  "updated_at": "2026-11-12T09:38:09Z"
+  "updated_at": "2026-11-12T09:41:09Z"
 }
