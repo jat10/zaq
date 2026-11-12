@@ -27,11 +27,15 @@
     {
       "text": "User explicitly approved confidential source observer test correction. Applied reviewed /tmp/zaq-confidential-source-observer.patch: preserve actor/action/permissions/content/revocation coverage via existing observers, assert confidential metadata absence. Continue scoped validation/review then fresh coverage, precommit and push.",
       "timestamp": "2026-11-12T02:45:13Z"
+    },
+    {
+      "text": "Approved observer patch independently reviewed zerofindings. Initial focused retry could not create DB dueconnection queue timeout while host load20/50/40 and WebKit fixtures stalled. Stopped owned E2E gracefully(exit130), cleaned server/browser children; PostgreSQL localhost5432 accepting again. Durable E2E log had233+passes then unrelated setup/navigation/browser stalls, not labeling assertion failures; cannot claim E2Epass. Focusedobserver tests+q retry now sequential, log /tmp/zaq-observer-check.log. Further validation will be sequential to avoid contention.",
+      "timestamp": "2026-11-12T02:55:59Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.8] Post-review coverage and regression validation",
   "type": "task",
-  "updated_at": "2026-11-12T02:45:13Z"
+  "updated_at": "2026-11-12T02:55:59Z"
 }
