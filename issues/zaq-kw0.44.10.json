@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-kw0.44.1"
+  ],
   "blocks": [],
   "created": "2026-11-12T00:28:22Z",
   "description": "Independent presentation prerequisite for .44.5 after approved schema contract. Functional/files: extend existing DSM LabelEditor/LabelChips and existing form primitives with shared typed value renderer/formatter for Boolean false, scale zero and min/max/increment, option IDs/display labels and pending/excluded state. Reuse existing modules; add focused helper only if cohesive shared editor/bulk consumer need. No business validation, LiveView data wiring, source APIs or schema mutation here. Tests: extend existing pure rendering/component tests and stories; false/zero not treated as absent, defined options cannot arbitrary-create, pending differs from assigned; old assertions preserved. Mocking none for pure rendering; no model/internal service mocks. Docs: existing module attr docs and Storybook; DESIGN.md and BO component conventions. Action reuse local-only presentation: reuse Input/SearchableSelect/Badge/BOModal and existing LabelEditor; no new Action/tool. UI controls only serialize native types, authoritative validation remains Ingestion. User authorized production UI changes in epic; no extra layout/theme changes. Scope excludes new E2E (zaq-kw0.15 -\u003e .16). Read AGENTS/tool/workflow/test/code-quality/design owner docs. Focused tests+q, no precommit/push. Separate source worktree; root supervises and integrates after backend.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-kw0.44.10] Extend shared typed label value presentation",
   "type": "task",
-  "updated_at": "2026-11-12T00:28:32Z"
+  "updated_at": "2026-11-12T00:28:33Z"
 }
