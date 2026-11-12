@@ -15,11 +15,15 @@
     {
       "text": "Fresh full mix coveralls.json exited2:12301/12303 passed,1skip167excluded. Report not accepted and coverup not run. Two bounded fixes under investigation: source ACL mapper omitted existing manage right (retain existing permission assertions); conversation-source test observes PubSub describe event now intentionally confidential (preserve action/actor assertions via existing hop seam). E2E remains active, now Chromium, no confirmed error-context reports.",
       "timestamp": "2026-11-12T02:30:32Z"
+    },
+    {
+      "text": "Fixed actual ACL regression in fdc5357b0: preserve canonical manage right unchanged; existing test extended to prove manage does not grant update. Unchanged Disk+ACL tests24passed, mixq and independent review approved. Remaining controller failure is confidential PubSub expectation; proposed minimal observer correction is /tmp/zaq-confidential-source-observer.patch, explicit user approval requested under existing-test behavior gate before applying. E2E first run timed out; durable rerun logs /tmp/zaq-final-e2e.log and .exit after retiring owned orphan server.",
+      "timestamp": "2026-11-12T02:35:25Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.8] Post-review coverage and regression validation",
   "type": "task",
-  "updated_at": "2026-11-12T02:30:32Z"
+  "updated_at": "2026-11-12T02:35:25Z"
 }
