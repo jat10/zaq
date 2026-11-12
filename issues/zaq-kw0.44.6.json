@@ -19,11 +19,15 @@
     {
       "text": "Final consolidation must remove temporary Label.targets projection/targets input alias and legacy free-text DSM rendering once all consumers use typed resources/value_config. User clarified labeling is unreleased: no old-value migration or backward-compatibility infrastructure needed. Preserve unrelated existing source/local permission behavior and existing authorization/concurrency assertions. Verify no old assignment schemas/tables or free-text bulk/editor paths remain in production consumers.",
       "timestamp": "2026-11-12T00:47:07Z"
+    },
+    {
+      "text": "Cleanup audit after typed UI integration: virtual Label.targets and input targets alias remain temporary and have no current catalog/editor consumer. The old :label_value_suggestions route/delegate/ResourceLabels functions now have only test consumers in inspected label UI/domain paths; they retain permission/escaping/limit cases. Decide removal vs justified retained public typed usage API after full reference audit; do not silently delete security coverage or introduce another suggestion engine. Prefer moving reusable assertions to existing value-usage tests if obsolete route removal is within approved typed-contract scope.",
+      "timestamp": "2026-11-12T01:48:52Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.44.6] Integrate lifecycle, tests and owning documentation",
   "type": "task",
-  "updated_at": "2026-11-12T00:47:07Z"
+  "updated_at": "2026-11-12T01:48:52Z"
 }
