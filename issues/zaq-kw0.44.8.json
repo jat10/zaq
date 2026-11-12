@@ -19,11 +19,15 @@
     {
       "text": "Fixed actual ACL regression in fdc5357b0: preserve canonical manage right unchanged; existing test extended to prove manage does not grant update. Unchanged Disk+ACL tests24passed, mixq and independent review approved. Remaining controller failure is confidential PubSub expectation; proposed minimal observer correction is /tmp/zaq-confidential-source-observer.patch, explicit user approval requested under existing-test behavior gate before applying. E2E first run timed out; durable rerun logs /tmp/zaq-final-e2e.log and .exit after retiring owned orphan server.",
       "timestamp": "2026-11-12T02:35:25Z"
+    },
+    {
+      "text": "Approval still pending for explicit test-observability correction; do not apply /tmp/zaq-confidential-source-observer.patch before user answer. Durable full E2E rerun active PID20114; progress191passed0failed, enteredWebKit. Recover via /tmp/zaq-final-e2e.log and /tmp/zaq-final-e2e.exit, not a new run. Current HEADfdc5357b0, only preexisting .serena dirty. After approval: apply patch, focused tests+q, independent re-review, fresh successful coveralls then coverup, required coverage work, final precommit900000 and push origin feat/labeling/updatePR918. Do not claim complete or close final gate yet.",
+      "timestamp": "2026-11-12T02:40:58Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.8] Post-review coverage and regression validation",
   "type": "task",
-  "updated_at": "2026-11-12T02:35:25Z"
+  "updated_at": "2026-11-12T02:40:58Z"
 }
