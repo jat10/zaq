@@ -7,6 +7,8 @@
   "blocks": [
     "zaq-kw0.44.5"
   ],
+  "closed_at": "2026-11-12T01:30:38Z",
+  "close_reason": "Committed34cbef472 after root independent staged-editor review with no findings. Forty tests plus one property across editor/event/catalog suites, mix q and hooks pass. Typed-only native staging and obsolete free-text UI removal complete; source/inheritance integration remains .5.",
   "created": "2026-11-12T01:07:33Z",
   "description": "Independent editor slice from .5, following completed typed domain and shared controls. Update existing Components.LabelEditor staging/events to native Boolean/scale/defined option values, preserve false/zero, pending automatic selections and explicit exclusions; parse only HTML wire values through shared LabelValue, domain retains validation. Remove obsolete free-text suggestion/create presentation path and temporary DSM legacy branch. Preserve Save/Cancel atomic/no-write behavior, stale/permission errors, selected-only edits; no parallel editor. Extend/consolidate existing editor/component/event tests under user-approved typed-required/pending contract, retain authorization/concurrency/rollback assertions. No source/folder/browser/inherited-token implementation yet: those remain .5 after .3/.4, with agreed contract carried forward. Read current AGENTS, DESIGN, bo-components, testing-approach, WORKFLOW_AGENT, action-reuse/code-quality and design skill. Reuse .10 controls and .12 parser/error presentation. Focused tests and mix q, independent review, scoped commit; no precommit/push.",
   "id": "zaq-kw0.44.14",
@@ -19,8 +21,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Complete typed staging in the existing resource label editor",
   "type": "task",
-  "updated_at": "2026-11-12T01:17:39Z"
+  "updated_at": "2026-11-12T01:30:38Z"
 }
