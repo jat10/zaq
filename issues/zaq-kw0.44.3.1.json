@@ -4,6 +4,7 @@
     "zaq-kw0.44.1"
   ],
   "blocks": [
+    "zaq-kw0.44.11",
     "zaq-kw0.44.3"
   ],
   "closed_at": "2026-11-12T00:21:58Z",
@@ -26,5 +27,5 @@
   "status": "closed",
   "title": "[zaq-kw0.44.3.1] Implement authorized source record context prerequisite",
   "type": "task",
-  "updated_at": "2026-11-12T00:21:58Z"
+  "updated_at": "2026-11-12T00:32:27Z"
 }
