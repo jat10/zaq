@@ -31,11 +31,15 @@
     {
       "text": "User explicitly approved the pending signed-permission fixture change in the latest turn after the location clarification. Authorization covers ingestion_test.exs:392 expressing the same owner/reader/writer grants as explicit signed normalized permissions while preserving all existing assertions, plus existing unsigned-authority rejection coverage. Proceed with fixture update, focused validation, integration and remaining epic work. No further approval needed for this scope.",
       "timestamp": "2026-11-12T01:47:09Z"
+    },
+    {
+      "text": "Approved fixture correction committed db73e506b atop reviewed production checkpoint b5998132d. Canonical ingestion fixture now signs explicit normalized owner/reader/writer principal_type/principal_key/access_rights; every existing assertion retained, unsigned-authority tampering regression unchanged. Previously failing ingestion_test.exs:392 now passes. Focused ingestion_test, external_permissions_test, data_source_permissions_test, ingest_worker_test, ingestion/events_test, channels/data_source_bridge_test:234 passed (6properties,228tests),1 existing skip. mix q, diff check and normal qf/message hooks passed. Source worktree clean, no precommit/push. Parent owns integration and issue closure; .4 awaiting stable integrated .3 API.",
+      "timestamp": "2026-11-12T01:49:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.11] Preserve canonical source ACL ownership through ensure and ingestion",
   "type": "task",
-  "updated_at": "2026-11-12T01:47:10Z"
+  "updated_at": "2026-11-12T01:49:27Z"
 }
