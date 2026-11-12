@@ -27,11 +27,15 @@
     {
       "text": "Final scope consolidation removes unused batch source APIs and reconciles existing typed-label documentation. Existing suggestion API/test coverage retained; no new parallel UI or inheritance API shipped. Source Save reuses existing EditResourceLabels Action, single Channels source context Event, canonical Document identity and checked ExternalPermissions projection.",
       "timestamp": "2026-11-12T02:15:45Z"
+    },
+    {
+      "text": "All accepted changes consolidated in original worktree: b3d4bffe9 removes deferred batching; 8c01c30f8 adds source Save and projection read guard. Merged-source focused suite passed202 checks (9 properties193tests) and mix q. Stale BO/ingestion/agent guides corrected; independent UI reviewer approved with zero remaining findings. Existing suggestion API retained to avoid unrelated removal/security-test churn.",
+      "timestamp": "2026-11-12T02:19:59Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-kw0.44.6] Integrate lifecycle, tests and owning documentation",
   "type": "task",
-  "updated_at": "2026-11-12T02:15:45Z"
+  "updated_at": "2026-11-12T02:19:59Z"
 }
