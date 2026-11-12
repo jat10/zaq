@@ -11,9 +11,15 @@
   "id": "zaq-kw0.44.2",
   "labels": [],
   "parent": "zaq-kw0.44",
+  "comments": [
+    {
+      "text": "Supervisor checkpoints: public definitions value_type/value_config/resources/assignment_type/threshold; native bool/number/option-id value; assigned/pending/excluded state distinct. Pending visible in chips/editor/key presence, concrete value filters assigned only. Single textual resource_id allows canonical folder identity, generated document/chunk FK columns retain cascades and indexed lookups. Chunk sequence must survive dynamic table reset to prevent stale ID reuse. Metadata preservation corrected with trusted editor ID. Interim compile and 3 additive existing-suite tests pass; migration mapping and old-test behavioral changes remain awaiting user input. No precommit.",
+      "timestamp": "2026-11-12T00:05:52Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.2] Implement typed definition and shared assignment foundation",
   "type": "task",
-  "updated_at": "2026-11-11T23:55:58Z"
+  "updated_at": "2026-11-12T00:05:52Z"
 }
