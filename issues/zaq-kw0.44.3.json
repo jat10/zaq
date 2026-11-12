@@ -17,11 +17,15 @@
     {
       "text": "Approved public contract: reuse existing resource_editor/edit_resource Events and EditResourceLabels Action with selector %{type: \"source\", source_ref: %{provider, config_id, record_id}}. Source open resolves canonical Channels context with read authority and returns typed projection, canonical selector, document_id nil|id and source_kind without persistence. Save freshly resolves update-authorized context, rejects deleted/mismatched/folder targets until .4, and atomically insert_new canonical Document, lock row, apply shared checked source ACL, then reuse versioned document assignment editor. No content conversion/jobs/model, no authorization marker, no separate tree. Evaluate explicit current-super-admin event permission opt-in only from verified BOActor; never trust actor bypass or infer update from read. Read-only design prepared while .11 fixture approval is pending. Sourcecontext ae69cee2 integrated as ac24cd73c; q and 284 focused integration tests pass.",
       "timestamp": "2026-11-12T00:55:28Z"
+    },
+    {
+      "text": "Reuse/ownership evidence: Labels facade extends existing resource_editor and edit_resource selectors for canonical source_ref; same EditResourceLabels Action/Events, no new Action/tool. SourceLabels owns read/update source-context orchestration and outer identity+ACL+assignment transaction; ResourceLabels remains typed projection/CAS owner with server-only resolved-context opt (facade drops it for ordinary selectors). Channels owns source identity/permissions; current RecordSource materialization+source_override and provider browser both use ExternalSource.source, including Disk UUID/config. No supported alias maps historical local-path Documents; canonical row reused and unrelated local rows preserved. State: open/Cancel read-only; Save insert_new source conflict idempotent, document lock then checked ExternalPermissions.apply then shared edit; no conversion/chunk/jobs/model side effects. Actor bypass stripped and derived from current verified BOrole only. Source context remains internal for .4 nearest-folder resolver. Document.insert_new validation crash proven and fixed narrowly; real parallel unboxed insert_new/upsert test proves same ID+materialized content under race, cleans unique own row. Existing source suite extended through real Api/Action/Channels/context/provider-stub/Repo for nativefalse, ACL and value rollback, stale CAS, current permissions/role, namespace isolation, real Disk canonical reuse and content preservation. Lifecycle deliberately retains unwatched Document+assignments per existing owner; fresh source selector denies tombstone, actual watched deletion FK-cascades labels (no marker/new deletion criterion). Initial source+Document132checks pass; final checks and independent review pending.",
+      "timestamp": "2026-11-12T02:04:48Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.3] Ensure authorized labelable Document before ingestion",
   "type": "task",
-  "updated_at": "2026-11-12T01:49:42Z"
+  "updated_at": "2026-11-12T02:04:48Z"
 }
