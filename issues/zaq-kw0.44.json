@@ -19,11 +19,15 @@
     {
       "text": "Source prerequisite completed and committed as ae69cee2a1f1623517adb1a2e857ccb34def2d55 on zaq-kw0.44/source-context, clean isolated worktree. Independent review0 findings, final q and251 tests7properties passed, qf/commit-message hooks passed. Not yet cherry-picked into implementation; integrate after .44.2 validation/mapping gates clear. No precommit/push; original PR unchanged. Foundation .44.2 remains in_progress, subsequent integration tasks blocked. Human questions remain pending.",
       "timestamp": "2026-11-12T00:21:59Z"
+    },
+    {
+      "text": "2026-11-12 user replied Approved to both explicit questions: (1) migrate existing test expectations from optional free-text/blank manual values and rejected automatic configuration to required typed values and pending automatic assignments, preserving auth/concurrency/rollback assertions; (2) losslessly preserve existing legacy text as configured options and selected blank as explicit Unspecified option. Approval applies to stated scope including matching fixtures; no weakening unrelated scenarios. Resume through final review/coverage/precommit/push; original push authorization persists.",
+      "timestamp": "2026-11-12T00:24:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44] Align PR1 typed labels, folder inheritance and source identity",
   "type": "epic",
-  "updated_at": "2026-11-12T00:21:59Z"
+  "updated_at": "2026-11-12T00:24:03Z"
 }
