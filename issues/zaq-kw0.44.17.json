@@ -19,11 +19,15 @@
     {
       "text": "Implemented and root-reviewed scoped transfer commit ba9a76b1b in isolated zaq-kw0.44.17/review worktree. Source browser list/grid reuse shared label editor with canonical server-derived selector; no ingestion performed; documentation deferred-browser statement corrected. Validation: full IngestionLive/shared LabelEditor suites 220 passed (219 tests + 1 property); mix q passed, Credo 1802 files no issues; commit qf/message hooks passed. Slot released. Root owns cherry-pick/final integration and final precommit/E2E lifecycle.",
       "timestamp": "2026-11-12T09:49:41Z"
+    },
+    {
+      "text": "Transferba9a76b1b integrated into originalworktree pendingcombinedcommit. Existing LiveView+editor focused220checks(219tests1property), mixq andhooks green. Independentreviewapprovezerofindings. Sourcepath uses explicitresource_id, document_idcontract preserved. RealDiskworkflowproves list/gridopen, cancelreadonly, currentrole revocation denial+staging retained, falseSavecanonicalidentity/chips/reopen with no content/chunks/jobs/statuschange.",
+      "timestamp": "2026-11-12T09:51:29Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Enable labels for uningested document browser rows",
   "type": "task",
-  "updated_at": "2026-11-12T09:49:41Z"
+  "updated_at": "2026-11-12T09:51:29Z"
 }
