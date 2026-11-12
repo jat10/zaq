@@ -25,11 +25,15 @@
     {
       "text": "Committed approved batch implementation aa534e4b43b1e89433d932c869e6f8af591bf665 after reviewer-proven read-parity fix and rereview approval. Source metadata targets require read plus requested right through internal-only target-right policy; ancestry-only API retains requested-right behavior; both share one grants read. Independent rereview76checks pass, probes removed. Integrated reviewed numeric query fix as df662fe603921fa5370f7c9d9aecdbcd700057ab and typed-controls branch through34cbef472 using clean merge220821518c6d8cd2f918673d448298b6eab69893, no conflicts. Composition validation: mix q PASS; combined label domain/lifecycle +native query/registry +LabelEditor/LabelsLive/LabelEvents +source/Storage/NodeRouter suites456checks PASS (17properties,439tests). Worktree clean; normal commit hooks passed; no final precommit or push. Source ACL b5998132 remains unintegrated pending fixture approval; no .3 dependent production work. Parent owns issue closure/integration.",
       "timestamp": "2026-11-12T01:43:33Z"
+    },
+    {
+      "text": "Removed unused batch source context/cache/budget implementation in b3d4bffe9 (net reduction 830 lines) after user scope freeze. Single source context plus identity guard retained. 257 focused checks and mix q passed in original worktree. Batch functionality is deferred and not shipped.",
+      "timestamp": "2026-11-12T02:18:36Z"
     }
   ],
   "priority": 2,
   "status": "deferred",
   "title": "Batch authorized source ancestry for effective label reads",
   "type": "task",
-  "updated_at": "2026-11-12T02:14:54Z"
+  "updated_at": "2026-11-12T02:18:36Z"
 }
