@@ -15,11 +15,15 @@
     {
       "text": "Supervisor checkpoints: public definitions value_type/value_config/resources/assignment_type/threshold; native bool/number/option-id value; assigned/pending/excluded state distinct. Pending visible in chips/editor/key presence, concrete value filters assigned only. Single textual resource_id allows canonical folder identity, generated document/chunk FK columns retain cascades and indexed lookups. Chunk sequence must survive dynamic table reset to prevent stale ID reuse. Metadata preservation corrected with trusted editor ID. Interim compile and 3 additive existing-suite tests pass; migration mapping and old-test behavioral changes remain awaiting user input. No precommit.",
       "timestamp": "2026-11-12T00:05:52Z"
+    },
+    {
+      "text": "Independent interim pr-review/adversarial review requests two fixes: (1) native scale max10^37/value=max-1/increment2 raises Decimal.Error under default precision34; exact grid validation must not depend on rounded Decimal context, add large precision regression/property. (2) unrelated definition edits unconditionally fetch all distinct assignment values under definition write lock; skip value validation unless type/config/mode changes, check only actually removed resources. Author fixing both; final approval withheld. Earlier 10^30 numeric hypothesis disproved. No test expectation or migration permission inferred.",
+      "timestamp": "2026-11-12T00:13:56Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.2] Implement typed definition and shared assignment foundation",
   "type": "task",
-  "updated_at": "2026-11-12T00:05:52Z"
+  "updated_at": "2026-11-12T00:13:56Z"
 }
