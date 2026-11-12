@@ -35,11 +35,15 @@
     {
       "text": "Parallel work refinement: .10 shared controls accepted at 8bd7156e; catalog-only adaptation tracked .12 and blocks .5. .3 source ensure will be implemented by contract_audit after source_audit completes .11 ACL ownership; source_audit then owns .4 inheritance. Root supervises integration, existing-test consolidation, and review. Main integration in isolated worktree preserves original user .serena/project.yml. No precommit/push yet.",
       "timestamp": "2026-11-12T00:44:03Z"
+    },
+    {
+      "text": "User clarified existing labeling is not production-ready and does not require migrating old values into new tables. This supersedes prior lossless legacy assignment conversion approval. Remove old-value copying, deterministic legacy options, conversion preflight and lossless rollback machinery/tests. Use straightforward schema transition with new shared assignment storage; do not promote old private values into global definitions. Preserve unrelated documents/content/permissions. Typed contract tests remain; validate fresh schema and transition without elaborate legacy migration infrastructure. Pending visibility question is resolved by eliminating conversion, not by broadening permissions.",
+      "timestamp": "2026-11-12T00:45:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44] Align PR1 typed labels, folder inheritance and source identity",
   "type": "epic",
-  "updated_at": "2026-11-12T00:44:03Z"
+  "updated_at": "2026-11-12T00:45:38Z"
 }
