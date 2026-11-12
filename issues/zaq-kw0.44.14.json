@@ -1,6 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [
+    "zaq-kw0.44.12",
     "zaq-kw0.44.2"
   ],
   "blocks": [],
@@ -13,5 +14,5 @@
   "status": "open",
   "title": "Complete typed staging in the existing resource label editor",
   "type": "task",
-  "updated_at": "2026-11-12T01:07:42Z"
+  "updated_at": "2026-11-12T01:07:44Z"
 }
