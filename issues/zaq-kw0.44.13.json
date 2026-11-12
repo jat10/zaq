@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "contract_audit",
   "blocked_by": [
     "zaq-kw0.44.3.1"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-kw0.44",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Batch authorized source ancestry for effective label reads",
   "type": "task",
-  "updated_at": "2026-11-12T01:01:36Z"
+  "updated_at": "2026-11-12T01:01:37Z"
 }
