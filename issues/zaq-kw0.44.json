@@ -47,11 +47,15 @@
     {
       "text": "User scope freeze: finalize accumulated typed definition/shared assignment/catalog/editor and source-file Save backend in original feat/labeling worktree; no further expansion. Folder inheritance and full source-browser integration remain deferred, not implemented or claimed complete. Remove unused batch context/cache/budget APIs from .13; retain single source context and verified identity guard. Pure inheritance kernel remains unintegrated on its checkpoint branch. Final review, coverage, existing E2E, precommit and push still required.",
       "timestamp": "2026-11-12T02:14:50Z"
+    },
+    {
+      "text": "User review follow-up: three bounded parallel fixes .15 migration consolidation, .16 folder size placeholder after main comparison, .17 uningested document labeling UI. Graph: .15 + .16 + .17 -\u003e supervisor integration/review -\u003e sequential validation. No folder inheritance or unrelated architecture expansion. Existing user .serena change remains untouched; accepted work lands back in original feat/labeling worktree.",
+      "timestamp": "2026-11-12T09:38:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44] Align PR1 typed labels, folder inheritance and source identity",
   "type": "epic",
-  "updated_at": "2026-11-12T02:14:50Z"
+  "updated_at": "2026-11-12T09:38:12Z"
 }
