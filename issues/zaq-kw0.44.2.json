@@ -48,11 +48,15 @@
     {
       "text": "Independent adversarial query review found two concrete gaps, reopening foundation for repair: numeric-equivalent pairs {label,1}/{label,1.0} survive Enum.uniq but JSONB compares equal, so label_match=all incorrectly returns no document; QueryResources agent schema description still promises removed trimmed/NFC/null value behavior. Native false/zero consumer paths were proven good. Source agent will repair in a separate isolated typed worktree, preserving native returned values and exact Boolean/option IDs and adding assertions to existing query tests. Temporary reproduction log /tmp/zaq-typed-review-probes.log; probe removed.",
       "timestamp": "2026-11-12T01:20:16Z"
+    },
+    {
+      "text": "Root-approved narrow review fixes ready: AssignmentValue.equality_key/1 reuses decimal_parts and exact integer trailing-zero reduction for PostgreSQL/JSON numeric equality; Document normalizes duplicate label/value requirements with this comparison-only key and retains native payloads. No Action added: local pure value comparison extends existing AssignmentValue owner; existing query Action reused with generated native scalar/exact option ID/pending key-only guidance. Existing query/tool suites extended, no old scenario/assertion changed. Proved pre-fix regression, then 106 passing owner checks (5 properties,101 tests): document_test, labels/catalog_test, label_queries_test, query_resources_test. Includes PostgreSQL JSON equality evidence for signed zero, integral float/int, 10^100 and 2^53; distinct-number property under Decimal precision 1; Boolean/option identity and native payloads. mix q and git diff --check passed. Isolated query-fix branch/database; ACL fixture gate unchanged. Root authorized scoped commit; no precommit/push.",
+      "timestamp": "2026-11-12T01:29:24Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.2] Implement typed definition and shared assignment foundation",
   "type": "task",
-  "updated_at": "2026-11-12T01:20:16Z"
+  "updated_at": "2026-11-12T01:29:24Z"
 }
