@@ -2,6 +2,7 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-12T09:53:10Z",
   "created": "2026-11-12T09:37:47Z",
   "description": "User review: combine the two labeling migrations into one fresh-schema migration. Non-production feature: no legacy value conversion. Preserve final schema, constraints, indexes, chunk FK lifecycle and rollback. Reuse existing migration patterns; no new operation or Action (schema-only). Validate in disposable branch DB with/without dynamic chunks; preserve unrelated data and existing lifecycle tests. No precommit per issue.",
   "id": "zaq-kw0.44.15",
@@ -14,8 +15,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Consolidate labeling schema into one migration",
   "type": "task",
-  "updated_at": "2026-11-12T09:44:58Z"
+  "updated_at": "2026-11-12T09:53:10Z"
 }
