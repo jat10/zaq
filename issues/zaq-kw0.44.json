@@ -27,11 +27,15 @@
     {
       "text": "Dependency refinement: pure typed presentation .44.10 follows completed audit/stable reviewed schema contract, runs isolated alongside persistence, and blocks .5 integration alongside .4. Necessary join separates UI/domain ownership; .10 has no backend calls or source dependencies. Reuse table: DSM LabelEditor-\u003eshared typed inputs; LabelChips-\u003etyped display/pending; future LabelValueManager uses same renderer. Existing production screens are reference, no new prototype or unrelated design migration.",
       "timestamp": "2026-11-12T00:28:37Z"
+    },
+    {
+      "text": "Audit identified independent permission-ownership prerequisite .44.11 after .3.1 and before ensure .3. Required because a Save-only checked path would later be undone by legacy ingestion pruning. Canonical source projection must be shared across ensure and ingestion; genuine non-source compatibility tests remain unchanged. Join .2 + .11 -\u003e .3 is necessary cross-domain dependency, not duplicated hierarchy. No broader legacy manual-grant cleanup inferred.",
+      "timestamp": "2026-11-12T00:32:30Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44] Align PR1 typed labels, folder inheritance and source identity",
   "type": "epic",
-  "updated_at": "2026-11-12T00:28:37Z"
+  "updated_at": "2026-11-12T00:32:30Z"
 }
