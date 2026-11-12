@@ -8,6 +8,7 @@
   "blocks": [
     "zaq-kw0.44.4"
   ],
+  "closed_at": "2026-11-12T02:18:38Z",
   "created": "2026-11-11T23:51:46Z",
   "description": "## Functional specifications and files\nImplement composable ensure-and-edit prerequisite for canonical source references. Resolve trusted record through existing provider boundary, authorize before mutation, reuse document identity/permissions, transactionally save identity and labels only on Save. No conversion/chunks/embedding. Cover concurrent ingestion and source lifecycle.\nFiles/owners: Ingestion source identity/document permission owner, focused validated Action only if audit proves missing; Ingestion API/Event builder and existing source tests.\n## Tests to add before implementation\nExtend source/document/editor boundary tests for unauthorized/nil actors, idempotency, concurrent first ingestion, canonical provider/config collisions, rollback/cancel, source-derived permission projection, tombstones and no model config.\n## Branches/paths validated\nSuccess, invalid input, nil/denied actor, stale/concurrent write, unavailable/deleted source, lifecycle cleanup and failure rollback where relevant. No hidden cross-service calls.\n## Mocking plan\nReal Repo, validated Actions, NodeRouter and domain boundaries. Mock only external provider/conversion HTTP when relevant; runtime dependencies via existing Zaq.Config opts, no global mutation.\n## Documentation\nUpdate owner module docs and relevant existing service/BO guide alongside behavior; durable evidence here. Follow docs/documentation.md.\n## Action reuse assessment\nNew focused prerequisite operation if no existing one fits, backed by Document.insert_new, ExternalSource and ExternalPermissions; trusted canonical source+actor+typed edits/versions -\u003e identity/projection or typed errors. BO consumes via NodeRouter only. Audit must fix exact ownership before implementation.\n## Validation/dependencies\nRead AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and applicable service guides. Scoped tests + mix q only per implementation issue. Final precommit reserved for final child. Supervisor verifies before closure. New feature E2E remains zaq-kw0.15 -\u003e zaq-kw0.16.\n",
   "id": "zaq-kw0.44.3",
@@ -28,8 +29,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-kw0.44.3] Ensure authorized labelable Document before ingestion",
   "type": "task",
-  "updated_at": "2026-11-12T02:09:32Z"
+  "updated_at": "2026-11-12T02:18:38Z"
 }
