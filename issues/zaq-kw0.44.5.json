@@ -1,6 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [
+    "zaq-kw0.44.10",
     "zaq-kw0.44.4"
   ],
   "blocks": [
@@ -15,5 +16,5 @@
   "status": "open",
   "title": "[zaq-kw0.44.5] Adapt catalog, editor and source browser to typed contracts",
   "type": "task",
-  "updated_at": "2026-11-11T23:52:00Z"
+  "updated_at": "2026-11-12T00:28:34Z"
 }
