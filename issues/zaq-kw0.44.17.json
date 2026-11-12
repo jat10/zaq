@@ -7,9 +7,15 @@
   "id": "zaq-kw0.44.17",
   "labels": [],
   "parent": "zaq-kw0.44",
+  "comments": [
+    {
+      "text": "Reuse assessment: extend existing IngestionLive projection and LabelChips selectors, reuse Components.LabelEditor unchanged and LabelEvents-\u003eNodeRouter existing get/edit_resource_labels-\u003eSourceLabels. Selector resolved server-side from currentbrowserrecord; no client-selected provider/config. Open/cancel readonly; Save canonicalDocument+checkedACL+typedassignmenttransaction, no conversion/chunks/jobs. Existing savedcallbackrefreshesrows. Existing LiveView suite extended for list/grid, authorizationrevocation, falsevalue/staging, no writes beforeSave, no ingestioneffects, chips/reopen. No newbackendoperation/Action/paralleltestframework.",
+      "timestamp": "2026-11-12T09:43:28Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Enable labels for uningested document browser rows",
   "type": "task",
-  "updated_at": "2026-11-12T09:38:11Z"
+  "updated_at": "2026-11-12T09:43:28Z"
 }
