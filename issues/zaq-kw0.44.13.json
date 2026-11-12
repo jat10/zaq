@@ -28,8 +28,8 @@
     }
   ],
   "priority": 2,
-  "status": "closed",
+  "status": "deferred",
   "title": "Batch authorized source ancestry for effective label reads",
   "type": "task",
-  "updated_at": "2026-11-12T01:43:33Z"
+  "updated_at": "2026-11-12T02:14:54Z"
 }
