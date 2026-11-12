@@ -29,11 +29,15 @@
     {
       "text": "Authorized local checkpoint b5998132d on zaq-kw0.44/source-context: reviewed source-owned ACL projection, checked ingestion finalization and confirmed-mutation invalidation are now durable. Incomplete: known existing ingestion_test.exs:392 unsigned owner/role-only fixture failure remains untouched pending explicit signed-permission fixture approval. Commit body records this failure and explicitly does not claim full green. Earlier scoped190 checks (8properties,182tests),1 existing skip and mix q evidence unchanged; no tests repeated. Standard qf and commit-message hooks passed for checkpoint. Worktree clean. No integration, precommit, push or issue closure performed; parent owns next decisions.",
       "timestamp": "2026-11-12T01:42:12Z"
+    },
+    {
+      "text": "User explicitly approved the pending signed-permission fixture change in the latest turn after the location clarification. Authorization covers ingestion_test.exs:392 expressing the same owner/reader/writer grants as explicit signed normalized permissions while preserving all existing assertions, plus existing unsigned-authority rejection coverage. Proceed with fixture update, focused validation, integration and remaining epic work. No further approval needed for this scope.",
+      "timestamp": "2026-11-12T01:47:09Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.11] Preserve canonical source ACL ownership through ensure and ingestion",
   "type": "task",
-  "updated_at": "2026-11-12T01:44:38Z"
+  "updated_at": "2026-11-12T01:47:09Z"
 }
