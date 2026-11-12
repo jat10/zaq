@@ -23,11 +23,15 @@
     {
       "text": "2026-11-12 user replied Approved to both explicit questions: (1) migrate existing test expectations from optional free-text/blank manual values and rejected automatic configuration to required typed values and pending automatic assignments, preserving auth/concurrency/rollback assertions; (2) losslessly preserve existing legacy text as configured options and selected blank as explicit Unspecified option. Approval applies to stated scope including matching fixtures; no weakening unrelated scenarios. Resume through final review/coverage/precommit/push; original push authorization persists.",
       "timestamp": "2026-11-12T00:24:03Z"
+    },
+    {
+      "text": "Dependency refinement: pure typed presentation .44.10 follows completed audit/stable reviewed schema contract, runs isolated alongside persistence, and blocks .5 integration alongside .4. Necessary join separates UI/domain ownership; .10 has no backend calls or source dependencies. Reuse table: DSM LabelEditor-\u003eshared typed inputs; LabelChips-\u003etyped display/pending; future LabelValueManager uses same renderer. Existing production screens are reference, no new prototype or unrelated design migration.",
+      "timestamp": "2026-11-12T00:28:37Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44] Align PR1 typed labels, folder inheritance and source identity",
   "type": "epic",
-  "updated_at": "2026-11-12T00:24:03Z"
+  "updated_at": "2026-11-12T00:28:37Z"
 }
