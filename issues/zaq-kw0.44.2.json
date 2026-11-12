@@ -31,11 +31,15 @@
     {
       "text": "Foundation commit 0a3882374 passes 62 focused cases (8 properties) and mix q. Independent review in progress. Newly confirmed migration visibility issue: aggregating legacy private assignment text into globally readable definition options expands access. User asked explicitly whether preserve existing visibility or allow shared choices; pending decision, no migration deployment authorized by silence. Option-count concern disproved against current commit (no cap; 201-choice regression). Original-data migration clone evidence recorded by implementation agent.",
       "timestamp": "2026-11-12T00:41:18Z"
+    },
+    {
+      "text": "User clarified existing labeling is not production-ready and does not require migrating old values into new tables. This supersedes prior lossless legacy assignment conversion approval. Remove old-value copying, deterministic legacy options, conversion preflight and lossless rollback machinery/tests. Use straightforward schema transition with new shared assignment storage; do not promote old private values into global definitions. Preserve unrelated documents/content/permissions. Typed contract tests remain; validate fresh schema and transition without elaborate legacy migration infrastructure. Pending visibility question is resolved by eliminating conversion, not by broadening permissions.",
+      "timestamp": "2026-11-12T00:45:40Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-kw0.44.2] Implement typed definition and shared assignment foundation",
   "type": "task",
-  "updated_at": "2026-11-12T00:41:18Z"
+  "updated_at": "2026-11-12T00:45:40Z"
 }
