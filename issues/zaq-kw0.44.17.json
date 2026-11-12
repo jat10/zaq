@@ -2,6 +2,7 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-12T09:53:13Z",
   "created": "2026-11-12T09:37:50Z",
   "description": "User review: wire existing source-file label editor/Save backend into current source browser for uningested documents. Reuse source_ref selectors, LabelEvents, Components.LabelEditor, SourceLabels and existing Actions/NodeRouter. Open and cancel write nothing; Save ensures canonical Document and labels without conversion/chunks/jobs. Preserve permissions, existing ingested editing, subsequent ingestion identity and row refresh. Use existing tests; no new architecture, folder inheritance, batch contexts or automatic execution. No precommit per issue.",
   "id": "zaq-kw0.44.17",
@@ -26,8 +27,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Enable labels for uningested document browser rows",
   "type": "task",
-  "updated_at": "2026-11-12T09:51:29Z"
+  "updated_at": "2026-11-12T09:53:13Z"
 }
