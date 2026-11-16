@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-16T12:08:08Z",
+  "description": "Planning only: start implementation only after the Mattermost prerequisite gate passes and implementation is authorized. Read parent epic and linked Page. Follow AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, exec-plans/PLAN_STRATEGY.md, action-reuse.md, documentation.md, testing-approach.md and services/channels.md. Read affected service/config/UI policies before work. Recheck module docs, source and existing tests; test scenarios below are specified before implementation. Obtain required approval for changes to existing test behavior; prior UX approval does not cover the new SMTP inputs. Reuse fixtures and internal production boundaries, mock external provider edges only. No automatic application commit/push/merge authorization.\n\nSource mapping: Page Task 7 Integrate email preparation and execution.\n\n**Files:** `lib/zaq/channels/email_bridge.ex`, `lib/zaq/channels/email_bridge/smtp_sender.ex`; `lib/zaq/mailer.ex` only if the chosen supported encoding seam requires it. Any new narrow SMTP adapter module requires an explicit justification against extending these owners.\n\n**Work:** reuse current composition, expose actual encoded candidate sizing, freeze prepared email representation, submit each planned group once, normalize outcomes, and set retries to zero for planned delivery attempts. Preserve ordinary no-plan text delivery behavior. Ensure final thread headers are included in the measured payload. Preserve selected SMTP credentials, recipients, HTML/text, and Message-ID/In-Reply-To/References handling.\n\n**Tests:** extend `test/zaq/channels/email_bridge/smtp_sender_test.exs`, `email_bridge/outgoing_attachments_test.exs`, `email_file_delivery_integration_test.exs`, and `email_html_delivery_test.exs`. Reuse `test/support/file_delivery_smtp_stub.ex`.\n\n**Paths:** exact-limit and one-byte-over encoded payloads, MIME headers and HTML overhead, filenames with encoding overhead, count limits, several emails, changed root headers, text-only body too large, continued partial sends, second-send timeout, no automatic retry, sender/recipient isolation, synchronous byte lifetime.\n\n**Reuse:** extend SmtpSender/Mailer and their existing composition instead of a separate email implementation. Email requirements and sizing are bridge-local representation operations; policy remains in the shared executor. No new Agent Action.\n\n**Docs:** SMTP settings and email delivery sections, ownership and accepted-versus-delivered semantics.\n\nReuse/verification: use the existing owner and tests named above; no parallel transport pipeline, new history store, automatic Action/tool exposure or Agent-selection changes. Scope any new scheduler unit suite to genuinely distinct invariants.",
+  "id": "zaq-1lw.7",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "Integrate exact MIME sizing and planned SMTP execution",
+  "type": "task",
+  "updated_at": "2026-11-16T12:08:08Z"
+}
