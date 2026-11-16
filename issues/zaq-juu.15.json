@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-16T12:08:44Z",
+  "close_reason": "Superseded at user request by zaq-1lw. Preserve applicable correctness/regression obligations in the new Page-aligned contracts/bridge/history/journey tasks; this closure is not implementation-completion evidence.",
   "created": "2026-10-29T12:12:18Z",
   "description": "User explicitly requested removing comment-7 transport forwarding and fixing tests. Remove extra_opts argument and forwarding from edit_message. Preserve existing failure-notice assertions and scenario intent by observing default ReqClient HTTP requests against local OpenAIStub; keep exception/exit coverage at adapter boundary without a production test seam. Reuse existing adapter transport and HTTP stub; no new Action or public API. Tests remain synchronous with scoped/restored adapter registry. Run mix q and focused tests including standalone rejection case. No real provider sends.",
   "id": "zaq-juu.15",
@@ -14,8 +16,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[PR #876] Remove edit transport override and test default HTTP edits",
   "type": "task",
-  "updated_at": "2026-10-29T12:13:55Z"
+  "updated_at": "2026-11-16T12:08:44Z"
 }
