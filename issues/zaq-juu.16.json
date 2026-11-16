@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-16T12:08:45Z",
+  "close_reason": "Superseded at user request by zaq-1lw. Preserve applicable correctness/regression obligations in the new Page-aligned contracts/bridge/history/journey tasks; this closure is not implementation-completion evidence.",
   "created": "2026-10-29T12:24:22Z",
   "description": "User agreed Agent owns valid Record production and explicitly requested removing Outgoing.from_pipeline_result attachment-type rejection. Builder copies explicitly supplied attachments with [] only for omission; retain metadata exclusions and never echo incoming attachments. Channels DeliveryFiles remains validation boundary. Update existing rejection examples/property to verify preservation, as discussed and approved by go ahead and apply this after explicit contract explanation. Action reuse: simplify existing envelope builder, reuse DeliveryFiles validation; no Action/API added. Email fallback and web attachment support remain outside scope. Run mix q and focused builder/delivery tests.",
   "id": "zaq-juu.16",
@@ -14,8 +16,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[PR #876] Preserve outgoing answers without redundant attachment validation",
   "type": "task",
-  "updated_at": "2026-10-29T12:29:14Z"
+  "updated_at": "2026-11-16T12:08:45Z"
 }
