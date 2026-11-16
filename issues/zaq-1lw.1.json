@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-16T12:07:49Z",
+  "description": "Planning only: start implementation only after the Mattermost prerequisite gate passes and implementation is authorized. Read parent epic and linked Page. Follow AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, exec-plans/PLAN_STRATEGY.md, action-reuse.md, documentation.md, testing-approach.md and services/channels.md. Read affected service/config/UI policies before work. Recheck module docs, source and existing tests; test scenarios below are specified before implementation. Obtain required approval for changes to existing test behavior; prior UX approval does not cover the new SMTP inputs. Reuse fixtures and internal production boundaries, mock external provider edges only. No automatic application commit/push/merge authorization.\n\nExternal tracking: ../workspace-planning epic work-pim. Tasks work-pim.1–.5 own SDK/adapter implementation, review, coverage and fetchable immutable revisions; work-pim.6 owns the exact mix.exs/mix.lock update here. This is a local verification gate because the trackers are separate; a textual external ID is not a native dependency edge.\nDo not close based on elapsed time or a similarly named old API. Require recorded completion/validation evidence for the Mattermost fixes, exact published/fetchable SDK/Mattermost revisions and the intended pin/lock applied in this worktree. Inspect resolved source and public entry points: requirements, pure exact candidate multipart sizing, one-request upload, one-post create/edit, no hidden batching/policy/fan-out.\nNo new adapter work or duplicate dependency update here. Work-pim.6 remains owner of pin changes.\nAvoid a dependency cycle: if work-pim.6 has applied the correct revisions but only old ZAQ policy/fan-out integration checks await THIS migration, record those precise failures and transfer their compatibility verification to the Jido/journeys tasks. Provider checks and fetchability must already pass. Do not require closure of the entire external epic before fixing that documented host-only incompatibility. Leave work-pim.6 open until host verification succeeds.\nFiles: inspect mix.exs, mix.lock and resolved dependency public contracts; no code changes in this gate.\nTests: reuse external recorded quality/contract evidence and existing ZAQ adapter compatibility fixtures; distinguish actual provider failure from expected old-host mismatch.\nBranches: incorrect revision, missing public callback, unresolved limits, unavailable ref and real SDK post/edit compatibility.\nAction reuse: verification only; no new Action. Documentation: record immutable revisions, external statuses, tests and any transferred host-only blockers.\nOnly this gate should initially be ready. No implementation child may start before it closes.",
+  "id": "zaq-1lw.1",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "Gate: verify completed Mattermost prerequisites and adopted revisions",
+  "type": "task",
+  "updated_at": "2026-11-16T12:07:49Z"
+}
