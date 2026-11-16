@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-16T12:08:51Z",
+  "close_reason": "Superseded at user request by zaq-1lw. Preserve applicable correctness/regression obligations in the new Page-aligned contracts/bridge/history/journey tasks; this closure is not implementation-completion evidence.",
   "created": "2026-11-10T18:07:47Z",
   "description": "Fix finding 2. Extend CommunicationBridge optional delivery connection contract; move existing SMTP resolution from API into EmailBridge. Reuse reply SMTP selection, keep routing identity and frozen sender. Generic API delegates without email knowledge. Local-only transport binding, no standalone Action. Verify alternate bridge and existing email policy tests.",
   "id": "zaq-ucc.18",
@@ -38,8 +40,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc] Keep outbound connector resolution bridge owned",
   "type": "task",
-  "updated_at": "2026-11-10T18:52:27Z"
+  "updated_at": "2026-11-16T12:08:51Z"
 }
