@@ -2,6 +2,8 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-16T12:10:26Z",
+  "close_reason": "Superseded at user request. Corrected dependency adoption belongs to workspace-planning work-pim.6 and verification/integration in zaq-1lw; do not continue obsolete batch-upload test assumptions.",
   "created": "2026-11-06T12:22:03Z",
   "description": "Updated mix.exs to jat10/jido_chat fix/attachment-edits override; lock now SDK 8f22121 and Mattermost 9c9c615. deps.update and mix q pass. Focused bridge/delivery tests: 204 of 213 pass, 9 delivery failures. Existing tests still implement upload_file, reject multiple files, expect old patch endpoint and omit channel_id. Tests left unchanged; adapting behavioral expectations requires explicit approval per docs/testing-approach.md. Action reuse: not applicable, dependency configuration only. Logs /tmp/zaq-chat-tests.log and /tmp/zaq-chat-quality.log. Dependency update ready for user testing; test migration remains outstanding.",
   "id": "zaq-7kl",
@@ -29,8 +31,8 @@
     }
   ],
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Test updated Mattermost batch upload dependencies",
   "type": "task",
-  "updated_at": "2026-11-09T11:22:37Z"
+  "updated_at": "2026-11-16T12:10:26Z"
 }
