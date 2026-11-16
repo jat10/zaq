@@ -1,6 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [
+    "zaq-1lw.3",
     "zaq-1lw.5"
   ],
   "blocks": [],
@@ -13,5 +14,5 @@
   "status": "open",
   "title": "[zaq-1lw.7] Integrate exact MIME sizing and planned SMTP execution",
   "type": "task",
-  "updated_at": "2026-11-16T12:08:10Z"
+  "updated_at": "2026-11-16T12:08:11Z"
 }
