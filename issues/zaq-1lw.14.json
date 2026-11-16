@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-16T12:08:33Z",
+  "description": "Planning only: start implementation only after the Mattermost prerequisite gate passes and implementation is authorized. Read parent epic and linked Page. Follow AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, exec-plans/PLAN_STRATEGY.md, action-reuse.md, documentation.md, testing-approach.md and services/channels.md. Read affected service/config/UI policies before work. Recheck module docs, source and existing tests; test scenarios below are specified before implementation. Obtain required approval for changes to existing test behavior; prior UX approval does not cover the new SMTP inputs. Reuse fixtures and internal production boundaries, mock external provider edges only. No automatic application commit/push/merge authorization.\n\nCoordinate with existing zaq-rn4 and its four PR distribution children; this issue is architecture handoff/revalidation, not a duplicate mandate to recreate PRs.\nScope: combined implementation first, then contracts PR10, channels PR11 (requirements/plans/executor/SMTP), Agent PR12 unchanged unless a proven compatibility requirement is explicitly agreed, history/journeys PR13. Recheck current upstream status; further channel PR splitting may be justified. Provider revisions must be prerequisites of the stack.\nFiles: existing split branches/checkouts and relevant PR descriptions/diffs only as authorized; preserve unrelated work.\nTests: validate each actual intermediate base and dependency pin, not just combined branch. Reuse prior evidence when unchanged; rerun affected checks after distribution.\nMocking: established suites/fixtures.\nDocs: draft final accurate PR descriptions, dependency/order and validation notes; record handoff to zaq-rn4. Publishing/merging remains separately authorized.\nAction reuse: Git/review delivery process, no new application operation.\nDone: all implementation, approved UX/E2E, review, coverage, final validation and stack handoff evidence recorded. Do not close epic with unresolved compatibility or approval gates.",
+  "id": "zaq-1lw.14",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "Redistribute validated changes into the existing PR stack",
+  "type": "task",
+  "updated_at": "2026-11-16T12:08:33Z"
+}
