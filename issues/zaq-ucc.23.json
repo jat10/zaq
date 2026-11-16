@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-16T12:10:23Z",
+  "close_reason": "Superseded at user request by zaq-1lw. Preserve applicable correctness/regression obligations in the new Page-aligned contracts/bridge/history/journey tasks; this closure is not implementation-completion evidence.",
   "created": "2026-11-10T19:01:54Z",
   "description": "R4 consume existing email_connector_settings snapshot form_config in SMTP LiveView. Reuse NodeRouter Event for selection/new snapshots; preserve selected/new/refresh/validation/password behavior. Remove duplicated SMTP projection helpers. Data-flow refactor only, no markup or UX changes; existing LiveView tests and E2E smoke as applicable.",
   "id": "zaq-ucc.23",
@@ -14,8 +16,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc] Reuse Engine SMTP form snapshot",
   "type": "task",
-  "updated_at": "2026-11-10T19:09:33Z"
+  "updated_at": "2026-11-16T12:10:23Z"
 }
