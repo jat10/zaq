@@ -9,7 +9,7 @@
   "parent": "zaq-1lw",
   "priority": 2,
   "status": "open",
-  "title": "Gate: verify completed Mattermost prerequisites and adopted revisions",
+  "title": "[zaq-1lw.1] Gate: verify completed Mattermost prerequisites and adopted revisions",
   "type": "task",
-  "updated_at": "2026-11-16T12:07:49Z"
+  "updated_at": "2026-11-16T12:07:50Z"
 }
