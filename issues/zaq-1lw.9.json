@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-1lw.8"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-1lw.10"
+  ],
   "created": "2026-11-16T12:08:17Z",
   "description": "Planning only: start implementation only after the Mattermost prerequisite gate passes and implementation is authorized. Read parent epic and linked Page. Follow AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, exec-plans/PLAN_STRATEGY.md, action-reuse.md, documentation.md, testing-approach.md and services/channels.md. Read affected service/config/UI policies before work. Recheck module docs, source and existing tests; test scenarios below are specified before implementation. Obtain required approval for changes to existing test behavior; prior UX approval does not cover the new SMTP inputs. Reuse fixtures and internal production boundaries, mock external provider edges only. No automatic application commit/push/merge authorization.\n\nSource mapping: Page Task 9 (non-browser journeys).\nFiles/tests: extend test/zaq/channels/{attachment_agent_journey,disk_file_delivery_integration,email_file_delivery_integration}_test.exs and test/zaq/engine/notifications/notification_attachments_test.exs; run existing Agent selection, NotifyPerson and history journeys unchanged for producer compatibility.\nFunctional scenarios: Actor/Record authorization → Channel preparation → shared executor → actual provider boundary → existing confirmation. Prove both bridges use one executor; plain text takes the unchanged path; 6 files/1 failure, 15 files split 10+5, upload-request batches within one message, stop before publication, partial stop after first send, continue root promotion with unknown outcome retained, send-then-edit and existing-message edits, exact MIME size, no retry and no private bytes in events.\nUse original-index accounting and deterministic synchronization; no duplicate journey fixtures. Reconcile all old delivery/policy issue IDs carried in parent and provider test migration inventory.\nMocking: existing Mattermost/SMTP/model edge stubs, real internal materialization and Engine dispatch.\nAction reuse: validation of existing paths; no new operation.\nDocs: update owning module docs and docs/services/channels.md; verify docs/architecture.md ownership and dependency notes. Record concrete validation results and close compatibility handoff in work-pim.6 only when its acceptance passes.\nBrowser E2E implementation is deferred to separate UX and E2E issues; unit/integration work is not deferred.",
   "id": "zaq-1lw.9",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-1lw.9] Validate complete attachment journeys and migrated regression coverage",
   "type": "task",
-  "updated_at": "2026-11-16T12:08:19Z"
+  "updated_at": "2026-11-16T12:08:22Z"
 }
