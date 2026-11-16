@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-16T12:08:38Z",
+  "close_reason": "Superseded at user request by zaq-1lw. Preserve applicable correctness/regression obligations in the new Page-aligned contracts/bridge/history/journey tasks; this closure is not implementation-completion evidence.",
   "created": "2026-10-29T09:27:19Z",
   "description": "User requested PR #876 comment 2 fix: clear only Record.content in DeliveryConfirmation.record/3; preserve every other field including materialization_handle. Scope is the Channels confirmation event, not Engine persistence or history preview implementation. Action reuse assessment: extend existing DeliveryConfirmation projection locally; Record.attachment_metadata/1 removes runtime handles and changes shape so does not satisfy requested contract. No new Action or tool needed. Preserve metadata ID allowlist, receipt semantics, original outgoing and failure handling. Update existing property test plus Channels service contract; run mix q and isolated confirmation/delivery tests. Jad explicitly approved changing existing test expectation from attachments=[] to Records unchanged except content:nil via async answer in this conversation on 2026-10-29. Review comment 1 deferred by user.",
   "id": "zaq-juu.10",
@@ -14,8 +16,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[PR #876] Preserve content-free attachment Records in delivery confirmation",
   "type": "task",
-  "updated_at": "2026-10-29T09:28:56Z"
+  "updated_at": "2026-11-16T12:08:38Z"
 }
