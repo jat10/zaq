@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-1lw.12"
+  ],
   "blocks": [],
   "created": "2026-11-16T12:08:30Z",
   "description": "Planning only: start implementation only after the Mattermost prerequisite gate passes and implementation is authorized. Read parent epic and linked Page. Follow AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, exec-plans/PLAN_STRATEGY.md, action-reuse.md, documentation.md, testing-approach.md and services/channels.md. Read affected service/config/UI policies before work. Recheck module docs, source and existing tests; test scenarios below are specified before implementation. Obtain required approval for changes to existing test behavior; prior UX approval does not cover the new SMTP inputs. Reuse fixtures and internal production boundaries, mock external provider edges only. No automatic application commit/push/merge authorization.\n\nAfter review approval use coverage-upper for changed code per repository workflow. Generate fresh coverage, address meaningful missing paths in existing tests and review resulting changes. Preserve async isolation, deterministic scheduler tests and provider-edge-only mocks. No numerical target invented here.\nFunctional coverage: planner partition/count/byte bounds, policy and certainty branches, exact-once invocation per attempt, all resolved dependencies, private data exclusion, SMTP settings and real history integration. Files: affected existing suites; new suite only for distinct scheduler state-machine properties.\nValidation: follow docs/WORKFLOW_AGENT.md lifecycle and final mix precommit before requesting final human approval; no redundant reruns absent changes/failures. Record unavailable external integrations explicitly.\nDocumentation: validation/coverage evidence and justified exceptions in BW/PR draft.\nAction reuse: tests/validation only.\nNo merge/commit/push authorization is implied.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-1lw.13] Complete post-review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-16T12:08:31Z"
+  "updated_at": "2026-11-16T12:08:32Z"
 }
