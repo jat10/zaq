@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-16T12:08:20Z",
+  "description": "Planning only: start implementation only after the Mattermost prerequisite gate passes and implementation is authorized. Read parent epic and linked Page. Follow AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, exec-plans/PLAN_STRATEGY.md, action-reuse.md, documentation.md, testing-approach.md and services/channels.md. Read affected service/config/UI policies before work. Recheck module docs, source and existing tests; test scenarios below are specified before implementation. Obtain required approval for changes to existing test behavior; prior UX approval does not cover the new SMTP inputs. Reuse fixtures and internal production boundaries, mock external provider edges only. No automatic application commit/push/merge authorization.\n\nHuman approval gate for the completed feature. Present the two SMTP controls, validation messages, saved/reopened behavior, existing failure switch, planned partial/failed delivery display and ordinary text behavior. Existing approval from old attachment-policy work does not approve this new UI.\nFiles: review notification_smtp_live and existing channel delivery presentation; no new production code in this gate.\nTests/scenarios before approval: exercise component/LiveView and integration checks from implementation; define final consolidated browser scenarios in the E2E issue. Do not author new/substantially rewritten feature E2E until explicit human approval of completed UX is recorded.\nBranches: valid/missing/invalid SMTP limits, failure-switch preservation, selected connector versus default and safe partial errors.\nMocking: existing external provider fixtures.\nDocs: record approval scope/evidence in this issue. Reopen on material UX changes.\nAction reuse: human verification only; no new operation.",
+  "id": "zaq-1lw.10",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "Approve completed SMTP and attachment-delivery UX before E2E",
+  "type": "task",
+  "updated_at": "2026-11-16T12:08:20Z"
+}
