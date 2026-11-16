@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-16T12:10:20Z",
+  "close_reason": "Superseded at user request by zaq-1lw. Preserve applicable correctness/regression obligations in the new Page-aligned contracts/bridge/history/journey tasks; this closure is not implementation-completion evidence.",
   "created": "2026-11-10T19:01:51Z",
   "description": "R2 extend existing reply SMTP selector to consume the selected matching connector rather than reread it. Share existing binding interpretation with direct send and self-address paths. Preserve provider-only defaults, disabled/wrong connector errors and SMTP submission revalidation. Verify queries and existing email paths.",
   "id": "zaq-ucc.21",
@@ -14,8 +16,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc] Reuse selected connector for SMTP binding",
   "type": "task",
-  "updated_at": "2026-11-10T19:09:30Z"
+  "updated_at": "2026-11-16T12:10:20Z"
 }
