@@ -2,6 +2,8 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-16T12:10:24Z",
+  "close_reason": "Superseded at user request by zaq-1lw. Preserve applicable correctness/regression obligations in the new Page-aligned contracts/bridge/history/journey tasks; this closure is not implementation-completion evidence.",
   "created": "2026-11-10T19:15:50Z",
   "description": "Deferred finding 3 approved. Reuse Record.attachment_metadata with prepared SMTP descriptors; shared confirmation fallback drops source ID and private attributes while preserving provider receipt metadata. Existing Engine receipt route unchanged, no new Action. User explicitly approved updating existing receipt expectations. Validate red then green unit/property and real channel journey privacy coverage.",
   "id": "zaq-ucc.24",
@@ -18,8 +20,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc] Exclude source IDs from confirmed SMTP attachments",
   "type": "bug",
-  "updated_at": "2026-11-10T19:30:39Z"
+  "updated_at": "2026-11-16T12:10:24Z"
 }
