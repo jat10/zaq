@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-1lw.10"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-1lw.12"
+  ],
   "created": "2026-11-16T12:08:23Z",
   "description": "Planning only: start implementation only after the Mattermost prerequisite gate passes and implementation is authorized. Read parent epic and linked Page. Follow AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, exec-plans/PLAN_STRATEGY.md, action-reuse.md, documentation.md, testing-approach.md and services/channels.md. Read affected service/config/UI policies before work. Recheck module docs, source and existing tests; test scenarios below are specified before implementation. Obtain required approval for changes to existing test behavior; prior UX approval does not cover the new SMTP inputs. Reuse fixtures and internal production boundaries, mock external provider edges only. No automatic application commit/push/merge authorization.\n\nOnly after UX predecessor approval: extend test/e2e/specs/channels.spec.js and existing fixtures; avoid a parallel suite. Scenarios: configure/save/reopen both SMTP limits; invalid values; existing failure switch; attachment delivery/partial failure and confirmation in existing journeys; ordinary text preserved. Reuse existing approved real-provider/stub flows rather than invent another server harness.\nTests to define now, author after approval: user-visible connector choice, size/count inputs and delivery outcome; retain existing external receipt/history assertions. Read docs/e2e-testing.md; record exact approval and fixture/environment needs.\nMocking: existing external provider boundaries, real app/NodeRouter/Engine flow.\nFiles/docs: existing channels browser spec, support fixtures only as necessary, scenario/validation evidence in BW. No unsupported live account provisioning.\nAction reuse: validation-only, existing app operations.",
   "id": "zaq-1lw.11",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-1lw.11] Extend the existing consolidated channel delivery E2E",
   "type": "task",
-  "updated_at": "2026-11-16T12:08:25Z"
+  "updated_at": "2026-11-16T12:08:29Z"
 }

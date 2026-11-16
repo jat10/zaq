@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-1lw.11"
+  ],
   "blocks": [],
   "created": "2026-11-16T12:08:26Z",
   "description": "Planning only: start implementation only after the Mattermost prerequisite gate passes and implementation is authorized. Read parent epic and linked Page. Follow AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, exec-plans/PLAN_STRATEGY.md, action-reuse.md, documentation.md, testing-approach.md and services/channels.md. Read affected service/config/UI policies before work. Recheck module docs, source and existing tests; test scenarios below are specified before implementation. Obtain required approval for changes to existing test behavior; prior UX approval does not cover the new SMTP inputs. Reuse fixtures and internal production boundaries, mock external provider edges only. No automatic application commit/push/merge authorization.\n\nReview full change after journeys/E2E, including invariants, dependency contracts and Action reuse. Check no hidden SDK batching/policy, no new Agent behavior, no source/plan leaks, exact MIME measurement, single invocation, uncertainty/root promotion, callback cardinality, connector isolation and truthful confirmation.\nFiles: all affected Channel modules, Outgoing contract, SMTP configuration/UI and existing docs.\nTests before fixes: prove concrete findings through existing execution-path suites; preserve every assertion unless a disclosed semantic change is explicitly approved. Fix/revalidate affected owners.\nMocking: existing provider stubs only.\nDocs: reconcile module docs, channels/architecture guide, migration notes and draft PR descriptions with final behavior. Record approved review before coverage handoff.\nAction reuse: verify shared planner/executor reuse, current Materialization/DecodeBase64, SDK operations and Engine confirmation. No operation introduced by review.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-1lw.12] Review full delivery architecture and reconcile implementation documentation",
   "type": "task",
-  "updated_at": "2026-11-16T12:08:27Z"
+  "updated_at": "2026-11-16T12:08:29Z"
 }
