@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-16T12:08:50Z",
+  "close_reason": "Superseded at user request by zaq-1lw. Preserve applicable correctness/regression obligations in the new Page-aligned contracts/bridge/history/journey tasks; this closure is not implementation-completion evidence.",
   "created": "2026-11-10T18:07:46Z",
   "description": "Fix review finding 1. Reuse Channels.Api fallback and DeliveryConfirmation; preserve canonical outgoing body for Engine while sending notice text. Existing fallback assertion change explicitly approved by user. Add real history regression. Local-only orchestration correction, no new Action or route. No UI/E2E scope.",
   "id": "zaq-ucc.17",
@@ -18,8 +20,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc] Preserve canonical fallback delivery confirmation",
   "type": "bug",
-  "updated_at": "2026-11-10T18:28:44Z"
+  "updated_at": "2026-11-16T12:08:50Z"
 }
