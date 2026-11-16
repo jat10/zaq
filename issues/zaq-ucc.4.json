@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-ucc.5"
   ],
+  "closed_at": "2026-11-16T12:08:48Z",
+  "close_reason": "Superseded at user request by zaq-1lw. Preserve applicable correctness/regression obligations in the new Page-aligned contracts/bridge/history/journey tasks; this closure is not implementation-completion evidence.",
   "created": "2026-11-10T13:18:37Z",
   "description": "Functional specifications/files: Bridge/Api/JidoChatBridge/AdapterOptions, capability snapshot and existing ChannelsLive template. Normalize selected connector send_on_file_failure default true once at delivery owner and carry stable policy. Explicit policy support independent of edit capabilities. Suppress abort/handled-policy fallback; preserve confirmation and callbacks. Tests to add first: connector selection/default/false, unsupported strict zero effects, create/edit option propagation, successful-only confirmation and no resend, UI hide for file-only adapters. Existing behavior assertion changes require exact human approval; do not edit pending assertions. Branches text-only, default/on/off, create/update, unsupported, failure reporting. Mocking existing edge transports/config seams. Documentation final step. Action reuse: extend existing connection resolution/send/upsert/DeliveryConfirmation, no provider module in Api; no new Actions or dispatch lifecycle. E2E scope tracked separately after UX approval.",
   "id": "zaq-ucc.4",
@@ -26,8 +28,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ucc.4] Wire connector policy and truthful capability-aware UI",
   "type": "task",
-  "updated_at": "2026-11-10T14:09:16Z"
+  "updated_at": "2026-11-16T12:08:48Z"
 }
