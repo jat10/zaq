@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-1lw.4"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-1lw.6"
+  ],
   "created": "2026-11-16T12:08:01Z",
   "description": "Planning only: start implementation only after the Mattermost prerequisite gate passes and implementation is authorized. Read parent epic and linked Page. Follow AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, exec-plans/PLAN_STRATEGY.md, action-reuse.md, documentation.md, testing-approach.md and services/channels.md. Read affected service/config/UI policies before work. Recheck module docs, source and existing tests; test scenarios below are specified before implementation. Obtain required approval for changes to existing test behavior; prior UX approval does not cover the new SMTP inputs. Reuse fixtures and internal production boundaries, mock external provider edges only. No automatic application commit/push/merge authorization.\n\nSource mapping: Page Task 5 Implement the shared executor.\n\n**Files:** proposed `lib/zaq/channels/delivery_executor.ex`, plan types, Bridge callback declarations, and existing DeliveryError.\n\n**Work:** execute explicitly planned upload batches and send/edit steps, resolve outputs, enforce the stop upload barrier, sequential stop publication, bounded continue scheduling, root promotion, and terminal reporting. Combine confirmed IDs from the required upload batches for each message; never delegate scheduling or policy to the adapter. Prevent duplicate invocation per step and preserve outcomes when later work fails. Preserve frozen connector context across tasks.\n\n**Tests:** put behavior scenarios into existing `attachment_policy_test.exs`, `jido_chat_delivery_test.exs`, and email outgoing tests. A focused new `test/zaq/channels/delivery_executor_test.exs` is justified only for scheduler state-machine properties that cannot be expressed clearly in those suites; do not duplicate provider journeys.\n\n**Paths:** stop before any publication on later upload failure; second publication failure retains first; timeout then root promotion under continue; existing root; exhaustion of all candidates; independent messages overlap only under continue; concurrency bound; task exit; partial upload; confirmed text plus failed edit; no retry.\n\n**Properties:** each step starts at most once, dependencies are resolved before effects, no stop publication starts after failure, every final outcome is represented. Test scheduling with explicit synchronization, not sleeps.\n\n**Reuse:** one Channel-local orchestration implementation shared by bridges. It consumes existing authorized delivery, not a replacement workflow engine or public agent operation. Reuse suitable task infrastructure discovered in Task 2.\n\n**Docs:** module ownership, execution guarantees, and limits in channels guide.\n\nReuse/verification: use the existing owner and tests named above; no parallel transport pipeline, new history store, automatic Action/tool exposure or Agent-selection changes. Scope any new scheduler unit suite to genuinely distinct invariants.",
   "id": "zaq-1lw.5",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-1lw.5] Execute shared delivery steps and failure policies",
   "type": "task",
-  "updated_at": "2026-11-16T12:08:03Z"
+  "updated_at": "2026-11-16T12:08:07Z"
 }
