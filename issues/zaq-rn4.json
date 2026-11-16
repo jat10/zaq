@@ -34,11 +34,15 @@
     {
       "text": "Publication complete in requested order: fork stack https://github.com/jat10/zaq/pull/10, https://github.com/jat10/zaq/pull/11, https://github.com/jat10/zaq/pull/12, https://github.com/jat10/zaq/pull/13 then upstream PR1 https://github.com/www-zaq-ai/zaq/pull/935. All four branch ancestries verified, all worktrees clean, final tree exactly matches audited extraction. PR1 final precommit passed 12062 checks (1 skipped,164 excluded). No precommit process remains. No PRs merged or original PRs closed. Next upstream PR awaits PR1 merge.",
       "timestamp": "2026-11-11T09:36:49Z"
+    },
+    {
+      "text": "New architecture implementation tracked by zaq-1lw; its final distribution task coordinates with this existing PR stack. Existing PR scopes and history are preserved; no duplicate restacking implementation should be started.",
+      "timestamp": "2026-11-16T12:10:28Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4] Split channel files into four sequential upstream PRs",
   "type": "epic",
-  "updated_at": "2026-11-11T09:36:49Z"
+  "updated_at": "2026-11-16T12:10:28Z"
 }
