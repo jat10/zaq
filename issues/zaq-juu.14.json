@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-16T12:08:43Z",
+  "close_reason": "Superseded at user request by zaq-1lw. Preserve applicable correctness/regression obligations in the new Page-aligned contracts/bridge/history/journey tasks; this closure is not implementation-completion evidence.",
   "created": "2026-10-29T11:52:49Z",
   "description": "Address comment 6 by merging file_post_body/3 and build_post_body/2 into one build_post_body/3 implementation. Preserve text-only structured-body passthrough, explicit-file binary-body validation and complete payload metadata. Action reuse: extend existing private payload builder; no new Action or public interface. Existing tests retain expectations. Validate mix q and focused delivery regressions.",
   "id": "zaq-juu.14",
@@ -14,8 +16,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[PR #876] Consolidate posting payload construction",
   "type": "task",
-  "updated_at": "2026-10-29T11:54:02Z"
+  "updated_at": "2026-11-16T12:08:43Z"
 }
