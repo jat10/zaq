@@ -25,11 +25,15 @@
     {
       "text": "Existing E2E execution attempted as required: npm run test completed asset/database bootstrap but browser launch exited126: no local Playwright executable; PATH selected an asdf Python playwright shim with unavailable python3.13.0. Log /tmp/zaq-1lw-existing-e2e.log. This is an environment execution blocker, not an application test pass. Record for .11; no new specs authored and no global tool/version configuration changed.",
       "timestamp": "2026-11-17T12:23:01Z"
+    },
+    {
+      "text": "Existing browser execution blocker resolved by npm ci using the existing package-lock (local dependencies only, no host/global changes). npm run test -- specs/channels.spec.js specs/system_config.spec.js --project=journeys-chromium PASS:59 tests. Existing specs unchanged; no feature E2E authored. Log /tmp/zaq-1lw-existing-e2e.log.",
+      "timestamp": "2026-11-17T13:12:20Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "[zaq-1lw.3] Add explicit SMTP message-size and attachment-count settings",
   "type": "task",
-  "updated_at": "2026-11-17T12:23:01Z"
+  "updated_at": "2026-11-17T13:12:20Z"
 }
