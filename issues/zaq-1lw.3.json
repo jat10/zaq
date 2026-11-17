@@ -21,11 +21,15 @@
     {
       "text": "Implemented two DS inputs, positive optional schema limits, exact decimal MB-to-byte property, selected Engine persistence/snapshot round trip, SMTP key access and bridge FileRequirements from frozen selected settings. No defaults or database migration. mix q PASS; 96 focused checks PASS including 5 properties (schema/settings/API/LiveView/DeliveryFiles/existing email outgoing). New LiveView tests prove save/reopen and invalid non-persistence; existing switch/encryption/auth/text scenarios preserved. Existing full E2E execution started with npm run test; log /tmp/zaq-1lw-existing-e2e.log, result pending. No new feature E2E authored; UX .10 remains open. No commits/pushes.",
       "timestamp": "2026-11-17T12:19:03Z"
+    },
+    {
+      "text": "Existing E2E execution attempted as required: npm run test completed asset/database bootstrap but browser launch exited126: no local Playwright executable; PATH selected an asdf Python playwright shim with unavailable python3.13.0. Log /tmp/zaq-1lw-existing-e2e.log. This is an environment execution blocker, not an application test pass. Record for .11; no new specs authored and no global tool/version configuration changed.",
+      "timestamp": "2026-11-17T12:23:01Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "[zaq-1lw.3] Add explicit SMTP message-size and attachment-count settings",
   "type": "task",
-  "updated_at": "2026-11-17T12:19:04Z"
+  "updated_at": "2026-11-17T12:23:01Z"
 }
