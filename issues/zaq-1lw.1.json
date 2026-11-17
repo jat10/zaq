@@ -17,11 +17,15 @@
     {
       "text": "Published provider refs now available and APPLIED in this exact worktree per explicit user instruction: Mattermost73b7e10f44e14bf8b7774d584d88c29332f7a49f; SDKf17679337a9975bee43b9540cb08ac5cfc12b86a (jat10 fork). mix.exs+mix.lock updated/resolved, only those dependency entries differ. Provider source confirms file_requirements/prepare_upload/upload_prepared/uploaded_files-native and absence of automatic batching/policy/fanout. ZAQ mix q passes and actual resolved public provider-contract probe passes. Focused compatibility tests152/175 pass,23 failures in old-host policy/file-delivery flows; work-pim.6 records exact paths and remains open. Host-only verification transfers to zaq-1lw.6/.9 rather than waiting for external epic closure. No ZAQ application/tests modified, pin files remain uncommitted. Work-pim.5 retains coverage/live gap independently of now-resolved fetchability.",
       "timestamp": "2026-11-17T11:59:26Z"
+    },
+    {
+      "text": "Verified 2026-11-17: exact pinned/resolved SDK f17679337a9975bee43b9540cb08ac5cfc12b86a and Mattermost 73b7e10f44e14bf8b7774d584d88c29332f7a49f match published work-pim.5 evidence. Fresh mix q passes; reran /tmp/work-pim-zaq-public-contract.exs against resolved sources: requirements/prepare/upload/post/restore/text-edit pass. Inspected pure exact sizing, single upload/create/edit and explicit rejection of retired policy. User authorizes ZAQ migration despite separately retained Mattermost 91.2% coverage/live gap in work-pim.5. All 23 baseline host failures remain transferred to .6/.9 and work-pim.6 stays open. Pin files preserved; no application Git publication.",
+      "timestamp": "2026-11-17T12:09:30Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.1] Gate: verify completed Mattermost prerequisites and adopted revisions",
   "type": "task",
-  "updated_at": "2026-11-17T12:09:09Z"
+  "updated_at": "2026-11-17T12:09:30Z"
 }
