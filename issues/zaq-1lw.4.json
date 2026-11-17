@@ -11,9 +11,15 @@
   "id": "zaq-1lw.4",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Action reuse rechecked: extend DeliveryFiles; reuse its existing prepare/3 materialization and validated DecodeBase64, no acquisition duplication. Ordered grouping/request packing and dependency descriptions are Channel-local pure transformations, not standalone Actions. Requirements and necessary pure bridge callbacks checked before acquisition; all files prepared before any execution; failures retain original indices. Exact accepted candidate representation retained for later submission. Continue plans usable files or distinct text fallback; abort executes nothing. Explicit user test migration approval recorded on parent. New planner tests extend existing attachment_policy_test and preserve all existing DeliveryFiles permission/provenance/byte assertions.",
+      "timestamp": "2026-11-17T12:23:30Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.4] Build delivery plans and materialize attachments once",
   "type": "task",
-  "updated_at": "2026-11-17T12:19:05Z"
+  "updated_at": "2026-11-17T12:23:30Z"
 }
