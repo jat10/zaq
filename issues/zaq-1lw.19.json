@@ -9,9 +9,15 @@
   "id": "zaq-1lw.19",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Baseline reproduced in isolation: 1/4 pass, stale/missing metadata have zero MIME attachments and selection failure returns continue partial success rather than old selection error. Latest user explicitly authorizes disclosed test migration: real delivery-plan path, explicit SMTP limits and obsolete continue-policy expectation updated with failure reporting. Reuse existing connector!/2, FileDeliverySmtpStub, EmailBridge, Api/DeliveryConfirmation and Engine history; remove incomplete EmailTransport wrapper and resolve real EmailBridge. Preserve exact byte/metadata/canonical-history/privacy assertions and strengthen plan/content boundary checks. Action reuse: test-only migration, existing domain operations reused; no new Action/tool/transport or orchestration. Plan: migrate this suite, run it first, investigate any remaining failures as potential production defects, run relevant email/confirmation/history suites and mix q. Telegram/Discord untouched; no commit/push.",
+      "timestamp": "2026-11-17T20:07:37Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.19] Migrate SMTP history integration tests to shared delivery plans",
   "type": "bug",
-  "updated_at": "2026-11-17T20:07:36Z"
+  "updated_at": "2026-11-17T20:07:37Z"
 }
