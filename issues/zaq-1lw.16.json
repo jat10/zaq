@@ -7,9 +7,15 @@
   "id": "zaq-1lw.16",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "User clarified this is temporary live-observation instrumentation and objected to testing the logger. Removed the added logger capture test and its test-only logging configuration. Keeping diagnostic production hooks only; no further logger tests. Existing delivery behavior checks previously passed; temporary trace work remains scoped to live investigation and later removal.",
+      "timestamp": "2026-11-17T17:40:52Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.16] Temporary correlated file-delivery trace logging",
   "type": "task",
-  "updated_at": "2026-11-17T17:36:34Z"
+  "updated_at": "2026-11-17T17:40:52Z"
 }
