@@ -19,11 +19,15 @@
     {
       "text": "Existing browser regressions now PASS:59 Chromium channel/system-config checks after restoring locked local Node dependencies. Initial global asdf shim blocker is resolved. New consolidated SMTP-limit/delivery feature scenarios remain unauthored pending completed-UX gate .10. Log /tmp/zaq-1lw-existing-e2e.log.",
       "timestamp": "2026-11-17T13:12:21Z"
+    },
+    {
+      "text": "Scenarios remain deferred until .10 explicit completed UX approval. Extend existing channels.spec.js: selected SMTP connector save/reopen1.234567 MB and3 files; reject0/-1 with field messages and no persistence; leave missing settings blank; failure-switch preservation across save; selected connector rather than default; existing fixture-backed file/partial confirmation journey and ordinary text. Existing browser suites59 PASS, local locked Playwright installed via npm ci. Review screenshots and integration outcome table /tmp/zaq-1lw-ux-review.html. No new or rewritten feature browser tests authored before approval.",
+      "timestamp": "2026-11-17T14:04:36Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.11] Extend the existing consolidated channel delivery E2E",
   "type": "task",
-  "updated_at": "2026-11-17T13:12:21Z"
+  "updated_at": "2026-11-17T14:04:36Z"
 }
