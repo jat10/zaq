@@ -12,9 +12,15 @@
   "id": "zaq-1lw.5",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Action reuse assessment: Channel-local DeliveryExecutor consumes authorized DeliveryFiles plans, existing Bridge operation callbacks and Zaq.TaskSupervisor; no workflow-engine replacement or agent Action. New scheduler-only suite justified for once-only dependency/state-machine properties and deterministic concurrency barriers; provider journeys remain in existing suites. Stop uploads precede every publication; continue root promotion retains unknown outcomes and never retries; ready replies use bounded supervised tasks with stable report order. Per-attempt state and frozen connection remain local. Added one completion callback to retain notification callback cardinality/final-ID semantics after whole-plan execution; bridges do not choose policy. Existing producer/Agent paths unchanged.",
+      "timestamp": "2026-11-17T12:34:37Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.5] Execute shared delivery steps and failure policies",
   "type": "task",
-  "updated_at": "2026-11-17T12:27:21Z"
+  "updated_at": "2026-11-17T12:34:37Z"
 }
