@@ -11,9 +11,15 @@
   "id": "zaq-1lw.3",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Action reuse assessment: extend EmailConfig.changeset and Engine.EmailConnectorSettings.persist/form_config through existing confidential BO Event/NodeRouter settings actions; reuse SmtpSettings for exact decimal MB/byte projection and existing DesignSystem.Input number/hint component (Storybook forms/input inspected). No new configuration store, credentials path, migration, Action or tool. Exactly two inputs; positive explicit limits, six decimal MB places permit exact whole bytes; legacy blanks remain nil. New additive schema/property/Engine/LiveView tests reuse existing fixtures. Expected failing tests confirmed missing contract before implementation. Existing failure switch/auth/encryption/IMAP binding assertions unchanged. E2E authoring remains blocked by .10 UX approval.",
+      "timestamp": "2026-11-17T12:15:03Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.3] Add explicit SMTP message-size and attachment-count settings",
   "type": "task",
-  "updated_at": "2026-11-17T12:13:35Z"
+  "updated_at": "2026-11-17T12:15:03Z"
 }
