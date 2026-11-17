@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-1lw.12"
+  ],
   "created": "2026-11-17T20:05:31Z",
   "description": "PR review finding 2: migrate test/zaq/channels/email_confirmation_integration_test.exs to the agreed Channel delivery-plan architecture. Full review run:1966/1970 checks passed; three failures in this suite plus one separate Telegram failure. All four reproduced in isolation. Logs: /tmp/zaq-full-pr-review-tests.log and /tmp/zaq-pr-review-isolated-failures.log.\nEvidence: EmailTransport test wrapper delegates only fetch_connection_details_for_config and send_reply, omitting planning callbacks. Connector built with connector!/2 omits max_encoded_message_bytes and max_files_per_message. Under continue, missing requirements cause text fallback, so stale_metadata/missing_metadata get no MIME attachments. selection_failure still expects {:error, DeliveryError{stage: :selection}} although current continue contract returns a successful partial delivery report with selection failure evidence.\nScope: reuse this existing SMTP/history integration suite and fixtures. Prefer the real EmailBridge directly through the existing resolver, or forward the full needed contract if the wrapper has a justified purpose. Supply explicit SMTP limits. Exercise real planning, prepared SMTP bytes, DeliveryConfirmation and Engine history via existing isolated transport. Assert exact sent bytes, filename/MIME and persisted metadata from the sent files (including stale/missing source metadata), canonical answer preservation, no private plan/content persistence, and selection-failure reporting with successful text under continue. Preserve normal scenario and history assertions. Do not weaken exact attachment assertions to accept empty lists or duplicate the suite.\nExpected test migration: update obsolete selection-failure result expectation to the agreed continue partial report, assert selection failure remains reported and no files are claimed delivered. This was disclosed in review; follow repository existing-test-behavior approval policy with current session authorization. Stop policy behavior remains unchanged. No production refactor expected; investigate and report any genuine production defect rather than masking it with fixture changes.\nRun this suite first, relevant existing email/confirmation/history suites, then mix q and diff checks. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/testing-approach.md, docs/agent-tools.md and relevant Channels/Engine guides. Action reuse assessment: reuse EmailBridge, shared planner/executor, SMTP fixture, DeliveryConfirmation and Engine history; test migration only, no new operation/Action/tool.\nUser decision: current Telegram/Discord file-delivery limitation is accepted; upstream adapter PRs are deferred. Do not modify those adapters, invent limits, or include the Telegram test migration in this issue. Ordinary text remains unchanged. The separate Telegram failure is not evidence this SMTP fix failed.\nNo application code or tests changed during issue creation. Preserve unrelated work. No commit/push without authorization.",
   "id": "zaq-1lw.19",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-1lw.19] Migrate SMTP history integration tests to shared delivery plans",
   "type": "bug",
-  "updated_at": "2026-11-17T20:05:32Z"
+  "updated_at": "2026-11-17T20:05:33Z"
 }
