@@ -11,9 +11,15 @@
   "id": "zaq-1lw.10",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Completed UX evidence captured from running isolated BO on4002. /tmp/zaq-1lw-ux-review.html links missing/saved/invalid screenshots. Browser inspection saved1.234567 MB and3 attachments, reopened exact values and preserved enabled failure switch;0/-1 show two must-be-greater-than-0 field errors. Restored initial isolated DB blank limits afterward. Review also explains tested partial/stop/continue/root-promotion/no-retry/selection-notice/canonical-history behavior with integration evidence (not claimed live-provider UI). No feature E2E authored. Await explicit completed UX approval under docs/testing-approach.md feature E2E gate; passing tests and test-migration approvals do not satisfy it. Existing E2E59 PASS. Action reuse: human inspection of existing settings and delivery presentation, no new operation.",
+      "timestamp": "2026-11-17T14:04:34Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.10] Approve completed SMTP and attachment-delivery UX before E2E",
   "type": "task",
-  "updated_at": "2026-11-17T14:02:43Z"
+  "updated_at": "2026-11-17T14:04:34Z"
 }
