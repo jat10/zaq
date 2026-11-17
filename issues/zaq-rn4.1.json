@@ -1,6 +1,8 @@
 {
   "assignee": "Jad",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-1lw.13"
+  ],
   "blocks": [
     "zaq-rn4.2"
   ],
@@ -71,5 +73,5 @@
   "status": "in_progress",
   "title": "[zaq-rn4.1] PR1: Attachment contracts and access policies",
   "type": "task",
-  "updated_at": "2026-11-17T21:40:18Z"
+  "updated_at": "2026-11-17T21:40:25Z"
 }
