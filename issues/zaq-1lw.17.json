@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [
     "zaq-1lw.12"
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-1lw",
   "priority": 1,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-1lw.17] Remove blanket upload-request size requirement",
   "type": "bug",
-  "updated_at": "2026-11-17T18:59:19Z"
+  "updated_at": "2026-11-17T19:13:29Z"
 }
