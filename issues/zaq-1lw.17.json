@@ -17,11 +17,15 @@
     {
       "text": "Integration first pass104/105 PASS incl native Mattermost15-file upload/post10+5 under abort/continue and SMTP. Missing-key regression exposed pinned SDK facade requiring all3 keys before bridge normalization. Lowest-churn host fix reads the existing optional provider callback once (Code.ensure_loaded/function_exported guard), validates response shape, then maps+validates full ZAQ FileRequirements. Required file/count absences map to unresolved and remain errors; only optional upload-key absence maps to not_applicable. Explicit nil/unresolved/invalid still rejected. No SDK/deps edits or new adapter wrapper in production. Existing facade remains unchanged and new native integration also exercises its published requirements boundary; actual provider preparation/upload/post still use SDK operations. Source docs explain owning boundary.",
       "timestamp": "2026-11-17T19:19:28Z"
+    },
+    {
+      "text": "DONE validation:401/401 regression checks PASS (19 properties,382 tests), log /tmp/zaq-1lw17-regression.log. Focused105/105 PASS incl real corrected Mattermost SDK requirements + real ReqClient exact multipart preparation/HTTP upload/post:15 files produce10+5, two uploads and two confirmed threaded posts under both abort and continue without request ceiling; authorization header, body bytes/filenames, returned IDs, indices and no extra requests asserted. Pure bridge boundary also covers truly absent key despite strict pinned SDK facade; invalid/unresolved upload values and missing file/count constraints remain configuration errors. Positive-ceiling split/omission scenarios retain their assertions through explicitly limited adapter; SMTP limit suites pass unchanged. RED captured all5 new regressions before production fix (/tmp/zaq-1lw17-red.log). mix q PASS (/tmp/zaq-1lw17-q.log); git diff --check PASS. SDKf176793 and Mattermost98cd98c pins byte-for-byte preserved; deps clean, no commits/pushes. Existing within_limit?(:not_applicable) already skips the ceiling, so planner production needed no redundant branch. Obsolete Mattermost forwarding/debug inputs removed; native request/body measurement unchanged. This correction supersedes earlier epic/Page rule requiring a request ceiling solely for upload_then_publish. Real HTTP provider-edge stubs were used; authenticated live Mattermost run is separate and not claimed. Existing UX/E2E/review/coverage/final-precommit gates remain open; no new browser tests or Agent/SMTP production edits.",
+      "timestamp": "2026-11-17T19:24:20Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-1lw.17] Remove blanket upload-request size requirement",
   "type": "bug",
-  "updated_at": "2026-11-17T19:19:28Z"
+  "updated_at": "2026-11-17T19:24:20Z"
 }
