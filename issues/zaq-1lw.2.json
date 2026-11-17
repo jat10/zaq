@@ -16,11 +16,15 @@
     {
       "text": "Action reuse assessment: inspected DeliveryFiles.prepare/3, Materialization redemption, registered DecodeBase64/AttachDocuments/NotifyUsers tools, Bridge/CommunicationBridge callbacks, Jido send/edit helpers, SmtpSender composition, Mailer and application task tree. Extend existing domain contracts; plan/requirements/Step are local data, no independent Action or tool. Preserve trusted actor and validated DecodeBase64 execution. Limits: every limit is positive or explicitly :not_applicable; nil/:unresolved/invalid fail before acquisition; split-upload mode requires positive request ceiling. Optional bridge callbacks map SDK file_requirements/prepare_upload/upload_prepared and one-post create/edit. Step outcomes keep uploads separate from confirmed publication and preserve original indices/certainty. Use existing Zaq.TaskSupervisor with bounded per-attempt scheduling. MIME checkpoint resolved: narrow SmtpSender preparation/submission seam reusing locked Swoosh 1.27.0 SMTP.Helpers.body/sender and SMTP.gen_smtp_config, with explicit version guard; freeze encoded bytes and submit that same representation through gen_smtp once with retries: 0, never copy encoder. Existing no-plan Mailer delivery remains. Original answer goes to promoted root only until confirmed; later parts use existing continuation wording, frozen subjects/headers; final-ID callbacks fire once. New tests additive; disclosed existing-test changes awaiting explicit user response.",
       "timestamp": "2026-11-17T12:11:47Z"
+    },
+    {
+      "text": "Implemented shared FileRequirements, private DeliveryPlan/Step (separate module files per conventions), optional bridge preparation/execution callbacks, nullable Outgoing.delivery_plan excluded from inspection and producer metadata, and safe configuration/execution error stages. Existing permissive builders retained. Validation: mix q PASS; outgoing/delivery_error/delivery_files existing suites PASS 35 including 5 properties. Added only tests for new contracts; no existing expectation changed. Module-context evidence: DeliveryFiles owns acquisition/normalization; bridges own representation/provider operations; executor owns attempt-local state and policy; Engine remains history owner. Private plan stripping at confirmation is tracked in .8. User forbids application commits; no commit/push performed.",
+      "timestamp": "2026-11-17T12:13:05Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.2] Define shared file requirements, delivery plan and result contracts",
   "type": "task",
-  "updated_at": "2026-11-17T12:11:47Z"
+  "updated_at": "2026-11-17T12:13:05Z"
 }
