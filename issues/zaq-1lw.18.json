@@ -9,7 +9,7 @@
   "parent": "zaq-1lw",
   "priority": 1,
   "status": "open",
-  "title": "Remove Mattermost-specific leakage from generic delivery bridge",
+  "title": "[zaq-1lw.18] Remove Mattermost-specific leakage from generic delivery bridge",
   "type": "bug",
-  "updated_at": "2026-11-17T19:38:49Z"
+  "updated_at": "2026-11-17T19:38:50Z"
 }
