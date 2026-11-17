@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-17T11:57:11Z",
+  "description": "Generate only ignored floorplan/ artifacts; inspect source read-only. Action reuse assessment: not applicable, no executable ZAQ operation changes. Inspect architecture and trace question/ingestion, build subsystem map, describe scanned files in disjoint groups, validate Floorplan, open browser. No source changes or Git/PR mutations.",
+  "id": "zaq-fef",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Build local ZAQ Floorplan architecture map",
+  "type": "task",
+  "updated_at": "2026-11-17T11:57:11Z"
+}
