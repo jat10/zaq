@@ -15,11 +15,15 @@
     {
       "text": "Full journey first run100/102 pass (8 properties). Existing revoke-at-delivery scenarios exposed two host regressions, assertions preserved: no usable files planned a new Mattermost send rather than reusing its streamed placeholder; a one-message partial SMTP report used formatted HTML as canonical Engine content. Fixing shared contracts: optional pure existing_text_message fact reuses Jido existing send_mode without requirements lookup/acquisition, planner emits a text edit when supported; unnumbered first receipt confirms original canonical outgoing body, explicit continuation part bodies remain unchanged. Additive replay regression proves HTML transport facts remain in receipt while canonical answer is stable. No Agent/Engine production behavior changed.",
       "timestamp": "2026-11-17T13:53:43Z"
+    },
+    {
+      "text": "Complete journey validation PASSES:131 checks (11 properties,120 tests), including real Agent selection/materialization, Mattermost and SMTP provider edges, notification delivery, revoke-at-delivery, ordinary text, canonical history and replay. Follow-up101 focused checks (8 properties) and mix q PASS. The original host-compatibility suite now178/178 PASS (3 properties,175 tests), resolving all23 recorded failures without adapter orchestration; preserved immutable pins and user-approved migrations only. Logs /tmp/zaq-1lw-journeys-final-tests.log, /tmp/zaq-1lw-journeys-fix-tests.log, /tmp/zaq-1lw-journeys-q.log, /tmp/zaq-1lw-host-compat-final.log. Action reuse: validation of shared DeliveryFiles/DeliveryExecutor, existing Materialization/DecodeBase64, provider operations and Engine confirmation; no new operation. Architecture ownership remains Channels per docs/architecture.md; detailed current contract documented in docs/services/channels.md. Existing browser suites previously59 PASS; feature E2E still gated on completed UX approval in .10. SMTP stub shutdown reports :closed on intentionally unused accepts; all assertions pass. No application commit/push/merge.",
+      "timestamp": "2026-11-17T14:02:40Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.9] Validate complete attachment journeys and migrated regression coverage",
   "type": "task",
-  "updated_at": "2026-11-17T13:53:43Z"
+  "updated_at": "2026-11-17T14:02:40Z"
 }
