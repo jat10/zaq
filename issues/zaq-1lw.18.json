@@ -17,11 +17,15 @@
     {
       "text": "Implementation progress: removed provider-name filtering from AdapterOptions.build/2; identical supported options are forwarded for all providers. Removed Mattermost app-env/defaults read from JidoChatBridge requirements tracing; existing selected-adapter result/mapped-requirements trace remains. Updated directly affected module/service docs. Existing suppression test migrated to uniform-forwarding property over atom/string providers, atom/string settings, direct-value precedence, transport and local policy exclusion. RED reproduced missing option before fix; focused suite now 93 passed (10 properties, 83 tests). Actual pinned Mattermost adapter/ReqClient HTTP-boundary scenario runs absent, top-level one-byte obsolete option and nested one-byte obsolete option, each under abort/continue, retaining auth, exact upload/post counts, original indices, root/thread and no-extra-request assertions. Existing positive-ceiling splitting/omission and invalid-required-value assertions preserved. This is a local HTTP stub at external transport, not a live Mattermost send. mix q passed. Audit of 588 current-run requirements trace lines: no provider defaults, credentials, prepared requests or file content; four obsolete-option lookups resolve through actual adapter to not_applicable. Outgoing coupling audit finds only pre-existing DM/incoming thread provider defaults outside requested scope, untouched. Pins byte-identical and dependency checkout clean; diff --check passed. Additional bridge/API/SMTP/text regression suite running.",
       "timestamp": "2026-11-17T19:46:32Z"
+    },
+    {
+      "text": "Validation complete: additional existing Jido bridge/API/executor/confirmation/errors/SMTP integration/sender/outgoing-attachments/Telegram ordinary-text suites passed 416 checks (6 properties, 410 tests). Combined with focused run: 509 passed (16 properties, 493 tests), zero failures. mix q and git diff --check passed. Logs: /tmp/zaq-1lw18-red.log, /tmp/zaq-1lw18-focused.log, /tmp/zaq-1lw18-regression.log, /tmp/zaq-1lw18-q.log. Final diff review: only two production files, two existing suites and the affected Channels service documentation changed for this issue. Shared options are generic, no provider table/replacement branch/new callback or SDK changes. Test privacy assertions preserved; safe requirements tracing inspected operationally without adding temporary-logger tests. mix.exs and mix.lock byte-identical to task-start snapshots, SDK f17679337a9975bee43b9540cb08ac5cfc12b86a and Mattermost 98cd98c8f4171f2baef3177dfdeb193c607d941f preserved. No application commit, push or live delivery performed. Upstream Mattermost coverage gap remains separately tracked; epic UX/review/coverage/final-precommit gates remain outstanding.",
+      "timestamp": "2026-11-17T19:46:48Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-1lw.18] Remove Mattermost-specific leakage from generic delivery bridge",
   "type": "bug",
-  "updated_at": "2026-11-17T19:46:32Z"
+  "updated_at": "2026-11-17T19:46:48Z"
 }
