@@ -16,11 +16,15 @@
     {
       "text": "Action reuse rechecked: retain existing DeliveryConfirmation -\u003e Engine :record_delivery_confirmation -\u003e HistoryIngress. New execution-path regressions prove missing continuation indices caused conflicting canonical confirmation for later groups and private plan survived direct confirmation. Added only Channel fixes: strip delivery_plan, assign existing positive delivery_part_index to later confirmed distinct messages after coalescing so promoted roots remain canonical. Engine production untouched. Also proved old API generic fallback could bypass a failed MIME ceiling; restrict compatibility notice to malformed producer attachment lists and build/execute that notice through DeliveryFiles/DeliveryExecutor. Shared build_failure_plan is a local preparation transformation reusing assembly, not a new Action. Removed old unknown-send placeholder fallback and duplicate EmailBridge preparation/policy branch. Legacy ordinary text retains sender path with no file preparation.",
       "timestamp": "2026-11-17T13:37:09Z"
+    },
+    {
+      "text": "Four newly added regressions failed before fixes (private-plan property, oversized-MIME API fallback, split history, promoted-root history) and all now pass. Focused integrated validation PASS226 including7 properties. Engine source untouched: later confirmed messages receive existing delivery_part_index\u003e0 after receipt coalescing; promoted first success keeps canonical identity. Confirmation clears plan plus Record.content. Removed broad API fallback/unknown-send upsert paths and duplicate EmailBridge preparation/policy logic; malformed producer-list compatibility notices now use the same planner/executor, retain canonical answer and original error, and obey text limits. Only remaining compile warning was an unused legacy text argument, corrected.",
+      "timestamp": "2026-11-17T13:40:36Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.8] Reuse delivery confirmation and remove duplicate ZAQ orchestration",
   "type": "task",
-  "updated_at": "2026-11-17T13:37:09Z"
+  "updated_at": "2026-11-17T13:40:36Z"
 }
