@@ -7,11 +7,12 @@ defmodule Zaq.Channels.JidoChatBridge do
   Jido.Chat event handling happen atomically.
 
   `send_reply/2` is called by Channels API for outbound delivery to any
-  jido_chat-backed platform. Explicit file Records use shared preparation and
-  existing adapter uploads as documents. Capable adapters attach files to the
-  existing streamed post; otherwise file deliveries create a final post;
-  receipts and reply callbacks use Jido's returned post ID. Success adds no status notice.
-  Delivery failures retain their original reason inside `DeliveryError`; Channels API owns notices.
+  jido_chat-backed platform. Explicit file Records use `DeliveryFiles` plans and
+  `DeliveryExecutor`; the bridge translates one upload, post or edit at a time.
+  Capable adapters attach files to the existing streamed post. Planned creates
+  require provider-confirmed IDs; ordinary text retains Jido's existing behavior.
+  Reply callbacks run once with the final confirmed ID. Safe execution reports
+  retain per-file failures while `DeliveryError.cause` keeps private diagnostics.
 
   `register_handlers/3` is called to attach function handlers per events
 
@@ -36,7 +37,10 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   alias Zaq.Channels.{
     Bridge,
+    DeliveryExecutor,
     DeliveryFiles,
+    DeliveryPlan,
+    FileRequirements,
     RetrievalChannel,
     Supervisor,
     WebhookUrl
@@ -60,6 +64,181 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Zaq.Types.EncryptedString
 
   @test_message "✅ **Zaq Connection Test**\nThis is an automated test message. If you see this, the channel is configured correctly."
+
+  @doc "Maps the selected adapter's explicit requirements into ZAQ's delivery contract."
+  @impl Zaq.Channels.Bridge
+  def file_requirements(%Outgoing{} = outgoing, connection) do
+    options = AdapterOptions.build(outgoing.provider, connection)
+
+    with {:ok, adapter} <- adapter_for(outgoing.provider),
+         {:ok, limits} <- adapter_file_requirements(adapter, options) do
+      capabilities = Adapter.capabilities(adapter)
+
+      separate? =
+        capabilities[:uploaded_files] == :native and
+          function_exported?(adapter, :prepare_upload, 3) and
+          function_exported?(adapter, :upload_prepared, 2)
+
+      requirements = %FileRequirements{
+        transfer_mode: if(separate?, do: :upload_then_publish, else: :send_with_files),
+        max_files_per_message: Map.get(limits, :max_files_per_post, :unresolved),
+        max_file_bytes: Map.get(limits, :max_file_size, :unresolved),
+        max_upload_request_bytes:
+          if(separate?,
+            do: Map.get(limits, :max_upload_request_size, :not_applicable),
+            else: :not_applicable
+          ),
+        max_attachment_bytes_per_message:
+          Map.get(limits, :max_attachment_bytes_per_message, :not_applicable),
+        max_encoded_message_bytes: Map.get(limits, :max_encoded_message_bytes, :not_applicable),
+        supports_threads: capabilities[:open_thread] in [:native, :fallback],
+        supports_attachment_edits: capabilities[:edit_attachments] == :native
+      }
+
+      with :ok <- FileRequirements.validate(requirements), do: {:ok, requirements}
+    else
+      {:error, _reason} ->
+        FileRequirements.validate(nil)
+    end
+  end
+
+  defp adapter_file_requirements(adapter, options) do
+    response =
+      if Code.ensure_loaded?(adapter) and function_exported?(adapter, :file_requirements, 1),
+        do: adapter.file_requirements(options),
+        else: {:error, :unsupported}
+
+    case response do
+      {:ok, %{} = _limits} -> response
+      {:error, _reason} -> response
+      _ -> {:error, :invalid_file_requirements}
+    end
+  end
+
+  @doc "Prepares one exact upload candidate without uploading or selecting batches."
+  @impl Zaq.Channels.Bridge
+  def prepare_upload_request(files, connection) do
+    provider = connection.delivery_provider
+
+    with {:ok, adapter} <- adapter_for(provider),
+         {:ok, prepared} <-
+           Adapter.prepare_upload(
+             adapter,
+             connection.delivery_channel_id,
+             Enum.map(files, &prepared_upload/1),
+             AdapterOptions.build(provider, connection)
+           ) do
+      {:ok, %{encoded_bytes: prepared.size_bytes, request: prepared}}
+    end
+  end
+
+  @doc "Executes exactly one planned upload, post or edit without applying failure policy."
+  @impl Zaq.Channels.Bridge
+  def execute_delivery_step(%{operation: :upload} = step, inputs, connection) do
+    provider = inputs.outgoing.provider
+
+    with {:ok, adapter} <- adapter_for(provider),
+         {:ok, result} <-
+           Adapter.upload_prepared(
+             adapter,
+             step.prepared.request,
+             Keyword.put(
+               AdapterOptions.build(provider, connection),
+               :thread_id,
+               inputs.outgoing.thread_id
+             )
+           ) do
+      uploaded =
+        Enum.zip(step.file_refs, result.files)
+        |> Enum.map(fn {index, file} -> Map.put(file, :attachment_index, index) end)
+
+      {:ok, %{uploaded_files: uploaded}}
+    else
+      {:error, reason} -> {:error, operation_error(reason, :upload), %{}}
+    end
+  end
+
+  def execute_delivery_step(step, inputs, connection) do
+    outgoing = inputs.outgoing
+
+    case adapter_for(outgoing.provider) do
+      {:ok, adapter} ->
+        files =
+          if inputs.uploaded_files == [], do: Enum.map(inputs.files, &prepared_upload/1), else: []
+
+        opts =
+          if inputs.uploaded_files == [],
+            do: [],
+            else: [
+              uploaded_files: Enum.map(inputs.uploaded_files, &Map.delete(&1, :attachment_index))
+            ]
+
+        result =
+          case step.operation do
+            :send ->
+              create_message(
+                outgoing.provider,
+                adapter,
+                outgoing.channel_id,
+                inputs.thread_id,
+                outgoing.body,
+                connection,
+                outgoing.metadata,
+                opts ++ [files: files, outgoing: outgoing, require_confirmation: true]
+              )
+
+            :edit ->
+              edit_message(
+                outgoing.provider,
+                adapter,
+                outgoing.channel_id,
+                inputs.message_id,
+                outgoing.body,
+                connection,
+                %{
+                  metadata: outgoing.metadata,
+                  files: files,
+                  uploaded_files: opts[:uploaded_files],
+                  outgoing: outgoing
+                }
+              )
+          end
+
+        case result do
+          {:ok, receipt} -> {:ok, Map.put(receipt, :confirmation, :confirmed)}
+          {:error, reason} -> {:error, operation_error(reason, :transport), %{}}
+        end
+
+      {:error, reason} ->
+        {:error, operation_error(reason, :transport), %{}}
+    end
+  end
+
+  @doc "Runs notification reply tracking once with the attempt's final confirmed ID."
+  @impl Zaq.Channels.Bridge
+  def delivery_completed(outgoing, report, _connection),
+    do: dispatch_on_reply(outgoing.metadata, report.message_id)
+
+  @doc "Returns a reusable text target without querying file requirements or performing transport."
+  @impl Zaq.Channels.Bridge
+  def existing_text_message(outgoing, _connection) do
+    with {:ok, adapter} <- adapter_for(outgoing.provider),
+         {:use_update, id} <- send_mode(%{outgoing | attachments: []}, adapter),
+         do: id,
+         else: (_ -> nil)
+  end
+
+  defp operation_error(reason, stage) do
+    delivery = if stage == :upload, do: :not_sent, else: :unconfirmed
+
+    %DeliveryError{
+      reason: reason,
+      message:
+        "Attachment delivery was not confirmed. Check the conversation before sending again.",
+      stage: stage,
+      delivery: delivery
+    }
+  end
 
   @doc "Checks lazy file metadata using the destination adapter, without acquiring content."
   @impl Zaq.Channels.CommunicationBridge
@@ -1878,13 +2057,16 @@ defmodule Zaq.Channels.JidoChatBridge do
   end
 
   @doc "Sends a reply outbound via the provider adapter. Called by the bridge state process."
-  def do_send_reply(%Outgoing{} = outgoing, %{url: _, token: _} = connection_details) do
-    with {:ok, adapter_module} <- adapter_for(outgoing.provider),
-         :ok <- validate_attachment_policy_support(adapter_module, connection_details) do
-      prepare_reply(outgoing, adapter_module, connection_details)
-    else
-      {:error, %DeliveryError{}} = error ->
-        error
+  def do_send_reply(%Outgoing{delivery_plan: %DeliveryPlan{}} = outgoing, connection),
+    do: DeliveryExecutor.execute(outgoing, __MODULE__, connection)
+
+  def do_send_reply(
+        %Outgoing{attachments: [], attachment_error: nil} = outgoing,
+        %{url: _, token: _} = connection_details
+      ) do
+    case adapter_for(outgoing.provider) do
+      {:ok, adapter_module} ->
+        send_prepared_reply(outgoing, adapter_module, connection_details, [])
 
       {:error, _reason} ->
         {:error,
@@ -1892,76 +2074,10 @@ defmodule Zaq.Channels.JidoChatBridge do
     end
   end
 
-  defp prepare_reply(outgoing, adapter_module, connection_details) do
-    case DeliveryFiles.prepare(
-           outgoing.attachments,
-           Map.get(connection_details, :trusted_context, %{}),
-           connection_details
-           |> Map.take([:node_router, :attachment_failure_policy])
-           |> Map.to_list()
-         ) do
-      {:ok, prepared} ->
-        send_prepared_reply(outgoing, adapter_module, connection_details, prepared)
-
-      {:ok, prepared, failures} ->
-        details =
-          if Adapter.capabilities(adapter_module)[:attachment_failure_policy] == :native,
-            do: connection_details,
-            else: Map.delete(connection_details, :attachment_failure_policy)
-
-        Enum.each(failures, fn failure ->
-          Logger.warning(
-            "[JidoChatBridge] attachment omitted index=#{failure.attachment_index} stage=#{failure.stage} reason=#{failure.reason}"
-          )
-        end)
-
-        outgoing
-        |> send_prepared_reply(adapter_module, details, prepared)
-        |> preparation_delivery_report(outgoing, failures)
-
-      {:error, reason} ->
-        {:error, DeliveryFiles.delivery_error(reason)}
-    end
+  def do_send_reply(%Outgoing{} = outgoing, connection) do
+    with {:ok, planned} <- DeliveryFiles.build_plan(outgoing, __MODULE__, connection),
+         do: DeliveryExecutor.execute(planned, __MODULE__, connection)
   end
-
-  defp validate_attachment_policy_support(adapter, %{attachment_failure_policy: :abort}) do
-    if Adapter.capabilities(adapter)[:attachment_failure_policy] == :native,
-      do: :ok,
-      else:
-        {:error,
-         %DeliveryError{
-           reason: {:unsupported_attachment_failure_policy, :abort},
-           message: "This channel does not support the requested attachment failure policy.",
-           stage: :preparation,
-           delivery: :not_sent
-         }}
-  end
-
-  defp validate_attachment_policy_support(_adapter, _details), do: :ok
-
-  defp preparation_delivery_report({:ok, receipt}, outgoing, [_ | _] = failures) do
-    messages =
-      Map.get(receipt, :messages, [
-        receipt |> Map.put(:body, outgoing.body) |> Map.put(:thread_id, outgoing.thread_id)
-      ])
-
-    {:ok,
-     receipt
-     |> Map.put(:confirmation, :partial)
-     |> Map.put(:messages, messages)
-     |> Map.update(:failed_files, failures, &(failures ++ &1))}
-  end
-
-  defp preparation_delivery_report(
-         {:error, %DeliveryError{reason: {:attachment_delivery_failed, report}} = error},
-         _outgoing,
-         [_ | _] = failures
-       ) do
-    report = Map.update(report, :failed_files, failures, &(failures ++ &1))
-    {:error, %{error | reason: {:attachment_delivery_failed, report}}}
-  end
-
-  defp preparation_delivery_report(result, _outgoing, _failures), do: result
 
   defp send_prepared_reply(outgoing, adapter, details, prepared) do
     files = Enum.map(prepared, &prepared_upload/1)
@@ -2254,12 +2370,23 @@ defmodule Zaq.Channels.JidoChatBridge do
            Chat.Thread.post(
              thread,
              post_body,
-             format_delivery_opts(provider, connection, metadata)
-           ) do
+             Keyword.merge(
+               format_delivery_opts(provider, connection, metadata),
+               Keyword.take(opts, [:uploaded_files])
+             )
+           ),
+         :ok <- confirm_planned_post(post, opts) do
       receipt = %{action: :created, message_id: post.id}
 
       {:ok, delivery_attachments(receipt, {:ok, post.response}, opts[:outgoing])}
     end
+  end
+
+  defp confirm_planned_post(post, opts) do
+    if Keyword.get(opts, :require_confirmation, false) and
+         not is_present_message_id(post.response.external_message_id),
+       do: {:error, :unconfirmed_post},
+       else: :ok
   end
 
   defp edit_message(
@@ -2277,6 +2404,9 @@ defmodule Zaq.Channels.JidoChatBridge do
       (AdapterOptions.build(provider, connection) ++
          [update_intent: Map.get(request, :update_intent)])
       |> Keyword.put(:files, Map.get(request, :files, []))
+      |> Keyword.merge(
+        if request[:uploaded_files], do: [uploaded_files: request.uploaded_files], else: []
+      )
       |> maybe_put_format_from_metadata(metadata)
 
     result = adapter_module.edit_message(channel_id, message_id, body, opts)

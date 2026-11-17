@@ -44,6 +44,47 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     assert has_element?(view, "button[phx-click='activate']", "Activate")
   end
 
+  test "explicit attachment limits save and reopen without changing the failure switch", %{
+    conn: conn
+  } do
+    config = insert_enabled_smtp_channel()
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+    assert has_element?(view, "#smtp-max-message-size-mb")
+    assert has_element?(view, "#smtp-max-attachments")
+
+    view
+    |> form("#smtp-config-form", %{
+      "email_config" => %{
+        "max_message_size_mb" => "1.234567",
+        "max_attachments_per_message" => "3"
+      }
+    })
+    |> render_submit()
+
+    settings = Repo.get!(ChannelConfig, config.id).settings
+    assert settings["max_encoded_message_bytes"] == 1_234_567
+    assert settings["max_files_per_message"] == 3
+    assert settings["send_on_file_failure"] == true
+    {:ok, reopened, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+    assert has_element?(reopened, "#smtp-max-message-size-mb[value='1.234567']")
+    assert has_element?(reopened, "#smtp-max-attachments[value='3']")
+  end
+
+  test "invalid attachment limits show field errors and do not save", %{conn: conn} do
+    config = insert_enabled_smtp_channel()
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+
+    html =
+      view
+      |> form("#smtp-config-form", %{
+        "email_config" => %{"max_message_size_mb" => "0", "max_attachments_per_message" => "-1"}
+      })
+      |> render_submit()
+
+    assert html =~ "must be greater than 0"
+    assert Repo.get!(ChannelConfig, config.id).settings["max_encoded_message_bytes"] == nil
+  end
+
   test "selecting an SMTP connector uses the latest Engine form snapshot", %{conn: conn} do
     insert_smtp_channel(%{
       name: "First",

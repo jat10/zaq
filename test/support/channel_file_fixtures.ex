@@ -76,7 +76,13 @@ defmodule Zaq.TestSupport.ChannelFileFixtures do
       token: "synthetic-unused",
       settings:
         Map.merge(
-          %{"relay" => "127.0.0.1", "port" => to_string(port), "tls" => "never"},
+          %{
+            "relay" => "127.0.0.1",
+            "port" => to_string(port),
+            "tls" => "never",
+            "max_encoded_message_bytes" => 10_000_000,
+            "max_files_per_message" => 10
+          },
           settings
         )
     })

@@ -9,12 +9,22 @@ defmodule Zaq.Channels.EmailBridge.SmtpSender do
 
   Attachment payloads contain prepared binary content, filenames, MIME types and
   byte sizes from `DeliveryFiles`; paths and URLs are never opened here.
+
+  Planned delivery freezes MIME with the locked Swoosh 1.27.0 encoder and submits
+  those bytes through gen_smtp 1.3.0 with retries disabled. This version-checked
+  seam avoids generated Mailer telemetry containing private prepared data.
+  Legacy calls retain their configured Mailer behavior.
   """
 
   import Swoosh.Email
   import Zaq.Helpers, only: [blank?: 1]
 
+  alias Swoosh.Adapters.SMTP
+  alias Swoosh.Adapters.SMTP.Helpers, as: SmtpEncoder
+  alias Swoosh.Mailer, as: SwooshMailer
+
   alias Zaq.Channels.EmailBridge.SelfAddresses
+  alias Zaq.Channels.EmailBridge.SmtpSender.Prepared
   alias Zaq.Channels.EmailBridge.TlsHelpers
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.ReplyTargets
@@ -24,6 +34,88 @@ defmodule Zaq.Channels.EmailBridge.SmtpSender do
 
   alias Zaq.ConnectorConfig.SmtpSettings, as: SmtpHelpers
   alias Zaq.Utils.ParseUtils
+
+  @swoosh_version "1.27.0"
+  @gen_smtp_version "1.3.0"
+
+  @doc "Encodes one candidate with the locked Swoosh encoder, without submission or credentials in its result."
+  @spec prepare_notification(String.t(), map(), map(), map()) ::
+          {:ok, Prepared.t()} | {:error, term()}
+  def prepare_notification(identifier, payload, metadata, settings) do
+    with :ok <- supported_encoder(),
+         {:ok, email} <- compose_notification(identifier, payload, metadata, settings) do
+      email =
+        if email.headers["Date"],
+          do: email,
+          else: header(email, "Date", :smtp_util.rfc5322_timestamp() |> IO.iodata_to_binary())
+
+      body =
+        SmtpEncoder.body(email, email_delivery_opts(settings))
+        |> IO.iodata_to_binary()
+
+      {:ok, %Prepared{email: email, body: body, encoded_bytes: byte_size(body)}}
+    end
+  rescue
+    _ -> {:error, :email_encoding_failed}
+  catch
+    _, _ -> {:error, :email_encoding_failed}
+  end
+
+  @doc "Submits prepared MIME bytes once; SMTP acceptance confirms relay submission only."
+  @spec submit_prepared(Prepared.t(), map()) :: {:ok, map()} | {:error, term()}
+  def submit_prepared(%Prepared{body: body, encoded_bytes: size} = prepared, settings)
+      when is_binary(body) and byte_size(body) == size and size >= 2 and
+             binary_part(body, size - 2, 2) == "\r\n" do
+    with :ok <- supported_encoder(),
+         {:ok, _} <- submit_prepared_transport(prepared, settings) do
+      {:ok, envelope_receipt(prepared.email)}
+    end
+  end
+
+  def submit_prepared(_prepared, _settings), do: {:error, :invalid_prepared_email}
+
+  defp supported_encoder do
+    if to_string(Application.spec(:swoosh, :vsn)) == @swoosh_version and
+         to_string(Application.spec(:gen_smtp, :vsn)) == @gen_smtp_version,
+       do: :ok,
+       else: {:error, :unsupported_swoosh_version}
+  end
+
+  defp submit_prepared_transport(prepared, settings) do
+    opts = email_delivery_opts(settings)
+
+    if opts[:adapter] == SMTP do
+      smtp_opts =
+        opts
+        |> Keyword.delete(:adapter)
+        |> Keyword.put(:retries, 0)
+        |> SMTP.gen_smtp_config()
+
+      envelope =
+        {SmtpEncoder.sender(prepared.email), envelope_receipt(prepared.email).recipient_addresses,
+         smtp_data_payload(prepared.body)}
+
+      case :gen_smtp_client.send_blocking(envelope, smtp_opts) do
+        receipt when is_binary(receipt) -> {:ok, receipt}
+        {:error, type, reason} -> {:error, {type, reason}}
+        {:error, reason} -> {:error, reason}
+      end
+    else
+      config = SwooshMailer.parse_config(:zaq, Mailer, [otp_app: :zaq], opts)
+      SwooshMailer.deliver(prepared.email, config)
+    end
+  end
+
+  # gen_smtp 1.3.0 appends CRLF before the DATA terminator. Supply the final CRLF
+  # through that framing so the relay receives exactly the measured MIME bytes.
+  defp smtp_data_payload(body) do
+    size = byte_size(body) - 2
+
+    case body do
+      <<payload::binary-size(^size), "\r\n">> -> payload
+      _ -> body
+    end
+  end
 
   @doc "Sends a notification without exposing its delivery receipt to legacy callers."
   def send_notification(identifier, payload, metadata) do
@@ -74,8 +166,14 @@ defmodule Zaq.Channels.EmailBridge.SmtpSender do
   end
 
   defp deliver_notification(identifier, payload, metadata, settings) do
+    with {:ok, email} <- compose_notification(identifier, payload, metadata, settings),
+         {:ok, _} <- Mailer.deliver(email, email_delivery_opts(settings)) do
+      {:ok, envelope_receipt(email)}
+    end
+  end
+
+  defp compose_notification(identifier, payload, metadata, settings) do
     {from_name, from_email} = email_sender(payload, metadata, settings)
-    delivery_opts = email_delivery_opts(settings)
 
     subject = Map.get(payload, "subject", "")
     body = Map.get(metadata, "email_body") || Map.get(payload, "body", "")
@@ -91,25 +189,17 @@ defmodule Zaq.Channels.EmailBridge.SmtpSender do
       |> html_body(html)
       |> apply_custom_headers(payload, metadata)
 
-    result =
-      with {:ok, email} <- apply_attachments(email, Map.get(payload, "attachments", [])) do
-        if email.to == [] and email.cc == [],
-          do: {:error, :no_reply_recipients},
-          else: Mailer.deliver(email, delivery_opts)
-      end
-
-    case result do
-      {:ok, _} ->
-        {:ok,
-         %{
-           sender_address: elem(email.from, 1),
-           recipient_addresses:
-             Enum.map(email.to ++ email.cc ++ email.bcc, fn {_, address} -> address end)
-         }}
-
-      {:error, reason} ->
-        {:error, reason}
+    with {:ok, email} <- apply_attachments(email, Map.get(payload, "attachments", [])) do
+      if email.to == [] and email.cc == [], do: {:error, :no_reply_recipients}, else: {:ok, email}
     end
+  end
+
+  defp envelope_receipt(email) do
+    %{
+      sender_address: SmtpEncoder.sender(email),
+      recipient_addresses:
+        Enum.map(email.to ++ email.cc ++ email.bcc, fn {_, address} -> address end)
+    }
   end
 
   defp apply_attachments(email, files) when is_list(files) do
@@ -253,7 +343,7 @@ defmodule Zaq.Channels.EmailBridge.SmtpSender do
         transport_settings(map_get(settings, "transport_mode"), map_get(settings, "tls"))
 
       opts = [
-        adapter: Swoosh.Adapters.SMTP,
+        adapter: SMTP,
         relay: String.trim(relay),
         port: parse_int(map_get(settings, "port"), 587),
         ssl: ssl,

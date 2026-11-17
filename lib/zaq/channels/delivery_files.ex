@@ -8,11 +8,19 @@ defmodule Zaq.Channels.DeliveryFiles do
   bytes and safe transport metadata reach the consumer; source paths, credentials
   and handles are never forwarded or retained. No temporary files are created or
   original source files deleted. Materialization still acquires whole content.
+
+  `build_plan/3` resolves the selected bridge's requirements before acquisition,
+  groups files in order and chooses exact upload requests. It applies preparation
+  policy without performing transport effects; `DeliveryExecutor` owns execution.
+  The first surviving publication group may edit an existing streamed message,
+  retaining original group and attachment indices when earlier groups are omitted.
   """
 
   alias Zaq.Agent.Tools.General.DecodeBase64
-  alias Zaq.Channels.DeliveryError
+  alias Zaq.Channels.{DeliveryError, DeliveryPlan, FileRequirements}
+  alias Zaq.Channels.DeliveryPlan.Step
   alias Zaq.Contracts.Record
+  alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Events.TrustedContext
   alias Zaq.Materialization
 
@@ -23,6 +31,455 @@ defmodule Zaq.Channels.DeliveryFiles do
           mime_type: String.t(),
           size: non_neg_integer()
         }
+
+  @doc """
+  Builds one private delivery plan after requirements and all acquisition finish.
+
+  Ordinary text returns unchanged without calling the bridge. Planned files keep
+  original indices; exact bridge preparation determines message and request fits.
+  This function performs no uploads or publication. Direct callers without an
+  explicit policy retain fail-fast preparation semantics.
+  """
+  @spec build_plan(Outgoing.t(), module(), map()) ::
+          {:ok, Outgoing.t()} | {:error, DeliveryError.t()}
+  def build_plan(
+        %Outgoing{attachments: [], attachment_error: nil} = outgoing,
+        _bridge,
+        _connection
+      ),
+      do: {:ok, outgoing}
+
+  def build_plan(%Outgoing{attachments: attachments}, _bridge, _connection)
+      when not is_list(attachments),
+      do: {:error, delivery_error(:invalid_attachments)}
+
+  def build_plan(%Outgoing{body: body}, _bridge, _connection) when not is_binary(body),
+    do:
+      {:error,
+       %DeliveryError{
+         reason: :invalid_postable,
+         message: "The message body is invalid.",
+         stage: :preparation,
+         delivery: :not_sent
+       }}
+
+  def build_plan(%Outgoing{} = outgoing, bridge, connection) do
+    policy = Map.get(connection, :attachment_failure_policy, :abort)
+
+    connection =
+      connection
+      |> Map.put(:delivery_channel_id, outgoing.channel_id)
+      |> Map.put(:delivery_provider, outgoing.provider)
+
+    failures = selection_failures(outgoing.attachment_error)
+
+    with :ok <- valid_policy(policy),
+         :ok <- preparation_gate(policy, failures),
+         {:ok, requirements, files, failures} <-
+           plan_files(outgoing, bridge, connection, failures),
+         {:ok, plan} <-
+           assemble_plan(outgoing, bridge, connection, requirements, files, failures, policy) do
+      {:ok, %{outgoing | delivery_plan: plan}}
+    end
+  end
+
+  defp valid_policy(policy) when policy in [:continue, :abort], do: :ok
+  defp valid_policy(_policy), do: {:error, delivery_error(:invalid_attachment_failure_policy)}
+
+  @doc "Plans a legacy malformed-input notice through the same preparation and execution contract."
+  @spec build_failure_plan(Outgoing.t(), DeliveryError.t(), module(), map()) ::
+          {:ok, Outgoing.t()} | {:error, DeliveryError.t()}
+  def build_failure_plan(outgoing, error, bridge, connection) do
+    case Map.get(connection, :attachment_failure_policy, :abort) do
+      :continue ->
+        notice = %{
+          outgoing
+          | attachments: [],
+            attachment_error: nil,
+            delivery_plan: nil,
+            body: Enum.join(Enum.reject([outgoing.body, error.message], &(&1 == "")), "\n\n"),
+            metadata:
+              Map.drop(outgoing.metadata || %{}, [:on_reply, "on_reply", :html_body, "html_body"])
+        }
+
+        with {:ok, plan} <-
+               assemble_plan(
+                 notice,
+                 bridge,
+                 connection,
+                 nil,
+                 [],
+                 [planning_failure(nil, error)],
+                 :continue
+               ) do
+          groups =
+            Enum.map(plan.groups, &Map.merge(&1, %{canonical_body: outgoing.body, notice?: true}))
+
+          {:ok, %{notice | delivery_plan: %{plan | groups: groups}}}
+        end
+
+      _ ->
+        {:error, error}
+    end
+  end
+
+  defp selection_failures(nil), do: []
+  defp selection_failures(reason), do: [planning_failure(nil, delivery_error(reason))]
+
+  defp plan_files(%Outgoing{attachments: []}, _bridge, _connection, failures),
+    do: {:ok, nil, [], failures}
+
+  defp plan_files(outgoing, bridge, connection, failures) do
+    with {:ok, requirements} <- requirements(bridge, outgoing, connection),
+         {:ok, files, preparation_failures} <-
+           prepare(
+             outgoing.attachments,
+             Map.get(connection, :trusted_context, %{}),
+             Keyword.put(
+               Map.to_list(Map.take(connection, [:node_router])),
+               :attachment_failure_policy,
+               Map.get(connection, :attachment_failure_policy, :abort)
+             )
+           ) do
+      {:ok, requirements, files, failures ++ preparation_failures}
+    else
+      {:error, reason} ->
+        error = normalize_planning_error(reason)
+
+        omitted =
+          outgoing.attachments
+          |> Enum.with_index()
+          |> Enum.map(fn {_record, index} -> planning_failure(index, error) end)
+
+        case Map.get(connection, :attachment_failure_policy, :abort) do
+          :abort -> {:error, error}
+          :continue -> {:ok, nil, [], failures ++ omitted}
+        end
+    end
+  end
+
+  defp requirements(bridge, outgoing, connection) do
+    if Code.ensure_loaded?(bridge) and function_exported?(bridge, :file_requirements, 2) do
+      with {:ok, requirements} <- bridge.file_requirements(outgoing, connection),
+           :ok <- FileRequirements.validate(requirements),
+           :ok <- preparation_callbacks(bridge, requirements),
+           do: {:ok, requirements}
+    else
+      FileRequirements.validate(nil)
+    end
+  end
+
+  defp preparation_callbacks(bridge, requirements) do
+    upload? =
+      requirements.transfer_mode != :upload_then_publish or
+        function_exported?(bridge, :prepare_upload_request, 2)
+
+    message? =
+      requirements.max_encoded_message_bytes == :not_applicable or
+        function_exported?(bridge, :prepare_delivery_message, 3)
+
+    if upload? and message?, do: :ok, else: FileRequirements.validate(nil)
+  end
+
+  defp assemble_plan(outgoing, bridge, connection, requirements, files, failures, policy) do
+    {batches, group_failures} =
+      pack(files, fn candidate, group_id ->
+        prepare_message_group(
+          candidate,
+          outgoing,
+          bridge,
+          Map.put(connection, :delivery_group_id, group_id),
+          requirements
+        )
+      end)
+
+    {groups, steps, upload_failures} =
+      plan_groups(batches, outgoing, bridge, connection, requirements)
+
+    failures = failures ++ group_failures ++ upload_failures
+
+    with :ok <- preparation_gate(policy, failures),
+         {:ok, groups, steps} <-
+           ensure_text_group(groups, steps, outgoing, bridge, connection, requirements, failures) do
+      {:ok,
+       %DeliveryPlan{
+         failure_policy: policy,
+         placement: placement(requirements, outgoing),
+         root_message_id: outgoing.thread_id,
+         requirements: requirements,
+         files: Map.new(files, &{&1.attachment_index, &1}),
+         groups: groups,
+         steps: steps,
+         preparation_failures: failures
+       }}
+    end
+  end
+
+  defp placement(nil, %{thread_id: id}) when not is_nil(id), do: :threaded
+  defp placement(%{supports_threads: true}, _outgoing), do: :threaded
+  defp placement(_requirements, _outgoing), do: :independent
+
+  defp prepare_message_group(files, outgoing, bridge, connection, requirements) do
+    cond do
+      length(files) > requirements.max_files_per_message ->
+        {:error, :message_too_large}
+
+      Enum.any?(files, &(not within_limit?(&1.size, requirements.max_file_bytes))) ->
+        {:error, :file_too_large}
+
+      not within_limit?(
+        Enum.sum(Enum.map(files, & &1.size)),
+        requirements.max_attachment_bytes_per_message
+      ) ->
+        {:error, :message_too_large}
+
+      requirements.max_encoded_message_bytes == :not_applicable ->
+        {:ok, nil}
+
+      true ->
+        prepare_encoded_message(
+          outgoing,
+          files,
+          bridge,
+          connection,
+          requirements.max_encoded_message_bytes
+        )
+    end
+  end
+
+  defp prepare_encoded_message(outgoing, files, bridge, connection, ceiling) do
+    with {:ok, %{encoded_bytes: size} = prepared} <-
+           bridge.prepare_delivery_message(outgoing, files, connection),
+         true <- is_integer(size) and size >= 0 and within_limit?(size, ceiling) do
+      {:ok, prepared}
+    else
+      false -> {:error, :message_too_large}
+      {:error, _} = error -> error
+      _ -> {:error, :invalid_prepared_message}
+    end
+  end
+
+  defp within_limit?(_size, :not_applicable), do: true
+  defp within_limit?(size, limit), do: is_integer(limit) and size <= limit
+
+  # Keep the last accepted representation: the bytes measured are the bytes sent.
+  defp pack(files, prepare) do
+    {batches, current, prepared, failures} =
+      Enum.reduce(files, {[], [], nil, []}, fn file, accumulator ->
+        pack_file(file, prepare, accumulator)
+      end)
+
+    batches =
+      if current == [], do: batches, else: batches ++ [%{files: current, prepared: prepared}]
+
+    {batches, failures}
+  end
+
+  defp pack_file(file, prepare, {batches, current, prepared, failures}) do
+    case prepare.(current ++ [file], length(batches)) do
+      {:ok, candidate} ->
+        {batches, current ++ [file], candidate, failures}
+
+      {:error, _reason} when current != [] ->
+        pack_file(
+          file,
+          prepare,
+          {batches ++ [%{files: current, prepared: prepared}], [], nil, failures}
+        )
+
+      {:error, reason} ->
+        {batches, [], nil,
+         failures ++ [planning_failure(file.attachment_index, normalize_planning_error(reason))]}
+    end
+  end
+
+  defp plan_groups(batches, outgoing, bridge, connection, requirements) do
+    batches
+    |> Enum.with_index()
+    |> Enum.reduce({[], [], []}, fn {batch, group_id}, {groups, steps, failures} ->
+      {upload_steps, eligible, omitted} =
+        upload_steps(batch.files, group_id, bridge, connection, requirements)
+
+      refs = Enum.map(eligible, & &1.attachment_index)
+      group = %{id: group_id, file_refs: refs, prepared: batch.prepared, body: outgoing.body}
+      operation = publication_operation(outgoing, groups == [], requirements)
+
+      step = %Step{
+        id: {operation, group_id},
+        operation: operation,
+        group_id: group_id,
+        file_refs: refs,
+        message_ref: existing_message(outgoing, operation),
+        depends_on: Enum.map(upload_steps, & &1.id),
+        prepared: batch.prepared
+      }
+
+      if refs == [],
+        do: {groups, steps, failures ++ omitted},
+        else: {groups ++ [group], steps ++ upload_steps ++ [step], failures ++ omitted}
+    end)
+  end
+
+  defp upload_steps(
+         files,
+         group_id,
+         bridge,
+         connection,
+         %{transfer_mode: :upload_then_publish} = requirements
+       ) do
+    {batches, failures} =
+      pack(files, fn candidate, _batch_id ->
+        with {:ok, %{encoded_bytes: size} = prepared} <-
+               bridge.prepare_upload_request(candidate, connection),
+             true <-
+               is_integer(size) and size >= 0 and
+                 within_limit?(size, requirements.max_upload_request_bytes) do
+          {:ok, prepared}
+        else
+          false -> {:error, :upload_request_too_large}
+          {:error, _} = error -> error
+          _ -> {:error, :invalid_prepared_upload}
+        end
+      end)
+
+    steps =
+      batches
+      |> Enum.with_index()
+      |> Enum.map(fn {batch, index} ->
+        %Step{
+          id: {:upload, group_id, index},
+          operation: :upload,
+          group_id: group_id,
+          file_refs: Enum.map(batch.files, & &1.attachment_index),
+          prepared: batch.prepared
+        }
+      end)
+
+    {steps, Enum.flat_map(batches, & &1.files), failures}
+  end
+
+  defp upload_steps(files, _group_id, _bridge, _connection, _requirements), do: {[], files, []}
+
+  defp publication_operation(outgoing, true, %{supports_attachment_edits: true}) do
+    if message_id(outgoing), do: :edit, else: :send
+  end
+
+  defp publication_operation(_outgoing, _first_group?, _requirements), do: :send
+  defp existing_message(outgoing, :edit), do: {:existing, message_id(outgoing)}
+  defp existing_message(_outgoing, _operation), do: nil
+
+  defp message_id(outgoing),
+    do:
+      Map.get(outgoing.metadata || %{}, :message_id) ||
+        Map.get(outgoing.metadata || %{}, "message_id")
+
+  defp ensure_text_group([], _steps, outgoing, bridge, connection, requirements, failures) do
+    body =
+      if Enum.any?(failures, &(&1.stage == :selection)),
+        do:
+          Enum.join(
+            Enum.reject(
+              [outgoing.body, delivery_error(:invalid_attachment_selection).message],
+              &(&1 == "")
+            ),
+            "\n\n"
+          ),
+        else: outgoing.body
+
+    notice = %{outgoing | body: body}
+
+    prepared = prepare_text_message(notice, bridge, connection, requirements)
+
+    case prepared do
+      {:ok, prepared} ->
+        existing =
+          if function_exported?(bridge, :existing_text_message, 2),
+            do: bridge.existing_text_message(outgoing, connection)
+
+        operation = if is_nil(existing), do: :send, else: :edit
+
+        {:ok,
+         [
+           %{
+             id: 0,
+             file_refs: [],
+             body: body,
+             canonical_body: outgoing.body,
+             notice?: Enum.any?(failures, &(&1.stage == :selection)),
+             prepared: prepared
+           }
+         ],
+         [
+           %Step{
+             id: {operation, 0},
+             operation: operation,
+             group_id: 0,
+             prepared: prepared,
+             message_ref: if(is_nil(existing), do: nil, else: {:existing, existing})
+           }
+         ]}
+
+      {:error, reason} ->
+        {:error, normalize_planning_error(reason)}
+    end
+  end
+
+  defp ensure_text_group(
+         groups,
+         steps,
+         _outgoing,
+         _bridge,
+         _connection,
+         _requirements,
+         _failures
+       ),
+       do: {:ok, groups, steps}
+
+  defp prepare_text_message(outgoing, bridge, connection, %{max_encoded_message_bytes: ceiling})
+       when is_integer(ceiling),
+       do: prepare_encoded_message(outgoing, [], bridge, connection, ceiling)
+
+  defp prepare_text_message(outgoing, bridge, connection, _requirements) do
+    if function_exported?(bridge, :prepare_delivery_message, 3),
+      do: bridge.prepare_delivery_message(outgoing, [], connection),
+      else: {:ok, nil}
+  end
+
+  defp preparation_gate(:abort, [%{stage: :selection} | _]),
+    do: {:error, delivery_error(:invalid_attachment_selection)}
+
+  defp preparation_gate(:abort, [failure | _]) do
+    {:error,
+     %DeliveryError{
+       reason: {:attachment_preparation_failed, failure.reason},
+       message: failure.reason,
+       stage: failure.stage,
+       delivery: :not_sent
+     }}
+  end
+
+  defp preparation_gate(_policy, _failures), do: :ok
+
+  defp planning_failure(index, error),
+    do: %{
+      attachment_index: index,
+      stage: error.stage,
+      delivery: error.delivery,
+      reason: error.message
+    }
+
+  defp normalize_planning_error(%DeliveryError{} = error), do: error
+
+  defp normalize_planning_error(reason)
+       when reason in [:file_too_large, :message_too_large, :upload_request_too_large],
+       do: %DeliveryError{
+         reason: reason,
+         message: "The attachment cannot fit the connector's delivery limits.",
+         stage: :preparation,
+         delivery: :not_sent
+       }
+
+  defp normalize_planning_error(reason), do: delivery_error(reason)
 
   @doc """
   Returns prepared files in input order, or a preparation error.
@@ -85,6 +542,8 @@ defmodule Zaq.Channels.DeliveryFiles do
 
   defp preparation_message(:invalid_attachment_encoding),
     do: "The attachment encoding is not supported."
+
+  defp preparation_message(:email_encoding_failed), do: "The email could not be encoded."
 
   defp preparation_message(:invalid_attachment_metadata),
     do: "The attachment filename or content type is invalid."

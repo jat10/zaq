@@ -219,6 +219,25 @@
               value={@form[:send_on_file_failure].value}
             />
 
+            <ZaqWeb.Components.DesignSystem.Input.input
+              field={@form[:max_message_size_mb]}
+              id="smtp-max-message-size-mb"
+              type="number"
+              min="0.000001"
+              step="0.000001"
+              label="Maximum encoded message size (MB)"
+              hint="Includes the body, headers and encoded attachments. 1 MB = 1,000,000 bytes. Required for file delivery."
+            />
+            <ZaqWeb.Components.DesignSystem.Input.input
+              field={@form[:max_attachments_per_message]}
+              id="smtp-max-attachments"
+              type="number"
+              min="1"
+              step="1"
+              label="Maximum attachments per email"
+              hint="Set a positive file count for this SMTP connector. Required for file delivery."
+            />
+
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">

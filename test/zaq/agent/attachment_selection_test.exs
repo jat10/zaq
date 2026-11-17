@@ -489,6 +489,7 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
           url: String.trim_trailing(endpoint, "/v1"),
           token: "fixture-token",
           max_file_size: 307_200,
+          max_upload_request_size: 1_000_000,
           trusted_context: %{skip_permissions: true}
         })
       end)
@@ -626,6 +627,8 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
       token: "fixture-token",
       settings: %{
         "relay" => "",
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_files_per_message" => 10,
         "from_email" => "sender@example.test",
         "from_name" => "Selection"
       }

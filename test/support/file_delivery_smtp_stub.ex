@@ -30,7 +30,7 @@ defmodule Zaq.TestSupport.FileDeliverySmtpStub do
          [
            fn ->
              Enum.each(1..Keyword.get(opts, :connections, 1), fn _ ->
-               accept!(listener, owner, namespace)
+               accept!(listener, owner, namespace, opts)
              end)
            end
          ]}
@@ -39,34 +39,40 @@ defmodule Zaq.TestSupport.FileDeliverySmtpStub do
     port
   end
 
-  defp accept!(listener, owner, namespace) do
+  defp accept!(listener, owner, namespace, opts) do
     {:ok, socket} = :gen_tcp.accept(listener, 15_000)
 
     try do
       :ok = :gen_tcp.send(socket, "220 stub.example.test ESMTP\r\n")
-      commands!(socket, owner, namespace, %{sender: nil, recipients: []})
+      commands!(socket, owner, namespace, %{sender: nil, recipients: []}, opts)
     after
       :gen_tcp.close(socket)
     end
   end
 
-  defp commands!(socket, owner, namespace, envelope) do
+  defp commands!(socket, owner, namespace, envelope, opts) do
     case :gen_tcp.recv(socket, 0, 15_000) do
       {:ok, "EHLO " <> _} ->
         :ok = :gen_tcp.send(socket, "250 stub.example.test\r\n")
-        commands!(socket, owner, namespace, envelope)
+        commands!(socket, owner, namespace, envelope, opts)
 
       {:ok, "MAIL FROM:" <> address} ->
         :ok = :gen_tcp.send(socket, "250 OK\r\n")
-        commands!(socket, owner, namespace, %{envelope | sender: address(address)})
+        commands!(socket, owner, namespace, %{envelope | sender: address(address)}, opts)
 
       {:ok, "RCPT TO:" <> address} ->
         :ok = :gen_tcp.send(socket, "250 OK\r\n")
 
-        commands!(socket, owner, namespace, %{
-          envelope
-          | recipients: envelope.recipients ++ [address(address)]
-        })
+        commands!(
+          socket,
+          owner,
+          namespace,
+          %{
+            envelope
+            | recipients: envelope.recipients ++ [address(address)]
+          },
+          opts
+        )
 
       {:ok, "DATA\r\n"} ->
         :ok = :gen_tcp.send(socket, "354 End data with <CRLF>.<CRLF>\r\n")
@@ -74,12 +80,17 @@ defmodule Zaq.TestSupport.FileDeliverySmtpStub do
         send(owner, {:delivery_boundary, namespace, self(), Map.put(envelope, :raw, raw)})
 
         receive do
-          :accept_delivery -> :ok = :gen_tcp.send(socket, "250 Accepted #{namespace}\r\n")
+          :accept_delivery ->
+            :ok =
+              :gen_tcp.send(
+                socket,
+                Keyword.get(opts, :data_response, "250 Accepted #{namespace}\r\n")
+              )
         after
           15_000 -> flunk("SMTP boundary was not released")
         end
 
-        commands!(socket, owner, namespace, envelope)
+        commands!(socket, owner, namespace, envelope, opts)
 
       {:ok, "QUIT\r\n"} ->
         :gen_tcp.send(socket, "221 Bye\r\n")

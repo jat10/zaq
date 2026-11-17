@@ -27,6 +27,16 @@ defmodule Zaq.Channels.Bridge do
 
   @callback to_internal(map(), map()) :: Incoming.t() | {:error, term()}
   @callback capability_snapshot(map()) :: {:ok, map()} | {:error, term()}
+  @callback file_requirements(Zaq.Engine.Messages.Outgoing.t(), map()) ::
+              {:ok, Zaq.Channels.FileRequirements.t()} | {:error, Zaq.Channels.DeliveryError.t()}
+  @callback prepare_upload_request([map()], map()) :: {:ok, map()} | {:error, term()}
+  @callback prepare_delivery_message(Zaq.Engine.Messages.Outgoing.t(), [map()], map()) ::
+              {:ok, map()} | {:error, term()}
+  @callback execute_delivery_step(Zaq.Channels.DeliveryPlan.Step.t(), map(), map()) ::
+              {:ok, map()} | {:error, Zaq.Channels.DeliveryError.t(), map()}
+  @callback delivery_completed(Zaq.Engine.Messages.Outgoing.t(), map(), map()) :: term()
+  @callback existing_text_message(Zaq.Engine.Messages.Outgoing.t(), map()) ::
+              String.t() | integer() | nil
 
   @callback start_runtime(runtime_target()) :: :ok | {:error, term()}
   @callback start_runtime(runtime_target(), keyword()) :: :ok | {:error, term()}
@@ -45,7 +55,13 @@ defmodule Zaq.Channels.Bridge do
               {:ok, {map(), map(), keyword()}} | {:error, term()}
   @callback after_incoming(map(), map(), keyword(), term(), module()) :: term()
 
-  @optional_callbacks start_runtime: 1,
+  @optional_callbacks file_requirements: 2,
+                      prepare_upload_request: 2,
+                      prepare_delivery_message: 3,
+                      execute_delivery_step: 3,
+                      delivery_completed: 3,
+                      existing_text_message: 2,
+                      start_runtime: 1,
                       start_runtime: 2,
                       stop_runtime: 1,
                       sync_runtime: 2,

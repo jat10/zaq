@@ -5,8 +5,18 @@ defmodule Zaq.Engine.HistoryIngressTest do
 
   alias Jido.Chat.Telegram.Adapter, as: TelegramAdapter
   alias Zaq.Accounts.People
-  alias Zaq.Channels.{CommunicationBridge, JidoChatBridge}
+
+  alias Zaq.Channels.{
+    CommunicationBridge,
+    DeliveryConfirmation,
+    DeliveryExecutor,
+    DeliveryFiles,
+    DeliveryPlan,
+    JidoChatBridge
+  }
+
   alias Zaq.Channels.DeliveryError
+  alias Zaq.Channels.DeliveryPlan.Step
   alias Zaq.Channels.EmailBridge
   alias Zaq.Channels.EmailBridge.ImapAdapter.Parser
   alias Zaq.Contracts.Record
@@ -25,6 +35,23 @@ defmodule Zaq.Engine.HistoryIngressTest do
 
   defmodule NoopRouter do
     def fire(event), do: event
+  end
+
+  defmodule PlannedTransport do
+    def execute_delivery_step(step, _inputs, connection) do
+      if connection.fail_first? and step.group_id == 0 do
+        {:error,
+         %DeliveryError{
+           reason: :timeout,
+           message: "Unconfirmed send.",
+           stage: :transport,
+           delivery: :unconfirmed
+         }, %{}}
+      else
+        {:ok,
+         %{confirmation: :confirmed, message_id: "planned-#{step.group_id}", action: :created}}
+      end
+    end
   end
 
   defmodule EmailIngressRouter do
@@ -190,6 +217,84 @@ defmodule Zaq.Engine.HistoryIngressTest do
                | assistant_message_id: Ecto.UUID.generate(),
                  message_id: "unrelated"
              })
+  end
+
+  for fail_first? <- [false, true] do
+    @fail_first fail_first?
+    test "shared executor receipts retain canonical root and continuation history with promotion #{fail_first?}" do
+      config = connector("mattermost")
+      person = author("Plan author", "mattermost", "plan-author", config.id)
+
+      incoming =
+        Incoming.new(%{
+          content: "files please",
+          channel_id: "plan-room",
+          author_id: "plan-author",
+          message_id: "plan-input",
+          provider: :mattermost,
+          person: person,
+          routing_context: %{channel_config_id: config.id, conversation_type: :room}
+        })
+
+      {binding, assistant_id} = finalize_answer(incoming, person, "Files")
+      count = if @fail_first, do: 3, else: 2
+
+      attachments =
+        Enum.map(
+          0..(count - 1),
+          &%Record{id: "file-#{&1}", kind: :file, content: "bytes", name: "file-#{&1}.txt"}
+        )
+
+      assert {:ok, files, []} =
+               DeliveryFiles.prepare(attachments, %{}, attachment_failure_policy: :continue)
+
+      groups = Enum.map(0..(count - 1), &%{id: &1, file_refs: [&1], body: "Files"})
+
+      steps =
+        Enum.map(
+          groups,
+          &%Step{id: {:send, &1.id}, operation: :send, group_id: &1.id, file_refs: &1.file_refs}
+        )
+
+      plan = %DeliveryPlan{
+        failure_policy: :continue,
+        placement: :threaded,
+        groups: groups,
+        files: Map.new(files, &{&1.attachment_index, &1}),
+        steps: steps
+      }
+
+      outgoing = %Outgoing{
+        provider: :mattermost,
+        channel_id: "plan-room",
+        body: "Files",
+        attachments: attachments,
+        delivery_plan: plan,
+        routing_context: %{channel_config_id: config.id, conversation_type: :room},
+        metadata: %{user_message_id: binding.user_message_id, assistant_message_id: assistant_id}
+      }
+
+      assert {:ok, report} =
+               DeliveryExecutor.execute(outgoing, PlannedTransport, %{fail_first?: @fail_first})
+
+      for _ <- 1..2 do
+        assert {:ok, %{messages: receipts}} =
+                 DeliveryConfirmation.record({:ok, report}, outgoing,
+                   delivery_node_router: EmailIngressRouter
+                 )
+
+        assert Enum.all?(receipts, &(&1.history_capture == :stored))
+      end
+
+      root_id = if @fail_first, do: "planned-1", else: "planned-0"
+      reply_id = if @fail_first, do: "planned-2", else: "planned-1"
+      assert Repo.get!(Message, assistant_id).external_message_id == root_id
+      continuation = Repo.get_by!(Message, external_message_id: reply_id)
+      assert continuation.id != assistant_id
+      assert continuation.metadata["delivery_continuation_of"] == assistant_id
+      assert continuation.content == "Additional files (#{count}/#{count})."
+      assert Repo.aggregate(from(m in Message, where: m.role == "assistant"), :count) == 2
+    end
   end
 
   for original_thread <- [nil, "existing-root"] do

@@ -5,7 +5,7 @@ defmodule Zaq.Channels.EmailConfirmationIntegrationTest do
 
   alias Ecto.Adapters.SQL.Sandbox
   alias Zaq.Accounts.People
-  alias Zaq.Channels.{Api, DeliveryError}
+  alias Zaq.Channels.Api
   alias Zaq.Contracts.Record
   alias Zaq.Engine.{Conversations, HistoryIngress}
   alias Zaq.Engine.Conversations.{Message, TranscriptMessage}
@@ -13,13 +13,8 @@ defmodule Zaq.Channels.EmailConfirmationIntegrationTest do
   alias Zaq.Event
   alias Zaq.TestSupport.FileDeliverySmtpStub
 
-  defmodule EmailTransport do
-    defdelegate fetch_connection_details_for_config(config, opts), to: Zaq.Channels.EmailBridge
-    defdelegate send_reply(outgoing, details), to: Zaq.Channels.EmailBridge
-  end
-
   defmodule BridgeResolver do
-    def bridge_for(_provider), do: EmailTransport
+    def bridge_for(_provider), do: Zaq.Channels.EmailBridge
     defdelegate fetch_connection_details_for_config(config), to: Zaq.Channels.Bridge
   end
 
@@ -37,6 +32,8 @@ defmodule Zaq.Channels.EmailConfirmationIntegrationTest do
           "port" => to_string(port),
           "tls" => "never",
           "from_email" => "sender@example.test",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_files_per_message" => 10,
           "send_on_file_failure" => true
         })
 
@@ -103,6 +100,7 @@ defmodule Zaq.Channels.EmailConfirmationIntegrationTest do
       }
 
       stub(Zaq.NodeRouterMock, :dispatch, fn event ->
+        send(owner, {:confirmation_request, event.request})
         result = Zaq.Engine.Api.handle_event(event, :record_delivery_confirmation, nil)
         send(owner, {:recorded_confirmation, result.response})
         result
@@ -130,6 +128,8 @@ defmodule Zaq.Channels.EmailConfirmationIntegrationTest do
       send(task.pid, :deliver)
 
       assert_receive {:delivery_boundary, ^namespace, transport, capture}, 5_000
+      assert capture.sender == "sender@example.test"
+      assert capture.recipients == ["recipient@example.test"]
       mail = Mail.parse(capture.raw)
 
       expected_body =
@@ -147,29 +147,64 @@ defmodule Zaq.Channels.EmailConfirmationIntegrationTest do
         end
 
       assert Mail.get_attachments(mail) == expected_files
+      refute_received {:recorded_confirmation, _}
       send(transport, :accept_delivery)
       result = Task.await(task, 5_000)
 
       if @scenario == :selection_failure do
-        assert {:error, %DeliveryError{stage: :selection}} = result
+        assert {:ok,
+                %{
+                  confirmation: :partial,
+                  messages: [
+                    %{
+                      confirmation: :confirmed,
+                      attachments: []
+                    }
+                  ],
+                  failed_files: [
+                    %{
+                      attachment_index: nil,
+                      stage: :selection,
+                      delivery: :not_sent,
+                      reason: "The requested files could not be attached."
+                    }
+                  ],
+                  uploaded_files: [],
+                  unattempted_steps: []
+                }} = result
       else
         assert {:ok, %{confirmation: :confirmed}} = result
       end
 
       assert_receive {:recorded_confirmation, {:ok, %{history_capture: :stored}}}, 5_000
+      assert_received {:confirmation_request, confirmation}
+      assert confirmation.outgoing.delivery_plan == nil
+      refute Map.has_key?(confirmation.receipt, :delivered_attachment_indices)
+      assert Enum.all?(confirmation.outgoing.attachments, &is_nil(&1.content))
+      assert length(confirmation.outgoing.attachments) == length(expected_files)
       message = Repo.get!(Message, assistant_id)
       assert message.content == outgoing.body
       assert message.metadata["delivery_confirmation"]["message_id"]
       assert Repo.exists?(from tm in TranscriptMessage, where: tm.message_id == ^assistant_id)
 
+      persisted = Jason.encode!(%{metadata: message.metadata, attachments: message.attachments})
+      refute persisted =~ "delivery_plan"
+      refute persisted =~ "prepared"
+      refute persisted =~ "private"
+      refute persisted =~ "source-file"
+      refute persisted =~ Base.encode64(<<0, 255, 128, 10>>)
+
       case expected_files do
         [{name, _bytes}] ->
+          assert capture.raw =~ "application/octet-stream"
+
           assert [%{"name" => ^name, "mime_type" => "application/octet-stream", "size" => 4}] =
                    message.attachments
 
           refute Jason.encode!(message.attachments) =~ "private"
           refute Jason.encode!(message.attachments) =~ "source-file"
           refute Enum.any?(message.attachments, &Map.has_key?(&1, "id"))
+          refute Enum.any?(message.attachments, &Map.has_key?(&1, "content"))
 
         [] ->
           assert message.attachments == []

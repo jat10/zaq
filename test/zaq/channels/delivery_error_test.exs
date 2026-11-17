@@ -7,15 +7,32 @@ defmodule Zaq.Channels.DeliveryErrorTest do
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
+  alias Zaq.TestSupport.DeliveryTestOwner
+
+  test "configuration and execution errors inspect only safe facts" do
+    for stage <- [:configuration, :execution] do
+      error = %DeliveryError{
+        reason: "private payload",
+        message: "Delivery failed.",
+        stage: stage,
+        delivery: :unconfirmed,
+        step_id: {:send, 1},
+        group_id: 1
+      }
+
+      assert inspect(error) =~ "Delivery failed."
+      refute inspect(error) =~ "private payload"
+    end
+  end
 
   defmodule SmtpAdapter do
     use Swoosh.Adapter
 
     def deliver(email, _config) do
-      send(self(), :smtp_attempt)
-      send(self(), {:smtp_email, email})
+      send(DeliveryTestOwner.pid(), :smtp_attempt)
+      send(DeliveryTestOwner.pid(), {:smtp_email, email})
 
-      case Process.get(:smtp_failure) do
+      case DeliveryTestOwner.get(:smtp_failure) do
         nil -> {:ok, "accepted"}
         reason -> {:error, reason}
       end
@@ -48,7 +65,11 @@ defmodule Zaq.Channels.DeliveryErrorTest do
           token: "fixture-token",
           kind: "retrieval",
           enabled: true,
-          settings: %{"from_email" => "sender@example.test"}
+          settings: %{
+            "from_email" => "sender@example.test",
+            "max_encoded_message_bytes" => 10_000_000,
+            "max_files_per_message" => 10
+          }
         })
         |> Repo.insert!()
 
@@ -118,7 +139,21 @@ defmodule Zaq.Channels.DeliveryErrorTest do
         }
 
         event = Event.new(outgoing, :channels, opts: [action: :deliver_outgoing])
-        assert {:error, ^error} = Api.handle_event(event, :deliver_outgoing, nil).response
+
+        assert {:error,
+                %DeliveryError{reason: {:attachment_delivery_failed, report}} = planned_error} =
+                 Api.handle_event(event, :deliver_outgoing, nil).response
+
+        assert planned_error.cause == error.reason
+        assert planned_error.message == error.message
+        assert planned_error.stage == error.stage
+        assert planned_error.delivery == error.delivery
+        assert report.messages == []
+
+        assert [%{attachment_index: 0, stage: :transport, delivery: ^delivery}] =
+                 report.failed_files
+
+        refute inspect(planned_error) =~ "private"
         assert_received :smtp_attempt
         refute_received :smtp_attempt
       end

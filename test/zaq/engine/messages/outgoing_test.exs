@@ -6,6 +6,21 @@ defmodule Zaq.Engine.Messages.OutgoingTest do
   alias Zaq.Engine.Messages.{Incoming, Outgoing}
   alias Zaq.Engine.Messages.Incoming.RoutingContext
 
+  test "delivery plans are Channel-local and cannot enter through producer metadata" do
+    incoming = %{
+      incoming()
+      | metadata: %{"delivery_plan" => "private bytes", delivery_plan: "private bytes"}
+    }
+
+    outgoing =
+      Outgoing.from_pipeline_result(incoming, %{answer: "ok", delivery_plan: "private bytes"})
+
+    assert outgoing.delivery_plan == nil
+    refute Map.has_key?(outgoing.metadata, :delivery_plan)
+    refute Map.has_key?(outgoing.metadata, "delivery_plan")
+    refute inspect(%{outgoing | delivery_plan: %{files: "private bytes"}}) =~ "private bytes"
+  end
+
   test "attachments default to empty for direct and pipeline messages" do
     incoming = incoming()
 

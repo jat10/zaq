@@ -15,6 +15,47 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
 
   @moduletag timeout: 180_000
 
+  test "failed MIME preparation cannot fall through to an unrestricted ordinary text send" do
+    namespace = "oversized-#{Ecto.UUID.generate()}"
+    port = FileDeliverySmtpStub.start!(self(), namespace)
+
+    config =
+      smtp_connector!(namespace, %{
+        "relay" => "127.0.0.1",
+        "port" => to_string(port),
+        "tls" => "never",
+        "from_email" => "sender@example.test",
+        "max_encoded_message_bytes" => 1,
+        "max_files_per_message" => 1
+      })
+
+    outgoing = %Outgoing{
+      provider: :"email:smtp",
+      channel_id: "recipient@example.test",
+      body: "Original answer",
+      attachments: [%Record{id: "file", kind: :file, content: "bytes"}],
+      routing_context: %{channel_config_id: config.id}
+    }
+
+    task =
+      Task.async(fn ->
+        receive do
+          :deliver ->
+            Api.handle_event(Event.new(outgoing, :channels), :deliver_outgoing, nil).response
+        end
+      end)
+
+    Sandbox.allow(Repo, self(), task.pid)
+    send(task.pid, :deliver)
+
+    try do
+      assert {:error, %DeliveryError{delivery: :not_sent}} = Task.await(task, 5000)
+      refute_received {:delivery_boundary, ^namespace, _, _}
+    after
+      Task.shutdown(task, :brutal_kill)
+    end
+  end
+
   test "only the selected signed Disk Record reaches the captured SMTP envelope" do
     ChannelFileDelivery.run!([:email])
   end
@@ -37,6 +78,8 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
       port = FileDeliverySmtpStub.start!(owner, namespace, connections: 2)
 
       settings = %{
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_files_per_message" => 10,
         "relay" => "127.0.0.1",
         "port" => to_string(port),
         "tls" => "never",

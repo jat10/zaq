@@ -5,12 +5,70 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
   import Mox
 
   alias Zaq.Channels.DeliveryConfirmation
+  alias Zaq.Channels.DeliveryPlan
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
   alias Zaq.EventHop
 
   setup :verify_on_exit!
+
+  test "an unnumbered partial root records the canonical answer while retaining actual formatted receipt text" do
+    outgoing = %{outgoing() | body: "Original answer"}
+    receipt = %{confirmation: :confirmed, message_id: "root", body: "<p>Original answer</p>"}
+
+    report = %{
+      confirmation: :partial,
+      messages: [receipt],
+      failed_files: [%{attachment_index: 0}]
+    }
+
+    expect(Zaq.NodeRouterMock, :dispatch, 2, fn event ->
+      assert event.request.outgoing.body == "Original answer"
+      assert event.request.receipt.body == "<p>Original answer</p>"
+      %{event | response: {:ok, event.request.receipt}}
+    end)
+
+    assert {:ok, recorded} =
+             DeliveryConfirmation.record({:ok, report}, outgoing,
+               delivery_node_router: Zaq.NodeRouterMock
+             )
+
+    assert {:ok, ^recorded} =
+             DeliveryConfirmation.record({:ok, recorded}, outgoing,
+               delivery_node_router: Zaq.NodeRouterMock
+             )
+  end
+
+  property "private prepared plans never cross the Engine confirmation boundary" do
+    check all(bytes <- binary(max_length: 1024)) do
+      private = "PRIVATE_PREPARED_" <> Base.encode64(bytes)
+
+      outgoing = %{
+        outgoing()
+        | delivery_plan: %DeliveryPlan{
+            failure_policy: :continue,
+            placement: :threaded,
+            files: %{0 => %{content: private}}
+          }
+      }
+
+      receipt = %{confirmation: :confirmed, action: :created, message_id: "confirmed-plan"}
+
+      expect(Zaq.NodeRouterMock, :dispatch, fn event ->
+        assert event.request.outgoing.delivery_plan == nil
+        refute inspect(event.request) =~ private
+        %{event | response: {:ok, receipt}}
+      end)
+
+      assert {:ok, ^receipt} =
+               DeliveryConfirmation.record({:ok, receipt}, outgoing,
+                 delivery_node_router: Zaq.NodeRouterMock
+               )
+
+      assert outgoing.delivery_plan.files[0].content == private
+    end
+  end
 
   property "confirmation clears content while retaining attachment Records, handles, receipt and IDs" do
     check all(bytes <- binary(max_length: 2_048)) do

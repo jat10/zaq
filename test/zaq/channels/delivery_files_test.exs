@@ -3,9 +3,10 @@ defmodule Zaq.Channels.DeliveryFilesTest do
   use ExUnitProperties
 
   alias Zaq.Accounts.People
-  alias Zaq.Channels.DeliveryFiles
+  alias Zaq.Channels.{DeliveryFiles, EmailBridge}
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Contracts.Record
+  alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Events.TrustedContext
   alias Zaq.Permissions
   alias Zaq.Storage
@@ -14,6 +15,73 @@ defmodule Zaq.Channels.DeliveryFilesTest do
   alias Zaq.Storage.StorageEntry
 
   setup :verify_on_exit!
+
+  test "file requirements distinguish unresolved limits from inapplicable constraints" do
+    alias Zaq.Channels.FileRequirements
+
+    requirements = %FileRequirements{
+      transfer_mode: :send_with_files,
+      max_files_per_message: 5,
+      max_file_bytes: :not_applicable,
+      max_attachment_bytes_per_message: :not_applicable,
+      max_encoded_message_bytes: 1_000_000,
+      max_upload_request_bytes: :not_applicable
+    }
+
+    assert :ok = FileRequirements.validate(requirements)
+
+    for value <- [nil, :unresolved, 0, -1, "1000"] do
+      assert {:error, %Zaq.Channels.DeliveryError{stage: :configuration, delivery: :not_sent}} =
+               FileRequirements.validate(%{requirements | max_encoded_message_bytes: value})
+    end
+
+    assert {:error, _} = FileRequirements.validate(%{requirements | transfer_mode: :unknown})
+
+    assert :ok =
+             FileRequirements.validate(%{requirements | transfer_mode: :upload_then_publish})
+  end
+
+  property "upload constraints accept explicit non-applicability but reject unresolved limits" do
+    alias Zaq.Channels.FileRequirements
+
+    check all(ceiling <- one_of([positive_integer(), constant(:not_applicable)])) do
+      requirements = %FileRequirements{
+        transfer_mode: :upload_then_publish,
+        max_files_per_message: 10,
+        max_file_bytes: 307_200,
+        max_attachment_bytes_per_message: :not_applicable,
+        max_encoded_message_bytes: :not_applicable,
+        max_upload_request_bytes: ceiling
+      }
+
+      assert :ok = FileRequirements.validate(requirements)
+
+      for value <- [nil, :unresolved, 0, -1, "1000"] do
+        assert {:error, %{stage: :configuration}} =
+                 FileRequirements.validate(%{requirements | max_upload_request_bytes: value})
+      end
+    end
+  end
+
+  test "email file requirements use only the selected connector's explicit limits" do
+    outgoing = %Outgoing{
+      body: "Answer",
+      provider: :"email:smtp",
+      channel_id: "to@example.test"
+    }
+
+    connection = %{
+      smtp_settings: %{"max_encoded_message_bytes" => 1_234_567, "max_files_per_message" => 3}
+    }
+
+    assert {:ok, requirements} = EmailBridge.file_requirements(outgoing, connection)
+    assert requirements.max_encoded_message_bytes == 1_234_567
+    assert requirements.max_files_per_message == 3
+    assert requirements.transfer_mode == :send_with_files
+
+    assert {:error, %{stage: :configuration}} =
+             EmailBridge.file_requirements(outgoing, %{smtp_settings: %{}})
+  end
 
   defmodule StorageConfig do
     def get(:zaq, Zaq.Storage, _default, opts), do: Keyword.fetch!(opts, :storage_config)

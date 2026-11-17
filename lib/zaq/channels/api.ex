@@ -37,6 +37,7 @@ defmodule Zaq.Channels.Api do
 
   alias Zaq.Channels.DeliveryConfirmation
   alias Zaq.Channels.DeliveryError
+  alias Zaq.Channels.DeliveryExecutor
   alias Zaq.Channels.DeliveryFiles
   alias Zaq.Channels.HttpClient
   alias Zaq.Channels.Materializers.CommunicationMedia
@@ -1096,73 +1097,42 @@ defmodule Zaq.Channels.Api do
     end
   end
 
-  defp deliver_reply(
-         %Outgoing{attachment_error: :invalid_attachment_selection},
-         _bridge,
-         _details
-       ),
-       do: {:error, DeliveryFiles.delivery_error(:invalid_attachment_selection)}
+  defp deliver_reply(outgoing, bridge, details) do
+    case DeliveryFiles.build_plan(%{outgoing | delivery_plan: nil}, bridge, details) do
+      {:ok, %{delivery_plan: nil} = planned} ->
+        bridge.send_reply(planned, details)
 
-  defp deliver_reply(outgoing, bridge, details), do: bridge.send_reply(outgoing, details)
+      {:ok, planned} ->
+        DeliveryExecutor.execute(planned, bridge, details)
 
-  defp report_file_failure(
-         response,
-         %Outgoing{attachments: [], attachment_error: nil},
-         _canonical_outgoing,
-         _bridge,
-         _details,
-         _resolver,
-         _opts
-       ),
-       do: response
+      {:error, _} = error ->
+        error
+    end
+  end
 
   defp report_file_failure(
-         response,
-         _outgoing,
-         _canonical_outgoing,
-         _bridge,
-         %{attachment_failure_policy: :abort},
-         _resolver,
-         _opts
-       ),
-       do: response
-
-  defp report_file_failure(
-         {:error, %DeliveryError{reason: {:attachment_delivery_failed, _report}}} = response,
-         _outgoing,
-         _canonical_outgoing,
-         _bridge,
-         _details,
-         _resolver,
-         _opts
-       ),
-       do: response
-
-  defp report_file_failure(
-         {:error, %DeliveryError{} = error} = response,
+         {:error, %DeliveryError{reason: :invalid_attachments, delivery: :not_sent} = error} =
+           response,
          %Outgoing{body: body} = outgoing,
          canonical_outgoing,
          bridge,
          details,
-         resolver,
+         _resolver,
          opts
        )
        when is_binary(body) do
-    notice = %{
-      outgoing
-      | body: Enum.join(Enum.reject([body, error.message], &(&1 == "")), "\n\n"),
-        attachments: [],
-        attachment_error: nil,
-        metadata:
-          Map.drop(outgoing.metadata || %{}, [:on_reply, "on_reply", :html_body, "html_body"])
-    }
+    case DeliveryFiles.build_failure_plan(outgoing, error, bridge, details) do
+      {:ok, notice} ->
+        notice
+        |> DeliveryExecutor.execute(bridge, details)
+        |> DeliveryConfirmation.record(
+          %{canonical_outgoing | attachments: [], attachment_error: nil},
+          opts
+        )
 
-    deliver_failure_notice(error, notice, bridge, details, resolver)
-    |> normalize_delivery_response()
-    |> DeliveryConfirmation.record(
-      %{canonical_outgoing | attachments: [], attachment_error: nil},
-      opts
-    )
+      {:error, _} ->
+        :ok
+    end
 
     response
   rescue
@@ -1175,45 +1145,8 @@ defmodule Zaq.Channels.Api do
       response
   end
 
-  defp report_file_failure(
-         response,
-         _outgoing,
-         _canonical_outgoing,
-         _bridge,
-         _details,
-         _resolver,
-         _opts
-       ),
-       do: response
-
-  defp deliver_failure_notice(
-         %DeliveryError{stage: stage, delivery: :not_sent},
-         outgoing,
-         bridge,
-         details,
-         _resolver
-       )
-       when stage in [:selection, :preparation] do
-    bridge.send_reply(outgoing, details)
-  end
-
-  defp deliver_failure_notice(
-         %DeliveryError{stage: :transport, delivery: :unconfirmed},
-         outgoing,
-         bridge,
-         details,
-         resolver
-       ) do
-    request = outgoing_to_upsert_request(outgoing)
-
-    with true <- is_present_message_id(request.message_id),
-         true <- supports_callback?(bridge, :upsert_message, 3),
-         {:ok, config, _connection} <- upsert_connection(resolver, outgoing) do
-      bridge.upsert_message(config, Map.put(request, :metadata, outgoing.metadata), details)
-    end
-  end
-
-  defp deliver_failure_notice(_error, _outgoing, _bridge, _details, _resolver), do: :ok
+  defp report_file_failure(response, _outgoing, _canonical, _bridge, _details, _resolver, _opts),
+    do: response
 
   defp delivery_context(details, %Outgoing{attachments: [], attachment_error: nil}, _event),
     do: details

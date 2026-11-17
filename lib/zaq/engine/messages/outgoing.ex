@@ -15,6 +15,8 @@ defmodule Zaq.Engine.Messages.Outgoing do
   are excluded from metadata.
   `attachment_error` carries a rejected selection independently of answer success,
   so Channels can report it through the delivery policy.
+  `delivery_plan` is private Channel execution data, excluded from inspection,
+  producer metadata and delivery confirmations.
 
   `thread_anchor` is the opaque prior-thread anchor resolved by the notification
   center (string keys: `"message_id"`, `"references"`, `"thread_id"`). It is
@@ -28,6 +30,7 @@ defmodule Zaq.Engine.Messages.Outgoing do
   alias Zaq.Engine.Messages.Incoming.RoutingContext
 
   @enforce_keys [:body, :channel_id, :provider]
+  @derive {Inspect, except: [:delivery_plan]}
 
   defstruct [
     :body,
@@ -39,6 +42,7 @@ defmodule Zaq.Engine.Messages.Outgoing do
     :in_reply_to,
     :thread_anchor,
     :attachment_error,
+    :delivery_plan,
     attachments: [],
     routing_context: %RoutingContext{},
     metadata: %{}
@@ -55,6 +59,7 @@ defmodule Zaq.Engine.Messages.Outgoing do
           thread_anchor: map() | nil,
           attachments: [Record.t()],
           attachment_error: :invalid_attachment_selection | nil,
+          delivery_plan: Zaq.Channels.DeliveryPlan.t() | nil,
           routing_context: RoutingContext.t() | nil,
           metadata: map()
         }
@@ -86,7 +91,14 @@ defmodule Zaq.Engine.Messages.Outgoing do
       metadata:
         incoming.metadata
         |> Map.merge(result)
-        |> Map.drop([:attachments, "attachments", :attachment_error, "attachment_error"])
+        |> Map.drop([
+          :attachments,
+          "attachments",
+          :attachment_error,
+          "attachment_error",
+          :delivery_plan,
+          "delivery_plan"
+        ])
         |> put_person(incoming.person)
     }
   end

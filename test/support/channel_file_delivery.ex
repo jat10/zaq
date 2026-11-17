@@ -171,7 +171,7 @@ defmodule Zaq.TestSupport.ChannelFileDelivery do
     config =
       ChannelFileFixtures.mattermost!(scope.coordinator, scope.namespace, handler, %{
         token: "token-#{scope.namespace}",
-        settings: %{"max_file_size" => 307_200}
+        settings: %{"max_file_size" => 307_200, "max_upload_request_size" => 1_000_000}
       })
 
     %{

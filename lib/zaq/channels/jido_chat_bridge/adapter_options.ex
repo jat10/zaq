@@ -1,22 +1,23 @@
 defmodule Zaq.Channels.JidoChatBridge.AdapterOptions do
   @moduledoc """
-  Builds the credential options `Zaq.Channels.JidoChatBridge` passes to jido_chat
-  adapters, so per-provider credential shapes live in one place.
-
-  Mattermost, Discord and Telegram use the default `[url: url, token: token]`.
+  Builds shared connection options for jido_chat adapters. Each selected adapter
+  resolves which forwarded settings apply to its requirements and transport.
   """
 
-  @doc "Returns the adapter credential options for `provider` from a connection map or config."
+  @doc "Returns shared adapter options from a connection map or config for any provider."
   @spec build(atom() | String.t() | nil, map()) :: keyword()
   def build(_provider, connection) when is_map(connection) do
     settings = value(connection, :settings) || %{}
 
     [url: value(connection, :url), token: value(connection, :token)]
     |> maybe_put(:transport, value(connection, :transport))
-    |> maybe_put(:attachment_failure_policy, value(connection, :attachment_failure_policy))
     |> maybe_put(
       :max_file_size,
       value(connection, :max_file_size) || value(settings, :max_file_size)
+    )
+    |> maybe_put(
+      :max_upload_request_size,
+      value(connection, :max_upload_request_size) || value(settings, :max_upload_request_size)
     )
   end
 

@@ -11,6 +11,93 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
 
   setup :verify_on_exit!
 
+  test "count grouping uses unique email identities and threads continuations under the confirmed root" do
+    config = smtp_config("selected@example.test", %{"max_files_per_message" => 2})
+    files = Enum.map(0..4, &%{file("bytes-#{&1}") | id: "file-#{&1}", name: "file-#{&1}.txt"})
+
+    assert {:ok, %{confirmation: :confirmed, messages: receipts}} =
+             EmailBridge.send_reply(%{outgoing(config.id) | attachments: files}, %{
+               attachment_failure_policy: :continue
+             })
+
+    assert Enum.map(receipts, & &1.delivered_attachment_indices) == [[0, 1], [2, 3], [4]]
+    assert length(Enum.uniq(Enum.map(receipts, & &1.message_id))) == 3
+    assert Enum.all?(tl(receipts), &(&1.thread_id == "sent@example.test"))
+
+    for _ <- 1..3 do
+      assert_receive {:email, email}
+      assert length(email.attachments) <= 2
+      assert email.subject == "Files"
+
+      if email.headers["Message-ID"] != "<sent@example.test>",
+        do: assert(email.headers["In-Reply-To"] == "<sent@example.test>")
+    end
+
+    refute_received {:email, _}
+  end
+
+  test "exact encoded email ceiling accepts the boundary and rejects a body one byte over" do
+    config = smtp_config("selected@example.test")
+    outgoing = %{outgoing(config.id) | attachments: [file("bytes")]}
+    connection = %{smtp_config_id: config.id, smtp_settings: config.settings}
+
+    assert {:ok, prepared} =
+             EmailBridge.prepare_delivery_message(
+               outgoing,
+               [
+                 %{
+                   content: "bytes",
+                   name: "report.bin",
+                   mime_type: "application/octet-stream",
+                   size: 5
+                 }
+               ],
+               connection
+             )
+
+    assert is_integer(prepared.encoded_bytes)
+    assert prepared.encoded_bytes > 5
+    refute_received {:email, _}
+    exact = put_in(connection.smtp_settings["max_encoded_message_bytes"], prepared.encoded_bytes)
+    assert {:ok, _} = EmailBridge.send_reply(outgoing, exact)
+    assert_receive {:email, _}
+
+    too_small =
+      put_in(connection.smtp_settings["max_encoded_message_bytes"], prepared.encoded_bytes - 1)
+
+    assert {:error, %{delivery: :not_sent}} = EmailBridge.send_reply(outgoing, too_small)
+    refute_received {:email, _}
+  end
+
+  test "final continuation headers are remeasured and an oversized email is never submitted" do
+    config = smtp_config("selected@example.test", %{"max_files_per_message" => 1})
+    outgoing = %{outgoing(config.id) | attachments: [file("one"), file("two")]}
+
+    connection = %{
+      smtp_config_id: config.id,
+      smtp_settings: config.settings,
+      delivery_group_id: 1,
+      attachment_failure_policy: :continue
+    }
+
+    files = [
+      %{content: "two", name: "report.bin", mime_type: "application/octet-stream", size: 3}
+    ]
+
+    assert {:ok, candidate} = EmailBridge.prepare_delivery_message(outgoing, files, connection)
+
+    connection =
+      put_in(connection.smtp_settings["max_encoded_message_bytes"], candidate.encoded_bytes)
+
+    assert {:ok, %{confirmation: :partial, messages: [root], failed_files: failures}} =
+             EmailBridge.send_reply(outgoing, connection)
+
+    assert root.message_id == "sent@example.test"
+    assert [%{attachment_index: 1, delivery: :not_sent, stage: :preparation}] = failures
+    assert_receive {:email, _}
+    refute_received {:email, _}
+  end
+
   test "multiple files preserve bytes, names, MIME types, selected sender, recipients and threading" do
     selected = smtp_config("selected@example.test")
     smtp_config("other@example.test")
@@ -231,7 +318,16 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
       url: "smtp.example.test",
       token: "fixture-token",
       settings:
-        Map.merge(%{"relay" => "", "from_email" => address, "from_name" => "Selected"}, overrides)
+        Map.merge(
+          %{
+            "relay" => "",
+            "from_email" => address,
+            "from_name" => "Selected",
+            "max_encoded_message_bytes" => 10_000_000,
+            "max_files_per_message" => 10
+          },
+          overrides
+        )
     })
   end
 end

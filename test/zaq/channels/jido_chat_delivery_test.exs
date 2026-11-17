@@ -4,10 +4,12 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
 
   import ExUnit.CaptureLog
 
+  alias Jido.Chat.Adapter, as: ChatAdapter
   alias Jido.Chat.Mattermost.Adapter
   alias Zaq.Accounts.{People, PeopleAuth, PeoplePermissions, PersonLoginChallenge}
   alias Zaq.Channels.Api
-  alias Zaq.Channels.{DeliveryError, EmailBridge, JidoChatBridge}
+  alias Zaq.Channels.{DeliveryError, DeliveryExecutor, DeliveryFiles, EmailBridge, JidoChatBridge}
+  alias Zaq.Channels.JidoChatBridge.AdapterOptions
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Contracts.Record
   alias Zaq.Engine.{ChannelConfig, Events, PeopleAuthGateway}
@@ -15,17 +17,26 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
   alias Zaq.Engine.Notifications.NotificationLog
   alias Zaq.Event
   alias Zaq.Events.TrustedContext
+  alias Zaq.TestSupport.DeliveryTestOwner
   alias Zaq.TestSupport.OpenAIStub
 
   defmodule FileTransport do
     alias Jido.Chat.Mattermost.Transport.ReqClient
 
+    def prepare_upload(channel, files, opts) do
+      with {:ok, prepared} <- ReqClient.prepare_upload(channel, files, opts),
+           do: {:ok, Map.put(prepared, :inputs, files)}
+    end
+
+    def upload_prepared(prepared, opts),
+      do: upload_files(prepared.channel_id, prepared.inputs, opts)
+
     def upload_files(channel, [file], opts) do
-      send(self(), {:file_upload, channel, file, opts})
+      send(DeliveryTestOwner.pid(), {:file_upload, channel, file, opts})
 
       case URI.parse(opts[:url]).path do
         "/reported_upload_error" ->
-          {:error, Process.get({__MODULE__, :error})}
+          {:error, DeliveryTestOwner.get({__MODULE__, :error})}
 
         "/upload_failed" ->
           {:error, :upload_failed}
@@ -49,19 +60,19 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
 
     def edit_message(channel, id, text, opts) do
       if URI.parse(opts[:url]).path == "/reported_publication_error" do
-        send(self(), {:file_edit, channel, id, text, opts})
-        {:error, Process.get({__MODULE__, :error})}
+        send(DeliveryTestOwner.pid(), {:file_edit, channel, id, text, opts})
+        {:error, DeliveryTestOwner.get({__MODULE__, :error})}
       else
         ReqClient.edit_message(channel, id, text, opts)
       end
     end
 
     def send_message(channel, text, opts) do
-      send(self(), {:file_post, channel, text, opts})
+      send(DeliveryTestOwner.pid(), {:file_post, channel, text, opts})
 
       case URI.parse(opts[:url]).path do
         "/reported_publication_error" ->
-          {:error, Process.get({__MODULE__, :error})}
+          {:error, DeliveryTestOwner.get({__MODULE__, :error})}
 
         "/post_failed" ->
           {:error, {500, %{"message" => "private-provider-detail"}}}
@@ -97,7 +108,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     defdelegate send_file(channel, file, opts), to: Adapter
 
     def edit_message(channel, message_id, text, opts) do
-      send(self(), {:file_status, channel, message_id, text, opts})
+      send(DeliveryTestOwner.pid(), {:file_status, channel, message_id, text, opts})
 
       case URI.parse(opts[:url]).path do
         "/notice_failed" -> {:error, :notice_failed}
@@ -118,6 +129,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
   end
 
   setup do
+    Process.put(:batch_post_counter, :atomics.new(1, []))
     Code.ensure_loaded!(Adapter)
     previous = Application.get_env(:zaq, :channels)
 
@@ -130,7 +142,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     {:ok, registry: previous}
   end
 
-  test "strict policy rejects an adapter with message edits but no policy support before materialization" do
+  test "strict policy rejects unresolved transport requirements before materialization" do
     adapter = Jido.Chat.Discord.Adapter
     assert Jido.Chat.Adapter.capabilities(adapter).edit_message == :native
     channels = Application.get_env(:zaq, :channels)
@@ -155,7 +167,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
 
     assert {:error,
             %DeliveryError{
-              reason: {:unsupported_attachment_failure_policy, :abort},
+              reason: :invalid_file_requirements,
               delivery: :not_sent
             }} =
              JidoChatBridge.send_reply(outgoing, %{
@@ -168,7 +180,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     refute_received {:file_post, _, _, _}
   end
 
-  test "explicit policy reaches attachment create and edit while uploading once" do
+  test "ZAQ applies explicit policy to attachment create and edit while uploading once" do
     for message_id <- [nil, "status-id"] do
       outgoing = %{file_outgoing() | metadata: %{message_id: message_id}}
       connection = Map.put(file_connection(), :attachment_failure_policy, :abort)
@@ -314,7 +326,10 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
           enabled: true,
           url: endpoint,
           token: "synthetic-token",
-          settings: %{"max_file_size" => 64_000, "send_on_file_failure" => false}
+          settings: %{
+            "max_file_size" => 64_000,
+            "send_on_file_failure" => false
+          }
         })
         |> Repo.insert!()
 
@@ -326,7 +341,10 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
         enabled: true,
         url: endpoint <> "/other-connector",
         token: "other-token",
-        settings: %{"max_file_size" => 64_000, "send_on_file_failure" => true}
+        settings: %{
+          "max_file_size" => 64_000,
+          "send_on_file_failure" => true
+        }
       })
       |> Repo.insert!()
 
@@ -376,8 +394,10 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
       assert report.stage == :upload
       assert report.messages == []
 
-      assert report.uploaded_files ==
-               Enum.map(1..10, &%{filename: "file-#{&1}.txt", file_id: "uploaded-#{&1}"})
+      assert Enum.map(report.uploaded_files, &Map.take(&1, [:filename, :id])) ==
+               Enum.map(1..10, &%{filename: "file-#{&1}.txt", id: "uploaded-#{&1}"})
+
+      assert Enum.map(report.uploaded_only, & &1.attachment_index) == Enum.to_list(0..9)
 
       assert [
                %{
@@ -701,7 +721,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     refute_received {:file_status, _, _, _, _}
   end
 
-  test "configured limit reaches the adapter for create and edit without bridge file planning" do
+  test "configured limits constrain ZAQ plans for create and edit" do
     connection =
       batch_connection()
       |> Map.delete(:max_file_size)
@@ -721,7 +741,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     refute_received {:batch_post, _, _, _}
   end
 
-  test "adapter-owned splitting returns separate receipts for all fifteen files" do
+  test "ZAQ-owned splitting returns separate receipts for all fifteen files" do
     assert {:ok, %{confirmation: :confirmed, messages: [first, second]}} =
              JidoChatBridge.send_reply(batch_outgoing(15), batch_connection())
 
@@ -733,6 +753,242 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     assert length(first_ids) == 10
     assert_received {:batch_post, _, second_ids, _}
     assert length(second_ids) == 5
+  end
+
+  test "one message consumes exactly its two planned upload requests" do
+    use_upload_requirements_adapter()
+    outgoing = batch_outgoing(4)
+    connection = batch_connection()
+
+    assert {:ok, files, []} =
+             DeliveryFiles.prepare(outgoing.attachments, %{},
+               attachment_failure_policy: :continue
+             )
+
+    preparation_connection =
+      Map.merge(connection, %{
+        delivery_provider: :mattermost,
+        delivery_channel_id: outgoing.channel_id
+      })
+
+    assert {:ok, candidate} =
+             JidoChatBridge.prepare_upload_request(Enum.take(files, 2), preparation_connection)
+
+    Process.put(:declared_upload_ceiling, candidate.encoded_bytes)
+    assert {:ok, planned} = DeliveryFiles.build_plan(outgoing, JidoChatBridge, connection)
+    assert [%{file_refs: [0, 1, 2, 3]}] = planned.delivery_plan.groups
+    assert Enum.count(planned.delivery_plan.steps, &(&1.operation == :upload)) == 2
+    refute_received {:batch_upload, _}
+    refute_received {:batch_post, _, _, _}
+
+    assert {:ok, %{confirmation: :confirmed}} =
+             DeliveryExecutor.execute(planned, JidoChatBridge, connection)
+
+    assert_received {:batch_upload, first}
+    assert_received {:batch_upload, second}
+    assert Enum.map(first, & &1.filename) == ["file-1.txt", "file-2.txt"]
+    assert Enum.map(second, & &1.filename) == ["file-3.txt", "file-4.txt"]
+    assert_received {:batch_post, "File caption", ids, _}
+    assert ids == Enum.map(1..4, &"file-#{&1}_txt")
+    refute_received {:batch_upload, _}
+    refute_received {:batch_post, _, _, _}
+  end
+
+  test "omitted leading upload groups edit the streamed post without a duplicate answer" do
+    use_upload_requirements_adapter()
+    Process.put(:declared_upload_ceiling, 1000)
+    outgoing = batch_outgoing(11)
+    [last] = Enum.take(outgoing.attachments, -1)
+
+    oversized =
+      Enum.map(Enum.take(outgoing.attachments, 10), &%{&1 | content: String.duplicate("x", 5000)})
+
+    connection =
+      batch_connection()
+      |> Map.put(:attachment_failure_policy, :continue)
+
+    for attachments <- [oversized ++ [last], oversized] do
+      outgoing = %{outgoing | attachments: attachments, metadata: %{message_id: "streamed"}}
+      assert {:ok, planned} = DeliveryFiles.build_plan(outgoing, JidoChatBridge, connection)
+      assert [edit] = Enum.reject(planned.delivery_plan.steps, &(&1.operation == :upload))
+      assert edit.operation == :edit
+      assert edit.message_ref == {:existing, "streamed"}
+      refute_received {:batch_upload, _}
+      refute_received {:batch_post, _, _, _}
+
+      assert {:ok, %{confirmation: :partial, messages: [receipt], failed_files: failures}} =
+               DeliveryExecutor.execute(planned, JidoChatBridge, connection)
+
+      assert receipt.message_id == "streamed"
+      assert receipt.body == "File caption"
+      assert Enum.map(failures, & &1.attachment_index) == Enum.to_list(0..9)
+
+      if length(attachments) == 11 do
+        assert receipt.delivered_attachment_indices == [10]
+        assert_received {:batch_upload, [uploaded]}
+        assert uploaded.filename == last.name
+        assert uploaded.body == last.content
+        assert_received {:batch_edit, "streamed", ["file-11_txt"]}
+      else
+        assert receipt.delivered_attachment_indices == []
+        assert_received {:batch_edit, "streamed", nil}
+      end
+
+      refute_received {:batch_upload, _}
+      refute_received {:batch_edit, _, _}
+      refute_received {:batch_post, _, _, _}
+    end
+  end
+
+  test "an absent adapter upload constraint normalizes without hiding unresolved or invalid values" do
+    use_upload_requirements_adapter()
+    connection = Map.delete(batch_connection(), :max_upload_request_size)
+    outgoing = batch_outgoing(1)
+
+    assert {:ok, requirements} = JidoChatBridge.file_requirements(outgoing, connection)
+    assert requirements.max_upload_request_bytes == :not_applicable
+
+    for value <- [:unresolved, nil, 0, -1, "1000"] do
+      Process.put(:declared_upload_ceiling, value)
+
+      assert {:error, %{stage: :configuration}} =
+               JidoChatBridge.file_requirements(outgoing, connection)
+    end
+
+    Process.put(:declared_upload_ceiling, :not_applicable)
+
+    for key <- [:max_file_size, :max_files_per_post] do
+      Process.put(:omitted_required_limit, key)
+
+      assert {:error, %{stage: :configuration}} =
+               JidoChatBridge.file_requirements(outgoing, connection)
+    end
+
+    refute_received {:batch_upload, _}
+    refute_received {:batch_post, _, _, _}
+  end
+
+  test "the actual Mattermost adapter delivers without a ceiling even with obsolete upload settings" do
+    {child, endpoint} =
+      OpenAIStub.server(
+        fn conn, body ->
+          assert Plug.Conn.get_req_header(conn, "authorization") == ["Bearer synthetic-token"]
+
+          case conn.request_path do
+            "/api/v4/files" ->
+              names =
+                Regex.scan(~r/filename="([^"]+)"/, body, capture: :all_but_first)
+                |> List.flatten()
+
+              assert length(names) in [5, 10]
+              assert body =~ "contents"
+
+              {201,
+               %{
+                 "file_infos" =>
+                   Enum.map(names, fn name ->
+                     %{"id" => String.replace(name, ".", "_"), "name" => name}
+                   end)
+               }}
+
+            "/api/v4/posts" ->
+              payload = Jason.decode!(body)
+              {201, Map.put(payload, "id", "post-#{hd(payload["file_ids"])}")}
+          end
+        end,
+        self()
+      )
+
+    start_supervised!(child)
+
+    connection = %{
+      url: String.trim_trailing(endpoint, "/v1"),
+      token: "synthetic-token",
+      max_file_size: 307_200
+    }
+
+    assert {:ok, sdk_limits} =
+             ChatAdapter.file_requirements(
+               Adapter,
+               AdapterOptions.build(:mattermost, connection)
+             )
+
+    assert sdk_limits.max_files_per_post == 10
+    assert Map.get(sdk_limits, :max_upload_request_size, :not_applicable) == :not_applicable
+
+    for connection <- [
+          connection,
+          Map.put(connection, :max_upload_request_size, 1),
+          Map.put(connection, :settings, %{"max_upload_request_size" => 1})
+        ],
+        policy <- [:abort, :continue] do
+      outgoing = %{batch_outgoing(15) | thread_id: nil}
+      connection = Map.put(connection, :attachment_failure_policy, policy)
+      assert {:ok, planned} = DeliveryFiles.build_plan(outgoing, JidoChatBridge, connection)
+      assert planned.delivery_plan.requirements.max_upload_request_bytes == :not_applicable
+
+      assert Enum.map(planned.delivery_plan.groups, & &1.file_refs) == [
+               Enum.to_list(0..9),
+               Enum.to_list(10..14)
+             ]
+
+      assert Enum.count(planned.delivery_plan.steps, &(&1.operation == :upload)) == 2
+      refute_received {:openai_request, _, _, _, _}
+
+      assert {:ok, %{confirmation: :confirmed, messages: [root, reply], failed_files: []}} =
+               DeliveryExecutor.execute(planned, JidoChatBridge, connection)
+
+      assert root.message_id == "post-file-1_txt"
+      assert reply.message_id == "post-file-11_txt"
+      assert reply.thread_id == root.message_id
+      assert reply.body == "Additional files (2/2)."
+      assert root.delivered_attachment_indices == Enum.to_list(0..9)
+      assert reply.delivered_attachment_indices == Enum.to_list(10..14)
+      assert_received {:openai_request, "POST", "/api/v4/files", "", first_upload}
+      assert_received {:openai_request, "POST", "/api/v4/files", "", second_upload}
+      assert first_upload =~ "file-1.txt"
+      assert second_upload =~ "file-11.txt"
+      assert_received {:openai_request, "POST", "/api/v4/posts", "", root_body}
+      assert_received {:openai_request, "POST", "/api/v4/posts", "", reply_body}
+      assert Jason.decode!(root_body)["file_ids"] == Enum.map(1..10, &"file-#{&1}_txt")
+      assert Jason.decode!(reply_body)["file_ids"] == Enum.map(11..15, &"file-#{&1}_txt")
+      refute_received {:openai_request, _, _, _, _}
+    end
+
+    assert {:error, %{stage: :configuration}} =
+             JidoChatBridge.file_requirements(
+               batch_outgoing(1),
+               Map.delete(connection, :max_file_size)
+             )
+  end
+
+  test "continue promotes a later confirmed root and invokes the reply callback once with the final ID" do
+    Process.put(:fail_batch_post, 1)
+
+    outgoing = %{
+      batch_outgoing(25)
+      | thread_id: nil,
+        metadata: %{"on_reply" => %{"module" => Atom.to_string(FileReplyWorker), "args" => %{}}}
+    }
+
+    connection = Map.put(batch_connection(), :attachment_failure_policy, :continue)
+
+    assert {:ok,
+            %{confirmation: :partial, messages: [root, reply], failed_files: failures} = report} =
+             JidoChatBridge.send_reply(outgoing, connection)
+
+    assert root.message_id == "post-2"
+    assert root.body == "File caption"
+    assert root.thread_id == nil
+    assert reply.message_id == "post-3"
+    assert reply.thread_id == "post-2"
+    assert reply.body == "Additional files (3/3)."
+    assert Enum.map(failures, & &1.attachment_index) == Enum.to_list(0..9)
+    assert Enum.all?(failures, &(&1.delivery == :unconfirmed and &1.reason == :timeout))
+    assert Enum.map(report.uploaded_only, & &1.attachment_index) == Enum.to_list(0..9)
+
+    assert [%{args: %{"post_id" => "post-3"}}] =
+             Oban.Testing.all_enqueued(repo: Repo, worker: FileReplyWorker)
   end
 
   test "adapter partial delivery remains partial through the bridge" do
@@ -796,11 +1052,13 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
 
     assert {:error,
             %DeliveryError{
-              reason: :unconfirmed_delivery,
+              reason: {:attachment_delivery_failed, %{step_outcomes: outcomes}},
               stage: :transport,
               delivery: :unconfirmed
             }} =
              JidoChatBridge.send_reply(outgoing, file_connection("missing_post_id"))
+
+    assert Enum.any?(outcomes, &(&1[:reason] == :unconfirmed_delivery))
 
     assert Oban.Testing.all_enqueued(repo: Repo, worker: FileReplyWorker) == []
 
@@ -971,7 +1229,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     end
   end
 
-  test "legacy adapters without policy support preserve original errors when failure notices fail" do
+  test "legacy adapters without required file operations fail before acquisition or notices" do
     registry = Application.fetch_env!(:zaq, :channels)
 
     for scenario <- ["notice_failed", "notice_raised", "notice_exit"] do
@@ -986,21 +1244,13 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
 
       outgoing = %{file_outgoing() | metadata: %{message_id: "status-id"}}
 
-      original_error =
-        if scenario == "notice_failed",
-          do: {400, %{"message" => "private-provider-detail"}},
-          else: :upload_failed
-
       capture_log(fn ->
-        assert {:error, %DeliveryError{reason: ^original_error}} =
-                 deliver_outgoing(outgoing, file_connection(scenario))
+        assert {:error, %DeliveryError{reason: :invalid_file_requirements, stage: :configuration}} =
+                 JidoChatBridge.send_reply(
+                   outgoing,
+                   Map.put(file_connection(scenario), :attachment_failure_policy, :abort)
+                 )
       end)
-
-      assert_received {:file_upload, _, _, _}
-      assert_received {:file_status, _, "status-id", text, _}
-
-      assert text ==
-               "File caption\n\nAttachment delivery was not confirmed. Check the conversation before sending again."
 
       refute_received {:file_upload, _, _, _}
       refute_received {:file_post, _, _, _}
@@ -1034,16 +1284,21 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     end
   end
 
-  test "direct bridge failures return the original error without a fallback operation" do
+  test "direct bridge failed uploads retain safe failure facts without a fallback publication" do
     outgoing = %{file_outgoing() | metadata: %{message_id: "status-id"}}
 
     assert {:error,
             %DeliveryError{
-              reason: {413, %{"message" => "private-provider-detail"}},
+              reason: {:attachment_delivery_failed, report},
               stage: :transport,
-              delivery: :unconfirmed
+              delivery: :not_sent
             }} =
              JidoChatBridge.send_reply(outgoing, file_connection("size_rejected"))
+
+    assert [%{reason: {:http_error, 413}, stage: :upload, attachment_index: 0}] =
+             report.failed_files
+
+    assert report.messages == []
 
     assert_received {:file_upload, _, _, _}
     refute_received {:file_upload, _, _, _}
@@ -1052,8 +1307,14 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
   end
 
   defmodule BatchTransport do
+    defdelegate prepare_upload(channel, files, opts),
+      to: Zaq.Channels.JidoChatDeliveryTest.FileTransport
+
+    def upload_prepared(prepared, opts),
+      do: upload_files(prepared.channel_id, prepared.inputs, opts)
+
     def upload_files(_channel, files, _opts) do
-      send(self(), {:batch_upload, files})
+      send(DeliveryTestOwner.pid(), {:batch_upload, files})
 
       {:ok,
        %{
@@ -1061,7 +1322,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
            Enum.map(
              files,
              &%{
-               "id" => &1.filename,
+               "id" => String.replace(&1.filename, ".", "_"),
                "name" => &1.filename,
                "size" => byte_size(&1.body),
                "mime_type" => "text/plain"
@@ -1071,11 +1332,10 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     end
 
     def send_message(channel, text, opts) do
-      count = Process.get(:batch_post_count, 0) + 1
-      Process.put(:batch_post_count, count)
-      send(self(), {:batch_post, text, opts[:file_ids], opts})
+      count = :atomics.add_get(DeliveryTestOwner.get(:batch_post_counter), 1, 1)
+      send(DeliveryTestOwner.pid(), {:batch_post, text, opts[:file_ids], opts})
 
-      if Process.get(:fail_batch_post) == count,
+      if DeliveryTestOwner.get(:fail_batch_post) == count,
         do: {:error, :timeout},
         else:
           {:ok,
@@ -1088,11 +1348,42 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     end
 
     def edit_message(channel, id, _text, opts) do
-      send(self(), {:batch_edit, id, opts[:file_ids]})
+      send(DeliveryTestOwner.pid(), {:batch_edit, id, opts[:file_ids]})
 
       {:ok,
        %{"id" => id, "channel_id" => channel, "user_id" => "bot", "file_ids" => opts[:file_ids]}}
     end
+  end
+
+  defmodule UploadRequirementsAdapter do
+    defdelegate capabilities(), to: Adapter
+    defdelegate prepare_upload(channel, files, opts), to: Adapter
+    defdelegate upload_prepared(prepared, opts), to: Adapter
+    defdelegate send_message(channel, text, opts), to: Adapter
+    defdelegate edit_message(channel, id, text, opts), to: Adapter
+
+    def file_requirements(opts) do
+      with {:ok, limits} <- Adapter.file_requirements(opts) do
+        limits =
+          case DeliveryTestOwner.get(:declared_upload_ceiling, :absent) do
+            :absent -> Map.delete(limits, :max_upload_request_size)
+            ceiling -> Map.put(limits, :max_upload_request_size, ceiling)
+          end
+
+        limits = Map.delete(limits, DeliveryTestOwner.get(:omitted_required_limit))
+        {:ok, limits}
+      end
+    end
+  end
+
+  defp use_upload_requirements_adapter do
+    channels = Application.fetch_env!(:zaq, :channels)
+
+    Application.put_env(
+      :zaq,
+      :channels,
+      put_in(channels, [:mattermost, :adapter], UploadRequirementsAdapter)
+    )
   end
 
   defp assert_attachment_failure(scenario, expected) do
@@ -1417,7 +1708,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
         fn conn, body ->
           assert Plug.Conn.get_req_header(conn, "authorization") == ["Bearer synthetic-token"]
           payload = Jason.decode!(body)
-          {status, Map.merge(payload, %{"id" => "sent-post", "create_at" => 0})}
+          {status, Map.merge(payload, %{"id" => payload["id"] || "sent-post", "create_at" => 0})}
         end,
         self()
       )

@@ -6,6 +6,7 @@ defmodule Zaq.Channels.ApiTest do
   alias Zaq.Channels.Bridge
   alias Zaq.Channels.DeliveryError
   alias Zaq.Channels.DeliveryFiles
+  alias Zaq.Channels.FileRequirements
   alias Zaq.Channels.Web.{Delivery, Response}
   alias Zaq.Contracts.Record
   alias Zaq.Contracts.ToolStep
@@ -17,6 +18,7 @@ defmodule Zaq.Channels.ApiTest do
   alias Zaq.Events.TrustedContext
   alias Zaq.HttpRequest
   alias Zaq.Repo
+  alias Zaq.TestSupport.DeliveryTestOwner
   alias Zaq.Types.EncryptedString
 
   defp insert_config(provider, attrs \\ %{}) do
@@ -240,9 +242,46 @@ defmodule Zaq.Channels.ApiTest do
   end
 
   defmodule StubBridgeImpl do
+    def file_requirements(_outgoing, _connection) do
+      {:ok,
+       %FileRequirements{
+         transfer_mode: :send_with_files,
+         max_files_per_message: 10,
+         max_file_bytes: :not_applicable,
+         max_attachment_bytes_per_message: :not_applicable,
+         max_encoded_message_bytes: :not_applicable,
+         max_upload_request_bytes: :not_applicable,
+         supports_threads: true
+       }}
+    end
+
+    def execute_delivery_step(step, inputs, connection) do
+      send(DeliveryTestOwner.pid(), {:bridge_delivery_step, step, inputs, connection})
+
+      case DeliveryTestOwner.get(:chat_delivery_response, :ok) do
+        :ok ->
+          {:ok, %{confirmation: :confirmed, action: :created, message_id: "planned-id"}}
+
+        {:error, %DeliveryError{} = error} ->
+          {:error, error, %{}}
+
+        {:error, reason} ->
+          {:error,
+           %DeliveryError{
+             reason: reason,
+             message: "Delivery was not confirmed.",
+             stage: :transport,
+             delivery: :unconfirmed
+           }, %{}}
+
+        response ->
+          response
+      end
+    end
+
     def send_reply(%Outgoing{} = outgoing, details) do
-      send(self(), {:bridge_send_reply, outgoing, details})
-      Process.get(:chat_delivery_response, :ok)
+      send(DeliveryTestOwner.pid(), {:bridge_send_reply, outgoing, details})
+      DeliveryTestOwner.get(:chat_delivery_response, :ok)
     end
 
     def test_connection(%ChannelConfig{} = config, channel_id) do
@@ -324,12 +363,13 @@ defmodule Zaq.Channels.ApiTest do
   end
 
   defmodule FallbackReceiptBridge do
+    defdelegate file_requirements(outgoing, connection), to: StubBridgeImpl
     def bridge_for(_provider), do: __MODULE__
     def fetch_connection_details(_provider), do: %{}
 
     def send_reply(%Outgoing{attachments: []} = outgoing, _details) do
-      send(self(), {:fallback_notice, outgoing})
-      Process.get(:fallback_receipt, {:error, :notice_failed})
+      send(DeliveryTestOwner.pid(), {:fallback_notice, outgoing})
+      DeliveryTestOwner.get(:fallback_receipt, {:error, :notice_failed})
     end
 
     def send_reply(%Outgoing{}, _details),
@@ -729,29 +769,16 @@ defmodule Zaq.Channels.ApiTest do
     assert %{delivered_outgoing | metadata: %{}} == outgoing
   end
 
-  test "attachment fallback preserves the error and routing while dropping files and reply callbacks" do
-    error =
-      {:error,
-       %DeliveryError{
-         reason: {:unknown_source_error, %{detail: "private-provider-detail"}},
-         message: "The attachment content could not be accessed.",
-         stage: :preparation,
-         delivery: :not_sent
-       }}
-
-    Process.put(:chat_delivery_response, error)
-
+  test "shared preparation fallback preserves the answer and routing without forwarding failed files" do
     outgoing = %Outgoing{
       body: "Keep this answer",
       channel_id: "c1",
       thread_id: "thread-1",
       provider: :mattermost,
-      attachments: [%Record{id: "file", kind: :file, content: "private bytes"}],
-      metadata: %{
-        :message_id => "placeholder",
-        :on_reply => %{module: "callback"},
-        "on_reply" => %{"module" => "callback"}
-      }
+      attachments: [
+        %Record{id: "file", kind: :file, content: "%%%", attributes: %{"encoding" => "base64"}}
+      ],
+      metadata: %{message_id: "placeholder", on_reply: %{module: "callback"}}
     }
 
     event =
@@ -760,21 +787,29 @@ defmodule Zaq.Channels.ApiTest do
         opts: [action: :deliver_outgoing, bridge_module: StubCommunicationBridge]
       )
 
-    assert Api.handle_event(event, :deliver_outgoing, nil).response == error
-    assert_received {:bridge_send_reply, original, details}
-    assert original.attachments == outgoing.attachments
-    assert_received {:bridge_send_reply, notice, ^details}
+    assert {:ok, %{confirmation: :partial, failed_files: [failure]}} =
+             Api.handle_event(event, :deliver_outgoing, nil).response
 
-    assert notice.body ==
-             "Keep this answer\n\nThe attachment content could not be accessed."
+    assert failure == %{
+             attachment_index: 0,
+             stage: :preparation,
+             delivery: :not_sent,
+             reason: "The attachment contains invalid Base64 content."
+           }
 
-    assert notice.attachments == []
-    assert notice.channel_id == outgoing.channel_id
-    assert notice.thread_id == outgoing.thread_id
-    assert notice.metadata.message_id == "placeholder"
-    refute Map.has_key?(notice.metadata, :on_reply)
-    refute Map.has_key?(notice.metadata, "on_reply")
-    refute notice.body =~ "private"
+    assert_received {:bridge_delivery_step, _, inputs, details}
+    assert inputs.outgoing.body == outgoing.body
+    assert inputs.outgoing.channel_id == outgoing.channel_id
+    assert inputs.outgoing.thread_id == outgoing.thread_id
+    assert inputs.outgoing.attachments == []
+    assert inputs.files == []
+
+    assert details.trusted_context == %TrustedContext{
+             actor: %{person_id: 123},
+             skip_permissions: false
+           }
+
+    refute_received {:bridge_delivery_step, _, _, _}
     refute_received {:bridge_send_reply, _, _}
   end
 
@@ -801,27 +836,24 @@ defmodule Zaq.Channels.ApiTest do
         )
 
       assert {:ok, _} = Api.handle_event(event, :deliver_outgoing, nil).response
-      assert_received {:bridge_send_reply, _, details}
+      assert_received {:bridge_delivery_step, _, _, details}
       assert details.attachment_failure_policy == expected
       assert details.settings == settings
       refute_received {:bridge_send_reply, _, _}
     end
   end
 
-  test "abort suppresses selection and preparation fallback before a final message can be sent" do
+  test "abort suppresses selection and real preparation failures before any publication" do
     config = insert_config(:mattermost, %{settings: %{"send_on_file_failure" => false}})
 
     for stage <- [:selection, :preparation] do
-      error = DeliveryFiles.delivery_error(:attachment_content_unavailable)
-      Process.put(:chat_delivery_response, {:error, error})
-
       outgoing = %Outgoing{
         provider: :mattermost,
         channel_id: "room",
         body: "Answer",
         routing_context: %{channel_config_id: config.id},
         attachment_error: if(stage == :selection, do: :invalid_attachment_selection),
-        attachments: [%Record{id: "file", kind: :file, content: "bytes"}]
+        attachments: [%Record{id: "file", kind: :file, content: nil}]
       }
 
       event =
@@ -829,20 +861,18 @@ defmodule Zaq.Channels.ApiTest do
           opts: [action: :deliver_outgoing, bridge_module: StubCommunicationBridge]
         )
 
-      assert {:error, %DeliveryError{delivery: :not_sent}} =
+      assert {:error, %DeliveryError{stage: ^stage, delivery: :not_sent}} =
                Api.handle_event(event, :deliver_outgoing, nil).response
 
-      if stage == :preparation,
-        do: assert_received({:bridge_send_reply, _, %{attachment_failure_policy: :abort}})
-
+      refute_received {:bridge_delivery_step, _, _, _}
       refute_received {:bridge_send_reply, _, _}
       refute_received {:bridge_upsert_message, _, _, _}
     end
   end
 
-  test "an adapter's completed policy attempt never triggers a replacement send or placeholder notice" do
+  test "a completed shared attempt never triggers a replacement send or placeholder notice" do
     error = %DeliveryError{
-      reason: {:attachment_delivery_failed, %{delivery: :unconfirmed}},
+      reason: :timeout,
       message: "Delivery unconfirmed",
       stage: :transport,
       delivery: :unconfirmed
@@ -863,16 +893,21 @@ defmodule Zaq.Channels.ApiTest do
         opts: [action: :deliver_outgoing, bridge_module: StubCommunicationBridge]
       )
 
-    assert {:error, ^error} = Api.handle_event(event, :deliver_outgoing, nil).response
-    assert_received {:bridge_send_reply, _, %{attachment_failure_policy: :continue}}
+    assert {:error,
+            %DeliveryError{cause: :timeout, reason: {:attachment_delivery_failed, report}}} =
+             Api.handle_event(event, :deliver_outgoing, nil).response
+
+    assert report.messages == []
+    assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_files
+    assert_received {:bridge_delivery_step, _, _, %{attachment_failure_policy: :continue}}
+    refute_received {:bridge_delivery_step, _, _, _}
     refute_received {:bridge_send_reply, _, _}
     refute_received {:bridge_upsert_message, _, _, _}
   end
 
   for stage <- [:selection, :preparation] do
     @failure_stage stage
-
-    test "confirmed #{@failure_stage} fallback records only the delivered text and preserves the file error" do
+    test "confirmed #{@failure_stage} fallback records canonical text and safe original-index failure facts" do
       receipt = %{confirmation: :confirmed, action: :created, message_id: "notice-id"}
       Process.put(:fallback_receipt, {:ok, receipt})
 
@@ -883,7 +918,7 @@ defmodule Zaq.Channels.ApiTest do
         attachment_error: if(@failure_stage == :selection, do: :invalid_attachment_selection),
         attachments:
           if(@failure_stage == :preparation,
-            do: [%Record{id: "file", kind: :file, content: "private bytes"}],
+            do: [%Record{id: "file", kind: :file, content: nil}],
             else: []
           ),
         metadata: %{
@@ -904,18 +939,23 @@ defmodule Zaq.Channels.ApiTest do
       for history_result <- [{:ok, receipt}, {:error, :history_unavailable}] do
         Process.put(:email_history_response, history_result)
 
-        assert {:error, %DeliveryError{stage: @failure_stage, delivery: :not_sent}} =
-                 Api.handle_event(event, :deliver_outgoing, nil).response
+        assert {:ok,
+                %{
+                  confirmation: :partial,
+                  failed_files: [%{stage: @failure_stage, delivery: :not_sent}]
+                }} = Api.handle_event(event, :deliver_outgoing, nil).response
 
         assert_received {:fallback_notice, notice}
-        assert notice.body =~ "Keep this answer\n\n"
+        assert notice.body =~ "Keep this answer"
         assert notice.attachments == []
         assert notice.attachment_error == nil
-        refute Map.has_key?(notice.metadata, :on_reply)
-
+        if @failure_stage == :selection, do: refute(Map.has_key?(notice.metadata, :on_reply))
         assert_received {:confirmed_email_history, confirmation}
         assert confirmation.opts[:action] == :record_delivery_confirmation
-        assert confirmation.request.receipt == receipt
+
+        assert confirmation.request.receipt ==
+                 Map.merge(receipt, %{body: outgoing.body, thread_id: nil, attachments: []})
+
         assert confirmation.request.outgoing.body == outgoing.body
         assert confirmation.request.outgoing.attachments == []
 
@@ -949,8 +989,11 @@ defmodule Zaq.Channels.ApiTest do
     for response <- [{:error, :notice_failed}, :ok, {:ok, %{message_id: "unconfirmed"}}] do
       Process.put(:fallback_receipt, response)
 
-      assert {:error, %DeliveryError{reason: :invalid_attachment_selection}} =
+      assert {:error, %DeliveryError{reason: {:attachment_delivery_failed, report}}} =
                Api.handle_event(event, :deliver_outgoing, nil).response
+
+      assert report.messages == []
+      assert Enum.any?(report.failed_files, &(&1.stage == :selection))
 
       assert_received {:fallback_notice, _}
       refute_received {:fallback_notice, _}
@@ -972,17 +1015,15 @@ defmodule Zaq.Channels.ApiTest do
     refute_received {:bridge_send_reply, _, _}
   end
 
-  test "unconfirmed delivery only updates an existing placeholder and never confirms file delivery" do
-    error =
-      {:error,
-       %DeliveryError{
-         reason: :opaque_transport_error,
-         message: "Delivery was not confirmed.",
-         stage: :transport,
-         delivery: :unconfirmed
-       }}
+  test "unconfirmed planned delivery never retries or updates placeholders and never confirms files" do
+    error = %DeliveryError{
+      reason: :opaque_transport_error,
+      message: "Delivery was not confirmed.",
+      stage: :transport,
+      delivery: :unconfirmed
+    }
 
-    Process.put(:chat_delivery_response, error)
+    Process.put(:chat_delivery_response, {:error, error})
 
     for message_id <- [nil, "placeholder"] do
       outgoing = %Outgoing{
@@ -1002,24 +1043,23 @@ defmodule Zaq.Channels.ApiTest do
           ]
         )
 
-      assert Api.handle_event(event, :deliver_outgoing, nil).response == error
-      assert_received {:bridge_send_reply, _, details}
+      assert {:error,
+              %DeliveryError{
+                cause: :opaque_transport_error,
+                reason: {:attachment_delivery_failed, report}
+              }} = Api.handle_event(event, :deliver_outgoing, nil).response
+
+      assert report.messages == []
+      assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_files
+      assert_received {:bridge_delivery_step, _, _, _}
+      refute_received {:bridge_delivery_step, _, _, _}
       refute_received {:bridge_send_reply, _, _}
-
-      if message_id do
-        assert_received {:bridge_upsert_message, _, notice, ^details}
-        assert notice.message_id == message_id
-        assert notice.body == "Keep this answer\n\nDelivery was not confirmed."
-        refute Map.has_key?(notice.metadata, :on_reply)
-        refute Map.has_key?(notice, :attachments)
-      end
-
       refute_received {:bridge_upsert_message, _, _, _}
       refute_received {:confirmed_email_history, _}
     end
   end
 
-  test "legacy errors do not trigger attachment fallback" do
+  test "legacy transport errors are normalized without retrying attachment publication" do
     Process.put(:chat_delivery_response, {:error, :timeout})
 
     outgoing = %Outgoing{
@@ -1034,8 +1074,13 @@ defmodule Zaq.Channels.ApiTest do
         opts: [action: :deliver_outgoing, bridge_module: StubCommunicationBridge]
       )
 
-    assert Api.handle_event(event, :deliver_outgoing, nil).response == {:error, :timeout}
-    assert_received {:bridge_send_reply, _, _}
+    assert {:error,
+            %DeliveryError{cause: :timeout, reason: {:attachment_delivery_failed, report}}} =
+             Api.handle_event(event, :deliver_outgoing, nil).response
+
+    assert report.messages == []
+    assert_received {:bridge_delivery_step, _, _, _}
+    refute_received {:bridge_delivery_step, _, _, _}
     refute_received {:bridge_send_reply, _, _}
     refute_received {:bridge_upsert_message, _, _, _}
   end
@@ -1058,9 +1103,12 @@ defmodule Zaq.Channels.ApiTest do
         opts: [action: :deliver_outgoing, bridge_module: StubCommunicationBridge]
       )
 
-    assert Api.handle_event(event, :deliver_outgoing, nil).response == {:ok, %{}}
-    assert_received {:bridge_send_reply, delivered, details}
-    assert delivered.attachments == [record]
+    assert {:ok, %{confirmation: :confirmed}} =
+             Api.handle_event(event, :deliver_outgoing, nil).response
+
+    assert_received {:bridge_delivery_step, _, inputs, details}
+    assert inputs.outgoing.attachments == []
+    assert [%{content: <<255, 0>>, attachment_index: 0}] = inputs.files
     assert details.trusted_context == %TrustedContext{actor: actor, skip_permissions: false}
     assert details.token == "token"
   end
@@ -1083,8 +1131,10 @@ defmodule Zaq.Channels.ApiTest do
           ]
         )
 
-      assert Api.handle_event(event, :deliver_outgoing, nil).response == {:ok, %{}}
-      assert_received {:bridge_send_reply, _, details}
+      assert {:ok, %{confirmation: :confirmed}} =
+               Api.handle_event(event, :deliver_outgoing, nil).response
+
+      assert_received {:bridge_delivery_step, _, _, details}
       assert details.trusted_context == %TrustedContext{actor: nil, skip_permissions: bypass}
     end
   end

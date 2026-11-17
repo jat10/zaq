@@ -4,8 +4,9 @@ defmodule Zaq.Channels.DeliveryConfirmation do
 
   Transport success is preserved even if the downstream consumer is unavailable;
   reporting a receipt must never cause the accepted message to be resent.
-  The confirmation copy clears attachment content while preserving Records and
-  their materialization handles, and retains only canonical metadata IDs.
+  The confirmation copy removes the private delivery plan and clears attachment
+  content while preserving Records and their materialization handles. Metadata
+  retains only canonical IDs.
   """
 
   alias Zaq.Contracts.Record
@@ -23,7 +24,7 @@ defmodule Zaq.Channels.DeliveryConfirmation do
 
         part = %{
           outgoing
-          | body: Map.get(receipt, :body, outgoing.body),
+          | body: confirmation_body(receipt, outgoing),
             thread_id: receipt[:thread_id],
             attachments: attachments
         }
@@ -47,6 +48,7 @@ defmodule Zaq.Channels.DeliveryConfirmation do
     outgoing = %{
       outgoing
       | attachments: Enum.map(attachments, &%{&1 | content: nil}),
+        delivery_plan: nil,
         metadata:
           Map.take(outgoing.metadata || %{}, [
             :user_message_id,
@@ -76,6 +78,12 @@ defmodule Zaq.Channels.DeliveryConfirmation do
   end
 
   def record(response, _outgoing, _opts), do: response
+
+  defp confirmation_body(%{delivery_part_index: index} = receipt, outgoing)
+       when is_integer(index),
+       do: Map.get(receipt, :body, outgoing.body)
+
+  defp confirmation_body(_receipt, outgoing), do: outgoing.body
 
   defp put_confirmed_attachment_metadata(
          %{delivered_attachment_indices: _} = receipt,
