@@ -19,11 +19,15 @@
     {
       "text": "Jido migration progress: retired adapter policy requirement/forwarding removed; independent max_upload_request_size forwarded; SDK requirements and exact prepare/upload callbacks integrated; one-post create/edit uses uploaded references and requires provider identity for planned creates; callbacks finalize once. Direct attachment callers reuse planner/executor. All46 focused Jido/adapter-option/result checks PASS in combined run; ordinary text/status edit fixed by correcting stub to return the edited ID, and batch fixture IDs corrected from invalid filenames to opaque valid IDs. Provider request, identity, byte and no-retry assertions retained. Explicit request limits added to fixtures. API integration now enters DeliveryFiles;11 API tests still model old bridge-owned preparation/raw errors and await additional explicit test-behavior approval requested in current session. Parent approval already covers moved splitting/policy assertions. No pins altered.",
       "timestamp": "2026-11-17T12:49:01Z"
+    },
+    {
+      "text": "Additional unchanged-producer preflight:66/68 checks pass (10 properties) for Agent selection/AttachDocuments, NotifyPerson, notification attachments and confirmation. Both remaining cases are fixture-only: missing explicit SMTP size/count and Mattermost request ceiling. Added those explicit fixture values without changing Agent production code, selection assertions, real materialization or provider requests. Migration record: legacy bridge-preparation/raw-error API scenarios have a pending additional approval request; do not edit those expectations until approved.",
+      "timestamp": "2026-11-17T13:08:42Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.6] Integrate Channels API and Jido bridge with planned operations",
   "type": "task",
-  "updated_at": "2026-11-17T12:49:01Z"
+  "updated_at": "2026-11-17T13:08:42Z"
 }
