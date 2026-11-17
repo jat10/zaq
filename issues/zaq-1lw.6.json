@@ -11,9 +11,15 @@
   "id": "zaq-1lw.6",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Incoming compatibility handoff from work-pim.6: new provider commits are resolved in mix.exs/mix.lock (MM73b7e10, SDKf176793). Existing bridge still requires/forwards retired attachment_failure_policy and AdapterOptions does not forward max_upload_request_size. Current focused tests fail22 tests+1 property (20 in jido_chat_delivery_test.exs,3 in disk_file_delivery_integration_test.exs). Ordinary string-provider status edit at delivery_test.exs:448 also returns unconfirmed; investigate actual returned post identity in fixture when migrating. Keep prior identity/normalization correctness, remove policy forwarding and implement planned host operations; do not restore provider orchestration or weaken tests. ZAQ mix q and direct resolved-provider contract probe pass. No host implementation performed by pin-update task.",
+      "timestamp": "2026-11-17T11:59:27Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.6] Integrate Channels API and Jido bridge with planned operations",
   "type": "task",
-  "updated_at": "2026-11-16T12:08:14Z"
+  "updated_at": "2026-11-17T11:59:27Z"
 }
