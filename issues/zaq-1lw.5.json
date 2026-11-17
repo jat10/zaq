@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-1lw.4"
   ],
@@ -13,8 +13,8 @@
   "labels": [],
   "parent": "zaq-1lw",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-1lw.5] Execute shared delivery steps and failure policies",
   "type": "task",
-  "updated_at": "2026-11-17T12:10:03Z"
+  "updated_at": "2026-11-17T12:27:21Z"
 }
