@@ -20,11 +20,15 @@
     {
       "text": "Four newly added regressions failed before fixes (private-plan property, oversized-MIME API fallback, split history, promoted-root history) and all now pass. Focused integrated validation PASS226 including7 properties. Engine source untouched: later confirmed messages receive existing delivery_part_index\u003e0 after receipt coalescing; promoted first success keeps canonical identity. Confirmation clears plan plus Record.content. Removed broad API fallback/unknown-send upsert paths and duplicate EmailBridge preparation/policy logic; malformed producer-list compatibility notices now use the same planner/executor, retain canonical answer and original error, and obey text limits. Only remaining compile warning was an unused legacy text argument, corrected.",
       "timestamp": "2026-11-17T13:40:36Z"
+    },
+    {
+      "text": "Complete: mix q PASS;80 focused history/privacy/units/Agent-history checks PASS including7 properties; broader confirmation/API/Jido/email regression pass226 including7 properties. Four new regressions fail before fixes and pass after. New continuation indices use Engine existing contracts; no Engine production change. Private plan stripping independently property-tested. Existing Record/source-handle transient contract and provider evidence precedence retained. API compatibility notice for malformed producer lists now uses shared preparation/execution, while MIME/configuration failures cannot bypass limits. Email bridge no longer prepares/groups/applies policy on its own; ordinary no-plan text sends directly through existing sender. No commits.",
+      "timestamp": "2026-11-17T13:44:52Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.8] Reuse delivery confirmation and remove duplicate ZAQ orchestration",
   "type": "task",
-  "updated_at": "2026-11-17T13:40:36Z"
+  "updated_at": "2026-11-17T13:44:52Z"
 }
