@@ -13,11 +13,15 @@
     {
       "text": "Baseline reproduced in isolation: 1/4 pass, stale/missing metadata have zero MIME attachments and selection failure returns continue partial success rather than old selection error. Latest user explicitly authorizes disclosed test migration: real delivery-plan path, explicit SMTP limits and obsolete continue-policy expectation updated with failure reporting. Reuse existing connector!/2, FileDeliverySmtpStub, EmailBridge, Api/DeliveryConfirmation and Engine history; remove incomplete EmailTransport wrapper and resolve real EmailBridge. Preserve exact byte/metadata/canonical-history/privacy assertions and strengthen plan/content boundary checks. Action reuse: test-only migration, existing domain operations reused; no new Action/tool/transport or orchestration. Plan: migrate this suite, run it first, investigate any remaining failures as potential production defects, run relevant email/confirmation/history suites and mix q. Telegram/Discord untouched; no commit/push.",
       "timestamp": "2026-11-17T20:07:37Z"
+    },
+    {
+      "text": "Completed test-only migration in existing test/zaq/channels/email_confirmation_integration_test.exs. Resolver selects real EmailBridge directly; removed incomplete wrapper. SMTP connector now declares 10_000_000 encoded bytes and 10 attachments. Approved continue-policy scenario asserts successful partial result, one confirmed text receipt, explicit selection-stage/not_sent safe failure evidence and no delivered attachments/uploads/unattempted steps. Exact MIME attachment bytes/names unchanged; stale size999 still persists actual size4, absent metadata still yields attachment/application/octet-stream. Added envelope, confirmation-after-acceptance, content-cleared/plan-free Engine request, stripped private delivery indices, and persisted metadata/attachment privacy assertions; canonical answer and TranscriptMessage assertions preserved. Investigated initial added index-field assertion failure: DeliveryConfirmation deliberately strips delivered_attachment_indices before Engine/public response (existing owner contract); assert its absence and zero confirmed attachment Records instead. No production defect found and no production changes made. No new property required for four finite scenarios; existing confirmation/history properties reused in focused run. Validation: baseline 1/4 (three failures), migrated suite 4/4, combined email/SMTP/confirmation/Engine history suites 163 passed (7 properties, 156 tests), mix q PASS, git diff --check PASS. Logs /tmp/zaq-1lw19-before.log, /tmp/zaq-1lw19-migrated.log, /tmp/zaq-1lw19-regression.log, /tmp/zaq-1lw19-q.log. Snapshot check confirms all prior uncommitted files and pins unchanged; only target existing suite modified. Telegram/Discord untouched; separate Telegram limitation/failure remains outside this issue. No commit/push.",
+      "timestamp": "2026-11-17T20:10:22Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.19] Migrate SMTP history integration tests to shared delivery plans",
   "type": "bug",
-  "updated_at": "2026-11-17T20:07:37Z"
+  "updated_at": "2026-11-17T20:10:22Z"
 }
