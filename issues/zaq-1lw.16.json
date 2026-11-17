@@ -11,11 +11,15 @@
     {
       "text": "User clarified this is temporary live-observation instrumentation and objected to testing the logger. Removed the added logger capture test and its test-only logging configuration. Keeping diagnostic production hooks only; no further logger tests. Existing delivery behavior checks previously passed; temporary trace work remains scoped to live investigation and later removal.",
       "timestamp": "2026-11-17T17:40:52Z"
+    },
+    {
+      "text": "User requested project-root file output instead of Logger/module-level configuration after seeing only AttachDocuments file_too_large (size348160,limit307200,zaq-file-2.txt). Trace now appends directly to root file-delivery-trace.log, ignored by Git; existing step/root/timeout/skip diagnostics share the attempt ID. Added Channels attachment-validation start/result events (including safe size/limit facts), outgoing arrival, explicit no-selected-attachments text-only path and planning failures so rejection before executor is visible. No Agent selection or limits changed, no logger tests. Running IEx must recompile changed modules once before repeating live request.",
+      "timestamp": "2026-11-17T17:45:54Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.16] Temporary correlated file-delivery trace logging",
   "type": "task",
-  "updated_at": "2026-11-17T17:40:52Z"
+  "updated_at": "2026-11-17T17:45:54Z"
 }
