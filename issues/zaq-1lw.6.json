@@ -35,11 +35,15 @@
     {
       "text": "Explicit additional approval received2026-11-17 from current user: Approve these API test migrations. Covers the11 disclosed API scenarios moving raw Records/bridge-owned preparation/opaque fallback expectations to real DeliveryFiles plus planned operations and normalized reports, preserving trusted actors, canonical answer/selection notices, no retry after unknown sends and actual confirmation only. Applying the concrete reviewed proposal now.",
       "timestamp": "2026-11-17T13:24:11Z"
+    },
+    {
+      "text": "Completed Jido/API migration and explicitly approved existing test changes. Combined mix q PASS;301 bridge/API/planner/executor/SMTP checks PASS including11 properties. All23 original work-pim.6 host incompatibilities now pass, including ordinary string-provider edit identity. Added actual SDK/provider scenarios proving one message consumes exactly two planned upload calls and unknown first publication promotes a later root without retry; final callback fires once with post3. Source Records excluded from operation inputs, planned provider IDs required, no policy forwarding, no hidden provider orchestration. Pins preserved. Existing59 Chromium regressions and68 unchanged producer checks also pass. No commit/push.",
+      "timestamp": "2026-11-17T13:31:24Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.6] Integrate Channels API and Jido bridge with planned operations",
   "type": "task",
-  "updated_at": "2026-11-17T13:24:11Z"
+  "updated_at": "2026-11-17T13:31:24Z"
 }
