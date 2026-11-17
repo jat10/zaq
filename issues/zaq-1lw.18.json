@@ -13,11 +13,15 @@
     {
       "text": "Implementation authorized by latest user request. Test migration disclosed in zaq-1lw.18 and explicitly requested: replace Mattermost option suppression with uniform shared-option forwarding for identical connection settings (atom/string Mattermost and other providers); retain other-adapter ceiling assertions and strengthen actual pinned Mattermost HTTP regression with obsolete-option inputs as well as absence. Action reuse: extend existing AdapterOptions.build/2 and JidoChatBridge.file_requirements/2 trace; local configuration/diagnostic details, no new business operation, Action, callback or tool. Adapters remain authoritative for requirements; existing planner/executor own grouping, timing and failure policy. Plan: regress uniform forwarding in existing suite; remove provider branch/config read; verify actual adapter with absent/obsolete ceiling, declared ceilings, required-value failures, SMTP/text/privacy; inspect safe trace allowlist; mix q and pin/unrelated-diff checks. No E2E needed for this boundary correction; epic UX gate remains pending. No application commit/push.",
       "timestamp": "2026-11-17T19:42:37Z"
+    },
+    {
+      "text": "Implementation progress: removed provider-name filtering from AdapterOptions.build/2; identical supported options are forwarded for all providers. Removed Mattermost app-env/defaults read from JidoChatBridge requirements tracing; existing selected-adapter result/mapped-requirements trace remains. Updated directly affected module/service docs. Existing suppression test migrated to uniform-forwarding property over atom/string providers, atom/string settings, direct-value precedence, transport and local policy exclusion. RED reproduced missing option before fix; focused suite now 93 passed (10 properties, 83 tests). Actual pinned Mattermost adapter/ReqClient HTTP-boundary scenario runs absent, top-level one-byte obsolete option and nested one-byte obsolete option, each under abort/continue, retaining auth, exact upload/post counts, original indices, root/thread and no-extra-request assertions. Existing positive-ceiling splitting/omission and invalid-required-value assertions preserved. This is a local HTTP stub at external transport, not a live Mattermost send. mix q passed. Audit of 588 current-run requirements trace lines: no provider defaults, credentials, prepared requests or file content; four obsolete-option lookups resolve through actual adapter to not_applicable. Outgoing coupling audit finds only pre-existing DM/incoming thread provider defaults outside requested scope, untouched. Pins byte-identical and dependency checkout clean; diff --check passed. Additional bridge/API/SMTP/text regression suite running.",
+      "timestamp": "2026-11-17T19:46:32Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-1lw.18] Remove Mattermost-specific leakage from generic delivery bridge",
   "type": "bug",
-  "updated_at": "2026-11-17T19:42:37Z"
+  "updated_at": "2026-11-17T19:46:32Z"
 }
