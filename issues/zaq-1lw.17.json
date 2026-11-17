@@ -22,11 +22,15 @@
     {
       "text": "DONE validation:401/401 regression checks PASS (19 properties,382 tests), log /tmp/zaq-1lw17-regression.log. Focused105/105 PASS incl real corrected Mattermost SDK requirements + real ReqClient exact multipart preparation/HTTP upload/post:15 files produce10+5, two uploads and two confirmed threaded posts under both abort and continue without request ceiling; authorization header, body bytes/filenames, returned IDs, indices and no extra requests asserted. Pure bridge boundary also covers truly absent key despite strict pinned SDK facade; invalid/unresolved upload values and missing file/count constraints remain configuration errors. Positive-ceiling split/omission scenarios retain their assertions through explicitly limited adapter; SMTP limit suites pass unchanged. RED captured all5 new regressions before production fix (/tmp/zaq-1lw17-red.log). mix q PASS (/tmp/zaq-1lw17-q.log); git diff --check PASS. SDKf176793 and Mattermost98cd98c pins byte-for-byte preserved; deps clean, no commits/pushes. Existing within_limit?(:not_applicable) already skips the ceiling, so planner production needed no redundant branch. Obsolete Mattermost forwarding/debug inputs removed; native request/body measurement unchanged. This correction supersedes earlier epic/Page rule requiring a request ceiling solely for upload_then_publish. Real HTTP provider-edge stubs were used; authenticated live Mattermost run is separate and not claimed. Existing UX/E2E/review/coverage/final-precommit gates remain open; no new browser tests or Agent/SMTP production edits.",
       "timestamp": "2026-11-17T19:24:20Z"
+    },
+    {
+      "text": "Authenticated user-driven live Mattermost trace now confirms success at2026-11-17T19:27:02Z, correlation d1af6913-0ab9-4acc-8351-2c993f705534. Actual adapter returns max_upload_request_size:not_applicable; mapped FileRequirements validation:ok.14 selected files (file2 excluded) materialized into10+4 groups; two uploads confirmed14 real provider file IDs (569ms,284ms), existing streamed post qmiy54cmdi86pdqw5htujcbyzw edited with first10 (331ms), threaded continuation773dm7z8jbyozynhe9zpumm1wr sent with remaining4 (409ms, continuation:true). Final confirmation:confirmed, failed_attachment_indices:[],unattempted_steps:[],total1677ms. Evidence root file-delivery-trace.log; no assistant-triggered provider messages. This is live transport confirmation, not a claim that all provider live-suite/coverage gaps are resolved.",
+      "timestamp": "2026-11-17T19:28:01Z"
     }
   ],
   "priority": 1,
   "status": "closed",
   "title": "[zaq-1lw.17] Remove blanket upload-request size requirement",
   "type": "bug",
-  "updated_at": "2026-11-17T19:24:21Z"
+  "updated_at": "2026-11-17T19:28:01Z"
 }
