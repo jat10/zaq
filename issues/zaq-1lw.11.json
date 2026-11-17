@@ -15,11 +15,15 @@
     {
       "text": "Existing E2E execution on SMTP iteration could not launch browsers: npm run test hit asdf Python playwright shim (no local Playwright binary, unavailable python3.13.0), exit126 after bootstrap. Resolve local Node Playwright execution before final validation; preserve new-authoring gate .10. Evidence /tmp/zaq-1lw-existing-e2e.log.",
       "timestamp": "2026-11-17T12:23:02Z"
+    },
+    {
+      "text": "Existing browser regressions now PASS:59 Chromium channel/system-config checks after restoring locked local Node dependencies. Initial global asdf shim blocker is resolved. New consolidated SMTP-limit/delivery feature scenarios remain unauthored pending completed-UX gate .10. Log /tmp/zaq-1lw-existing-e2e.log.",
+      "timestamp": "2026-11-17T13:12:21Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.11] Extend the existing consolidated channel delivery E2E",
   "type": "task",
-  "updated_at": "2026-11-17T12:23:02Z"
+  "updated_at": "2026-11-17T13:12:21Z"
 }
