@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-17T11:57:11Z",
@@ -7,8 +7,8 @@
   "id": "zaq-fef",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Build local ZAQ Floorplan architecture map",
   "type": "task",
-  "updated_at": "2026-11-17T11:57:11Z"
+  "updated_at": "2026-11-17T11:57:21Z"
 }
