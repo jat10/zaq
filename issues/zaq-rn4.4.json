@@ -39,11 +39,15 @@
     {
       "text": "Execution authorized by latest user instruction to proceed with delegated local redistribution, superseding planning-only wording. Source verified clean at 14fee186e915719a1c91a4d1ac1a4c7c1e8b425b; source remains untouched. Recovery refs refs/recovery/channel-files/20261117T234401/pr1..pr4 and binary working patches checkpoint all prior heads/config changes. All three existing .serena/project.yml changes are preserved. Actual scoped staged edits applied; no commit/push/publication. Ownership ledger: PR4 retains canonical history/continuation persistence and complete journey consolidation. Applies source SMTP confirmation and HistoryIngress migration .19. Reconciles source declared upload-limit settings with existing MessageJourney fixture consolidation, retaining all consolidated assertions. Accepted executor timeout/first-surviving edit (.15), optional upload ceiling (.17), generic bridge (.18), SMTP history (.19) are included from immutable source delta.",
       "timestamp": "2026-11-17T21:51:10Z"
+    },
+    {
+      "text": "Redistributed local tree validation: mix q PASS; history/SMTP confirmation/complete journeys PASS 108/109 checks (2 properties, 106/107 tests), 21 real-browser cases excluded by standard test helper. Only failure is existing TelegramHistoryDeliveryTest at line58 expecting an image document send; accepted source deliberately leaves Telegram files unsupported and returns invalid_file_requirements. This stale test exists unchanged in source and stack. Assertions retained pending human test-behavior approval; no adapter support added. Source SMTP history migration .19 cases pass. Formatter-only layout adjustment staged. Local staged tree a89d11f360853628c0f8f2d637e4b9b08a2023d7. No commit/push/publication.",
+      "timestamp": "2026-11-17T21:57:45Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.4] PR4: Conversation history and complete attachment journeys",
   "type": "task",
-  "updated_at": "2026-11-17T21:51:10Z"
+  "updated_at": "2026-11-17T21:57:45Z"
 }
