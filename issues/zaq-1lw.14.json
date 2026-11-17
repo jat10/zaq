@@ -1,7 +1,8 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-1lw.13"
+    "zaq-1lw.13",
+    "zaq-rn4.4"
   ],
   "blocks": [],
   "created": "2026-11-16T12:08:33Z",
@@ -13,5 +14,5 @@
   "status": "open",
   "title": "[zaq-1lw.14] Redistribute validated changes into the existing PR stack",
   "type": "task",
-  "updated_at": "2026-11-17T21:40:24Z"
+  "updated_at": "2026-11-17T21:40:26Z"
 }
