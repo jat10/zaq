@@ -6,9 +6,15 @@
   "description": "Generate only ignored floorplan/ artifacts; inspect source read-only. Action reuse assessment: not applicable, no executable ZAQ operation changes. Inspect architecture and trace question/ingestion, build subsystem map, describe scanned files in disjoint groups, validate Floorplan, open browser. No source changes or Git/PR mutations.",
   "id": "zaq-fef",
   "labels": [],
+  "comments": [
+    {
+      "text": "Initial map: 61 nodes, 51 explicit source-traced connections, 3 walkthroughs. Scanner sees 2159 code files, 2061 Elixir; no Phoenix routes/Elixir imports resolved. Explicit annotation records scanner limitations. Preparing disjoint file-description work under ignored floorplan/.",
+      "timestamp": "2026-11-17T12:00:18Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Build local ZAQ Floorplan architecture map",
   "type": "task",
-  "updated_at": "2026-11-17T11:57:21Z"
+  "updated_at": "2026-11-17T12:00:18Z"
 }
