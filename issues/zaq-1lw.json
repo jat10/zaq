@@ -22,11 +22,15 @@
     {
       "text": "zaq-1lw.17 complete with user-approved contract test migrations. Corrected provider98cd98c already pinned/resolved; host now accepts adapter non-applicable upload ceilings and normalizes only absent optional keys. Supersedes earlier epic/linked Page wording that every separate upload needs a positive request ceiling; other declared ceilings and required SMTP settings remain enforced. Actual Mattermost Adapter+ReqClient HTTP tests cover upload/post10+5 under stop/continue with no ceiling.401 checks PASS, mix q and diff-check PASS. No pins changed, deps edited, commits or pushes. .17 closed; remaining existing UX/E2E/review/coverage/final gates unchanged. Live retry requires running node to load corrected dependency/host modules; live success not claimed.",
       "timestamp": "2026-11-17T19:24:23Z"
+    },
+    {
+      "text": "User explicitly authorized commit and push. Committed accumulated 46-file Channel file-delivery implementation and fixes as 14fee186e (feat(channels): centralize file delivery planning and execution (zaq-1lw)); pushed fast-forward to origin/feat/channel-files on jat10/zaq. Commit pre-commit qf and Conventional Commit check passed; pre-push format passed. Recent focused validation remains recorded per child issue, including zaq-1lw.19 email/history 163 passed and mix q. No merge performed. Pending UX/E2E/review/coverage/final-precommit gates and separately tracked Mattermost coverage gap remain open; publication is not a claim of epic completion. Dependency pins retained; temporary tracing removed.",
+      "timestamp": "2026-11-17T21:24:01Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw] Implement shared Channel file delivery plans",
   "type": "epic",
-  "updated_at": "2026-11-17T19:24:23Z"
+  "updated_at": "2026-11-17T21:24:01Z"
 }
