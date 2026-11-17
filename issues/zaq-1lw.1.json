@@ -13,11 +13,15 @@
     {
       "text": "External work-pim.1-.4 local implementation/review complete; work-pim.5 coverage/publication handoff underway. Corrected dependency code has NO fetchable immutable revisions yet; no commits/pushes authorized, and work-pim.6 has not edited this worktree pins. Gate remains open. Provider API: file_requirements, pure prepare_upload, upload_prepared, uploaded_files native opt-in, single create/edit. Host migration must remove adapter policy forwarding/requirement and forward independent max_upload_request_size. Exact static blockers recorded in work-pim.6; transfer host-only verification to zaq-1lw.6/.9 once published provider revisions are applied, avoiding an epic closure cycle.",
       "timestamp": "2026-11-16T13:18:03Z"
+    },
+    {
+      "text": "Published provider refs now available and APPLIED in this exact worktree per explicit user instruction: Mattermost73b7e10f44e14bf8b7774d584d88c29332f7a49f; SDKf17679337a9975bee43b9540cb08ac5cfc12b86a (jat10 fork). mix.exs+mix.lock updated/resolved, only those dependency entries differ. Provider source confirms file_requirements/prepare_upload/upload_prepared/uploaded_files-native and absence of automatic batching/policy/fanout. ZAQ mix q passes and actual resolved public provider-contract probe passes. Focused compatibility tests152/175 pass,23 failures in old-host policy/file-delivery flows; work-pim.6 records exact paths and remains open. Host-only verification transfers to zaq-1lw.6/.9 rather than waiting for external epic closure. No ZAQ application/tests modified, pin files remain uncommitted. Work-pim.5 retains coverage/live gap independently of now-resolved fetchability.",
+      "timestamp": "2026-11-17T11:59:26Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.1] Gate: verify completed Mattermost prerequisites and adopted revisions",
   "type": "task",
-  "updated_at": "2026-11-16T13:18:03Z"
+  "updated_at": "2026-11-17T11:59:26Z"
 }
