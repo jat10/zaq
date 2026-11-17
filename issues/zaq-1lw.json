@@ -14,11 +14,15 @@
     {
       "text": "Implementation children .1-.9 are complete and validated. Gate .1 verified resolved published contracts; pins remain SDK f17679337a9975bee43b9540cb08ac5cfc12b86a / Mattermost73b7e10f44e14bf8b7774d584d88c29332f7a49f. Original23 host failures resolved:exact compatibility suite178 PASS; full journeys131 PASS; q/diff-check PASS. Host adoption work-pim.6 closed; work-pim.5 deliberately remains in_progress for Mattermost91.2%/95% coverage and authenticated-live evidence. User approved test migrations (policy/ordering/fixtures, API boundary, SMTP normalized error) and assertions were preserved outside that scope. Completed UX review /tmp/zaq-1lw-ux-review.html presented; .10 awaiting explicit UX acceptance, .11 feature E2E remains blocked. .12 review, .13 coverage/final precommit and .14 stack handoff remain pending in dependency order. No application commit/push/merge; original dependency diffs preserved. Isolated review server stopped after screenshots; DB limits restored.",
       "timestamp": "2026-11-17T14:05:10Z"
+    },
+    {
+      "text": "Review fixes zaq-1lw.15 completed: all planned transport steps now enforce configured supervised deadlines, and first surviving publication reuses a streamed-message edit after leading groups are omitted. Regressions added first; six RED failures reproduced. Final broader focused384 PASS (18 properties), mix q and diff-check PASS. Existing test scenarios/assertions and pinned SDK/Mattermost files preserved. .15 closed; .10 UX acceptance, .11 feature E2E and subsequent review/coverage/final gates retain their recorded status. No commit/push.",
+      "timestamp": "2026-11-17T14:35:00Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw] Implement shared Channel file delivery plans",
   "type": "epic",
-  "updated_at": "2026-11-17T14:05:10Z"
+  "updated_at": "2026-11-17T14:35:00Z"
 }
