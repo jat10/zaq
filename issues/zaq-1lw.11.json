@@ -11,9 +11,15 @@
   "id": "zaq-1lw.11",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Existing E2E execution on SMTP iteration could not launch browsers: npm run test hit asdf Python playwright shim (no local Playwright binary, unavailable python3.13.0), exit126 after bootstrap. Resolve local Node Playwright execution before final validation; preserve new-authoring gate .10. Evidence /tmp/zaq-1lw-existing-e2e.log.",
+      "timestamp": "2026-11-17T12:23:02Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.11] Extend the existing consolidated channel delivery E2E",
   "type": "task",
-  "updated_at": "2026-11-17T12:10:14Z"
+  "updated_at": "2026-11-17T12:23:02Z"
 }
