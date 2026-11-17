@@ -17,11 +17,15 @@
     {
       "text": "RED before production edits:31/37 passed; all five new deadline cases remained blocked beyond the configured50ms deadline, and new omission property produced send1 rather than edit1 (log /tmp/zaq-1lw15-red.log). Shared run_steps now applies existing supervised stream timeout to uploads, sequential stop, root election and singleton publications; no nested worker layer or retry. Planner chooses first surviving group for edit while keeping original IDs. First GREEN focused run208/208 PASS (8 properties,200 tests; /tmp/zaq-1lw15-focused.log). Mechanical fixture repairs route observations/state reads through task caller ancestry; batch post counts use per-test atomics across worker processes. No expected values/assertions removed or changed. Added further integration checks for actual streamed edit after omission/all-omitted fallback and continue after upload timeout; broader validation next.",
       "timestamp": "2026-11-17T14:32:21Z"
+    },
+    {
+      "text": "Final GREEN:384/384 checks PASS (18 properties,366 tests) across existing executor, attachment_policy, delivery_files, Jido delivery, API, delivery_error, Agent attachment journeys, disk/email integration, confirmation, SMTP sender/outgoing attachments, Engine history/notification attachments and Agent selection suites. Log /tmp/zaq-1lw15-broader.log. mix q PASS (formatting/hooks/Credo/docs; /tmp/zaq-1lw15-q.log); git diff --check PASS. Initial RED log /tmp/zaq-1lw15-red.log proves five blocked execution paths and omitted-leading-group edit defect before production fixes. Added tests also cover sole send/edit in both placements, continue upload progress, several omitted groups property, partial first group, missing streamed ID, and actual Jido upload/edit plus all-omitted streamed-text fallback. All existing assertions retained; fixture observations and process-local error values made task-owner aware, per-test atomic counter preserves multi-operation transport state. Every upload/send/edit uses shared supervised run_steps, with bounded concurrency, cleanup and unknown certainty, sequential stop barrier and no retries. Existing streamed edit selected by first surviving group without renumbering. Module/service docs clarify guarantees. mix.exs and mix.lock byte-identical to start-of-task snapshots; no application commit/push/merge. Final epic review/E2E/coverage/precommit remain in their existing gated issues; no UX self-approval. Separate Mattermost gap work-pim.5 remains recorded and open.",
+      "timestamp": "2026-11-17T14:34:57Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-1lw.15] Fix delivery deadlines and streamed-message reuse after omitted groups",
   "type": "bug",
-  "updated_at": "2026-11-17T14:32:21Z"
+  "updated_at": "2026-11-17T14:34:57Z"
 }
