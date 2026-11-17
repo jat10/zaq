@@ -24,11 +24,15 @@
     {
       "text": "SMTP integration functional validation:104/105 checks pass including6 properties across SMTP sender/outgoing, exact size grouping, final-header overflow rejection, no retry, existing HTML tests, real SMTP, real Mattermost and mixed-provider journeys. All23 recorded original host-compatibility failures now pass in their migrated Jido/disk suites. Remaining SMTP test expects exact bare DeliveryError for attachment attempts; additional approval requested to assert normalized report plus raw private cause, safe message, stage/certainty. Raw stop-preparation reasons were preserved without changing existing assertions. Exact MIME seam includes pinned gen_smtp1.3.0 DATA CRLF framing; captured raw DATA equals measured prepared bytes. No encoder copy, automatic retry, or encoded payload in Swoosh telemetry. New Prepared struct inspection hides email/bytes. mix q found one alias-style item, corrected; revalidation pending.",
       "timestamp": "2026-11-17T13:05:32Z"
+    },
+    {
+      "text": "Final functional state before required test approval: exact SMTP data framing/size, count groups, fresh per-email IDs, continuation threading, final-header overflow rejection, temporary rejection with retries0, selected sender, raw-byte properties and real mixed journeys pass. All authorized focused migration suites PASS154 including10 properties; unchanged producer suites PASS68 including10 properties; existing Chromium browser regressions PASS59. One old bare SMTP attachment error equality remains intentionally unchanged until user approval; normalized error now keeps the original raw cause privately and the original safe SMTP message/stage/certainty.",
+      "timestamp": "2026-11-17T13:21:41Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.7] Integrate exact MIME sizing and planned SMTP execution",
   "type": "task",
-  "updated_at": "2026-11-17T13:05:32Z"
+  "updated_at": "2026-11-17T13:21:41Z"
 }
