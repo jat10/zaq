@@ -16,11 +16,15 @@
     {
       "text": "Starting independent ready SMTP integration while .6 API test migration awaits explicit additional approval. Prerequisites .3/.5 complete. Action reuse: extend existing SmtpSender composition and Mailer submission, reuse locked Swoosh1.27.0 Helpers.body/sender and SMTP.gen_smtp_config; no MIME encoder copy or new pipeline. Refine seam within existing SmtpSender as a Swoosh adapter consuming frozen prepared body when explicit SMTP settings select SMTP. Other configured Mailer adapters retain existing behavior when no relay is configured; real SMTP submits the exact measured bytes with retries0. Frozen selected settings and connector ID stay in connection, never in plan. EmailBridge supplies pure candidate preparation and single submission only; shared planner/executor owns groups/policy. Final header/body changes reuse frozen Message-ID/Date and are re-encoded/revalidated before submission.",
       "timestamp": "2026-11-17T12:53:02Z"
+    },
+    {
+      "text": "MIME seam refinement before implementation: source inspection shows generated Zaq.Mailer.deliver emits email and config in Swoosh telemetry. Passing prepared bytes through adapter config would leak private payloads. Use existing SmtpSender for direct pinned Helper encoding plus gen_smtp one-attempt submission, avoiding that instrumentation. Zaq.Mailer has no custom hooks. For the existing no-relay configured Mailer sink, reuse pinned Swoosh.Mailer.parse_config/deliver dispatcher without generated telemetry; retain the configured adapter and composition. No new SMTP adapter module and no encoder copy. This supersedes the preceding self-adapter proposal.",
+      "timestamp": "2026-11-17T12:54:13Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.7] Integrate exact MIME sizing and planned SMTP execution",
   "type": "task",
-  "updated_at": "2026-11-17T12:53:02Z"
+  "updated_at": "2026-11-17T12:54:13Z"
 }
