@@ -18,11 +18,15 @@
     {
       "text": "Review fixes zaq-1lw.15 completed: all planned transport steps now enforce configured supervised deadlines, and first surviving publication reuses a streamed-message edit after leading groups are omitted. Regressions added first; six RED failures reproduced. Final broader focused384 PASS (18 properties), mix q and diff-check PASS. Existing test scenarios/assertions and pinned SDK/Mattermost files preserved. .15 closed; .10 UX acceptance, .11 feature E2E and subsequent review/coverage/final gates retain their recorded status. No commit/push.",
       "timestamp": "2026-11-17T14:35:00Z"
+    },
+    {
+      "text": "zaq-1lw.17 complete with user-approved contract test migrations. Corrected provider98cd98c already pinned/resolved; host now accepts adapter non-applicable upload ceilings and normalizes only absent optional keys. Supersedes earlier epic/linked Page wording that every separate upload needs a positive request ceiling; other declared ceilings and required SMTP settings remain enforced. Actual Mattermost Adapter+ReqClient HTTP tests cover upload/post10+5 under stop/continue with no ceiling.401 checks PASS, mix q and diff-check PASS. No pins changed, deps edited, commits or pushes. .17 closed; remaining existing UX/E2E/review/coverage/final gates unchanged. Live retry requires running node to load corrected dependency/host modules; live success not claimed.",
+      "timestamp": "2026-11-17T19:24:23Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw] Implement shared Channel file delivery plans",
   "type": "epic",
-  "updated_at": "2026-11-17T14:35:00Z"
+  "updated_at": "2026-11-17T19:24:23Z"
 }
