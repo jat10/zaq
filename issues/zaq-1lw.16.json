@@ -31,11 +31,15 @@
     {
       "text": "Live trace18:25:33Z now conclusively identifies configuration blocker, correlation3f3d3564-64c2-4c79-abf5-243c92a12295: adapter options contain ONLY max_file_size307200; Mattermost application default max_upload_request_size nil; actual SDK returns {:ok,%{max_file_size:307200,max_upload_request_size::unresolved,max_files_per_post:10}}. ZAQ maps upload_then_publish and max_upload_request_bytes::unresolved with native threads/attachment edits, validation fails stageconfiguration/not_sent. Continue collapses14 files to an attachment-free streamed edit, confirmed227ms, reportpartial with indices0..13 failed. Thus independent missing upload-request byte ceiling is proven, hardcoded10-file count is valid; no uploads attempted. No settings or failure-policy changes made.",
       "timestamp": "2026-11-17T18:41:22Z"
+    },
+    {
+      "text": "Provider-vs-host distinction verified after user challenge. Mattermost official environment docs specify FileSettings.MaxFileSize and separate deployment proxy limits (NGINX client_max_body_size / Apache LimitRequestBody). max_upload_request_size is NOT a native Mattermost configuration field or API parameter clients must provide: it is the explicit encoded-body budget required by our published jido_chat_mattermost ReqClient and ZAQ planner contract (deps architecture149/196; ReqClient.upload_limit nil=\u003emissing_configuration). Current failure is this local mandatory-budget contract before provider I/O; it does not prove server rejection. SMTP complete MIME ceiling is a distinct requirement. Reassess mandatory handling of absent/unknown Mattermost HTTP budgets against recorded epic/Pages plan before changing contract; do not silently restore adapter orchestration or alter published pins.",
+      "timestamp": "2026-11-17T18:42:55Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.16] Temporary correlated file-delivery trace logging",
   "type": "task",
-  "updated_at": "2026-11-17T18:41:22Z"
+  "updated_at": "2026-11-17T18:42:55Z"
 }
