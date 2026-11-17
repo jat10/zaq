@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-1lw.8"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-1lw",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-1lw.9] Validate complete attachment journeys and migrated regression coverage",
   "type": "task",
-  "updated_at": "2026-11-17T12:10:10Z"
+  "updated_at": "2026-11-17T13:44:55Z"
 }
