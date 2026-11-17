@@ -9,9 +9,15 @@
   "id": "zaq-1lw.18",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Implementation authorized by latest user request. Test migration disclosed in zaq-1lw.18 and explicitly requested: replace Mattermost option suppression with uniform shared-option forwarding for identical connection settings (atom/string Mattermost and other providers); retain other-adapter ceiling assertions and strengthen actual pinned Mattermost HTTP regression with obsolete-option inputs as well as absence. Action reuse: extend existing AdapterOptions.build/2 and JidoChatBridge.file_requirements/2 trace; local configuration/diagnostic details, no new business operation, Action, callback or tool. Adapters remain authoritative for requirements; existing planner/executor own grouping, timing and failure policy. Plan: regress uniform forwarding in existing suite; remove provider branch/config read; verify actual adapter with absent/obsolete ceiling, declared ceilings, required-value failures, SMTP/text/privacy; inspect safe trace allowlist; mix q and pin/unrelated-diff checks. No E2E needed for this boundary correction; epic UX gate remains pending. No application commit/push.",
+      "timestamp": "2026-11-17T19:42:37Z"
+    }
+  ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-1lw.18] Remove Mattermost-specific leakage from generic delivery bridge",
   "type": "bug",
-  "updated_at": "2026-11-17T19:41:43Z"
+  "updated_at": "2026-11-17T19:42:37Z"
 }
