@@ -9,9 +9,15 @@
   "id": "zaq-1lw.15",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Confirmed both defects in live source. Action reuse: extend existing DeliveryExecutor scheduling with the current Task.Supervisor async_stream_nolink timeout/result mechanism for uploads and sequential/root/singleton publications; no new Action or transport implementation. Extend existing DeliveryFiles publication selection by surviving groups while retaining original group/file indices. Contracts preserve once-only invocation, unknown timeout certainty, stop barriers, continue promotion and existing authorization/provider APIs. Add regressions in existing executor/planner suites before production edits. Current test doubles using self/process dictionary may need owner-aware mechanical repairs when steps move to supervised tasks; preserve every existing scenario and assertion. Pins snapshotted for byte-for-byte final comparison; no commit/push.",
+      "timestamp": "2026-11-17T14:26:59Z"
+    }
+  ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-1lw.15] Fix delivery deadlines and streamed-message reuse after omitted groups",
   "type": "bug",
-  "updated_at": "2026-11-17T14:26:42Z"
+  "updated_at": "2026-11-17T14:26:59Z"
 }
