@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-1lw.12"
+  ],
   "created": "2026-11-17T18:59:17Z",
   "description": "External prerequisite: ../workspace-planning work-pim.7; coordinate with the corrected Mattermost contract and require that revision for final integration validation.\nRemove the blanket assumption that :upload_then_publish needs a positive max_upload_request_bytes. JidoChatBridge normalizes the absent non-applicable adapter constraint into ZAQ :not_applicable rather than directly accessing a required map key. FileRequirements accepts it; DeliveryFiles skips that ceiling while still preparing exact requests and enforcing all other applicable limits. Remove obsolete Mattermost option/config/debug plumbing as appropriate.\nKeep positive upload ceilings enforced for adapters declaring them. Do not globally normalize :unresolved, invalid values, or missing required settings to :not_applicable. Preserve per-file/count limits, exact encoding, stable indices, materialization-before-execution, one request per upload step, stop/continue policy, deadlines, no retries and privacy. Preserve Agent AttachDocuments behavior, ordinary text fast path, and SMTP required encoded-message/count settings. No unrelated UI/count-limit feature.\nReuse requirements/planner/attachment-policy/Jido integration suites: absent Mattermost upload ceiling permits actual upload and post under stop and continue instead of text fallback; positive declared ceilings still split/reject correctly; invalid/missing required limits still fail by policy; SMTP limits remain enforced. Exercise actual adapter with transport stubs and report live validation separately. Do not prove completion only using permissive fake adapters.\nAdopt only an available verified corrected dependency revision; report publication blockers, do not edit deps as the fix. Update existing relevant contract docs and record that this correction supersedes epic/Page wording requiring upload ceilings solely due to separate uploads.\nRead AGENTS.md, docs/agent-tools.md, WORKFLOW_AGENT.md, action-reuse.md, testing-approach.md, documentation.md and services/channels.md. Disclose existing test behavior changes under policy; reuse existing operations (no new Action/tool). Run focused checks and mix q; preserve final epic gates. Preserve other work; no commit/push without authorization. Ticket creation does not implement code.",
   "id": "zaq-1lw.17",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-1lw.17] Remove blanket upload-request size requirement",
   "type": "bug",
-  "updated_at": "2026-11-17T18:59:18Z"
+  "updated_at": "2026-11-17T18:59:19Z"
 }
