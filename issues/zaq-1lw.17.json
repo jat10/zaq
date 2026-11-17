@@ -13,11 +13,15 @@
     {
       "text": "User approved disclosed existing-test migrations in this session: separate-upload :not_applicable becomes valid; obsolete Mattermost request-size forwarding removed while other adapters retain it; two request-splitting/leading-omission Jido scenarios move to an explicitly limited adapter with existing assertions preserved. Corrected published Mattermost98cd98c8f4171f2baef3177dfdeb193c607d941f is ALREADY pinned/resolved in this worktree; SDK pin unchanged. Preserve both files byte-for-byte. Action reuse: extend existing JidoChatBridge SDK mapping (absent key only=\u003enot_applicable), FileRequirements validation, existing within_limit? planner helper and AdapterOptions. No new operation/Action/tool; authorization/materialization/executor and SMTP contracts unchanged. Existing planner already skips not_applicable via within_limit?/2; add regression to prove this path. Actual Mattermost integration uses pinned real adapter/ReqClient with external HTTP transport stub, not permissive adapter proof.",
       "timestamp": "2026-11-17T19:14:30Z"
+    },
+    {
+      "text": "Integration first pass104/105 PASS incl native Mattermost15-file upload/post10+5 under abort/continue and SMTP. Missing-key regression exposed pinned SDK facade requiring all3 keys before bridge normalization. Lowest-churn host fix reads the existing optional provider callback once (Code.ensure_loaded/function_exported guard), validates response shape, then maps+validates full ZAQ FileRequirements. Required file/count absences map to unresolved and remain errors; only optional upload-key absence maps to not_applicable. Explicit nil/unresolved/invalid still rejected. No SDK/deps edits or new adapter wrapper in production. Existing facade remains unchanged and new native integration also exercises its published requirements boundary; actual provider preparation/upload/post still use SDK operations. Source docs explain owning boundary.",
+      "timestamp": "2026-11-17T19:19:28Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-1lw.17] Remove blanket upload-request size requirement",
   "type": "bug",
-  "updated_at": "2026-11-17T19:14:30Z"
+  "updated_at": "2026-11-17T19:19:28Z"
 }
