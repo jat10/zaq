@@ -11,9 +11,15 @@
   "id": "zaq-1lw.9",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Full journey first run100/102 pass (8 properties). Existing revoke-at-delivery scenarios exposed two host regressions, assertions preserved: no usable files planned a new Mattermost send rather than reusing its streamed placeholder; a one-message partial SMTP report used formatted HTML as canonical Engine content. Fixing shared contracts: optional pure existing_text_message fact reuses Jido existing send_mode without requirements lookup/acquisition, planner emits a text edit when supported; unnumbered first receipt confirms original canonical outgoing body, explicit continuation part bodies remain unchanged. Additive replay regression proves HTML transport facts remain in receipt while canonical answer is stable. No Agent/Engine production behavior changed.",
+      "timestamp": "2026-11-17T13:53:43Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.9] Validate complete attachment journeys and migrated regression coverage",
   "type": "task",
-  "updated_at": "2026-11-17T13:44:55Z"
+  "updated_at": "2026-11-17T13:53:43Z"
 }
