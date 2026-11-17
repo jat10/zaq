@@ -19,11 +19,15 @@
     {
       "text": "Read user live trace17:51Z. Preflight accepted14 files (oversized file2 already excluded). Outgoing retained all14. Planner then reported configuration failure for every original index0..13, produced an attachment-free edit of streamed post iw8xqdh6nfgj7bpb849rq7o3ec under continue; edit confirmed133ms, final partial. There were ZERO upload steps or uploaded file IDs. This proves missing/invalid delivery requirements are blocking all remaining files, independent of the prior oversized file. Likely independent max_upload_request_size absent (metadata preflight checks max_file_size only), but prior trace did not identify the exact field. Added same-correlation configured_attachment_limits (safe explicit connection/settings and Mattermost numeric defaults only) plus preparation reason to reveal it on next request. No settings/limits changed and no logger tests.",
       "timestamp": "2026-11-17T17:53:45Z"
+    },
+    {
+      "text": "User requested evidence rather than guesses. Added actual FileRequirements lookup tracing: whitelisted adapter option byte limits and Mattermost fallback limits; actual SDK response (including unresolved values/invalid_configuration key); ZAQ mapped FileRequirements and exact validation result; SDK/adapter lookup failure. API scopes temporary trace context around planning so these new entries use the SAME correlation ID as outgoing/plan/execution without modifying connection/outgoing payloads. No file limits or delivery semantics changed, no logger tests.",
+      "timestamp": "2026-11-17T18:04:20Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.16] Temporary correlated file-delivery trace logging",
   "type": "task",
-  "updated_at": "2026-11-17T17:53:45Z"
+  "updated_at": "2026-11-17T18:04:20Z"
 }
