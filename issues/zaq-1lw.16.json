@@ -35,11 +35,15 @@
     {
       "text": "Provider-vs-host distinction verified after user challenge. Mattermost official environment docs specify FileSettings.MaxFileSize and separate deployment proxy limits (NGINX client_max_body_size / Apache LimitRequestBody). max_upload_request_size is NOT a native Mattermost configuration field or API parameter clients must provide: it is the explicit encoded-body budget required by our published jido_chat_mattermost ReqClient and ZAQ planner contract (deps architecture149/196; ReqClient.upload_limit nil=\u003emissing_configuration). Current failure is this local mandatory-budget contract before provider I/O; it does not prove server rejection. SMTP complete MIME ceiling is a distinct requirement. Reassess mandatory handling of absent/unknown Mattermost HTTP budgets against recorded epic/Pages plan before changing contract; do not silently restore adapter orchestration or alter published pins.",
       "timestamp": "2026-11-17T18:42:55Z"
+    },
+    {
+      "text": "User requested removal of the temporary logs after the investigation. Remove DeliveryTrace module, correlated diagnostic hooks/context and trace-only state from API/bridge/executor, root log file and ignore rule, and current documentation mention. Preserve ordinary safe error logging, adapter requirements normalization, planner/executor scheduling and timeout behavior, current pins and unrelated work. Action reuse: existing delivery operations reused unchanged; diagnostic removal only, no new operation/Action/tool. Reuse existing regression suites; no logger tests or test expectation changes. Run focused tests and mix q.",
+      "timestamp": "2026-11-17T19:51:54Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.16] Temporary correlated file-delivery trace logging",
   "type": "task",
-  "updated_at": "2026-11-17T18:42:55Z"
+  "updated_at": "2026-11-17T19:51:54Z"
 }
