@@ -27,11 +27,15 @@
     {
       "text": "Corrected earlier inference about duplicate validations. Persisted execution a20c9528-c2da-4458-934f-bc1e58284b3b for incoming h1scc59a7pfmjxshoyi9cmea5w has ONE attach_documents tool invocation (call_2ee471a7da744eab917add51d48e3ba0) and one tool result, despite two Channels validations at18:21:05.322 and05.608. Source confirms AttachDocuments validates once per run; Jido.Exec default allows1 retry with250ms backoff, and Jido.Error.retryable? treats unclassified tuple errors as retryable. file_too_large is such a tuple. Therefore the repeat is execution-layer retry inside one model tool call, not two model decisions or duplicate shared delivery execution. No retry-policy changes made.",
       "timestamp": "2026-11-17T18:23:40Z"
+    },
+    {
+      "text": "Live trace18:25:33Z now conclusively identifies configuration blocker, correlation3f3d3564-64c2-4c79-abf5-243c92a12295: adapter options contain ONLY max_file_size307200; Mattermost application default max_upload_request_size nil; actual SDK returns {:ok,%{max_file_size:307200,max_upload_request_size::unresolved,max_files_per_post:10}}. ZAQ maps upload_then_publish and max_upload_request_bytes::unresolved with native threads/attachment edits, validation fails stageconfiguration/not_sent. Continue collapses14 files to an attachment-free streamed edit, confirmed227ms, reportpartial with indices0..13 failed. Thus independent missing upload-request byte ceiling is proven, hardcoded10-file count is valid; no uploads attempted. No settings or failure-policy changes made.",
+      "timestamp": "2026-11-17T18:41:22Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.16] Temporary correlated file-delivery trace logging",
   "type": "task",
-  "updated_at": "2026-11-17T18:23:40Z"
+  "updated_at": "2026-11-17T18:41:22Z"
 }
