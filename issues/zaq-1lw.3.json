@@ -29,11 +29,15 @@
     {
       "text": "Existing browser execution blocker resolved by npm ci using the existing package-lock (local dependencies only, no host/global changes). npm run test -- specs/channels.spec.js specs/system_config.spec.js --project=journeys-chromium PASS:59 tests. Existing specs unchanged; no feature E2E authored. Log /tmp/zaq-1lw-existing-e2e.log.",
       "timestamp": "2026-11-17T13:12:20Z"
+    },
+    {
+      "text": "Review follow-up: exact MB scaling now adjusts Decimal exponent directly rather than context-rounded multiplication/division. Additive regression covers \u003e28-digit byte values and rejects sub-byte precision without changing valid-value semantics or imposing guessed limits. This preserves the documented exact conversion invariant for every accepted integer byte value.",
+      "timestamp": "2026-11-17T13:40:38Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "[zaq-1lw.3] Add explicit SMTP message-size and attachment-count settings",
   "type": "task",
-  "updated_at": "2026-11-17T13:12:20Z"
+  "updated_at": "2026-11-17T13:40:38Z"
 }
