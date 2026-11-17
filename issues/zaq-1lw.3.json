@@ -15,11 +15,15 @@
     {
       "text": "Action reuse assessment: extend EmailConfig.changeset and Engine.EmailConnectorSettings.persist/form_config through existing confidential BO Event/NodeRouter settings actions; reuse SmtpSettings for exact decimal MB/byte projection and existing DesignSystem.Input number/hint component (Storybook forms/input inspected). No new configuration store, credentials path, migration, Action or tool. Exactly two inputs; positive explicit limits, six decimal MB places permit exact whole bytes; legacy blanks remain nil. New additive schema/property/Engine/LiveView tests reuse existing fixtures. Expected failing tests confirmed missing contract before implementation. Existing failure switch/auth/encryption/IMAP binding assertions unchanged. E2E authoring remains blocked by .10 UX approval.",
       "timestamp": "2026-11-17T12:15:03Z"
+    },
+    {
+      "text": "Implemented two DS inputs, positive optional schema limits, exact decimal MB-to-byte property, selected Engine persistence/snapshot round trip, SMTP key access and bridge FileRequirements from frozen selected settings. No defaults or database migration. mix q PASS; 96 focused checks PASS including 5 properties (schema/settings/API/LiveView/DeliveryFiles/existing email outgoing). New LiveView tests prove save/reopen and invalid non-persistence; existing switch/encryption/auth/text scenarios preserved. Existing full E2E execution started with npm run test; log /tmp/zaq-1lw-existing-e2e.log, result pending. No new feature E2E authored; UX .10 remains open. No commits/pushes.",
+      "timestamp": "2026-11-17T12:19:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.3] Add explicit SMTP message-size and attachment-count settings",
   "type": "task",
-  "updated_at": "2026-11-17T12:15:03Z"
+  "updated_at": "2026-11-17T12:19:03Z"
 }
