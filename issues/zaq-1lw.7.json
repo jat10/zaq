@@ -32,11 +32,15 @@
     {
       "text": "Explicit additional approval received2026-11-17 from current user: Approve the SMTP error assertion migration. Preserve text-only bare error assertion; attachment assertion will verify normalized original-index report plus private original cause, safe SMTP message, stage and certainty. Applying proposal now.",
       "timestamp": "2026-11-17T13:24:12Z"
+    },
+    {
+      "text": "Completed planned email integration with explicitly approved SMTP error assertion. Combined mix q PASS;301 focused bridge/API/planner/executor/SMTP checks PASS including11 properties. Exact captured MIME equals measured bytes; positive explicit count/byte limits, final thread-header remeasurement, once-only submissions/retries0, private raw cause and safe SMTP facts verified. Legacy text Mailer behavior retained; no prepared payload in generated Swoosh telemetry. Frozen sender/settings, final notification anchor and thread evidence preserved. No new MIME encoder or dependency changes. No commit/push.",
+      "timestamp": "2026-11-17T13:31:26Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.7] Integrate exact MIME sizing and planned SMTP execution",
   "type": "task",
-  "updated_at": "2026-11-17T13:24:12Z"
+  "updated_at": "2026-11-17T13:31:26Z"
 }
