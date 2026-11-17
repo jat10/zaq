@@ -20,11 +20,15 @@
     {
       "text": "MIME seam refinement before implementation: source inspection shows generated Zaq.Mailer.deliver emits email and config in Swoosh telemetry. Passing prepared bytes through adapter config would leak private payloads. Use existing SmtpSender for direct pinned Helper encoding plus gen_smtp one-attempt submission, avoiding that instrumentation. Zaq.Mailer has no custom hooks. For the existing no-relay configured Mailer sink, reuse pinned Swoosh.Mailer.parse_config/deliver dispatcher without generated telemetry; retain the configured adapter and composition. No new SMTP adapter module and no encoder copy. This supersedes the preceding self-adapter proposal.",
       "timestamp": "2026-11-17T12:54:13Z"
+    },
+    {
+      "text": "SMTP integration functional validation:104/105 checks pass including6 properties across SMTP sender/outgoing, exact size grouping, final-header overflow rejection, no retry, existing HTML tests, real SMTP, real Mattermost and mixed-provider journeys. All23 recorded original host-compatibility failures now pass in their migrated Jido/disk suites. Remaining SMTP test expects exact bare DeliveryError for attachment attempts; additional approval requested to assert normalized report plus raw private cause, safe message, stage/certainty. Raw stop-preparation reasons were preserved without changing existing assertions. Exact MIME seam includes pinned gen_smtp1.3.0 DATA CRLF framing; captured raw DATA equals measured prepared bytes. No encoder copy, automatic retry, or encoded payload in Swoosh telemetry. New Prepared struct inspection hides email/bytes. mix q found one alias-style item, corrected; revalidation pending.",
+      "timestamp": "2026-11-17T13:05:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.7] Integrate exact MIME sizing and planned SMTP execution",
   "type": "task",
-  "updated_at": "2026-11-17T12:54:13Z"
+  "updated_at": "2026-11-17T13:05:32Z"
 }
