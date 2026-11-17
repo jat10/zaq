@@ -16,11 +16,15 @@
     {
       "text": "Action reuse assessment: Channel-local DeliveryExecutor consumes authorized DeliveryFiles plans, existing Bridge operation callbacks and Zaq.TaskSupervisor; no workflow-engine replacement or agent Action. New scheduler-only suite justified for once-only dependency/state-machine properties and deterministic concurrency barriers; provider journeys remain in existing suites. Stop uploads precede every publication; continue root promotion retains unknown outcomes and never retries; ready replies use bounded supervised tasks with stable report order. Per-attempt state and frozen connection remain local. Added one completion callback to retain notification callback cardinality/final-ID semantics after whole-plan execution; bridges do not choose policy. Existing producer/Agent paths unchanged.",
       "timestamp": "2026-11-17T12:34:37Z"
+    },
+    {
+      "text": "Implemented shared execution with unique-step/DAG validation, dependency resolution, stop upload barrier and sequential publication, ordered root promotion, supervised bounded ready replies, normalized exception/exit/timeout uncertainty, partial upload references, original-index failures, uploaded-only evidence, unattempted outcomes, and ordered same-message receipt composition. Completion callback runs once. mix q PASS; 47 focused planner/executor checks PASS including6 properties. Distinct scheduler suite covers deterministic concurrency barrier, failed second publication, timeout root promotion, no retry, timeout/task exit, partial upload, confirmed text plus failed edit, unknown text-only certainty, and once-only resolved dependencies. No numerical coverage claim; post-review .13 remains. No Agent changes or commits.",
+      "timestamp": "2026-11-17T12:37:01Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.5] Execute shared delivery steps and failure policies",
   "type": "task",
-  "updated_at": "2026-11-17T12:34:37Z"
+  "updated_at": "2026-11-17T12:37:01Z"
 }
