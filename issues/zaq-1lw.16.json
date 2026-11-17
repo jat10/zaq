@@ -15,11 +15,15 @@
     {
       "text": "User requested project-root file output instead of Logger/module-level configuration after seeing only AttachDocuments file_too_large (size348160,limit307200,zaq-file-2.txt). Trace now appends directly to root file-delivery-trace.log, ignored by Git; existing step/root/timeout/skip diagnostics share the attempt ID. Added Channels attachment-validation start/result events (including safe size/limit facts), outgoing arrival, explicit no-selected-attachments text-only path and planning failures so rejection before executor is visible. No Agent selection or limits changed, no logger tests. Running IEx must recompile changed modules once before repeating live request.",
       "timestamp": "2026-11-17T17:45:54Z"
+    },
+    {
+      "text": "Read user live trace17:51Z. Preflight accepted14 files (oversized file2 already excluded). Outgoing retained all14. Planner then reported configuration failure for every original index0..13, produced an attachment-free edit of streamed post iw8xqdh6nfgj7bpb849rq7o3ec under continue; edit confirmed133ms, final partial. There were ZERO upload steps or uploaded file IDs. This proves missing/invalid delivery requirements are blocking all remaining files, independent of the prior oversized file. Likely independent max_upload_request_size absent (metadata preflight checks max_file_size only), but prior trace did not identify the exact field. Added same-correlation configured_attachment_limits (safe explicit connection/settings and Mattermost numeric defaults only) plus preparation reason to reveal it on next request. No settings/limits changed and no logger tests.",
+      "timestamp": "2026-11-17T17:53:45Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.16] Temporary correlated file-delivery trace logging",
   "type": "task",
-  "updated_at": "2026-11-17T17:45:54Z"
+  "updated_at": "2026-11-17T17:53:45Z"
 }
