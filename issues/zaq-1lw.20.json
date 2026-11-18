@@ -33,11 +33,15 @@
     {
       "text": "Consolidated first complete run: 763/852 checks passed; failures are mostly enabled SMTP fixtures lacking the newly required limits, now being repaired in their existing builders (no production defaults). One substantive existing failure: TelegramHistoryDeliveryTest real document assertion cannot resolve provider requirements. Verified current Jido.Chat.Telegram.Adapter has no file_requirements/1 callback; baseline 14fee186e bridge explicitly returns unsupported/invalid FileRequirements and the baseline planner defaults this direct call to abort. New agreed default continue produces a text-only partial configuration outcome. Retained original exact-byte/document assertions; requested user decision to track this dependency gap versus separately expanding scope. No guessed Telegram limits or dependency edits.",
       "timestamp": "2026-11-18T15:16:03Z"
+    },
+    {
+      "text": "Existing Telegram contract gap tracked separately as zaq-1lw.21, blocking final validation zaq-1lw.13. No provider implementation or dependency changes made. Consolidated run: 848/852 passed, all 40 properties passed. Three remaining SMTP LiveView fixture failures repaired with explicit limits while retaining the legacy-missing-settings scenario and its nil persistence assertion; focused LiveView/settings 48 checks now pass. The retained Telegram real-document assertion is the remaining known regression-suite failure.",
+      "timestamp": "2026-11-18T15:20:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.20] Apply eight channel delivery review findings",
   "type": "task",
-  "updated_at": "2026-11-18T15:16:03Z"
+  "updated_at": "2026-11-18T15:20:32Z"
 }
