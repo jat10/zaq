@@ -19,11 +19,15 @@
     {
       "text": "Implementation progress: nested Delivery migrated across StreamEvents, Executor, Outgoing builder, AttachDocuments preflight, RunAgent, Notifications, Channels API/bridges, executor and confirmation. Host requirements/planner renamed; upstream SDK callback retained. Metadata-only planning and execution-time preparation implemented; root lives only in runtime. Focused 131 checks (17 properties) pass. Broader first run exposed missing execution delivery-provider/channel projection, fixed at executor boundary; contract/fixture migrations ongoing. User separately approved fixed groups, actual-size drift within limits, unknown declared sizes, no regrouping; enabled SMTP save requirements, disabled drafts, legacy count-key reads and explicit-limit fixture migration. No final validation or completion claimed.",
       "timestamp": "2026-11-18T14:53:47Z"
+    },
+    {
+      "text": "Execution-backed review against 14fee186e: (P2) publication_step promoted later groups to edit whenever no answer was confirmed, including a prior unconfirmed transport edit; promotion must be limited to preparation-omitted earlier groups. (P2) preparation callbacks now run in executor setup outside invoke rescue/catch, allowing a raised private provider diagnostic to escape instead of a structured preparation failure. Added two permanent regressions in delivery_executor_test and attachment_policy_test; RED reproduced 2 failures, 34 other checks pass. Fixes remain within findings 5/8; candidates 9–14 untouched. Reuse review confirms existing Materialization/validated DecodeBase64, notification/workflow/NodeRouter and Engine confirmation boundaries retained. No new tools, Actions, dependencies or persistence path.",
+      "timestamp": "2026-11-18T15:10:02Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.20] Apply eight channel delivery review findings",
   "type": "task",
-  "updated_at": "2026-11-18T14:53:47Z"
+  "updated_at": "2026-11-18T15:10:02Z"
 }
