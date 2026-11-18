@@ -18,11 +18,15 @@
     {
       "text": "Execution checkpoint complete through authorized reversible local scope: staged actual redistribution in all four existing worktrees, immutable source clean/unchanged at 14fee186e. Recovery refs and all exact revised predecessor-relative patches, tree SHAs, validation.json, parity exception evidence, five PR description drafts and concrete expected-old-ref local history script are at /Users/jad/Desktop/Jad/workspace/zaq/forks/jat10/zaq/.git/redistribution/20261117T234401. Source-parity proof: final cumulative delta changes exactly all 46 accepted source-commit paths and no other path; 39/46 byte-identical, seven documented adaptations preserve upstream/review/consolidated-journey fixes. All four mix q PASS. PR1 106 PASS; PR2 core196 PASS plus public boundary483/484; PR3 34 PASS; PR4 108/109,21 real-browser cases excluded. Existing Channels Chromium E2E3/3 PASS. Two unchanged stale assertions require explicit test-behavior approval: PR2 real Mattermost snapshot policy at jido_chat_bridge_test.exs:2824, PR4 unsupported Telegram attachment send at telegram_history_delivery_test.exs:58. No test weakened, no fake capability/adapter support added. Source zaq-1lw.10 UX, .11 consolidated E2E, .12 review, .13 coverage/final precommit remain open. No commit/branch rewrite/push/PR edit/comment performed; branch HEADs remain checkpointed originals, staged code is fully reviewable. Local commit/history operations are concretely prepared for authorization after resolving those checks. Task remains open; this is not remote publication readiness.",
       "timestamp": "2026-11-17T22:00:20Z"
+    },
+    {
+      "text": "Explicit human test-behavior approval received 2026-11-18: user replied \"accepy\" after disclosure of exactly two migrations. Approved scope: Mattermost real adapter snapshot no longer claims adapter-owned attachment_failure_policy (ZAQ owns policy); Telegram image attachment expects invalid_file_requirements and no transport call, matching deliberately unsupported Telegram files. Apply only these two expectation migrations across owning/cumulative slices; preserve all other assertions and source. This acceptance does not authorize commits, branch rewrites, push, or remote PR publication. Revalidate affected checks and refresh staged tree/parity/history artifacts and PR drafts.",
+      "timestamp": "2026-11-18T08:37:41Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.14] Redistribute validated changes into the existing PR stack",
   "type": "task",
-  "updated_at": "2026-11-17T22:00:20Z"
+  "updated_at": "2026-11-18T08:37:41Z"
 }
