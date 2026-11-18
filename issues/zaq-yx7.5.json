@@ -14,11 +14,15 @@
     {
       "text": "Fresh evaluation rebuilt against HostAdapter process-owned configuration; unchanged existing channels/system_config/webbridge_chat suites again 200/201 pass in 5.8m. Same WebKit timezone test at system_config.spec.js:939 times out in global beforeEach -\u003e loginToBackOffice -\u003e page.goto(/bo/system-config), before test body. Trace has no network entries, only newPage and pending goto waiting for load; screenshot blank. No retries/timeout/assertion changes. Failure is still a validation blocker, not waived. Latest Chromium real-widget exploratory probe passes with WSS/auth/renewal/reconnect/restoration/disconnect and no browser errors.",
       "timestamp": "2026-10-11T10:42:56Z"
+    },
+    {
+      "text": "Related occurrence during zaq-1lw.20 validation: existing full browser command npm run test -- --max-failures=1 passed 190 cases, then journeys-webkit dashboard.spec.js:82 add-ons empty state timed out setting up context (browser.newContext: Test ended, navigation to localhost:4002 waiting for load), before test body. 393 unrun, 1 skipped. No delivery code on this path, retries/timeouts/assertions unchanged. Trace at test/e2e/test-results/dashboard-BO-Dashboard-add-ons-empty-state-journeys-webkit/trace.zip in channel-files worktree. No new feature E2E authored.",
+      "timestamp": "2026-11-18T15:22:55Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-yx7.5] Investigate recurring WebKit System Configuration navigation timeout",
   "type": "task",
-  "updated_at": "2026-10-11T11:02:39Z"
+  "updated_at": "2026-11-18T15:22:55Z"
 }
