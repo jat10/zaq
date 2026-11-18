@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-18T09:04:19Z",
@@ -7,8 +7,8 @@
   "id": "zaq-k0l",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Refresh and serve ZAQ floorplan",
   "type": "task",
-  "updated_at": "2026-11-18T09:04:19Z"
+  "updated_at": "2026-11-18T09:04:30Z"
 }
