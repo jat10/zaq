@@ -1,6 +1,7 @@
 {
   "assignee": "Jad",
   "blocked_by": [
+    "zaq-1lw.20",
     "zaq-1lw.9"
   ],
   "blocks": [
@@ -21,5 +22,5 @@
   "status": "in_progress",
   "title": "[zaq-1lw.10] Approve completed SMTP and attachment-delivery UX before E2E",
   "type": "task",
-  "updated_at": "2026-11-17T14:04:34Z"
+  "updated_at": "2026-11-18T15:14:01Z"
 }
