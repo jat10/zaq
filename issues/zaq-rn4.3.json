@@ -59,11 +59,15 @@
     {
       "text": "Explicit human test-behavior approval received 2026-11-18: user replied \"accepy\" after disclosure of exactly two migrations. Approved scope: Mattermost real adapter snapshot no longer claims adapter-owned attachment_failure_policy (ZAQ owns policy); Telegram image attachment expects invalid_file_requirements and no transport call, matching deliberately unsupported Telegram files. Apply only these two expectation migrations across owning/cumulative slices; preserve all other assertions and source. This acceptance does not authorize commits, branch rewrites, push, or remote PR publication. Revalidate affected checks and refresh staged tree/parity/history artifacts and PR drafts.",
       "timestamp": "2026-11-18T08:37:39Z"
+    },
+    {
+      "text": "Inherited approved Mattermost expectation applied identically. Revalidation PASS: mix q and selected production snapshot regression1/1 (187 unrelated cases excluded by location). Previous unchanged Agent selection/native-effects34 checks remain valid. Final staged tree c5a7e6f0b6eecfc98f5b54d26ab96b7775d5e0f1. No production change, no history/publication operations.",
+      "timestamp": "2026-11-18T08:43:32Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.3] PR3: Agent attachment selection and tools",
   "type": "task",
-  "updated_at": "2026-11-18T08:37:39Z"
+  "updated_at": "2026-11-18T08:43:32Z"
 }
