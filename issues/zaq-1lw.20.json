@@ -29,11 +29,15 @@
     {
       "text": "Review fixes verified: 79 executor/planner/Jido checks pass (5 properties), including RED-to-GREEN preparation-exception containment and unconfirmed-edit promotion regressions. mix q passed before final documentation/test additions. Configuration/constructor group: 131 checks passed (7 properties). Consolidated affected suites and existing E2E execution now running. No feature E2E authored; zaq-1lw.10 human UX approval and .11 remain prerequisites to approved review/.13 coverage/final precommit. Page candidates 9–14 remain unimplemented; result shape, caption ownership, global continue upload barrier and provider identity contract were not redesigned.",
       "timestamp": "2026-11-18T15:13:01Z"
+    },
+    {
+      "text": "Consolidated first complete run: 763/852 checks passed; failures are mostly enabled SMTP fixtures lacking the newly required limits, now being repaired in their existing builders (no production defaults). One substantive existing failure: TelegramHistoryDeliveryTest real document assertion cannot resolve provider requirements. Verified current Jido.Chat.Telegram.Adapter has no file_requirements/1 callback; baseline 14fee186e bridge explicitly returns unsupported/invalid FileRequirements and the baseline planner defaults this direct call to abort. New agreed default continue produces a text-only partial configuration outcome. Retained original exact-byte/document assertions; requested user decision to track this dependency gap versus separately expanding scope. No guessed Telegram limits or dependency edits.",
+      "timestamp": "2026-11-18T15:16:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.20] Apply eight channel delivery review findings",
   "type": "task",
-  "updated_at": "2026-11-18T15:14:01Z"
+  "updated_at": "2026-11-18T15:16:03Z"
 }
