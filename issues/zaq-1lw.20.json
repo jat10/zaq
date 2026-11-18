@@ -7,9 +7,15 @@
   "id": "zaq-1lw.20",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Started from clean feat/channel-files at 14fee186e. User explicitly authorizes implementation of eight findings, superseding tracking-only issue prose. Full issue and parent context reviewed. User approved via request_user_input_async the disclosed selection-error text bypass, planner-to-executor preparation/size/failure assertions, and policy assertions moving from connection to requirements/plan. No Git publication authorized. Candidates 9–14 excluded.",
+      "timestamp": "2026-11-18T14:35:18Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.20] Apply eight channel delivery review findings",
   "type": "task",
-  "updated_at": "2026-11-18T14:32:17Z"
+  "updated_at": "2026-11-18T14:35:18Z"
 }
