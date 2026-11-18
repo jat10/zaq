@@ -23,11 +23,15 @@
     {
       "text": "Scenarios remain deferred until .10 explicit completed UX approval. Extend existing channels.spec.js: selected SMTP connector save/reopen1.234567 MB and3 files; reject0/-1 with field messages and no persistence; leave missing settings blank; failure-switch preservation across save; selected connector rather than default; existing fixture-backed file/partial confirmation journey and ordinary text. Existing browser suites59 PASS, local locked Playwright installed via npm ci. Review screenshots and integration outcome table /tmp/zaq-1lw-ux-review.html. No new or rewritten feature browser tests authored before approval.",
       "timestamp": "2026-11-17T14:04:36Z"
+    },
+    {
+      "text": "Review implementation zaq-1lw.20 updates the final journey contract: empty selection errors use ordinary text without a notice or stop suppression; metadata-only planning defers acquisition and exact fixed-group checks to execution; SMTP enabled saves require explicit count/size limits and legacy count aliases remain readable; selected SMTP policy resolves through requirements; nested delivery and private plan stripping cross Agent/Engine/Channel. Preserve existing transport, authorization, source preservation, roots and uncertainty assertions. Existing E2E execution is being attempted from .20, but no new/substantially rewritten feature E2E is authorized until .10 UX approval. Candidates 9–14 remain outside scope.",
+      "timestamp": "2026-11-18T15:14:03Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.11] Extend the existing consolidated channel delivery E2E",
   "type": "task",
-  "updated_at": "2026-11-17T14:04:36Z"
+  "updated_at": "2026-11-18T15:14:03Z"
 }
