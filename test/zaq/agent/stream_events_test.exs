@@ -2,10 +2,14 @@ defmodule Zaq.Agent.StreamEventsTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
+  alias Jido.AI.Request.Handle
+  alias Jido.AI.Request.Stream, as: RequestStream
   alias ReqLLM.Message.ContentPart
   alias ReqLLM.ToolResult
-  alias Zaq.Agent.StreamEvents
+  alias Zaq.Agent.{Factory, OpaqueAliases, StreamEvents}
+  alias Zaq.Agent.Tools.DataSource.AttachDocuments
   alias Zaq.Contracts.Record
+  alias Zaq.Contracts.Record.Provenance
   alias Zaq.Contracts.ToolStep
   alias Zaq.Engine.Messages.Incoming
 
@@ -33,6 +37,159 @@ defmodule Zaq.Agent.StreamEventsTest do
       send(self(), {:snapshot, stage, message, Keyword.get(opts, :tool_steps)})
       incoming
     end
+  end
+
+  property "native streams isolate interleaved attachment and terminal events by handle ID" do
+    check all(
+            [request_id, other_id] <-
+              uniq_list_of(string(:alphanumeric, min_length: 1), length: 2)
+          ) do
+      request = %Handle{id: request_id, server: self(), query: "question"}
+      other_request = %Handle{id: other_id, server: self(), query: "other question"}
+
+      events = [
+        event(:tool_completed, 1, %{tool_name: "attach_documents", result: {:ok, nil, []}},
+          tool_call_id: "other-attachment"
+        )
+        |> Map.put(:request_id, other_id),
+        event(:request_failed, 2, %{error: :other_request_failure})
+        |> Map.put(:request_id, other_id),
+        event(:request_completed, 3, %{result: "The requested answer."})
+        |> Map.put(:request_id, request_id)
+      ]
+
+      Enum.each(events, &RequestStream.send_event({:pid, self()}, &1))
+
+      assert {:ok,
+              %{
+                answer: "The requested answer.",
+                attachments: [],
+                attachment_error: nil,
+                tool_calls: []
+              }} =
+               StreamEvents.consume(
+                 RequestStream.events(request, stream_event_timeout_ms: 100),
+                 incoming(),
+                 request: request,
+                 status_module: FakeStatus
+               )
+
+      assert {:error, :other_request_failure, %{attachment_error: :invalid_attachment_selection}} =
+               StreamEvents.consume(
+                 RequestStream.events(other_request, stream_event_timeout_ms: 100),
+                 incoming(),
+                 request: other_request,
+                 status_module: FakeStatus
+               )
+    end
+  end
+
+  for {scenario, output} <- [
+        {"rejected instruction", %{operation: "unsupported", records: []}},
+        {"malformed output", "not an attachment instruction"}
+      ] do
+    @attachment_output output
+
+    test "preserves a completed answer after attachment selection receives #{scenario}" do
+      completion = event(:request_completed, 3, %{result: "Here is your summary."})
+
+      assert {:ok, %{answer: "Here is your summary.", attachments: []}} =
+               StreamEvents.consume([completion], incoming(), status_module: FakeStatus)
+
+      events = [
+        event(:tool_started, 1, %{tool_name: "attach_documents"}, tool_call_id: "attachment-1"),
+        event(
+          :tool_completed,
+          2,
+          %{tool_name: "attach_documents", result: {:ok, @attachment_output, []}},
+          tool_call_id: "attachment-1"
+        ),
+        completion
+      ]
+
+      assert {:ok, %{answer: "Here is your summary.", attachments: []}} =
+               StreamEvents.consume(events, incoming(), status_module: FakeStatus)
+    end
+  end
+
+  property "malformed attachment outputs preserve arbitrary completed answers with a separate failure" do
+    check all(
+            answer <- string(:printable, min_length: 1),
+            output <- one_of([integer(), string(:printable), list_of(integer()), constant(nil)])
+          ) do
+      events = [
+        event(:tool_completed, 1, %{tool_name: "attach_documents", result: {:ok, output, []}},
+          tool_call_id: "invalid-selection"
+        ),
+        event(:request_completed, 2, %{result: answer})
+      ]
+
+      assert {:ok,
+              %{
+                answer: ^answer,
+                attachments: [],
+                attachment_error: :invalid_attachment_selection
+              }} = StreamEvents.consume(events, incoming(), status_module: FakeStatus)
+    end
+  end
+
+  test "a valid selection instruction clears a prior selection error" do
+    events = [
+      event(:tool_completed, 1, %{tool_name: "attach_documents", result: {:ok, nil, []}},
+        tool_call_id: "invalid-selection"
+      ),
+      event(
+        :tool_completed,
+        2,
+        %{tool_name: "attach_documents", result: {:ok, %{operation: "replace", records: []}, []}},
+        tool_call_id: "corrected-selection"
+      ),
+      event(:request_completed, 3, %{result: "No files needed."})
+    ]
+
+    assert {:ok, %{answer: "No files needed.", attachments: [], attachment_error: nil}} =
+             StreamEvents.consume(events, incoming(),
+               status_module: FakeStatus,
+               opaque_alias_scope: self()
+             )
+  end
+
+  test "output validation failure preserves the answer when an alias scope is available" do
+    events = [
+      event(
+        :tool_completed,
+        1,
+        %{
+          tool_name: "attach_documents",
+          result: {:ok, %{operation: "unsupported", records: []}, []}
+        },
+        tool_call_id: "invalid-selection"
+      ),
+      event(:request_completed, 2, %{result: "Here is your summary."})
+    ]
+
+    assert {:ok,
+            %{
+              answer: "Here is your summary.",
+              attachments: [],
+              attachment_error: :invalid_attachment_selection
+            }} =
+             StreamEvents.consume(events, incoming(),
+               status_module: FakeStatus,
+               opaque_alias_scope: self()
+             )
+  end
+
+  test "attachment selection failure does not hide a genuine request failure" do
+    events = [
+      event(:tool_completed, 1, %{tool_name: "attach_documents", result: {:ok, nil, []}},
+        tool_call_id: "invalid-selection"
+      ),
+      event(:request_failed, 2, %{error: :provider_unavailable})
+    ]
+
+    assert {:error, :provider_unavailable, %{attachments: []}} =
+             StreamEvents.consume(events, incoming(), status_module: FakeStatus)
   end
 
   test "nested diagnostics retain hierarchy but cannot publish labels, sources or root counts" do
@@ -1282,6 +1439,144 @@ defmodule Zaq.Agent.StreamEventsTest do
     safe = StreamEvents.json_safe(%{bad: <<255>>})
 
     assert Jason.encode!(safe)
+  end
+
+  describe "attachment selection" do
+    setup do
+      scope = make_ref()
+      on_exit(fn -> OpaqueAliases.clear_scope(scope) end)
+      %{scope: scope}
+    end
+
+    test "completion results own selection, suppress replay and stop at termination", %{
+      scope: scope
+    } do
+      add = selection(scope, "add-a", "add", [record("a")])
+      remove = selection(scope, "remove-a", "remove", [record("a")])
+      b = selection(scope, "add-b", "add", [record("b")])
+      foreign = %{add | request_id: "foreign", tool_call_id: "foreign"}
+
+      assert {:ok, result} = consume([add, remove, add, foreign, b, completed(), add], scope)
+      assert [%Record{id: "b"}] = result.attachments
+      assert Enum.count(result.tool_calls, &(&1["name"] == "attach_documents")) == 3
+
+      public = ToolStep.project(result.tool_calls)
+
+      for step <- public do
+        refute Map.has_key?(step, "arguments")
+        refute Map.has_key?(step, "response")
+        refute inspect(step) =~ "provenance"
+      end
+
+      assert {:ok, %{attachments: []}} = consume([completed()], scope)
+    end
+
+    test "failed tools do not mutate and failed or incomplete requests expose no files", %{
+      scope: scope
+    } do
+      add = selection(scope, "add-a", "add", [record("a")])
+
+      failed = %{
+        selection(scope, "clear", "replace", [])
+        | data: %{result: {:error, :unauthorized, []}}
+      }
+
+      assert {:ok, %{attachments: [%Record{id: "a"}]}} =
+               consume([add, failed, completed()], scope)
+
+      assert {:ok, %{attachments: []}} = consume([add], scope)
+
+      for kind <- [:request_failed, :request_cancelled] do
+        assert {:error, _, %{attachments: []}} =
+                 consume([add, %{kind: kind, request_id: "r", data: %{error: :failed}}], scope)
+      end
+    end
+
+    test "missing, foreign and retired alias scopes fail closed", %{scope: scope} do
+      event = selection(scope, "add-a", "add", [record("a")])
+
+      for wrong_scope <- [nil, make_ref()] do
+        assert {:ok,
+                %{
+                  answer: "Done",
+                  attachment_error: :invalid_attachment_selection,
+                  attachments: []
+                }} =
+                 consume([event, completed()], wrong_scope)
+      end
+
+      OpaqueAliases.clear_scope(scope)
+
+      assert {:ok,
+              %{answer: "Done", attachment_error: :invalid_attachment_selection, attachments: []}} =
+               consume([event, completed()], scope)
+    end
+
+    test "malformed successful instructions reject the whole batch", %{scope: scope} do
+      valid = selection(scope, "add-a", "add", [record("a")])
+
+      for output <- [
+            "invalid",
+            %{operation: "delete", records: []},
+            %{operation: "add", records: [%{"id" => "unsigned"}]},
+            %{operation: "replace", records: "invalid"}
+          ] do
+        invalid = %{valid | tool_call_id: "invalid", data: %{result: {:ok, output, []}}}
+
+        assert {:ok,
+                %{
+                  answer: "Done",
+                  attachment_error: :invalid_attachment_selection,
+                  attachments: []
+                }} =
+                 consume([valid, invalid, completed()], scope)
+      end
+    end
+
+    test "structured tool results retain validated selection without exposing it in public steps",
+         %{scope: scope} do
+      event = selection(scope, "structured", "add", [record("structured-record")])
+      {:ok, output, []} = event.data.result
+      event = %{event | data: %{result: {:ok, %ReqLLM.ToolResult{output: output}, []}}}
+
+      assert {:ok, result} = consume([event, completed()], scope)
+      assert [%Record{id: "structured-record"}] = result.attachments
+      refute inspect(ToolStep.project(result.tool_calls)) =~ "structured-record"
+    end
+  end
+
+  defp selection(scope, id, operation, records) do
+    assert {:ok, {:ok, output, []}} =
+             Factory.after_tool_call(
+               %{action_module: AttachDocuments},
+               {:ok, %{operation: operation, records: records}, []},
+               %{opaque_alias_scope: scope}
+             )
+
+    %{
+      kind: :tool_completed,
+      request_id: "r",
+      tool_call_id: id,
+      tool_name: "attach_documents",
+      data: %{result: {:ok, output, []}}
+    }
+  end
+
+  defp consume(events, scope) do
+    StreamEvents.consume(
+      Stream.filter(events, &(&1.request_id == "r")),
+      %Incoming{content: "select", channel_id: "c", provider: :web, message_id: "r"},
+      opaque_alias_scope: scope,
+      request: %{id: "r"},
+      status_module: Zaq.TestSupport.NoopAgentStatus
+    )
+  end
+
+  defp completed, do: %{kind: :request_completed, request_id: "r", data: %{result: "Done"}}
+
+  defp record(id) do
+    {:ok, record} = Provenance.seal(%Record{id: id, kind: :file})
+    record
   end
 
   defp incoming do
