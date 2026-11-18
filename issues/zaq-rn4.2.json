@@ -59,11 +59,15 @@
     {
       "text": "Approved Mattermost test migration applied in PR2 and cumulative PR3/4 only: snapshot retains native file/configurable size assertions and refutes adapter-owned attachment_failure_policy; existing local Settings policy tests remain intact. User \"accepy\" approval recorded earlier. Revalidation PASS: mix q; all484 API/bridge/receipt/config/notification checks (8 properties,476 tests). Previous unchanged core196 and Channels Chromium E2E3/3 remain valid. Final staged tree 5fdf9e70cc470597f1f1372f86075d1282aa8144. No production change for migration; no commit/ref rewrite/push/PR publication.",
       "timestamp": "2026-11-18T08:43:31Z"
+    },
+    {
+      "text": "User explicitly authorized publication (push that). Created checkpointed local stack commits and atomically force-with-lease pushed all four branches; explicit expected-old remote tips matched and pre-push format hook passed. Updated fork PR10/11/12/13 and upstream PR935 titles/descriptions and verified every remote PR head SHA. Source worktree preserved. Published heads: f66b86e4187a5d915453b8499c5527fa66bd827c, f85d6ec178cc297fde8261d5059f603bc34fb07a, dce9426e405ce9b0e8a709a3b4b91822ec2dd683, 1c7426f85124c09475c21912ab22a31e3c61ceaf. Pending source UX/E2E/review/coverage/final-precommit gates remain accurately disclosed; publication is not merge approval or a claim those gates passed. Recovery checkpoint: /Users/jad/Desktop/Jad/workspace/zaq/forks/jat10/zaq/.git/redistribution/20261117T234401",
+      "timestamp": "2026-11-18T09:00:34Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.2] PR2: File delivery through channels",
   "type": "task",
-  "updated_at": "2026-11-18T08:43:31Z"
+  "updated_at": "2026-11-18T09:00:34Z"
 }
