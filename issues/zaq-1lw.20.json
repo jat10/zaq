@@ -37,11 +37,15 @@
     {
       "text": "Existing Telegram contract gap tracked separately as zaq-1lw.21, blocking final validation zaq-1lw.13. No provider implementation or dependency changes made. Consolidated run: 848/852 passed, all 40 properties passed. Three remaining SMTP LiveView fixture failures repaired with explicit limits while retaining the legacy-missing-settings scenario and its nil persistence assertion; focused LiveView/settings 48 checks now pass. The retained Telegram real-document assertion is the remaining known regression-suite failure.",
       "timestamp": "2026-11-18T15:20:32Z"
+    },
+    {
+      "text": "Existing E2E execution completed with blocker: npm run test -- --max-failures=1 ran the normal asset/database bootstrap and browser suite. 190 passed, 1 failed, 1 skipped, 393 did not run. Failure: journeys-webkit specs/dashboard.spec.js:82 add-ons empty state timed out after 30000ms while setting up browser context (browser.newContext: Test ended; navigation to localhost:4002), before test body. This is outside delivery/config changes; no assertion/retry/timeout changes made. Trace: test/e2e/test-results/dashboard-BO-Dashboard-add-ons-empty-state-journeys-webkit/trace.zip. Existing zaq-yx7.5 tracks the WebKit context/navigation problem. Feature E2E authoring remains blocked by .10 approval; coverage/.13 and final precommit have not been run out of lifecycle order.",
+      "timestamp": "2026-11-18T15:21:42Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.20] Apply eight channel delivery review findings",
   "type": "task",
-  "updated_at": "2026-11-18T15:20:32Z"
+  "updated_at": "2026-11-18T15:21:42Z"
 }
