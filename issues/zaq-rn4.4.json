@@ -43,11 +43,15 @@
     {
       "text": "Redistributed local tree validation: mix q PASS; history/SMTP confirmation/complete journeys PASS 108/109 checks (2 properties, 106/107 tests), 21 real-browser cases excluded by standard test helper. Only failure is existing TelegramHistoryDeliveryTest at line58 expecting an image document send; accepted source deliberately leaves Telegram files unsupported and returns invalid_file_requirements. This stale test exists unchanged in source and stack. Assertions retained pending human test-behavior approval; no adapter support added. Source SMTP history migration .19 cases pass. Formatter-only layout adjustment staged. Local staged tree a89d11f360853628c0f8f2d637e4b9b08a2023d7. No commit/push/publication.",
       "timestamp": "2026-11-17T21:57:45Z"
+    },
+    {
+      "text": "Explicit human test-behavior approval received 2026-11-18: user replied \"accepy\" after disclosure of exactly two migrations. Approved scope: Mattermost real adapter snapshot no longer claims adapter-owned attachment_failure_policy (ZAQ owns policy); Telegram image attachment expects invalid_file_requirements and no transport call, matching deliberately unsupported Telegram files. Apply only these two expectation migrations across owning/cumulative slices; preserve all other assertions and source. This acceptance does not authorize commits, branch rewrites, push, or remote PR publication. Revalidate affected checks and refresh staged tree/parity/history artifacts and PR drafts.",
+      "timestamp": "2026-11-18T08:37:40Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-rn4.4] PR4: Conversation history and complete attachment journeys",
   "type": "task",
-  "updated_at": "2026-11-17T21:57:45Z"
+  "updated_at": "2026-11-18T08:37:40Z"
 }
