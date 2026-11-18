@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-18T09:04:19Z",
+  "description": "Refresh the existing ignored floorplan, validate descriptions and health caveats, and open its local interactive server. Action reuse: not applicable — documentation visualization only; no ZAQ executable operations change. Preserve the existing .serena/project.yml modification. Verification: floorplan refresh/build reports, description counts, and local server response.",
+  "id": "zaq-k0l",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Refresh and serve ZAQ floorplan",
+  "type": "task",
+  "updated_at": "2026-11-18T09:04:19Z"
+}
