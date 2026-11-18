@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-1lw.13"
+  ],
   "created": "2026-11-18T15:20:29Z",
   "description": "Existing Telegram real-attachment regression cannot obtain transport requirements from the installed Jido.Chat.Telegram.Adapter (dependency jido_chat_telegram 1.2.1). Code.ensure_loaded!/1 plus function_exported?(..., :file_requirements, 1) returns false. At baseline 14fee186e, JidoChatBridge.adapter_file_requirements returns unsupported when callback is absent; FileRequirements.validate(nil) produces configuration failure and direct planner default :abort rejects the attempt. The existing TelegramHistoryDeliveryTest document-byte assertion therefore conflicts with that baseline contract. zaq-1lw.20 retains the assertion; its agreed consistent default :continue now reports a partial text-only configuration outcome instead of guessing limits.\n\nScope here is investigation/contract agreement only until separately authorized. Determine supported provider requirements contract, source accurate limits without guessing, and decide ownership/pinned dependency adoption. Do not weaken or skip the existing sendDocument/exact-byte assertions, silently rename upstream callbacks, publish dependencies, or add host fallback limits merely to pass tests.\n\nValidation: existing test/zaq/channels/telegram_history_delivery_test.exs: real document bytes, filename, caption, confirmed provider ID and no duplicate sends; then relevant Jido requirements and channel suites. Action reuse assessment: inspect existing adapter.file_requirements/1 and host transport_requirements/2 normalization; extend the existing provider/bridge contract rather than a parallel delivery path. Requires separate agreed behavior and existing-test expectation approval if any expectations change. No dependency or code publication authorized.\n",
   "id": "zaq-1lw.21",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-1lw.21] Reconcile Telegram attachment transport requirements",
   "type": "bug",
-  "updated_at": "2026-11-18T15:20:30Z"
+  "updated_at": "2026-11-18T15:20:31Z"
 }

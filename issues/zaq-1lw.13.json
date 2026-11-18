@@ -1,7 +1,8 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-1lw.12"
+    "zaq-1lw.12",
+    "zaq-1lw.21"
   ],
   "blocks": [
     "zaq-1lw.14",
@@ -16,5 +17,5 @@
   "status": "open",
   "title": "[zaq-1lw.13] Complete post-review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-17T21:40:25Z"
+  "updated_at": "2026-11-18T15:20:31Z"
 }
