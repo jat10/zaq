@@ -521,6 +521,158 @@ defstruct [
 
 `Outgoing.from_pipeline_result/2` builds an `%Outgoing{}` from an `%Incoming{}` and a pipeline result map, copying routing fields and merging metadata.
 
+
+`Outgoing.delivery_plan` is nullable, private Channel execution data. Producers
+leave it nil; the pipeline builder excludes it from metadata and inspection omits
+it. `FileRequirements` distinguishes positive resolved limits from explicit
+`:not_applicable` constraints. Missing required or `:unresolved` limits fail
+validation before file acquisition. Separate uploads can declare an independent
+request byte ceiling; the planner skips that ceiling when it is `:not_applicable`.
+`DeliveryPlan` keeps original file indices and descriptive steps separate from
+execution results. Prepared payloads are excluded from plan and step inspection.
+Bridges may supply requirements, exact candidate preparation and single-step
+execution through optional `Bridge` callbacks. These contracts add no Agent tools
+or permission authority.
+
+`DeliveryFiles.build_plan/3` returns error-free ordinary text unchanged, with no
+requirements lookup or plan. Attachment attempts resolve requirements before
+acquiring content, then group prepared files in input order. Count, acquired byte
+sizes and exact bridge message sizing constrain groups. Separate upload requests
+are packed independently within each message group using the bridge's exact
+candidate representation. Steps retain that accepted representation and reference
+original attachment indices. Stop rejects preparation failures before execution;
+continue keeps usable files or plans an explicit text fallback. A resolved encoded
+message ceiling also applies to that fallback. Planning never uploads or sends.
+
+`DeliveryExecutor.execute/4` owns attempt-local outcomes and failure policy. Stop
+finishes all separate uploads before publishing, then publishes sequentially.
+Continue preserves failed and unknown outcomes, promotes the next ordered root
+candidate with the original answer, and runs ready replies through
+`Zaq.TaskSupervisor` with bounded concurrency. It never retries a step. Receipts
+compose successful send/edit operations for the same provider message in order.
+Reports distinguish confirmed messages, original-index failures, uploaded-only
+references and unattempted steps. The optional `delivery_completed/3` bridge
+callback runs once after the attempt and receives its final confirmed message ID;
+individual step callbacks must not multiply notification reply callbacks.
+
+Every planned upload, send and edit uses the configured step timeout under the
+task supervisor, including sequential execution and a sole remaining step. A
+timed-out operation is unconfirmed; stop halts further work, while continue can
+elect the next root. The timed-out task is terminated without retrying its effect.
+When preparation omits leading groups, the first surviving publication retains
+the existing streamed-message edit where supported. Original group and file
+indices remain stable in the plan and its failure evidence.
+
+SMTP's Advanced SMTP form accepts a positive **Maximum encoded message size
+(MB)** and **Maximum attachments per email**. One MB is 1,000,000 bytes; the
+selected connector stores `max_encoded_message_bytes` and
+`max_files_per_message`. The size includes the complete MIME message, including
+body, headers, boundaries and encoded attachments. Missing legacy settings remain
+missing; ZAQ supplies no provider defaults. Ordinary text delivery does not
+require attachment limits. The existing failure switch remains independent.
+
+`Zaq.Channels.DeliveryFiles` prepares supplied files in memory for both chat and
+email. Lazy materialization requires trusted Event actor or bypass context; source
+paths, handles and credentials are not forwarded to the transport. Preparation
+creates no temporary files and never deletes source files. It acquires whole file
+contents in memory; acquisition budgets are tracked separately in [#875](https://github.com/www-zaq-ai/zaq/issues/875).
+Delivery confirmation forwards an outgoing copy with each attachment Record's
+`content` cleared; all other Record fields, including materialization handles,
+are preserved in that transient copy. Mattermost receipts additionally carry
+content-free descriptors of the delivered channel files, normalized through the
+same media path as incoming attachments. Engine persists those descriptors on
+the existing assistant message and includes them in confirmation replay checks.
+History hydration uses the existing canonical transcript authorization path;
+source Disk handles and file contents are not stored as channel attachments.
+Providers without normalized delivered-media evidence do not fabricate channel
+attachment references.
+
+Chat sends prepared files as documents. `JidoChatBridge` reads the selected
+adapter's requirements callback and validates its mapping through `FileRequirements`.
+An absent optional adapter
+upload-request constraint maps to `:not_applicable`; explicitly unresolved or
+invalid values remain errors. Mattermost declares no upload-request ceiling and
+requires only its applicable file/count limits. Adapter options forward shared
+`max_file_size` and `max_upload_request_size` settings uniformly; each selected
+adapter resolves their applicability. ZAQ's failure policy stays local.
+Missing required limits fail before acquisition. In separate-upload
+mode, each prepared request is uploaded once and its confirmed references feed one
+post or edit. The adapter does not choose batches, split messages, generate
+continuations or apply publication policy. Native `edit_attachments` reuses a
+streamed post; other transports create a final post. Planned creates require a
+provider-confirmed message ID. Ordinary text retains Jido's existing generated-ID
+fallback and edit behavior.
+
+Email uses the same planner and executor with `:send_with_files`: each group is
+one SMTP submission. `EmailBridge` owns envelope, subject, MIME representation and
+email threading. `SmtpSender` reuses the locked Swoosh 1.27.0 encoder and the
+locked gen_smtp 1.3.0 submission/framing seam. The final MIME bytes are measured
+and submitted unchanged, with automatic retries disabled. Message-ID and Date are
+frozen; continuation body and thread headers are re-encoded and checked against
+the ceiling before submission. A final payload that no longer fits fails without
+being sent. Planned submission avoids the generated Mailer telemetry wrapper,
+which includes email/config data. Ordinary text keeps its existing Mailer path.
+SMTP acceptance confirms submission to the relay, not arrival in an inbox.
+
+`DeliveryError.message` is safe for presentation. `reason` retains internal facts
+or a normalized delivery report; `cause` can retain the original transport reason
+privately. Inspection excludes both. Stages distinguish selection, configuration,
+preparation, upload, execution and transport. Certainty distinguishes known unsent
+publication from an unconfirmed outcome. Public failures retain neutral atom or
+HTTP-status categories and safe messages, never raw provider bodies or exceptions.
+
+Channels resolves the exact connection before preparation. The selected
+connector's `settings.send_on_file_failure` defaults to true; boolean/form false
+selects `:abort`, otherwise `:continue`. This policy stays in ZAQ. Direct bridge
+calls without an explicit policy retain fail-fast behavior. Connection lookup
+itself does not acquire files or upload content.
+
+An IMAP route keeps its conversation identity while binding the selected SMTP
+sender, settings and policy. The SMTP connector's setting is authoritative over
+the receiving inbox's setting. Execution revalidates that same connector ID and
+never switches to another connector. Configuration, password encryption and BO
+settings still use the existing Engine-owned boundaries.
+
+Continue retains usable files and safe failure facts with original indices. If
+none remain, it plans the original text; rejected selection also carries the safe
+selection notice. Stop rejects preparation failures before execution, uploads all
+groups before new publication where separate uploads exist, and stops sequential
+publication after failure. Continue preserves failed/unknown sends, promotes the
+next ordered root candidate and never retries or redistributes its files. Ready
+replies and independent messages use bounded concurrency; reports retain plan
+order. Successful uploads are separate from delivered messages and may remain
+orphaned after failure.
+
+Receipts carry actual confirmed message identities and the delivered attachment
+indices/metadata. Provider media descriptors remain authoritative for chat. SMTP
+uses display metadata from prepared files without fabricating remote download
+references or copying source IDs, attributes, paths or handles. Confirmed send/edit
+outcomes for the same message compose in operation order. A failed edit cannot
+claim file delivery after a successful text send. Canonical selection notices
+record the original answer and no attachments.
+
+`DeliveryConfirmation` remains the Engine recording boundary. The confirmation
+copy clears the private delivery plan as well as Record content before it
+crosses to Engine; other existing Record fields retain their transient contract.
+History recording failure is bookkeeping after transport and never resends.
+Notification completion runs once with the final confirmed ID, rather than once
+per step. Malformed producer attachment collections retain their legacy error
+response, while any compatibility notice uses the same planner and executor.
+Failed encoded-size preparation and completed reports never trigger an
+unrestricted text send or another publication attempt.
+
+Channels regression scenarios enter through an authorized Outgoing Event and run
+in the normal test suite: `disk_file_delivery_integration_test.exs` and
+`email_file_delivery_integration_test.exs`. Private loopback Mattermost HTTP and
+SMTP stubs capture actual multipart uploads, final posts, envelopes and raw MIME.
+A barrier holds final transport responses until every concurrent journey reaches
+its boundary; assertions cover selected bytes, filename/MIME, threading, receipts,
+source preservation and independent cleanup. These tests require only ZAQ’s test
+database, with no external provider containers or bootstrap credentials. Stub
+acceptance is contract evidence, not actual recipient inbox acceptance. Real
+Mattermost server compatibility belongs in `jido_chat_mattermost`. Later Agent
+journeys extend these same two Channels modules while retaining the scenarios.
+
 Agent failure payloads use the canonical `Zaq.Agent.ErrorMessage` mapping. Their
 metadata may include an allowlisted reason, recovery category and retryability flag,
 but never credential/grant IDs or raw provider diagnostics. Channels format and
@@ -537,6 +689,15 @@ broken link. The non-secret lookup uses a normal observable event. This formatti
 contract does not own People authentication or post-login redirection.
 
 ### Communication media attachments
+
+The `:validate_files` Channels event accepts an `Outgoing` containing selected
+lazy Records. It reuses delivery's connector lookup and delegates to the optional
+bridge `validate_files/3` callback. `JidoChatBridge` passes the Records and resolved
+adapter options to the adapter's `validate_files/2` extension. Mattermost checks
+declared size against `max_file_size`; unknown sizes and oversized files return
+errors before selection succeeds. If an adapter does not export `validate_files/2`,
+the bridge returns `:ok` regardless of its declared capabilities. File-size checks
+remain adapter-owned during validation and delivery.
 
 Communication bridges map inbound media to lazy `Zaq.Contracts.Record` values in
 `Incoming.attachments`. `Record.attachment_metadata/1` persists bounded display
@@ -993,7 +1154,7 @@ Called by channels delivery routing (`Channels.Api` -> bridge-specific `send_rep
 
 1. `send_reply/2` receives `%Outgoing{}` and connection details `%{url, token}`.
 2. Resolves the adapter module for the provider.
-3. Builds a `Jido.Chat.Thread` and calls `Chat.Thread.post/3`.
+3. Builds a `Jido.Chat.Thread` and calls `Chat.Thread.post/3`; file delivery uses a new post.
 4. If `outgoing.metadata` contains an `"on_reply"` key, dispatches an Oban job for reply tracking (used by the Notification center).
 
 ### Thread watch management

@@ -5,12 +5,17 @@ defmodule Zaq.System.EmailConfig do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Zaq.ConnectorConfig.SmtpSettings
+
   @transport_modes ~w(starttls ssl)
   @tls_options ~w(enabled if_available always never)
   @tls_verify_options ~w(verify_peer verify_none)
 
   embedded_schema do
     field :enabled, :boolean, default: false
+    field :send_on_file_failure, :boolean, default: true
+    field :max_message_size_mb, :decimal
+    field :max_attachments_per_message, :integer
     field :relay, :string
     field :port, :integer, default: 587
     field :transport_mode, :string, default: "starttls"
@@ -27,6 +32,9 @@ defmodule Zaq.System.EmailConfig do
     config
     |> cast(attrs, [
       :enabled,
+      :send_on_file_failure,
+      :max_message_size_mb,
+      :max_attachments_per_message,
       :relay,
       :port,
       :transport_mode,
@@ -43,6 +51,13 @@ defmodule Zaq.System.EmailConfig do
       message: "must be a valid email address"
     )
     |> validate_number(:port, greater_than: 0, less_than_or_equal_to: 65_535)
+    |> validate_number(:max_message_size_mb, greater_than: 0)
+    |> validate_number(:max_attachments_per_message, greater_than: 0)
+    |> validate_change(:max_message_size_mb, fn field, megabytes ->
+      if SmtpSettings.whole_message_bytes?(megabytes),
+        do: [],
+        else: [{field, "must specify a whole number of bytes (1 MB = 1,000,000 bytes)"}]
+    end)
     |> validate_inclusion(:transport_mode, @transport_modes, message: "must be starttls or ssl")
     |> validate_inclusion(:tls, @tls_options,
       message: "must be enabled, if_available, always, or never"

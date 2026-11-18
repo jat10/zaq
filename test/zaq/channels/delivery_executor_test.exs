@@ -1,0 +1,471 @@
+defmodule Zaq.Channels.DeliveryExecutorTest do
+  use ExUnit.Case, async: true
+  use ExUnitProperties
+
+  alias Zaq.Channels.{DeliveryError, DeliveryExecutor, DeliveryPlan}
+  alias Zaq.Channels.DeliveryPlan.Step
+  alias Zaq.Engine.Messages.Outgoing
+
+  defmodule OperationBridge do
+    def execute_delivery_step(step, inputs, connection) do
+      send(connection.test_pid, {:step_started, step.id, self(), inputs})
+
+      case Map.get(connection.outcomes, step.id) do
+        {:wait, outcome} ->
+          receive do
+            :release -> outcome || success(step)
+          end
+
+        :exit ->
+          exit(:provider_exit)
+
+        nil ->
+          success(step)
+
+        outcome ->
+          outcome
+      end
+    end
+
+    defp success(%{operation: :upload} = step) do
+      {:ok,
+       %{uploaded_files: Enum.map(step.file_refs, &%{id: "upload-#{&1}", attachment_index: &1})}}
+    end
+
+    defp success(step),
+      do:
+        {:ok,
+         %{message_id: "message-#{step.group_id}", action: :created, confirmation: :confirmed}}
+  end
+
+  test "stop uploads every group before publication and a later upload failure blocks all sends" do
+    outgoing = outgoing(:abort, 3, true)
+    connection = connection(%{{:upload, 1} => failure(:timeout)})
+
+    assert {:error, %{reason: {:attachment_delivery_failed, report}}} =
+             DeliveryExecutor.execute(outgoing, OperationBridge, connection)
+
+    assert report.messages == []
+    assert [%{attachment_index: 0}] = report.uploaded_only
+    assert Enum.any?(report.unattempted_steps, &(&1.step_id == {:send, 0}))
+    assert_receive {:step_started, {:upload, 0}, _, _}
+    assert_receive {:step_started, {:upload, 1}, _, _}
+    refute_received {:step_started, {:upload, 2}, _, _}
+    refute_received {:step_started, {:send, _}, _, _}
+  end
+
+  test "stop retains the first confirmed message after the second publication fails" do
+    assert {:ok, report} =
+             DeliveryExecutor.execute(
+               outgoing(:abort, 3),
+               OperationBridge,
+               connection(%{{:send, 1} => failure(:timeout)})
+             )
+
+    assert report.confirmation == :partial
+    assert [%{message_id: "message-0"}] = report.messages
+    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_files
+    assert [%{step_id: {:send, 2}}] = report.unattempted_steps
+    refute_received {:step_started, {:send, 2}, _, _}
+  end
+
+  test "continue retains an unknown send and promotes the next candidate with the original answer" do
+    assert {:ok, report} =
+             DeliveryExecutor.execute(
+               outgoing(:continue, 3),
+               OperationBridge,
+               connection(%{{:send, 0} => failure(:timeout)})
+             )
+
+    assert report.confirmation == :partial
+
+    assert [
+             %{message_id: "message-1", body: "Original answer"},
+             %{message_id: "message-2", body: "Additional files (3/3)."}
+           ] = report.messages
+
+    assert [%{attachment_index: 0, reason: :timeout, delivery: :unconfirmed}] =
+             report.failed_files
+
+    assert_receive {:step_started, {:send, 1}, _,
+                    %{outgoing: %{body: "Original answer"}, thread_id: nil}}
+
+    assert_receive {:step_started, {:send, 2}, _, %{thread_id: "message-1"}}
+    assert_receive {:step_started, {:send, 0}, _, _}
+    refute_received {:step_started, {:send, 0}, _, _}
+  end
+
+  test "duplicate step IDs are rejected before effects" do
+    outgoing = outgoing(:continue, 1)
+    [step] = outgoing.delivery_plan.steps
+    outgoing = %{outgoing | delivery_plan: %{outgoing.delivery_plan | steps: [step, step]}}
+
+    assert {:error, %{stage: :configuration}} =
+             DeliveryExecutor.execute(outgoing, OperationBridge, connection())
+
+    refute_received {:step_started, _, _, _}
+  end
+
+  test "continue overlaps ready replies within the configured bound" do
+    connection = connection(Map.new(1..3, &{{:send, &1}, {:wait, nil}}))
+
+    task =
+      Task.async(fn ->
+        DeliveryExecutor.execute(outgoing(:continue, 4), OperationBridge, connection,
+          max_concurrency: 2
+        )
+      end)
+
+    assert_receive {:step_started, {:send, 0}, _, _}
+    assert_receive {:step_started, {:send, first}, first_pid, _} when first in [1, 2]
+    assert_receive {:step_started, {:send, second}, second_pid, _} when second in [1, 2]
+    refute first == second
+    refute_received {:step_started, {:send, 3}, _, _}
+    send(first_pid, :release)
+    assert_receive {:step_started, {:send, 3}, third_pid, _}
+    send(second_pid, :release)
+    send(third_pid, :release)
+    assert {:ok, %{confirmation: :confirmed, messages: messages}} = Task.await(task)
+    assert Enum.map(messages, & &1.message_id) == Enum.map(0..3, &"message-#{&1}")
+  end
+
+  test "independent messages overlap under continue without waiting for a root" do
+    outgoing = outgoing(:continue, 2)
+    outgoing = %{outgoing | delivery_plan: %{outgoing.delivery_plan | placement: :independent}}
+    connection = connection(Map.new(0..1, &{{:send, &1}, {:wait, nil}}))
+
+    task =
+      Task.async(fn ->
+        DeliveryExecutor.execute(outgoing, OperationBridge, connection, max_concurrency: 2)
+      end)
+
+    assert_receive {:step_started, {:send, 0}, first, %{thread_id: nil}}
+    assert_receive {:step_started, {:send, 1}, second, %{thread_id: nil}}
+    send(first, :release)
+    send(second, :release)
+    assert {:ok, %{confirmation: :confirmed, messages: [root, continuation]}} = Task.await(task)
+    assert root.body == "Original answer"
+    assert continuation.body == "Additional files (2/2)."
+  end
+
+  test "task exits remain unconfirmed and are never retried" do
+    assert {:ok, report} =
+             DeliveryExecutor.execute(
+               outgoing(:continue, 3),
+               OperationBridge,
+               connection(%{{:send, 1} => :exit})
+             )
+
+    assert report.confirmation == :partial
+
+    assert Enum.any?(
+             report.failed_files,
+             &(&1.attachment_index == 1 and &1.delivery == :unconfirmed)
+           )
+
+    assert_receive {:step_started, {:send, 1}, _, _}
+    refute_received {:step_started, {:send, 1}, _, _}
+  end
+
+  test "a timed out reply remains unknown without retrying the submitted step" do
+    assert {:ok, report} =
+             DeliveryExecutor.execute(
+               outgoing(:continue, 3),
+               OperationBridge,
+               connection(%{{:send, 1} => {:wait, nil}}),
+               timeout: 20
+             )
+
+    assert report.confirmation == :partial
+
+    assert Enum.any?(
+             report.failed_files,
+             &(&1.attachment_index == 1 and &1.delivery == :unconfirmed)
+           )
+
+    assert_receive {:step_started, {:send, 1}, _, _}
+    refute_received {:step_started, {:send, 1}, _, _}
+    refute inspect(report) =~ "private bytes"
+  end
+
+  test "successful text followed by a failed attachment edit confirms only text" do
+    outgoing = outgoing(:continue, 1, true)
+    [upload, send] = outgoing.delivery_plan.steps
+    text = %{send | file_refs: [], depends_on: []}
+
+    edit = %Step{
+      id: {:edit, 0},
+      operation: :edit,
+      group_id: 0,
+      file_refs: [0],
+      depends_on: [upload.id, text.id],
+      message_ref: {:result, text.id}
+    }
+
+    outgoing = %{
+      outgoing
+      | delivery_plan: %{outgoing.delivery_plan | steps: [upload, text, edit]}
+    }
+
+    assert {:ok, report} =
+             DeliveryExecutor.execute(
+               outgoing,
+               OperationBridge,
+               connection(%{edit.id => failure(:timeout)})
+             )
+
+    assert [%{body: "Original answer", delivered_attachment_indices: []}] = report.messages
+    assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_files
+    assert [%{attachment_index: 0}] = report.uploaded_only
+
+    assert_receive {:step_started, {:edit, 0}, _,
+                    %{message_id: "message-0", outgoing: %{body: "Original answer"}}}
+  end
+
+  test "a blocked first root times out and the next root is promoted once" do
+    assert {:ok, report} = timed_execution(outgoing(:continue, 3), {:send, 0})
+    assert report.confirmation == :partial
+    assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_files
+
+    assert [
+             %{message_id: "message-1", body: "Original answer"},
+             %{message_id: "message-2", thread_id: "message-1"}
+           ] = report.messages
+
+    assert_receive {:step_started, {:send, 1}, _, %{thread_id: nil}}
+    assert_receive {:step_started, {:send, 2}, _, %{thread_id: "message-1"}}
+    refute_received {:step_started, _, _, _}
+  end
+
+  test "the single remaining reply times out after a confirmed root" do
+    assert {:ok, report} = timed_execution(outgoing(:continue, 2), {:send, 1})
+    assert [%{message_id: "message-0"}] = report.messages
+    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_files
+    assert_receive {:step_started, {:send, 0}, _, _}
+    refute_received {:step_started, _, _, _}
+  end
+
+  test "sole send and existing-message edit both honor the deadline" do
+    for operation <- [:send, :edit], placement <- [:threaded, :independent] do
+      outgoing = outgoing(:continue, 1)
+      [step] = outgoing.delivery_plan.steps
+
+      step = %{
+        step
+        | id: {operation, 0},
+          operation: operation,
+          message_ref: if(operation == :edit, do: {:existing, "streamed"})
+      }
+
+      plan = %{outgoing.delivery_plan | steps: [step], placement: placement}
+
+      assert {:error, %{delivery: :unconfirmed, reason: {:attachment_delivery_failed, report}}} =
+               timed_execution(%{outgoing | delivery_plan: plan}, step.id)
+
+      assert report.messages == []
+      assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_files
+      refute_received {:step_started, _, _, _}
+    end
+  end
+
+  test "stop times out publication and preserves earlier confirmations without later sends" do
+    assert {:ok, report} = timed_execution(outgoing(:abort, 3), {:send, 1})
+    assert [%{message_id: "message-0"}] = report.messages
+    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_files
+    assert [%{step_id: {:send, 2}}] = report.unattempted_steps
+    assert_receive {:step_started, {:send, 0}, _, _}
+    refute_received {:step_started, _, _, _}
+  end
+
+  test "stop upload timeout prevents all publication and later uploads" do
+    assert {:error, %{reason: {:attachment_delivery_failed, report}}} =
+             timed_execution(outgoing(:abort, 3, true), {:upload, 1})
+
+    assert report.messages == []
+    assert [%{attachment_index: 0}] = report.uploaded_only
+    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_files
+    assert Enum.any?(report.unattempted_steps, &(&1.step_id == {:upload, 2}))
+    assert_receive {:step_started, {:upload, 0}, _, _}
+    refute_received {:step_started, _, _, _}
+  end
+
+  test "continue makes progress after an upload times out without retrying it" do
+    assert {:ok, report} = timed_execution(outgoing(:continue, 2, true), {:upload, 0})
+    assert report.confirmation == :partial
+    assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_files
+
+    assert [%{delivered_attachment_indices: []}, %{delivered_attachment_indices: [1]}] =
+             report.messages
+
+    assert_receive {:step_started, {:upload, 1}, _, _}
+    assert_receive {:step_started, {:send, 0}, _, %{files: []}}
+    assert_receive {:step_started, {:send, 1}, _, %{uploaded_files: [%{attachment_index: 1}]}}
+    refute_received {:step_started, _, _, _}
+  end
+
+  defp timed_execution(outgoing, blocked_id) do
+    connection = connection(%{blocked_id => {:wait, nil}})
+
+    task =
+      Task.Supervisor.async_nolink(Zaq.TaskSupervisor, fn ->
+        DeliveryExecutor.execute(outgoing, OperationBridge, connection, timeout: 50)
+      end)
+
+    try do
+      assert_receive {:step_started, ^blocked_id, provider, _}, 1000
+      monitor = Process.monitor(provider)
+
+      try do
+        assert {:ok, result} = Task.yield(task, 1000)
+        assert_receive {:DOWN, ^monitor, :process, ^provider, _}, 1000
+        refute Process.alive?(provider)
+        refute_received {:step_started, ^blocked_id, _, _}
+        result
+      after
+        Process.demonitor(monitor, [:flush])
+      end
+    after
+      Task.shutdown(task, :brutal_kill)
+    end
+  end
+
+  test "partial upload facts publish only confirmed references under continue" do
+    outgoing = outgoing(:continue, 2, true)
+    files = outgoing.delivery_plan.files
+    group = %{id: 0, file_refs: [0, 1], body: outgoing.body}
+    upload = %Step{id: :upload, operation: :upload, group_id: 0, file_refs: [0, 1]}
+
+    send = %Step{
+      id: :send,
+      operation: :send,
+      group_id: 0,
+      file_refs: [0, 1],
+      depends_on: [:upload]
+    }
+
+    plan = %{outgoing.delivery_plan | files: files, groups: [group], steps: [upload, send]}
+    {_, error, _} = failure(:timeout)
+    result = {:error, error, %{uploaded_files: [%{id: "confirmed-upload", attachment_index: 0}]}}
+
+    assert {:ok, report} =
+             DeliveryExecutor.execute(
+               %{outgoing | delivery_plan: plan},
+               OperationBridge,
+               connection(%{upload.id => result})
+             )
+
+    assert [%{delivered_attachment_indices: [0]}] = report.messages
+    assert [%{attachment_index: 1}] = report.failed_files
+    assert report.uploaded_only == []
+  end
+
+  test "an unknown text-only publication retains unknown certainty" do
+    outgoing = outgoing(:continue, 1)
+    [step] = outgoing.delivery_plan.steps
+    plan = %{outgoing.delivery_plan | steps: [%{step | file_refs: []}]}
+
+    assert {:error, %{delivery: :unconfirmed, reason: {:attachment_delivery_failed, report}}} =
+             DeliveryExecutor.execute(
+               %{outgoing | delivery_plan: plan},
+               OperationBridge,
+               connection(%{step.id => failure(:timeout)})
+             )
+
+    assert report.failed_files == []
+    assert [%{delivery: :unconfirmed, status: :failed}] = report.step_outcomes
+  end
+
+  property "every planned step starts at most once and receives resolved upload outputs" do
+    check all(count <- integer(1..10), policy <- member_of([:continue, :abort])) do
+      assert {:ok, _} =
+               DeliveryExecutor.execute(
+                 outgoing(policy, count, true),
+                 OperationBridge,
+                 connection()
+               )
+
+      started = collect_started([])
+      ids = Enum.map(started, &elem(&1, 0))
+      assert length(ids) == length(Enum.uniq(ids))
+      assert length(ids) == count * 2
+
+      for {{:send, index}, inputs} <- started do
+        assert [%{attachment_index: ^index}] = inputs.uploaded_files
+      end
+    end
+  end
+
+  defp collect_started(started) do
+    receive do
+      {:step_started, id, _pid, inputs} -> collect_started([{id, inputs} | started])
+    after
+      0 -> Enum.reverse(started)
+    end
+  end
+
+  defp failure(reason),
+    do:
+      {:error,
+       %DeliveryError{
+         reason: reason,
+         message: "Delivery could not be confirmed.",
+         stage: :transport,
+         delivery: :unconfirmed
+       }, %{}}
+
+  defp connection(outcomes \\ %{}), do: %{test_pid: self(), outcomes: outcomes}
+
+  defp outgoing(policy, count, uploads? \\ false) do
+    groups =
+      Enum.map(
+        0..(count - 1),
+        &%{id: &1, file_refs: [&1], body: "Original answer", prepared: nil}
+      )
+
+    steps =
+      Enum.flat_map(groups, fn group ->
+        upload = %Step{
+          id: {:upload, group.id},
+          operation: :upload,
+          group_id: group.id,
+          file_refs: group.file_refs
+        }
+
+        send = %Step{
+          id: {:send, group.id},
+          operation: :send,
+          group_id: group.id,
+          file_refs: group.file_refs,
+          depends_on: if(uploads?, do: [upload.id], else: [])
+        }
+
+        if uploads?, do: [upload, send], else: [send]
+      end)
+
+    files =
+      Map.new(
+        groups,
+        &{&1.id,
+         %{
+           attachment_index: &1.id,
+           content: "private bytes",
+           name: "file.txt",
+           mime_type: "text/plain",
+           size: 13
+         }}
+      )
+
+    %Outgoing{
+      provider: :mattermost,
+      channel_id: "room",
+      body: "Original answer",
+      delivery_plan: %DeliveryPlan{
+        failure_policy: policy,
+        placement: :threaded,
+        files: files,
+        groups: groups,
+        steps: steps
+      }
+    }
+  end
+end
