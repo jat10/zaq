@@ -9,9 +9,15 @@
   "id": "zaq-1lw.21",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Baseline execution reproduced in an isolated Elixir VM: loaded original Outgoing, FileRequirements, Step, DeliveryPlan, DeliveryFiles and JidoChatBridge from HEAD=14fee186e with unchanged installed dependencies, then sent a synthetic Telegram attachment without network I/O. Result: {:error, DeliveryError{reason: :invalid_file_requirements, stage: :configuration, delivery: :not_sent}}. Current adapter callback export check is false. This proves the existing real-document test conflict predates zaq-1lw.20. Probe source stayed under /tmp and no baseline module was written into repository/build BEAM files.",
+      "timestamp": "2026-11-18T15:22:53Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.21] Reconcile Telegram attachment transport requirements",
   "type": "bug",
-  "updated_at": "2026-11-18T15:20:31Z"
+  "updated_at": "2026-11-18T15:22:53Z"
 }
