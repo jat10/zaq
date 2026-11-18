@@ -115,9 +115,12 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationLogsLiveTest do
 
       NotificationLog.append_attempt(log.id, "email", {:error, :smtp_down})
 
+      NotificationLog.transition_status(log, "failed")
+
       conn = authed_conn(conn)
-      {:ok, _view, html} = live(conn, ~p"/bo/channels/notifications/logs")
+      {:ok, view, html} = live(conn, ~p"/bo/channels/notifications/logs")
       assert html =~ "✗"
+      assert has_element?(view, "#log-#{log.id}", "failed")
     end
   end
 
@@ -276,6 +279,7 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationLogsLiveTest do
         })
 
       NotificationLog.append_attempt(log.id, "email", :ok)
+      NotificationLog.transition_status(log, "sent")
 
       conn = authed_conn(conn)
       {:ok, view, _html} = live(conn, ~p"/bo/channels/notifications/logs")
@@ -285,6 +289,8 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationLogsLiveTest do
         |> element("button[phx-value-id='#{log.id}']")
         |> render_click()
 
+      assert has_element?(view, "#log-#{log.id}", "sent")
+      assert has_element?(view, "#log-#{log.id}", "✓")
       assert html =~ "Delivery Attempts"
       assert html =~ "email"
       refute html =~ "Fallback"
@@ -297,7 +303,9 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationLogsLiveTest do
           payload: %{"subject" => "S", "body" => "B"}
         })
 
-      NotificationLog.append_attempt(log.id, "email", {:error, :smtp_down})
+      error = "smtp_down: not_sent: preparation <failed>"
+      NotificationLog.append_attempt(log.id, "email", {:error, error})
+      NotificationLog.transition_status(log, "sent")
       NotificationLog.append_attempt(log.id, "mattermost", :ok)
 
       conn = authed_conn(conn)
@@ -311,7 +319,11 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationLogsLiveTest do
       assert html =~ "Delivery Attempts"
       assert html =~ "Primary"
       assert html =~ "Fallback"
+      assert has_element?(view, "#log-#{log.id}", "sent")
+      assert has_element?(view, "#log-#{log.id}", "✓")
+      assert has_element?(view, "#log-#{log.id}", "✗")
       assert html =~ "smtp_down"
+      assert html =~ Phoenix.HTML.safe_to_string(Phoenix.HTML.html_escape(error))
       assert html =~ "mattermost"
     end
   end

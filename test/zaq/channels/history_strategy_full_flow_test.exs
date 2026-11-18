@@ -22,7 +22,6 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
   alias Zaq.Channels.EmailBridge
   alias Zaq.Channels.EmailBridge.ImapAdapter
   alias Zaq.Channels.JidoChatBridge
-  alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.ChannelHistoryMembership
   alias Zaq.Engine.Conversations
 
@@ -34,16 +33,17 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
     TranscriptMessage
   }
 
-  alias Zaq.Engine.IncomingMessageRouting
   alias Zaq.Permissions
   alias Zaq.Permissions.ChannelHistoryResource
   alias Zaq.Repo
   alias Zaq.Utils.DateUtils
 
   alias Zaq.TestSupport.{
+    ChannelFileFixtures,
     DeliveryDiagnostics,
     HistoryBrowser,
     MattermostHistoryFixture,
+    MessageJourney,
     MultiAgentOpenAIStub,
     OpenAIStub,
     ToolCallingLLMStub
@@ -172,20 +172,10 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
 
     config = connector(tags.strategy, endpoint)
 
-    assert {:ok, _} =
-             IncomingMessageRouting.upsert_rule(
-               %{channel_config_id: config.id},
-               %{routing_mode: :agent, configured_agent_id: agent.id}
-             )
+    MessageJourney.route!(config, agent)
+    on_exit(fn -> ServerManager.stop_server(agent) end)
 
-    on_exit(fn ->
-      ServerManager.stop_server(agent)
-
-      if config.provider == "mattermost",
-        do: Zaq.Channels.Supervisor.stop_bridge_runtime(config, "mattermost_#{config.id}")
-    end)
-
-    observe_committed_delivery(owner)
+    MessageJourney.observe_delivery(owner)
     %{config: config, agent: agent}
   end
 
@@ -470,7 +460,7 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
       observe_native_input(state.consumer_pid)
 
       update_id = active_ingress(ctx)
-      if ctx.active_update == :owner_followup, do: assert_receive(:strategy_input_queued, 5_000)
+      if ctx.active_update == :owner_followup, do: assert_receive(:journey_input_queued, 5_000)
       update_message = Repo.get_by!(Message, external_message_id: update_id)
 
       if ctx.active_update == :owner_followup do
@@ -648,7 +638,7 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
                "create_at" => System.system_time(:millisecond)
              })
 
-    assert_receive :strategy_input_queued, 5_000
+    assert_receive :journey_input_queued, 5_000
     update = Repo.get_by!(Message, external_message_id: "browser-steering")
     receipt = Repo.get_by!(ExecutionRecord, user_message_id: update.id)
     assert receipt.status == "queued"
@@ -696,10 +686,8 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
                  "create_at" => System.system_time(:millisecond)
                })
 
-      assert_receive {:strategy_input_denied, writer}, 5_000
-      monitor = Process.monitor(writer)
-      assert_receive {:DOWN, ^monitor, :process, ^writer, reason}, 5_000
-      assert reason in [:normal, :noproc]
+      assert_receive {:journey_input_denied, writer}, 5_000
+      MessageJourney.await_writer(writer, 5_000)
       denied_message = Repo.get_by!(Message, external_message_id: "browser-denied")
       denied = Repo.get_by!(ExecutionRecord, user_message_id: denied_message.id)
       assert denied.status == "failed"
@@ -796,7 +784,7 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
 
       spanish_correction(ctx.config)
 
-      assert_receive :strategy_input_queued, 5_000
+      assert_receive :journey_input_queued, 5_000
       update = Repo.get_by!(Message, external_message_id: "spanish-correction")
       receipt = Repo.get_by!(ExecutionRecord, user_message_id: update.id)
       assert receipt.root_execution_id == execution.id
@@ -888,7 +876,7 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
              2
 
     assert_transport(:shared, nil, "Hola")
-    refute_received :strategy_input_queued
+    refute_received :journey_input_queued
   end
 
   defp steering_ingress(config) do
@@ -1413,12 +1401,10 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
   end
 
   defp await_committed_delivery do
-    assert_receive {:strategy_delivery_committed, writer}, 5_000
+    assert_receive {:journey_delivery_committed, writer}, 5_000
 
     if writer != self() do
-      monitor = Process.monitor(writer)
-      assert_receive {:DOWN, ^monitor, :process, ^writer, reason}, 5_000
-      assert reason in [:normal, :noproc]
+      MessageJourney.await_writer(writer, 5_000)
     end
   rescue
     error in ExUnit.AssertionError ->
@@ -1497,27 +1483,34 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
         "References: <strategy-input@example.com>"
       )
 
-    assert :ok = EmailBridge.from_listener(config, payload, mailbox: "INBOX")
+    MessageJourney.ingest(config, payload, mailbox: "INBOX")
     "<active-update@example.com>"
   end
 
   defp active_ingress(%{strategy: :direct, config: config}) do
-    assert {{:ok, _}, _} =
-             MattermostHistoryFixture.direct_post(config, %{
-               "id" => "active-update",
-               "message" => "Active update evidence"
-             })
+    MessageJourney.ingest(
+      config,
+      %{
+        "id" => "active-update",
+        "message" => "Active update evidence"
+      },
+      conversation_type: :one_to_one
+    )
 
     "active-update"
   end
 
   defp active_ingress(%{strategy: :shared, config: config}) do
-    assert {{:ok, _}, _} =
-             MattermostHistoryFixture.post(config, nil, true, %{
-               "id" => "active-update",
-               "channel_id" => @shared_room,
-               "message" => "@zaq Active update evidence"
-             })
+    MessageJourney.ingest(
+      config,
+      %{
+        "id" => "active-update",
+        "channel_id" => @shared_room,
+        "message" => "@zaq Active update evidence"
+      },
+      root_author: nil,
+      mentioned: true
+    )
 
     "active-update"
   end
@@ -1777,7 +1770,7 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
     payload = email_payload("history question", "strategy-input@example.com", "")
 
     replay = fn ->
-      assert :ok = EmailBridge.from_listener(config, payload, mailbox: "INBOX")
+      MessageJourney.ingest(config, payload, mailbox: "INBOX")
     end
 
     replay.()
@@ -1785,20 +1778,28 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
   end
 
   defp ingress(%{strategy: :shared_refreshed, config: config, conn: conn}) do
-    assert {{:ok, _}, _} =
-             MattermostHistoryFixture.post(config, nil, false, %{
-               "id" => "root-human",
-               "channel_id" => @shared_room,
-               "user_id" => "bob",
-               "message" => "Authorized project root"
-             })
+    MessageJourney.ingest(
+      config,
+      %{
+        "id" => "root-human",
+        "channel_id" => @shared_room,
+        "user_id" => "bob",
+        "message" => "Authorized project root"
+      },
+      root_author: nil,
+      mentioned: false
+    )
 
-    assert {{:ok, _}, _} =
-             MattermostHistoryFixture.post(config, nil, false, %{
-               "id" => "alice-presence",
-               "channel_id" => @shared_room,
-               "message" => "Alice is participating"
-             })
+    MessageJourney.ingest(
+      config,
+      %{
+        "id" => "alice-presence",
+        "channel_id" => @shared_room,
+        "message" => "Alice is participating"
+      },
+      root_author: nil,
+      mentioned: false
+    )
 
     parent =
       Repo.one!(
@@ -1814,10 +1815,14 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
     assert render(view) =~ "Provider access refreshed (2 linked People)"
 
     replay = fn ->
-      assert {{:ok, _}, _} =
-               MattermostHistoryFixture.post(config, "human", true, %{
-                 "channel_id" => @shared_room
-               })
+      MessageJourney.ingest(
+        config,
+        %{
+          "channel_id" => @shared_room
+        },
+        root_author: "human",
+        mentioned: true
+      )
     end
 
     replay.()
@@ -1826,16 +1831,15 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
 
   defp ingress(%{strategy: strategy, config: config}) do
     replay = fn ->
-      result =
-        case strategy do
-          :shared ->
-            MattermostHistoryFixture.post(config, nil, true, %{"channel_id" => @shared_room})
+      case strategy do
+        :shared ->
+          MessageJourney.ingest(config, %{"channel_id" => @shared_room}, [])
 
-          :direct ->
-            MattermostHistoryFixture.direct_post(config, %{"message" => "history question"})
-        end
-
-      assert {{:ok, _}, _} = result
+        :direct ->
+          MessageJourney.ingest(config, %{"message" => "history question"},
+            conversation_type: :one_to_one
+          )
+      end
     end
 
     replay.()
@@ -1871,80 +1875,22 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
         "from_email" => "bot@example.com"
       })
 
-    insert_connector("email:imap", %{
-      "imap" => %{
-        "username" => "bot@example.com",
-        "selected_mailboxes" => ["INBOX"],
-        "smtp_config_id" => smtp.id
-      }
+    MessageJourney.email!("strategy", smtp, "bot@example.com", %{
+      url: "localhost",
+      token: "test-token"
     })
   end
 
-  defp connector(_strategy, endpoint) do
-    %ChannelConfig{}
-    |> ChannelConfig.changeset(%{
-      name: "Real Mattermost strategy",
-      provider: "mattermost",
-      kind: "retrieval",
-      url: String.trim_trailing(endpoint, "/v1"),
-      token: "test-token",
-      enabled: true,
-      settings: %{"jido_chat" => %{"bot_name" => "zaq", "bot_user_id" => "bot"}}
-    })
-    |> Repo.insert!()
-  end
+  defp connector(_strategy, endpoint), do: MessageJourney.mattermost!("strategy", endpoint)
 
   defp insert_connector(provider, settings) do
-    %ChannelConfig{}
-    |> ChannelConfig.changeset(%{
-      name: "Strategy #{provider}",
-      provider: provider,
-      kind: "retrieval",
+    ChannelFileFixtures.config!(provider, "strategy", %{
       url: "localhost",
       token: "test-token",
-      enabled: true,
       settings: settings
     })
-    |> Repo.insert!()
   end
 
   defp placements(id),
     do: Repo.all(from p in TranscriptMessage, where: p.transcript_id == ^id, order_by: p.position)
-
-  defp observe_committed_delivery(owner) do
-    handler = {__MODULE__, owner}
-
-    :telemetry.attach(
-      handler,
-      [:zaq, :repo, :query],
-      fn _, _, metadata, _ -> observe_query(metadata, handler, owner) end,
-      nil
-    )
-
-    on_exit(fn -> :telemetry.detach(handler) end)
-  end
-
-  defp observe_query(%{query: "commit"}, handler, owner) do
-    if Process.delete(handler), do: send(owner, {:strategy_delivery_committed, self()})
-    if Process.delete({handler, :queued}), do: send(owner, :strategy_input_queued)
-    if Process.delete({handler, :denied}), do: send(owner, {:strategy_input_denied, self()})
-  end
-
-  defp observe_query(%{source: "transcript_messages"} = metadata, handler, _owner) do
-    if String.starts_with?(metadata.query, "INSERT") and
-         "provider_confirmed" in (metadata[:cast_params] || []),
-       do: Process.put(handler, true)
-  end
-
-  defp observe_query(%{source: "execution_records"} = metadata, handler, _owner) do
-    if String.starts_with?(metadata.query, "UPDATE") and
-         "queued" in (metadata[:cast_params] || []),
-       do: Process.put({handler, :queued}, true)
-
-    if String.starts_with?(metadata.query, "UPDATE") and
-         "failed" in (metadata[:cast_params] || []),
-       do: Process.put({handler, :denied}, true)
-  end
-
-  defp observe_query(_metadata, _handler, _owner), do: :ok
 end

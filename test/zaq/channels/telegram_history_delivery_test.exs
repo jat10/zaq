@@ -7,14 +7,68 @@ defmodule Zaq.Channels.TelegramHistoryDeliveryTest do
   alias Zaq.Accounts.People
   alias Zaq.Agent.ServerManager
   alias Zaq.Agent.Status
-  alias Zaq.Channels.{Api, CommunicationBridge, JidoChatBridge}
+  alias Zaq.Channels.{Api, CommunicationBridge, DeliveryError, JidoChatBridge}
   alias Zaq.Channels.JidoChatBridge.DeliveryResult
+  alias Zaq.Contracts.Record
   alias Zaq.Engine.{ChannelConfig, Conversations, HistoryIngress}
   alias Zaq.Engine.Conversations.{Message, TranscriptMessage}
   alias Zaq.Engine.IncomingMessageRouting
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
   alias Zaq.TestSupport.OpenAIStub
+
+  defmodule DocumentTransport do
+    def call(_token, method, payload, _opts) do
+      send(self(), {:document_call, method, payload})
+
+      {:ok,
+       %{
+         "message_id" => 101,
+         "date" => 1,
+         "chat" => %{"id" => 123},
+         "document" => %{
+           "file_id" => "upload-id",
+           "file_name" => "image.png",
+           "mime_type" => "image/png"
+         }
+       }}
+    end
+  end
+
+  test "an image attachment rejects unsupported requirements before calling the transport", %{
+    config: config
+  } do
+    bytes = <<255, 0, 128>>
+
+    outgoing = %Outgoing{
+      provider: :telegram,
+      channel_id: "123",
+      body: "Image as a file",
+      attachments: [
+        %Record{
+          id: "image",
+          kind: :file,
+          name: "image.png",
+          mime_type: "image/png",
+          content: bytes
+        }
+      ]
+    }
+
+    assert {:error,
+            %DeliveryError{
+              reason: :invalid_file_requirements,
+              stage: :configuration,
+              delivery: :not_sent
+            }} =
+             JidoChatBridge.send_reply(outgoing, %{
+               url: config.url,
+               token: config.token,
+               transport: DocumentTransport
+             })
+
+    refute_received {:document_call, _, _}
+  end
 
   setup context do
     previous = Application.get_env(:zaq, :channels)
@@ -291,7 +345,7 @@ defmodule Zaq.Channels.TelegramHistoryDeliveryTest do
           )
     }
 
-    assert {:error, %ExGram.Error{}} = deliver(outgoing)
+    assert {:error, %Zaq.Channels.DeliveryError{reason: %ExGram.Error{}}} = deliver(outgoing)
     assert Repo.get!(Message, ctx.persisted.assistant_message_id)
     refute Repo.get_by(TranscriptMessage, message_id: ctx.persisted.assistant_message_id)
     assert Repo.aggregate(TranscriptMessage, :count) == 1
