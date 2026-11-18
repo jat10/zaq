@@ -23,11 +23,15 @@
     {
       "text": "Execution-backed review against 14fee186e: (P2) publication_step promoted later groups to edit whenever no answer was confirmed, including a prior unconfirmed transport edit; promotion must be limited to preparation-omitted earlier groups. (P2) preparation callbacks now run in executor setup outside invoke rescue/catch, allowing a raised private provider diagnostic to escape instead of a structured preparation failure. Added two permanent regressions in delivery_executor_test and attachment_policy_test; RED reproduced 2 failures, 34 other checks pass. Fixes remain within findings 5/8; candidates 9–14 untouched. Reuse review confirms existing Materialization/validated DecodeBase64, notification/workflow/NodeRouter and Engine confirmation boundaries retained. No new tools, Actions, dependencies or persistence path.",
       "timestamp": "2026-11-18T15:10:02Z"
+    },
+    {
+      "text": "Review fixes verified: 79 executor/planner/Jido checks pass (5 properties), including RED-to-GREEN preparation-exception containment and unconfirmed-edit promotion regressions. mix q passed before final documentation/test additions. Configuration/constructor group: 131 checks passed (7 properties). Consolidated affected suites and existing E2E execution now running. No feature E2E authored; zaq-1lw.10 human UX approval and .11 remain prerequisites to approved review/.13 coverage/final precommit. Page candidates 9–14 remain unimplemented; result shape, caption ownership, global continue upload barrier and provider identity contract were not redesigned.",
+      "timestamp": "2026-11-18T15:13:01Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.20] Apply eight channel delivery review findings",
   "type": "task",
-  "updated_at": "2026-11-18T15:10:02Z"
+  "updated_at": "2026-11-18T15:13:01Z"
 }
