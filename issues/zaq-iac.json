@@ -14,11 +14,15 @@
     {
       "text": "Implementation: report/2 builds the existing report facts and adds top-level delivery only when messages == []; confirmation remains the overall status. Individual failed_attachments and step_outcomes certainty and finish/2 Error construction unchanged. Candidate 12 finish/2 consistent report preserved. New property covers 1..6 groups, 0..count confirmed prefix, continue/abort, not_sent/unconfirmed, exact failed count and error reason/cause/message/stage/delivery. No existing assertion edited. mix q passed; focused consumers validating.",
       "timestamp": "2026-11-19T16:01:05Z"
+    },
+    {
+      "text": "Candidate 13 issue validation complete: mix q passed; focused executor, confirmation, Mattermost/Jido delivery, attachment policy, Channels API, EmailBridge/outgoing attachments/email confirmation integration, Engine history delivery and history ingress all passed: 369 checks (15 properties, 354 tests). Both supplied candidate 12 and 13 regressions pass. New property verifies success and partial reports omit delivery, total-failure reports/errors preserve not_sent or unconfirmed, and per-attachment/per-step certainty remains exact. git diff --check clean. No existing expectations changed; only report/2 and an additional executor property changed for candidate 13. Prior candidate 12 working-tree changes preserved. No commit/push. This is issue-level validation; no PR/review/coverage/merge or final human approval requested.",
+      "timestamp": "2026-11-19T16:02:55Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 13: scope report delivery certainty to total failure",
   "type": "bug",
-  "updated_at": "2026-11-19T16:01:05Z"
+  "updated_at": "2026-11-19T16:02:55Z"
 }
