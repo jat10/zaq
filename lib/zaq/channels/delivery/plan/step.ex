@@ -1,4 +1,4 @@
-defmodule Zaq.Channels.DeliveryPlan.Step do
+defmodule Zaq.Channels.Delivery.Plan.Step do
   @moduledoc """
   One upload, send or edit operation with explicit dependencies and attachment indices.
 

@@ -1,4 +1,4 @@
-defmodule Zaq.Channels.DeliveryAttachments do
+defmodule Zaq.Channels.Delivery.Attachments do
   @moduledoc """
   Plans attachment delivery from Record metadata and prepares bytes during execution.
 
@@ -10,8 +10,9 @@ defmodule Zaq.Channels.DeliveryAttachments do
   """
 
   alias Zaq.Agent.Tools.General.DecodeBase64
-  alias Zaq.Channels.{DeliveryError, DeliveryPlan, TransportRequirements}
-  alias Zaq.Channels.DeliveryPlan.Step
+  alias Zaq.Channels.Delivery.{Error, Plan}
+  alias Zaq.Channels.Delivery.Plan.Step
+  alias Zaq.Channels.TransportRequirements
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Events.TrustedContext
@@ -27,7 +28,7 @@ defmodule Zaq.Channels.DeliveryAttachments do
 
   @doc "Builds a metadata-only plan; empty selections return unchanged, including selection errors."
   @spec build_plan(Outgoing.t(), module(), map()) ::
-          {:ok, Outgoing.t()} | {:error, DeliveryError.t()}
+          {:ok, Outgoing.t()} | {:error, Error.t()}
   def build_plan(%Outgoing{delivery: %{attachments: []}} = outgoing, _bridge, _connection),
     do: {:ok, outgoing}
 
@@ -48,7 +49,7 @@ defmodule Zaq.Channels.DeliveryAttachments do
         with :ok <- preparation_gate(requirements.failure_policy, failures) do
           {groups, steps} = plan_groups(batches, outgoing, requirements)
 
-          plan = %DeliveryPlan{
+          plan = %Plan{
             failure_policy: requirements.failure_policy,
             requirements: requirements,
             placement: placement(requirements, outgoing),
@@ -68,7 +69,7 @@ defmodule Zaq.Channels.DeliveryAttachments do
 
         {groups, steps} = plan_groups([], outgoing, nil)
 
-        plan = %DeliveryPlan{
+        plan = %Plan{
           failure_policy: :continue,
           placement: placement(nil, outgoing),
           groups: groups,
@@ -113,7 +114,7 @@ defmodule Zaq.Channels.DeliveryAttachments do
     {groups, steps} = plan_groups([], notice, nil)
     groups = Enum.map(groups, &Map.merge(&1, %{canonical_body: outgoing.body, notice?: true}))
 
-    plan = %DeliveryPlan{
+    plan = %Plan{
       failure_policy: :continue,
       placement: placement(nil, outgoing),
       groups: groups,
@@ -269,7 +270,7 @@ defmodule Zaq.Channels.DeliveryAttachments do
 
   @doc "Acquires and checks a completed plan without changing it or its source Outgoing."
   @spec prepare_execution(Outgoing.t(), module(), map()) ::
-          {:ok, map()} | {:error, DeliveryError.t()}
+          {:ok, map()} | {:error, Error.t()}
   def prepare_execution(outgoing, bridge, connection) do
     plan = outgoing.delivery.plan
     refs = plan.groups |> Enum.flat_map(& &1.attachment_refs) |> Enum.uniq()
@@ -350,7 +351,7 @@ defmodule Zaq.Channels.DeliveryAttachments do
     _, _ -> {:error, :attachment_preparation_exit}
   end
 
-  defp acquisition_gate(:abort, %DeliveryError{} = error), do: {:error, error}
+  defp acquisition_gate(:abort, %Error{} = error), do: {:error, error}
   defp acquisition_gate(_policy, _error), do: :ok
 
   defp prepare_step(%{operation: :upload}, [], _outgoing, _bridge, _connection, _requirements),
@@ -424,7 +425,7 @@ defmodule Zaq.Channels.DeliveryAttachments do
   defp preparation_gate(:abort, [failure | _]),
     do:
       {:error,
-       %DeliveryError{
+       %Error{
          reason: {:attachment_preparation_failed, failure.reason},
          message: failure.reason,
          stage: failure.stage,
@@ -441,11 +442,11 @@ defmodule Zaq.Channels.DeliveryAttachments do
       reason: error.message
     }
 
-  defp normalize_planning_error(%DeliveryError{} = error), do: error
+  defp normalize_planning_error(%Error{} = error), do: error
 
   defp normalize_planning_error(reason)
        when reason in [:file_too_large, :message_too_large, :upload_request_too_large],
-       do: %DeliveryError{
+       do: %Error{
          reason: reason,
          message: "The attachment cannot fit the connector's delivery limits.",
          stage: :preparation,
@@ -491,9 +492,9 @@ defmodule Zaq.Channels.DeliveryAttachments do
     do: {:error, :invalid_attachments}
 
   @doc "Maps shared attachment selection and preparation failures before transport."
-  @spec delivery_error(term()) :: DeliveryError.t()
+  @spec delivery_error(term()) :: Error.t()
   def delivery_error(:invalid_attachment_selection) do
-    %DeliveryError{
+    %Error{
       reason: :invalid_attachment_selection,
       message: "The requested attachments could not be attached.",
       stage: :selection,
@@ -502,7 +503,7 @@ defmodule Zaq.Channels.DeliveryAttachments do
   end
 
   def delivery_error(reason) do
-    %DeliveryError{
+    %Error{
       reason: reason,
       message: preparation_message(reason),
       stage: :preparation,

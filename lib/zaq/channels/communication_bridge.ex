@@ -35,7 +35,7 @@ defmodule Zaq.Channels.CommunicationBridge do
   @doc """
   Sends an outgoing message and returns its receipt or failure.
 
-  Jido chat and email bridges map failures to `Zaq.Channels.DeliveryError`:
+  Jido chat and email bridges map failures to `Zaq.Channels.Delivery.Error`:
   the original reason is internal, the message is safe for presentation, and
   stage/delivery describe the failure without choosing fallback policy.
   Other bridges may retain legacy error reasons; callers must not infer delivery

@@ -1,4 +1,4 @@
-defmodule Zaq.Channels.DeliveryExecutor do
+defmodule Zaq.Channels.Delivery.Executor do
   @moduledoc """
   Executes one private Channel delivery plan through single-operation bridges.
 
@@ -11,19 +11,19 @@ defmodule Zaq.Channels.DeliveryExecutor do
   references alone never confirm message delivery. No operation is retried.
   """
 
-  alias Zaq.Channels.{DeliveryAttachments, DeliveryError, DeliveryPlan}
+  alias Zaq.Channels.Delivery.{Attachments, Error, Plan}
   alias Zaq.Engine.Messages.Outgoing
 
   require Logger
 
   @doc "Executes planned effects once and returns confirmed receipts plus failure evidence."
   @spec execute(Outgoing.t(), module(), map(), keyword()) ::
-          {:ok, map()} | {:error, DeliveryError.t()}
+          {:ok, map()} | {:error, Error.t()}
   def execute(outgoing, bridge, connection, opts \\ [])
 
   def execute(
         %Outgoing{
-          delivery: %Outgoing.Delivery{plan: %DeliveryPlan{} = plan}
+          delivery: %Outgoing.Delivery{plan: %Plan{} = plan}
         } = outgoing,
         bridge,
         connection,
@@ -32,7 +32,7 @@ defmodule Zaq.Channels.DeliveryExecutor do
     with :ok <- validate_plan(plan, outgoing),
          {:ok, runtime} <- execution_context(outgoing, bridge, connection, opts),
          {:ok, preparation} <-
-           DeliveryAttachments.prepare_execution(outgoing, bridge, runtime.connection) do
+           Attachments.prepare_execution(outgoing, bridge, runtime.connection) do
       runtime = Map.merge(runtime, preparation)
 
       state = %{
@@ -390,10 +390,10 @@ defmodule Zaq.Channels.DeliveryExecutor do
       {:ok, output} when is_map(output) ->
         normalize_success(step, inputs, output)
 
-      {:error, %DeliveryError{} = error, output} when is_map(output) ->
+      {:error, %Error{} = error, output} when is_map(output) ->
         failed_result(error, output)
 
-      {:error, %DeliveryError{} = error} ->
+      {:error, %Error{} = error} ->
         failed_result(error, %{})
 
       _ ->
@@ -424,7 +424,7 @@ defmodule Zaq.Channels.DeliveryExecutor do
 
       case response do
         :ok -> {:ok, %{confirmation: :unconfirmed}}
-        {:error, %DeliveryError{}} = error -> error
+        {:error, %Error{}} = error -> error
         {:error, reason} -> {:error, execution_error(reason)}
         result -> result
       end
@@ -478,7 +478,7 @@ defmodule Zaq.Channels.DeliveryExecutor do
   defp put_result(state, step, result) do
     if result[:error] do
       Logger.warning(
-        "[DeliveryExecutor] step failed stage=#{result.error.stage} reason=#{inspect(safe_reason(result.error))}"
+        "[Delivery.Executor] step failed stage=#{result.error.stage} reason=#{inspect(safe_reason(result.error))}"
       )
     end
 
@@ -502,7 +502,7 @@ defmodule Zaq.Channels.DeliveryExecutor do
         cause = first_error(runtime.plan.steps, state)
 
         {:error,
-         %DeliveryError{
+         %Error{
            reason: {:attachment_delivery_failed, report},
            cause: cause.reason,
            message: cause.message,
@@ -677,7 +677,7 @@ defmodule Zaq.Channels.DeliveryExecutor do
   end
 
   defp execution_error(reason),
-    do: %DeliveryError{
+    do: %Error{
       reason: reason,
       message: "Delivery could not be confirmed.",
       stage: :execution,
@@ -685,7 +685,7 @@ defmodule Zaq.Channels.DeliveryExecutor do
     }
 
   defp configuration_error,
-    do: %DeliveryError{
+    do: %Error{
       reason: :invalid_delivery_plan,
       message: "The delivery plan is invalid.",
       stage: :configuration,

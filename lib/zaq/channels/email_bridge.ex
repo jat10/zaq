@@ -7,8 +7,8 @@ defmodule Zaq.Channels.EmailBridge do
   `Zaq.Channels.EmailBridge.SmtpSender`; SMTP settings are read from
   `channel_configs.settings` under provider `email:smtp`.
 
-  Attachment delivery uses the shared `DeliveryAttachments` planner and
-  `DeliveryExecutor`. This bridge supplies exact MIME candidates and submits one
+  Attachment delivery uses the shared `Attachments` planner and
+  `Executor`. This bridge supplies exact MIME candidates and submits one
   planned email at a time, retaining the selected SMTP settings and identity.
   Grouping, sequencing, root promotion and failure policy stay in ZAQ's shared
   planner/executor. Ordinary text uses the existing sender path.
@@ -26,10 +26,10 @@ defmodule Zaq.Channels.EmailBridge do
   require Logger
 
   alias Zaq.Channels.Bridge
-  alias Zaq.Channels.DeliveryAttachments
-  alias Zaq.Channels.DeliveryError
-  alias Zaq.Channels.DeliveryExecutor
-  alias Zaq.Channels.DeliveryPlan
+  alias Zaq.Channels.Delivery.Attachments
+  alias Zaq.Channels.Delivery.Error
+  alias Zaq.Channels.Delivery.Executor
+  alias Zaq.Channels.Delivery.Plan
   alias Zaq.Channels.EmailBridge.ImapConfigHelpers
   alias Zaq.Channels.EmailBridge.SelfAddresses
   alias Zaq.Channels.TransportRequirements
@@ -112,7 +112,7 @@ defmodule Zaq.Channels.EmailBridge do
 
       email_attachment_receipt({:ok, receipt}, inputs.attachments)
     else
-      {:error, %DeliveryError{} = error} -> {:error, error, %{}}
+      {:error, %Error{} = error} -> {:error, error, %{}}
       {:error, reason} -> {:error, smtp_delivery_error(reason), %{}}
     end
   end
@@ -178,7 +178,7 @@ defmodule Zaq.Channels.EmailBridge do
       do: :ok,
       else:
         {:error,
-         %DeliveryError{
+         %Error{
            reason: :message_too_large,
            message: "The encoded email exceeds this connector's message-size limit.",
            stage: :preparation,
@@ -399,15 +399,15 @@ defmodule Zaq.Channels.EmailBridge do
   Prepares all attachments with the connection's trusted context before delivery,
   retaining their bytes until the synchronous SMTP sender returns.
   """
-  @spec send_reply(Outgoing.t(), map()) :: {:ok, map()} | {:error, DeliveryError.t()}
+  @spec send_reply(Outgoing.t(), map()) :: {:ok, map()} | {:error, Error.t()}
   @impl true
   def send_reply(
         %Outgoing{
-          delivery: %Outgoing.Delivery{plan: %DeliveryPlan{}}
+          delivery: %Outgoing.Delivery{plan: %Plan{}}
         } = outgoing,
         connection
       ),
-      do: DeliveryExecutor.execute(outgoing, __MODULE__, connection)
+      do: Executor.execute(outgoing, __MODULE__, connection)
 
   def send_reply(
         %Outgoing{
@@ -417,8 +417,8 @@ defmodule Zaq.Channels.EmailBridge do
       )
       when attachments != [] do
     with {:ok, connection} <- planned_smtp_connection(outgoing, connection),
-         {:ok, planned} <- DeliveryAttachments.build_plan(outgoing, __MODULE__, connection),
-         do: DeliveryExecutor.execute(planned, __MODULE__, connection)
+         {:ok, planned} <- Attachments.build_plan(outgoing, __MODULE__, connection),
+         do: Executor.execute(planned, __MODULE__, connection)
   end
 
   def send_reply(%Outgoing{} = outgoing, %{smtp_config_id: id} = connection_details),
@@ -598,7 +598,7 @@ defmodule Zaq.Channels.EmailBridge do
 
   defp smtp_delivery_error(reason) do
     {message, delivery} = smtp_failure_details(reason)
-    %DeliveryError{reason: reason, message: message, stage: :transport, delivery: delivery}
+    %Error{reason: reason, message: message, stage: :transport, delivery: delivery}
   end
 
   defp smtp_failure_details({wrapper, {kind, _host, detail}})

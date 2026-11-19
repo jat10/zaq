@@ -4,8 +4,8 @@ defmodule Zaq.Channels.ApiTest do
   alias Zaq.Agent.Status
   alias Zaq.Channels.Api
   alias Zaq.Channels.Bridge
-  alias Zaq.Channels.DeliveryAttachments
-  alias Zaq.Channels.DeliveryError
+  alias Zaq.Channels.Delivery.Attachments
+  alias Zaq.Channels.Delivery.Error
   alias Zaq.Channels.TransportRequirements
   alias Zaq.Channels.Web.{Delivery, Response}
   alias Zaq.Contracts.Record
@@ -279,12 +279,12 @@ defmodule Zaq.Channels.ApiTest do
         :ok ->
           {:ok, %{confirmation: :confirmed, action: :created, message_id: "planned-id"}}
 
-        {:error, %DeliveryError{} = error} ->
+        {:error, %Error{} = error} ->
           {:error, error, %{}}
 
         {:error, reason} ->
           {:error,
-           %DeliveryError{
+           %Error{
              reason: reason,
              message: "Delivery was not confirmed.",
              stage: :transport,
@@ -395,7 +395,7 @@ defmodule Zaq.Channels.ApiTest do
     end
 
     def send_reply(%Outgoing{}, _details),
-      do: {:error, DeliveryAttachments.delivery_error(:attachment_content_unavailable)}
+      do: {:error, Attachments.delivery_error(:attachment_content_unavailable)}
   end
 
   defmodule DeliveryConnectionBridge do
@@ -881,7 +881,7 @@ defmodule Zaq.Channels.ApiTest do
           opts: [action: :deliver_outgoing, bridge_module: StubCommunicationBridge]
         )
 
-      assert {:error, %DeliveryError{stage: ^stage, delivery: :not_sent}} =
+      assert {:error, %Error{stage: ^stage, delivery: :not_sent}} =
                Api.handle_event(event, :deliver_outgoing, nil).response
 
       refute_received {:bridge_delivery_step, _, _, _}
@@ -891,7 +891,7 @@ defmodule Zaq.Channels.ApiTest do
   end
 
   test "a completed shared attempt never triggers a replacement send or placeholder notice" do
-    error = %DeliveryError{
+    error = %Error{
       reason: :timeout,
       message: "Delivery unconfirmed",
       stage: :transport,
@@ -915,8 +915,7 @@ defmodule Zaq.Channels.ApiTest do
         opts: [action: :deliver_outgoing, bridge_module: StubCommunicationBridge]
       )
 
-    assert {:error,
-            %DeliveryError{cause: :timeout, reason: {:attachment_delivery_failed, report}}} =
+    assert {:error, %Error{cause: :timeout, reason: {:attachment_delivery_failed, report}}} =
              Api.handle_event(event, :deliver_outgoing, nil).response
 
     assert report.messages == []
@@ -1055,7 +1054,7 @@ defmodule Zaq.Channels.ApiTest do
   end
 
   test "unconfirmed planned delivery never retries or updates placeholders and never confirms files" do
-    error = %DeliveryError{
+    error = %Error{
       reason: :opaque_transport_error,
       message: "Delivery was not confirmed.",
       stage: :transport,
@@ -1085,7 +1084,7 @@ defmodule Zaq.Channels.ApiTest do
         )
 
       assert {:error,
-              %DeliveryError{
+              %Error{
                 cause: :opaque_transport_error,
                 reason: {:attachment_delivery_failed, report}
               }} = Api.handle_event(event, :deliver_outgoing, nil).response
@@ -1117,8 +1116,7 @@ defmodule Zaq.Channels.ApiTest do
         opts: [action: :deliver_outgoing, bridge_module: StubCommunicationBridge]
       )
 
-    assert {:error,
-            %DeliveryError{cause: :timeout, reason: {:attachment_delivery_failed, report}}} =
+    assert {:error, %Error{cause: :timeout, reason: {:attachment_delivery_failed, report}}} =
              Api.handle_event(event, :deliver_outgoing, nil).response
 
     assert report.messages == []

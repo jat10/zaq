@@ -1,8 +1,9 @@
-defmodule Zaq.Channels.DeliveryErrorTest do
+defmodule Zaq.Channels.Delivery.ErrorTest do
   use Zaq.DataCase, async: false
   use ExUnitProperties
 
-  alias Zaq.Channels.{Api, DeliveryAttachments, DeliveryError, EmailBridge}
+  alias Zaq.Channels.{Api, EmailBridge}
+  alias Zaq.Channels.Delivery.{Attachments, Error}
   alias Zaq.Contracts.Record
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Outgoing
@@ -11,7 +12,7 @@ defmodule Zaq.Channels.DeliveryErrorTest do
 
   test "configuration and execution errors inspect only safe facts" do
     for stage <- [:configuration, :execution] do
-      error = %DeliveryError{
+      error = %Error{
         reason: "private payload",
         message: "Delivery failed.",
         stage: stage,
@@ -41,7 +42,7 @@ defmodule Zaq.Channels.DeliveryErrorTest do
 
   property "preparation errors preserve their reason without disclosing arbitrary content" do
     check all(reason <- string(:printable)) do
-      error = DeliveryAttachments.delivery_error(reason)
+      error = Attachments.delivery_error(reason)
       assert error.reason == reason
       assert error.message == "The attachment content could not be accessed."
       assert error.stage == :preparation
@@ -93,7 +94,7 @@ defmodule Zaq.Channels.DeliveryErrorTest do
         attributes: %{"encoding" => "base64"}
       }
 
-      assert {:error, %DeliveryError{} = error} =
+      assert {:error, %Error{} = error} =
                EmailBridge.send_reply(
                  %{
                    outgoing(config.id)
@@ -132,7 +133,7 @@ defmodule Zaq.Channels.DeliveryErrorTest do
           ] do
         Process.put(:smtp_failure, reason)
 
-        assert {:error, %DeliveryError{} = error} =
+        assert {:error, %Error{} = error} =
                  EmailBridge.send_reply(outgoing(config.id), %{})
 
         assert error.reason == reason
@@ -153,8 +154,7 @@ defmodule Zaq.Channels.DeliveryErrorTest do
 
         event = Event.new(outgoing, :channels, opts: [action: :deliver_outgoing])
 
-        assert {:error,
-                %DeliveryError{reason: {:attachment_delivery_failed, report}} = planned_error} =
+        assert {:error, %Error{reason: {:attachment_delivery_failed, report}} = planned_error} =
                  Api.handle_event(event, :deliver_outgoing, nil).response
 
         assert planned_error.cause == error.reason

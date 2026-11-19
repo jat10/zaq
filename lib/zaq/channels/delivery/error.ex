@@ -1,4 +1,4 @@
-defmodule Zaq.Channels.DeliveryError do
+defmodule Zaq.Channels.Delivery.Error do
   @moduledoc """
   ZAQ delivery failure facts from attachment selection or a communication bridge.
 

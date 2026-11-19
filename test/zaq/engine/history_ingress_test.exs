@@ -6,16 +6,11 @@ defmodule Zaq.Engine.HistoryIngressTest do
   alias Jido.Chat.Telegram.Adapter, as: TelegramAdapter
   alias Zaq.Accounts.People
 
-  alias Zaq.Channels.{
-    CommunicationBridge,
-    DeliveryConfirmation,
-    DeliveryExecutor,
-    DeliveryPlan,
-    JidoChatBridge
-  }
+  alias Zaq.Channels.{CommunicationBridge, JidoChatBridge}
+  alias Zaq.Channels.Delivery.{Confirmation, Executor, Plan}
 
-  alias Zaq.Channels.DeliveryError
-  alias Zaq.Channels.DeliveryPlan.Step
+  alias Zaq.Channels.Delivery.Error
+  alias Zaq.Channels.Delivery.Plan.Step
   alias Zaq.Channels.EmailBridge
   alias Zaq.Channels.EmailBridge.ImapAdapter.Parser
   alias Zaq.Contracts.Record
@@ -40,7 +35,7 @@ defmodule Zaq.Engine.HistoryIngressTest do
     def execute_delivery_step(step, _inputs, connection) do
       if connection.fail_first? and step.group_id == 0 do
         {:error,
-         %DeliveryError{
+         %Error{
            reason: :timeout,
            message: "Unconfirmed send.",
            stage: :transport,
@@ -257,7 +252,7 @@ defmodule Zaq.Engine.HistoryIngressTest do
           }
         )
 
-      plan = %DeliveryPlan{
+      plan = %Plan{
         failure_policy: :continue,
         placement: :threaded,
         groups: groups,
@@ -274,11 +269,11 @@ defmodule Zaq.Engine.HistoryIngressTest do
       }
 
       assert {:ok, report} =
-               DeliveryExecutor.execute(outgoing, PlannedTransport, %{fail_first?: @fail_first})
+               Executor.execute(outgoing, PlannedTransport, %{fail_first?: @fail_first})
 
       for _ <- 1..2 do
         assert {:ok, %{messages: receipts}} =
-                 DeliveryConfirmation.record({:ok, report}, outgoing,
+                 Confirmation.record({:ok, report}, outgoing,
                    delivery_node_router: EmailIngressRouter
                  )
 
@@ -877,7 +872,7 @@ defmodule Zaq.Engine.HistoryIngressTest do
 
     outgoing = Outgoing.from_pipeline_result(incoming, %{answer: "Must not be sent"})
 
-    assert {:error, %DeliveryError{reason: :no_reply_recipients}} =
+    assert {:error, %Error{reason: :no_reply_recipients}} =
              EmailBridge.send_reply(outgoing, %{})
 
     refute_received {:email, _}

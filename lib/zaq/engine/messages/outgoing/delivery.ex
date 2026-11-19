@@ -14,7 +14,7 @@ defmodule Zaq.Engine.Messages.Outgoing.Delivery do
   @type t :: %__MODULE__{
           attachments: [Record.t()],
           error: :invalid_attachment_selection | nil,
-          plan: Zaq.Channels.DeliveryPlan.t() | nil
+          plan: Zaq.Channels.Delivery.Plan.t() | nil
         }
 
   @doc "Restores selection from typed or atom/string-keyed pipeline data, discarding plans."

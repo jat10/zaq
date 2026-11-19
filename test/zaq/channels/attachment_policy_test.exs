@@ -2,7 +2,8 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
-  alias Zaq.Channels.{DeliveryAttachments, DeliveryExecutor, TransportRequirements}
+  alias Zaq.Channels.Delivery.{Attachments, Executor}
+  alias Zaq.Channels.TransportRequirements
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Outgoing
 
@@ -58,7 +59,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
       outgoing = put_in(outgoing().delivery.error, error)
 
       assert {:ok, ^outgoing} =
-               DeliveryAttachments.build_plan(outgoing, PlanningBridge, %{
+               Attachments.build_plan(outgoing, PlanningBridge, %{
                  attachment_failure_policy: policy
                })
 
@@ -86,7 +87,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
     outgoing = put_in(outgoing().delivery.attachments, records)
 
     assert {:ok, planned} =
-             DeliveryAttachments.build_plan(
+             Attachments.build_plan(
                outgoing,
                PlanningBridge,
                planning_connection(10, 1000)
@@ -110,7 +111,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
     }
 
     assert {:ok, planned} =
-             DeliveryAttachments.build_plan(
+             Attachments.build_plan(
                outgoing,
                PlanningBridge,
                planning_connection(10, 1000)
@@ -126,7 +127,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
     records = Enum.map(0..3, &file("attachment-#{&1}", "1234567890"))
 
     assert {:ok, planned} =
-             DeliveryAttachments.build_plan(
+             Attachments.build_plan(
                put_in(outgoing().delivery.attachments, records),
                PlanningBridge,
                planning_connection(10, 20)
@@ -148,7 +149,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
     connection = planning_connection(10, 40, :abort)
 
     assert {:ok, planned} =
-             DeliveryAttachments.build_plan(
+             Attachments.build_plan(
                put_in(outgoing().delivery.attachments, records),
                PlanningBridge,
                connection
@@ -157,7 +158,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
     original_plan = planned.delivery.plan
 
     assert {:error, %{stage: :preparation, delivery: :not_sent}} =
-             DeliveryExecutor.execute(planned, PlanningBridge, connection)
+             Executor.execute(planned, PlanningBridge, connection)
 
     assert planned.delivery.plan == original_plan
     assert planned.delivery.attachments == records
@@ -168,13 +169,13 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
     connection = Map.put(planning_connection(10, 1000, :abort), :raise_preparation, true)
 
     assert {:ok, planned} =
-             DeliveryAttachments.build_plan(
+             Attachments.build_plan(
                put_in(outgoing().delivery.attachments, [file("one", "bytes")]),
                PlanningBridge,
                connection
              )
 
-    assert {:error, error} = DeliveryExecutor.execute(planned, PlanningBridge, connection)
+    assert {:error, error} = Executor.execute(planned, PlanningBridge, connection)
     assert error.stage == :preparation
     assert error.delivery == :not_sent
     refute inspect(error) =~ "private preparation bytes"
@@ -186,20 +187,20 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
     records = Enum.map(0..3, &file("attachment-#{&1}", "1234567890"))
 
     assert {:ok, planned} =
-             DeliveryAttachments.build_plan(
+             Attachments.build_plan(
                put_in(outgoing().delivery.attachments, records),
                PlanningBridge,
                connection
              )
 
     assert Enum.map(planned.delivery.plan.groups, & &1.attachment_refs) == [[0, 1, 2], [3]]
-    assert {:ok, _} = DeliveryExecutor.execute(planned, PlanningBridge, connection)
+    assert {:ok, _} = Executor.execute(planned, PlanningBridge, connection)
     assert_received {:prepared_upload, [0, 1, 2]}
     assert_received {:prepared_upload, [3]}
     connection = put_in(connection.requirements.max_attachment_bytes_per_message, 20)
 
     assert {:ok, planned} =
-             DeliveryAttachments.build_plan(
+             Attachments.build_plan(
                put_in(outgoing().delivery.attachments, records),
                PlanningBridge,
                connection
@@ -224,13 +225,13 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
       records = [file("attachment", "12345678")]
 
       assert {:ok, planned} =
-               DeliveryAttachments.build_plan(
+               Attachments.build_plan(
                  put_in(outgoing().delivery.attachments, records),
                  PlanningBridge,
                  connection
                )
 
-      assert elem(DeliveryExecutor.execute(planned, PlanningBridge, connection), 0) == expected
+      assert elem(Executor.execute(planned, PlanningBridge, connection), 0) == expected
 
       if expected == :ok,
         do: assert_received({:operation, _, _}),
@@ -250,7 +251,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
       connection = planning_connection(10, 1000, policy)
 
       assert {:ok, planned} =
-               DeliveryAttachments.build_plan(
+               Attachments.build_plan(
                  put_in(outgoing().delivery.attachments, records),
                  PlanningBridge,
                  connection
@@ -261,13 +262,13 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
       case policy do
         :abort ->
           assert {:error, %{stage: :preparation}} =
-                   DeliveryExecutor.execute(planned, PlanningBridge, connection)
+                   Executor.execute(planned, PlanningBridge, connection)
 
           refute_received {:operation, _, _}
 
         :continue ->
           assert {:ok, %{confirmation: :partial, failed_attachments: [%{attachment_index: 2}]}} =
-                   DeliveryExecutor.execute(planned, PlanningBridge, connection)
+                   Executor.execute(planned, PlanningBridge, connection)
 
           assert_received {:operation, %{operation: :upload, attachment_refs: [0, 1, 3, 4, 5]}, _}
           assert_received {:operation, %{operation: :send}, %{attachments: attachments}}
@@ -282,13 +283,13 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
       connection = planning_connection(10, 1000, :abort)
 
       assert {:ok, planned} =
-               DeliveryAttachments.build_plan(
+               Attachments.build_plan(
                  put_in(outgoing().delivery.attachments, [record]),
                  PlanningBridge,
                  connection
                )
 
-      assert {:ok, _} = DeliveryExecutor.execute(planned, PlanningBridge, connection)
+      assert {:ok, _} = Executor.execute(planned, PlanningBridge, connection)
       assert_received {:operation, %{operation: :upload}, %{attachments: [%{size: 8}]}}
       assert_received {:operation, %{operation: :send}, _}
     end
@@ -302,14 +303,14 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
       )
 
     assert {:ok, planned} =
-             DeliveryAttachments.build_plan(
+             Attachments.build_plan(
                put_in(outgoing().delivery.attachments, records),
                PlanningBridge,
                connection
              )
 
     assert {:error, %{stage: :preparation}} =
-             DeliveryExecutor.execute(planned, PlanningBridge, connection)
+             Executor.execute(planned, PlanningBridge, connection)
 
     assert [%{attachment_refs: [0, 1]}] = planned.delivery.plan.groups
     refute_received {:operation, _, _}
@@ -327,10 +328,10 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
       }
 
       connection = planning_connection(1, 1000)
-      assert {:ok, planned} = DeliveryAttachments.build_plan(outgoing, PlanningBridge, connection)
+      assert {:ok, planned} = Attachments.build_plan(outgoing, PlanningBridge, connection)
       immutable = planned
       assert planned.delivery.plan.preparation_failures == []
-      assert {:ok, report} = DeliveryExecutor.execute(planned, PlanningBridge, connection)
+      assert {:ok, report} = Executor.execute(planned, PlanningBridge, connection)
 
       assert Enum.map(report.failed_attachments, & &1.attachment_index) ==
                Enum.to_list(0..(omitted - 1))
@@ -364,10 +365,10 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
         delivery: %Outgoing.Delivery{attachments: [file("missing", nil)]}
     }
 
-    assert {:ok, planned} = DeliveryAttachments.build_plan(outgoing, PlanningBridge, connection)
+    assert {:ok, planned} = Attachments.build_plan(outgoing, PlanningBridge, connection)
 
     assert {:error, %{delivery: :not_sent}} =
-             DeliveryExecutor.execute(planned, PlanningBridge, connection)
+             Executor.execute(planned, PlanningBridge, connection)
 
     refute_received {:operation, _, _}
   end
@@ -377,7 +378,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
       records = Enum.map(1..count, &file(to_string(&1), "bytes"))
 
       assert {:ok, planned} =
-               DeliveryAttachments.build_plan(
+               Attachments.build_plan(
                  put_in(outgoing().delivery.attachments, records),
                  PlanningBridge,
                  planning_connection(maximum, 1000)
@@ -403,11 +404,11 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
       case policy do
         :abort ->
           assert {:error, %{stage: :configuration}} =
-                   DeliveryAttachments.build_plan(outgoing, PlanningBridge, connection)
+                   Attachments.build_plan(outgoing, PlanningBridge, connection)
 
         :continue ->
           assert {:ok, planned} =
-                   DeliveryAttachments.build_plan(outgoing, PlanningBridge, connection)
+                   Attachments.build_plan(outgoing, PlanningBridge, connection)
 
           assert planned.delivery.plan.failure_policy == :continue
 
@@ -456,7 +457,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
     ]
 
     assert {:ok, prepared, [failure]} =
-             DeliveryAttachments.prepare(files, %{}, attachment_failure_policy: :continue)
+             Attachments.prepare(files, %{}, attachment_failure_policy: :continue)
 
     assert Enum.map(prepared, &{&1.attachment_index, &1.content}) == [{0, "one"}, {2, "two"}]
     assert failure.attachment_index == 1
@@ -467,25 +468,21 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
 
   test "invalid explicit preparation policy fails before acquiring files" do
     assert {:error, {:invalid_attachment_failure_policy, :invalid}} =
-             DeliveryAttachments.prepare([file("bad", nil)], %{},
-               attachment_failure_policy: :invalid
-             )
+             Attachments.prepare([file("bad", nil)], %{}, attachment_failure_policy: :invalid)
   end
 
   test "continue returns a known empty file selection after all preparations fail" do
     assert {:ok, [], [%{attachment_index: 0}]} =
-             DeliveryAttachments.prepare([file("bad", nil)], %{},
-               attachment_failure_policy: :continue
-             )
+             Attachments.prepare([file("bad", nil)], %{}, attachment_failure_policy: :continue)
   end
 
   test "abort preserves the original preparation error and absent policy remains compatible" do
     records = [file("ok", "ready"), file("bad", "%%%", %{"encoding" => "base64"})]
 
     assert {:error, :invalid_attachment_base64} =
-             DeliveryAttachments.prepare(records, %{}, attachment_failure_policy: :abort)
+             Attachments.prepare(records, %{}, attachment_failure_policy: :abort)
 
-    assert {:error, :invalid_attachment_base64} = DeliveryAttachments.prepare(records, %{})
+    assert {:error, :invalid_attachment_base64} = Attachments.prepare(records, %{})
   end
 
   property "continue preserves every usable byte, order and original index around failed files" do
@@ -496,7 +493,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
         end)
 
       assert {:ok, prepared, failures} =
-               DeliveryAttachments.prepare(records, %{}, attachment_failure_policy: :continue)
+               Attachments.prepare(records, %{}, attachment_failure_policy: :continue)
 
       assert Enum.map(prepared, & &1.content) == bytes
 

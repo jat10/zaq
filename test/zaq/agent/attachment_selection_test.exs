@@ -378,7 +378,8 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
   alias Zaq.Accounts.People
   alias Zaq.Agent.Executor
   alias Zaq.Agent.Tools.DataSource.GetDocument
-  alias Zaq.Channels.{DeliveryAttachments, EmailBridge, JidoChatBridge}
+  alias Zaq.Channels.Delivery.Attachments
+  alias Zaq.Channels.{EmailBridge, JidoChatBridge}
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Event
@@ -435,7 +436,7 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
 
     # Authoritative Storage permission checks still run at final redemption.
     assert {:error, _} =
-             DeliveryAttachments.prepare(outgoing.delivery.attachments, %{})
+             Attachments.prepare(outgoing.delivery.attachments, %{})
 
     smtp = smtp_config()
 
@@ -594,12 +595,12 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
     assert Enum.map(outgoing.metadata.tool_calls, & &1["outcome"]) == ["succeeded", "failed"]
 
     assert {:ok, [%{content: "B bytes"}]} =
-             DeliveryAttachments.prepare(outgoing.delivery.attachments, %{actor: actor})
+             Attachments.prepare(outgoing.delivery.attachments, %{actor: actor})
 
     assert :ok = Permissions.revoke(%StorageEntry{id: b.id}, grant)
 
     assert {:error, _} =
-             DeliveryAttachments.prepare(outgoing.delivery.attachments, %{actor: actor})
+             Attachments.prepare(outgoing.delivery.attachments, %{actor: actor})
   end
 
   defp execution_event,

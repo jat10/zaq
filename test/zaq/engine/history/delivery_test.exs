@@ -4,7 +4,7 @@ defmodule Zaq.Engine.History.DeliveryTest do
   use ExUnitProperties
 
   alias Zaq.Accounts.People
-  alias Zaq.Channels.DeliveryConfirmation
+  alias Zaq.Channels.Delivery.Confirmation
   alias Zaq.Contracts.Record
   alias Zaq.Engine.{ChannelConfig, Conversations, HistoryDeliveryWorker}
   alias Zaq.Engine.Conversations.{Message, Transcript}
@@ -52,9 +52,7 @@ defmodule Zaq.Engine.History.DeliveryTest do
 
     {result, queries} =
       Zaq.QueryRecorder.capture(fn ->
-        DeliveryConfirmation.record({:ok, receipt}, outgoing,
-          delivery_node_router: ConfirmationRouter
-        )
+        Confirmation.record({:ok, receipt}, outgoing, delivery_node_router: ConfirmationRouter)
       end)
 
     assert result == {:ok, receipt}
@@ -204,7 +202,7 @@ defmodule Zaq.Engine.History.DeliveryTest do
     }
 
     assert {:ok, %{messages: [%{history_capture: :stored}]}} =
-             DeliveryConfirmation.record({:ok, report}, outgoing,
+             Confirmation.record({:ok, report}, outgoing,
                delivery_node_router: ConfirmationRouter
              )
 
@@ -237,7 +235,7 @@ defmodule Zaq.Engine.History.DeliveryTest do
     assert message_id == message.id
 
     assert {:ok, %{messages: [%{history_capture: :stored}]}} =
-             DeliveryConfirmation.record({:ok, report}, outgoing,
+             Confirmation.record({:ok, report}, outgoing,
                delivery_node_router: ConfirmationRouter
              )
 

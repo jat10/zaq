@@ -4,7 +4,8 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
 
   alias Ecto.Adapters.SQL.Sandbox
   alias Zaq.Accounts.People
-  alias Zaq.Channels.{Api, DeliveryError}
+  alias Zaq.Channels.Api
+  alias Zaq.Channels.Delivery.Error
   alias Zaq.Contracts.Record
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Outgoing
@@ -51,7 +52,7 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
     send(task.pid, :deliver)
 
     try do
-      assert {:error, %DeliveryError{delivery: :not_sent}} = Task.await(task, 5000)
+      assert {:error, %Error{delivery: :not_sent}} = Task.await(task, 5000)
       refute_received {:delivery_boundary, ^namespace, _, _}
     after
       Task.shutdown(task, :brutal_kill)
@@ -193,7 +194,7 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
         assert_smtp_accepted!(task, outgoing, namespace)
       else
         assert {:error,
-                %DeliveryError{
+                %Error{
                   reason: :invalid_attachment_base64,
                   stage: :preparation,
                   delivery: :not_sent

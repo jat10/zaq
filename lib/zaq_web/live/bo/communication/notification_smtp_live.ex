@@ -4,7 +4,7 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLive do
   import Zaq.Helpers, only: [blank?: 1]
   require Logger
 
-  alias Zaq.Channels.DeliveryError
+  alias Zaq.Channels.Delivery.Error
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
   alias Zaq.NodeRouter
@@ -251,7 +251,7 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLive do
   end
 
   # Connection tests retain detailed operator diagnostics from the bridge's cause.
-  defp format_email_error(%DeliveryError{reason: reason}), do: format_email_error(reason)
+  defp format_email_error(%Error{reason: reason}), do: format_email_error(reason)
 
   defp format_email_error(reason) when is_binary(reason), do: reason
 

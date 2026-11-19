@@ -3,7 +3,8 @@ defmodule Zaq.Channels.OutboundConnectionTest do
 
   import Zaq.TestSupport.ChannelFileFixtures, only: [connector!: 2]
 
-  alias Zaq.Channels.{Bridge, DeliveryError, EmailBridge, JidoChatBridge}
+  alias Zaq.Channels.{Bridge, EmailBridge, JidoChatBridge}
+  alias Zaq.Channels.Delivery.Error
   alias Zaq.Engine.Messages.Outgoing
 
   test "SMTP binding reuses the selected inbox while still validating the sender" do
@@ -65,7 +66,7 @@ defmodule Zaq.Channels.OutboundConnectionTest do
 
     assert EmailBridge.fetch_connection_details_for_config(imap) == ingress_details
 
-    assert {:error, %DeliveryError{delivery: :not_sent}} =
+    assert {:error, %Error{delivery: :not_sent}} =
              EmailBridge.fetch_connection_details_for_config(imap, outgoing: outgoing)
   end
 

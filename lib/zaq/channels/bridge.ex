@@ -28,13 +28,13 @@ defmodule Zaq.Channels.Bridge do
   @callback capability_snapshot(map()) :: {:ok, map()} | {:error, term()}
   @callback transport_requirements(Zaq.Engine.Messages.Outgoing.t(), map()) ::
               {:ok, Zaq.Channels.TransportRequirements.t()}
-              | {:error, Zaq.Channels.DeliveryError.t()}
-              | {:error, Zaq.Channels.DeliveryError.t(), :continue | :abort}
+              | {:error, Zaq.Channels.Delivery.Error.t()}
+              | {:error, Zaq.Channels.Delivery.Error.t(), :continue | :abort}
   @callback prepare_upload_request([map()], map()) :: {:ok, map()} | {:error, term()}
   @callback prepare_delivery_message(Zaq.Engine.Messages.Outgoing.t(), [map()], map()) ::
               {:ok, map()} | {:error, term()}
-  @callback execute_delivery_step(Zaq.Channels.DeliveryPlan.Step.t(), map(), map()) ::
-              {:ok, map()} | {:error, Zaq.Channels.DeliveryError.t(), map()}
+  @callback execute_delivery_step(Zaq.Channels.Delivery.Plan.Step.t(), map(), map()) ::
+              {:ok, map()} | {:error, Zaq.Channels.Delivery.Error.t(), map()}
   @callback delivery_completed(Zaq.Engine.Messages.Outgoing.t(), map(), map()) :: term()
   @callback existing_text_message(Zaq.Engine.Messages.Outgoing.t(), map()) ::
               String.t() | integer() | nil

@@ -195,7 +195,7 @@ records. A sender address or Message-ID prefix alone never establishes an own ec
 
 Confirmed send/edit receipts retain `confirmation: :confirmed` and the provider
 message ID normalized to the same nonempty string contract used by incoming events;
-provider-native numeric IDs never cross into Engine confirmation. `DeliveryConfirmation`
+provider-native numeric IDs never cross into Engine confirmation. `Delivery.Confirmation`
 forwards the receipt and bounded outgoing context through Engine's neutral
 `:record_delivery_confirmation` event. Engine `History.Delivery` alone interprets
 that evidence for canonical association. History failures retain a bounded
@@ -530,13 +530,13 @@ defaults to continue through `ConnectorConfig.Settings`; explicit boolean/form f
 means stop (`:abort`). The selected SMTP sender owns email policy, including IMAP
 replies. Connection plumbing does not resolve policy again.
 
-`DeliveryAttachments.build_plan/3` groups original Record metadata in input order
+`Delivery.Attachments.build_plan/3` groups original Record metadata in input order
 using declared sizes and counts. Unknown sizes remain eligible for execution checks.
 Groups and steps reference stable original indices in `delivery.attachments`; the
 plan does not duplicate the source collection. Neither content acquisition nor
 provider encoding occurs while building a plan.
 
-`DeliveryExecutor.execute/4` acquires each eligible attachment once through the
+`Delivery.Executor.execute/4` acquires each eligible attachment once through the
 existing materialization and authorization boundary, then checks actual attachment
 and group sizes and exact MIME/multipart payload sizes before transport effects.
 Declared/actual size drift is allowed only when the fixed group still fits.
@@ -575,7 +575,7 @@ enter valid values before the next enabled save. Attachment requirements fail at
 normalization until corrected; ordinary text remains available without those limits.
 The existing failure switch remains independent.
 
-`Zaq.Channels.DeliveryAttachments` prepares supplied files in memory for both chat and
+`Zaq.Channels.Delivery.Attachments` prepares supplied files in memory for both chat and
 email. Lazy materialization requires trusted Event actor or bypass context; source
 paths, handles and credentials are not forwarded to the transport. Preparation
 creates no temporary files and never deletes source files. It acquires whole file
@@ -618,7 +618,7 @@ being sent. Planned submission avoids the generated Mailer telemetry wrapper,
 which includes email/config data. Ordinary text keeps its existing Mailer path.
 SMTP acceptance confirms submission to the relay, not arrival in an inbox.
 
-`DeliveryError.message` is safe for presentation. `reason` retains internal facts
+`Delivery.Error.message` is safe for presentation. `reason` retains internal facts
 or a normalized delivery report; `cause` can retain the original transport reason
 privately. Inspection excludes both. Stages distinguish selection, configuration,
 preparation, upload, execution and transport. Certainty distinguishes known unsent
@@ -655,7 +655,7 @@ outcomes for the same message compose in operation order. A failed edit cannot
 claim file delivery after a successful text send. Canonical selection notices
 record the original answer and no attachments.
 
-`DeliveryConfirmation` remains the Engine recording boundary. The confirmation
+`Delivery.Confirmation` remains the Engine recording boundary. The confirmation
 copy clears the private delivery plan as well as Record content before it
 crosses to Engine; other existing Record fields retain their transient contract.
 History recording failure is bookkeeping after transport and never resends.

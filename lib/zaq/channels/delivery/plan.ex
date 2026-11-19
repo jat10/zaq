@@ -1,4 +1,4 @@
-defmodule Zaq.Channels.DeliveryPlan do
+defmodule Zaq.Channels.Delivery.Plan do
   @moduledoc """
   Private, transient description of one Channel delivery attempt.
 
@@ -7,7 +7,7 @@ defmodule Zaq.Channels.DeliveryPlan do
   elected roots and operation outcomes belong to the executor runtime.
   """
 
-  alias Zaq.Channels.DeliveryPlan.Step
+  alias Zaq.Channels.Delivery.Plan.Step
 
   @derive {Inspect, only: [:failure_policy, :placement]}
   defstruct [

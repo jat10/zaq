@@ -7,12 +7,12 @@ defmodule Zaq.Channels.JidoChatBridge do
   Jido.Chat event handling happen atomically.
 
   `send_reply/2` is called by Channels API for outbound delivery to any
-  jido_chat-backed platform. Explicit file Records use `DeliveryAttachments` plans and
-  `DeliveryExecutor`; the bridge translates one upload, post or edit at a time.
+  jido_chat-backed platform. Explicit file Records use `Attachments` plans and
+  `Executor`; the bridge translates one upload, post or edit at a time.
   Capable adapters attach files to the existing streamed post. Planned creates
   require provider-confirmed IDs; ordinary text retains Jido's existing behavior.
   Reply callbacks run once with the final confirmed ID. Safe execution reports
-  retain per-file failures while `DeliveryError.cause` keeps private diagnostics.
+  retain per-file failures while `Error.cause` keeps private diagnostics.
 
   `register_handlers/3` is called to attach function handlers per events
 
@@ -26,7 +26,7 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   require Logger
 
-  alias Zaq.Channels.DeliveryError
+  alias Zaq.Channels.Delivery.Error
 
   alias Jido.Chat
   alias Jido.Chat.Adapter
@@ -35,16 +35,8 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Jido.Chat.Media
   alias Jido.Chat.Thread
 
-  alias Zaq.Channels.{
-    Bridge,
-    DeliveryAttachments,
-    DeliveryExecutor,
-    DeliveryPlan,
-    RetrievalChannel,
-    Supervisor,
-    TransportRequirements,
-    WebhookUrl
-  }
+  alias Zaq.Channels.{Bridge, RetrievalChannel, Supervisor, TransportRequirements, WebhookUrl}
+  alias Zaq.Channels.Delivery.{Attachments, Executor, Plan}
 
   alias Zaq.ConnectorConfig.Settings
   alias Zaq.Engine.ChannelConfig
@@ -248,7 +240,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   defp operation_error(reason, stage) do
     delivery = if stage == :upload, do: :not_sent, else: :unconfirmed
 
-    %DeliveryError{
+    %Error{
       reason: reason,
       message:
         "Attachment delivery was not confirmed. Check the conversation before sending again.",
@@ -715,7 +707,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   Also dispatches `:on_reply` Oban jobs when `outgoing.metadata` carries such
   instructions (used by the notification center for reply tracking).
   """
-  @spec send_reply(Outgoing.t(), map()) :: {:ok, map()} | {:error, DeliveryError.t()}
+  @spec send_reply(Outgoing.t(), map()) :: {:ok, map()} | {:error, Error.t()}
   @impl true
   def send_reply(%Outgoing{} = outgoing, %{url: _url, token: _token} = connection_details) do
     do_send_reply(outgoing, connection_details)
@@ -2076,11 +2068,11 @@ defmodule Zaq.Channels.JidoChatBridge do
   @doc "Sends a reply outbound via the provider adapter. Called by the bridge state process."
   def do_send_reply(
         %Outgoing{
-          delivery: %Outgoing.Delivery{plan: %DeliveryPlan{}}
+          delivery: %Outgoing.Delivery{plan: %Plan{}}
         } = outgoing,
         connection
       ),
-      do: DeliveryExecutor.execute(outgoing, __MODULE__, connection)
+      do: Executor.execute(outgoing, __MODULE__, connection)
 
   def do_send_reply(
         %Outgoing{
@@ -2099,8 +2091,8 @@ defmodule Zaq.Channels.JidoChatBridge do
   end
 
   def do_send_reply(%Outgoing{} = outgoing, connection) do
-    with {:ok, planned} <- DeliveryAttachments.build_plan(outgoing, __MODULE__, connection),
-         do: DeliveryExecutor.execute(planned, __MODULE__, connection)
+    with {:ok, planned} <- Attachments.build_plan(outgoing, __MODULE__, connection),
+         do: Executor.execute(planned, __MODULE__, connection)
   end
 
   defp send_prepared_reply(outgoing, adapter, details, prepared) do
@@ -2131,7 +2123,7 @@ defmodule Zaq.Channels.JidoChatBridge do
 
     subject = if outgoing.delivery.attachments == [], do: "Message", else: "Attachment"
 
-    %DeliveryError{
+    %Error{
       reason: reason,
       message:
         "#{subject} delivery was not confirmed. Check the conversation before sending again.",

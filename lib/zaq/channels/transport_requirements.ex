@@ -8,7 +8,7 @@ defmodule Zaq.Channels.TransportRequirements do
   The transfer mode describes transport capabilities; ZAQ owns delivery policy.
   """
 
-  alias Zaq.Channels.DeliveryError
+  alias Zaq.Channels.Delivery.Error
 
   @enforce_keys [:transfer_mode, :max_attachments_per_message]
   defstruct [
@@ -44,7 +44,7 @@ defmodule Zaq.Channels.TransportRequirements do
   ]
 
   @doc "Rejects unresolved or malformed constraints before file acquisition."
-  @spec validate(t()) :: :ok | {:error, DeliveryError.t()}
+  @spec validate(t()) :: :ok | {:error, Error.t()}
   def validate(%__MODULE__{} = requirements) do
     valid? =
       requirements.failure_policy in [:continue, :abort] and
@@ -65,7 +65,7 @@ defmodule Zaq.Channels.TransportRequirements do
 
   defp invalid_requirements do
     {:error,
-     %DeliveryError{
+     %Error{
        reason: :invalid_transport_requirements,
        message: "Attachment delivery limits are missing or invalid for this connector.",
        stage: :configuration,

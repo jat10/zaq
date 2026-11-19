@@ -1,4 +1,4 @@
-defmodule Zaq.Channels.DeliveryConfirmation do
+defmodule Zaq.Channels.Delivery.Confirmation do
   @moduledoc """
   Reports normalized transport confirmations to Engine without choosing consumer policy.
 

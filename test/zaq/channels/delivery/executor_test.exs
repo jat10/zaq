@@ -1,9 +1,9 @@
-defmodule Zaq.Channels.DeliveryExecutorTest do
+defmodule Zaq.Channels.Delivery.ExecutorTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
-  alias Zaq.Channels.{DeliveryError, DeliveryExecutor, DeliveryPlan}
-  alias Zaq.Channels.DeliveryPlan.Step
+  alias Zaq.Channels.Delivery.{Error, Executor, Plan}
+  alias Zaq.Channels.Delivery.Plan.Step
   alias Zaq.Engine.Messages.Outgoing
 
   defmodule OperationBridge do
@@ -48,7 +48,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
     connection = connection(%{{:upload, 1} => failure(:timeout)})
 
     assert {:error, %{reason: {:attachment_delivery_failed, report}}} =
-             DeliveryExecutor.execute(outgoing, OperationBridge, connection)
+             Executor.execute(outgoing, OperationBridge, connection)
 
     assert report.messages == []
     assert [%{attachment_index: 0}] = report.uploaded_only
@@ -61,7 +61,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
   test "stop retains the first confirmed message after the second publication fails" do
     assert {:ok, report} =
-             DeliveryExecutor.execute(
+             Executor.execute(
                outgoing(:abort, 3),
                OperationBridge,
                connection(%{{:send, 1} => failure(:timeout)})
@@ -76,7 +76,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
   test "continue retains an unknown send and promotes the next candidate with the original answer" do
     assert {:ok, report} =
-             DeliveryExecutor.execute(
+             Executor.execute(
                outgoing(:continue, 3),
                OperationBridge,
                connection(%{{:send, 0} => failure(:timeout)})
@@ -108,7 +108,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
     immutable = outgoing
 
     assert {:ok, _} =
-             DeliveryExecutor.execute(
+             Executor.execute(
                outgoing,
                OperationBridge,
                connection(%{first.id => failure(:timeout)})
@@ -131,7 +131,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
     }
 
     assert {:error, %{stage: :configuration}} =
-             DeliveryExecutor.execute(outgoing, OperationBridge, connection())
+             Executor.execute(outgoing, OperationBridge, connection())
 
     refute_received {:step_started, _, _, _}
   end
@@ -141,9 +141,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
     task =
       Task.async(fn ->
-        DeliveryExecutor.execute(outgoing(:continue, 4), OperationBridge, connection,
-          max_concurrency: 2
-        )
+        Executor.execute(outgoing(:continue, 4), OperationBridge, connection, max_concurrency: 2)
       end)
 
     assert_receive {:step_started, {:send, 0}, _, _}
@@ -171,7 +169,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
     task =
       Task.async(fn ->
-        DeliveryExecutor.execute(outgoing, OperationBridge, connection, max_concurrency: 2)
+        Executor.execute(outgoing, OperationBridge, connection, max_concurrency: 2)
       end)
 
     assert_receive {:step_started, {:send, 0}, first, %{thread_id: nil}}
@@ -185,7 +183,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
   test "task exits remain unconfirmed and are never retried" do
     assert {:ok, report} =
-             DeliveryExecutor.execute(
+             Executor.execute(
                outgoing(:continue, 3),
                OperationBridge,
                connection(%{{:send, 1} => :exit})
@@ -204,7 +202,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
   test "a timed out reply remains unknown without retrying the submitted step" do
     assert {:ok, report} =
-             DeliveryExecutor.execute(
+             Executor.execute(
                outgoing(:continue, 3),
                OperationBridge,
                connection(%{{:send, 1} => {:wait, nil}}),
@@ -246,7 +244,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
     }
 
     assert {:ok, report} =
-             DeliveryExecutor.execute(
+             Executor.execute(
                outgoing,
                OperationBridge,
                connection(%{edit.id => failure(:timeout)})
@@ -352,7 +350,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
     task =
       Task.Supervisor.async_nolink(Zaq.TaskSupervisor, fn ->
-        DeliveryExecutor.execute(outgoing, OperationBridge, connection, timeout: 50)
+        Executor.execute(outgoing, OperationBridge, connection, timeout: 50)
       end)
 
     try do
@@ -393,7 +391,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
       {:error, error, %{uploaded_attachments: [%{id: "confirmed-upload", attachment_index: 0}]}}
 
     assert {:ok, report} =
-             DeliveryExecutor.execute(
+             Executor.execute(
                %{outgoing | delivery: %{outgoing.delivery | plan: plan}},
                OperationBridge,
                connection(%{upload.id => result})
@@ -410,7 +408,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
     plan = %{outgoing.delivery.plan | steps: [%{step | attachment_refs: []}]}
 
     assert {:error, %{delivery: :unconfirmed, reason: {:attachment_delivery_failed, report}}} =
-             DeliveryExecutor.execute(
+             Executor.execute(
                %{outgoing | delivery: %{outgoing.delivery | plan: plan}},
                OperationBridge,
                connection(%{step.id => failure(:timeout)})
@@ -423,7 +421,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
   property "every planned step starts at most once and receives resolved upload outputs" do
     check all(count <- integer(1..10), policy <- member_of([:continue, :abort])) do
       assert {:ok, _} =
-               DeliveryExecutor.execute(
+               Executor.execute(
                  outgoing(policy, count, true),
                  OperationBridge,
                  connection()
@@ -451,7 +449,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
   defp failure(reason),
     do:
       {:error,
-       %DeliveryError{
+       %Error{
          reason: reason,
          message: "Delivery could not be confirmed.",
          stage: :transport,
@@ -516,7 +514,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
               size: attachment.size
             }
           end),
-        plan: %DeliveryPlan{
+        plan: %Plan{
           failure_policy: policy,
           placement: :threaded,
           groups: groups,

@@ -1,11 +1,11 @@
-defmodule Zaq.Channels.DeliveryConfirmationTest do
+defmodule Zaq.Channels.Delivery.ConfirmationTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
   import Mox
 
-  alias Zaq.Channels.DeliveryConfirmation
-  alias Zaq.Channels.DeliveryPlan
+  alias Zaq.Channels.Delivery.Confirmation
+  alias Zaq.Channels.Delivery.Plan
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
@@ -30,12 +30,12 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
     end)
 
     assert {:ok, recorded} =
-             DeliveryConfirmation.record({:ok, report}, outgoing,
+             Confirmation.record({:ok, report}, outgoing,
                delivery_node_router: Zaq.NodeRouterMock
              )
 
     assert {:ok, ^recorded} =
-             DeliveryConfirmation.record({:ok, recorded}, outgoing,
+             Confirmation.record({:ok, recorded}, outgoing,
                delivery_node_router: Zaq.NodeRouterMock
              )
   end
@@ -48,11 +48,11 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
         outgoing()
         | delivery: %{
             outgoing().delivery
-            | plan: %DeliveryPlan{
+            | plan: %Plan{
                 failure_policy: :continue,
                 placement: :threaded,
                 steps: [
-                  %Zaq.Channels.DeliveryPlan.Step{
+                  %Zaq.Channels.Delivery.Plan.Step{
                     id: :private,
                     operation: :send,
                     group_id: 0,
@@ -72,7 +72,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
       end)
 
       assert {:ok, ^receipt} =
-               DeliveryConfirmation.record({:ok, receipt}, outgoing,
+               Confirmation.record({:ok, receipt}, outgoing,
                  delivery_node_router: Zaq.NodeRouterMock
                )
 
@@ -138,7 +138,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
       end)
 
       assert {:ok, ^receipt} =
-               DeliveryConfirmation.record({:ok, receipt}, outgoing,
+               Confirmation.record({:ok, receipt}, outgoing,
                  delivery_node_router: Zaq.NodeRouterMock
                )
 
@@ -177,7 +177,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
     end
 
     assert {:ok, ^report} =
-             DeliveryConfirmation.record({:ok, report}, outgoing(),
+             Confirmation.record({:ok, report}, outgoing(),
                delivery_node_router: Zaq.NodeRouterMock
              )
   end
@@ -328,7 +328,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
     end)
 
     assert {:ok, %{messages: [%{history_capture: :stored}]}} =
-             DeliveryConfirmation.record(
+             Confirmation.record(
                {:ok, %{confirmation: :partial, messages: [receipt]}},
                outgoing,
                delivery_node_router: Zaq.NodeRouterMock
@@ -357,7 +357,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
     end)
 
     assert {:ok, _} =
-             DeliveryConfirmation.record({:ok, receipt}, outgoing,
+             Confirmation.record({:ok, receipt}, outgoing,
                delivery_node_router: Zaq.NodeRouterMock
              )
   end
@@ -369,9 +369,8 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
           {:error, %Req.TransportError{reason: :timeout}},
           {:ok, %{message_id: "unconfirmed"}}
         ] do
-      assert DeliveryConfirmation.record(response, outgoing(),
-               delivery_node_router: Zaq.NodeRouterMock
-             ) == response
+      assert Confirmation.record(response, outgoing(), delivery_node_router: Zaq.NodeRouterMock) ==
+               response
     end
   end
 
@@ -390,7 +389,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
     end)
 
     assert {:ok, _} =
-             DeliveryConfirmation.record({:ok, report}, outgoing,
+             Confirmation.record({:ok, report}, outgoing,
                delivery_node_router: Zaq.NodeRouterMock
              )
 
@@ -408,9 +407,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
       fail.()
     end)
 
-    assert DeliveryConfirmation.record({:ok, receipt}, outgoing,
-             delivery_node_router: Zaq.NodeRouterMock
-           ) ==
+    assert Confirmation.record({:ok, receipt}, outgoing, delivery_node_router: Zaq.NodeRouterMock) ==
              {:ok, Map.put(receipt, :confirmation_recording, :unavailable)}
 
     assert receipt == %{confirmation: :confirmed, message_id: "external-1"}

@@ -29,10 +29,10 @@ defmodule Zaq.Channels.Api do
 
   alias Zaq.Channels.{Bridge, CommunicationBridge, ConnectorRuntime, DataSourceBridge, WebBridge}
 
-  alias Zaq.Channels.DeliveryAttachments
-  alias Zaq.Channels.DeliveryConfirmation
-  alias Zaq.Channels.DeliveryError
-  alias Zaq.Channels.DeliveryExecutor
+  alias Zaq.Channels.Delivery.Attachments
+  alias Zaq.Channels.Delivery.Confirmation
+  alias Zaq.Channels.Delivery.Error
+  alias Zaq.Channels.Delivery.Executor
   alias Zaq.Channels.HttpClient
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Channels.MessageFormatter
@@ -238,7 +238,7 @@ defmodule Zaq.Channels.Api do
           bridge_module,
           event.opts
         )
-        |> DeliveryConfirmation.record(outgoing, event.opts)
+        |> Confirmation.record(outgoing, event.opts)
 
       %{event | response: response}
     else
@@ -1092,7 +1092,7 @@ defmodule Zaq.Channels.Api do
   end
 
   defp deliver_reply(outgoing, bridge, details) do
-    case DeliveryAttachments.build_plan(
+    case Attachments.build_plan(
            %{outgoing | delivery: %{outgoing.delivery | plan: nil}},
            bridge,
            details
@@ -1101,7 +1101,7 @@ defmodule Zaq.Channels.Api do
         bridge.send_reply(planned, details)
 
       {:ok, planned} ->
-        DeliveryExecutor.execute(planned, bridge, details)
+        Executor.execute(planned, bridge, details)
 
       {:error, _} = error ->
         error
@@ -1109,7 +1109,7 @@ defmodule Zaq.Channels.Api do
   end
 
   defp report_file_failure(
-         {:error, %DeliveryError{reason: :invalid_attachments, delivery: :not_sent} = error} =
+         {:error, %Error{reason: :invalid_attachments, delivery: :not_sent} = error} =
            response,
          %Outgoing{body: body} = outgoing,
          canonical_outgoing,
@@ -1119,11 +1119,11 @@ defmodule Zaq.Channels.Api do
          opts
        )
        when is_binary(body) do
-    case DeliveryAttachments.build_failure_plan(outgoing, error, bridge, details) do
+    case Attachments.build_failure_plan(outgoing, error, bridge, details) do
       {:ok, notice} ->
         notice
-        |> DeliveryExecutor.execute(bridge, details)
-        |> DeliveryConfirmation.record(
+        |> Executor.execute(bridge, details)
+        |> Confirmation.record(
           %{canonical_outgoing | delivery: %{canonical_outgoing.delivery | attachments: []}},
           opts
         )

@@ -857,7 +857,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
 
       second |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
 
-      assert {:error, %Zaq.Channels.DeliveryError{reason: :connector_mismatch}} =
+      assert {:error, %Zaq.Channels.Delivery.Error{reason: :connector_mismatch}} =
                EmailBridge.send_reply(outgoing, %{})
     end
 
@@ -898,7 +898,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
                  %{}
                )
 
-      assert {:error, %Zaq.Channels.DeliveryError{reason: :smtp_rejected}} =
+      assert {:error, %Zaq.Channels.Delivery.Error{reason: :smtp_rejected}} =
                EmailBridge.send_reply(
                  %Zaq.Engine.Messages.Outgoing{
                    body: "reply",
@@ -992,7 +992,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
       |> Ecto.Changeset.change(settings: %{"imap" => %{"selected_mailboxes" => ["INBOX"]}})
       |> Repo.update!()
 
-      assert {:error, %Zaq.Channels.DeliveryError{reason: :missing_smtp_binding}} =
+      assert {:error, %Zaq.Channels.Delivery.Error{reason: :missing_smtp_binding}} =
                EmailBridge.send_reply(outgoing, %{})
 
       imap.id
@@ -1002,7 +1002,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
 
       second |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
 
-      assert {:error, %Zaq.Channels.DeliveryError{reason: :connector_mismatch}} =
+      assert {:error, %Zaq.Channels.Delivery.Error{reason: :connector_mismatch}} =
                EmailBridge.send_reply(outgoing, %{})
     end
 
