@@ -27,11 +27,15 @@
     {
       "text": "Final independent checks complete: final mix q PASS; focused API/CommunicationBridge observations/Delivery.Confirmation/Jido delivery/classification suites PASS 208 checks (9 properties,199 tests) against neutral-error integration. Broad 108-path run completed 2474/2477 PASS (6 doctests,80 properties,2388/2391 tests), 6 normally excluded; only failures were the two still-pending incoming raw-error assertion migrations and existing Telegram zaq-1lw.21. No other regressions. Main dependency fetch finished, lock unchanged beyond staged incoming pins. All merge conflicts resolved and staged; no old active module names or conflict markers; staged diff-check PASS.\n\nIntegration is prepared but MERGE_HEAD still pending; HEAD remains db336f6e9 until completion. Awaiting user answer to required second approval: both message_delivery_test real-HTTP assertions must expect typed Error.reason {:http_error,403}, stage :transport, delivery :unconfirmed, retaining 403/failed-history/no-repeat-send/privacy checks. Do not assume first approval (which explicitly retained raw body) authorizes this changed SDK representation. On approval, patch both assertions, run the entire Engine Conversations.MessageDeliveryTest suite and required q/diff checks, then complete authorized main integration. No commit/push performed this turn. Logs: /tmp/channel-main-deps.log, /tmp/channel-main-tests.log, /tmp/channel-main-final-checks.log; selected suites /tmp/channel-main-merge-suites.json. Existing feature finalization gates remain open.",
       "timestamp": "2026-11-19T14:23:34Z"
+    },
+    {
+      "text": "User explicitly instructed push after the staged-merge/validation handoff. Publishing the prepared merge as reviewed, without inferring approval for the separately pending neutral SDK error assertion changes. Known two incoming MessageDeliveryTest expectation failures and existing Telegram zaq-1lw.21 are documented in the merge commit. No assertions changed further. Final existing q and 208 focused checks pass; staged diff-check passes and there are no unstaged edits or unresolved conflicts.",
+      "timestamp": "2026-11-19T14:42:54Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.23] Merge main into the channel delivery branch",
   "type": "task",
-  "updated_at": "2026-11-19T14:23:34Z"
+  "updated_at": "2026-11-19T14:42:54Z"
 }
