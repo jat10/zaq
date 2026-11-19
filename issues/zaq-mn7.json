@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-19T15:26:33Z",
+  "description": "Trace Executor callers and report consumers; normalize finish/2 to return every successful report while preserving partial/total failures and delivery side effects. Action reuse assessment: local-only adjustment to existing Delivery.Executor.finish/2 result packaging; reuse Executor.report/2, bridge single-operation APIs and Delivery.Confirmation.record/3. No new transport operation, Action, tool exposure, permission, retry or scheduling behavior. Preserve receipt support for non-Executor delivery. Existing user regression remains unchanged. New confirmation/property tests will cover body, provider IDs, threads and selected attachments. E2E unnecessary: internal return contract; unit/integration tests exercise affected boundaries.",
+  "id": "zaq-mn7",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Candidate 12: normalize Executor success reports",
+  "type": "bug",
+  "updated_at": "2026-11-19T15:26:33Z"
+}
