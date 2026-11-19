@@ -57,11 +57,15 @@
     {
       "text": "Full-suite failure diagnosis: saved manifest contains 105 failures in 22 files. Runtime evidence already confirms missing explicit SMTP limits in existing fixture builders and a stale AttachDocuments destination assertion accessing event.request.attachments; that assertion throws inside the tool and retries obscure it as Mox over-call failure. Action reuse: fixture/data-contract repairs are local test setup only, no new operations or production defaults. Reuse each existing builder with explicit limits, migrate the assertion to event.request.delivery.attachments while preserving trusted actor/options/content-free assertions. These are covered by the prior user-approved enabled-SMTP fixture and nested-Delivery migrations. Remaining runtime failures will be classified before changes.",
       "timestamp": "2026-11-19T10:36:22Z"
+    },
+    {
+      "text": "Full-suite baseline completed: 12145/12250 passed, 105 failures (103 tests, 2 properties), 1 skipped, 164 excluded. Repaired explicit enabled-SMTP limits in existing test/setup builders and migrated AttachDocuments destination assertion to nested delivery.attachments, preserving its permissions/content assertions. mix test --failed now passes 104/105 checks (2/2 properties), sole retained failure Telegram real-document SDK requirements gap zaq-1lw.21. No assertions weakened or removed, production defaults unchanged. mix q running; full-suite confirmation follows.",
+      "timestamp": "2026-11-19T10:42:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.20] Apply eight channel delivery review findings",
   "type": "task",
-  "updated_at": "2026-11-19T10:36:22Z"
+  "updated_at": "2026-11-19T10:42:28Z"
 }
