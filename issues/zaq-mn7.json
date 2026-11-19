@@ -22,11 +22,15 @@
     {
       "text": "Focused matrix: 414/417 checks passed (17/17 properties, 397/400 tests), across executor, confirmation, Mattermost/Jido delivery/state, email bridge/file delivery/confirmation, attachment policy, Channels API, Engine history/history ingress/delivery observations and notification attachments. Three failures: separate concurrently added fully-confirmed report.delivery status regression, MessageDeliveryTest real HTTP rejection response expectation (line 349), and HTTP recording raises/throws rejection expectation (line 136). All three reproduced unchanged using original HEAD Executor compiled only in a temporary test VM, without mutating working tree or persisted BEAMs. Candidate 12 regression and three approved bridge expectation updates pass. No unrelated fixes or assertion weakening.",
       "timestamp": "2026-11-19T15:33:55Z"
+    },
+    {
+      "text": "Final mix q passed after approved test changes; git diff --check clean. Running final mix precommit with 900000 ms timeout. Coverage phase not invoked: no PR review/merge requested; regression and property checks completed. No commit or push authorized.",
+      "timestamp": "2026-11-19T15:38:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 12: normalize Executor success reports",
   "type": "bug",
-  "updated_at": "2026-11-19T15:33:55Z"
+  "updated_at": "2026-11-19T15:38:12Z"
 }
