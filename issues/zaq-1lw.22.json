@@ -19,11 +19,15 @@
     {
       "text": "Final validation: mix q PASS after alias ordering corrections; moved suites 57/57 PASS (8 properties,49 tests); 29-path consumer run 1099/1100 PASS (6 doctests,34 properties,1059/1060 tests). Sole failure is unchanged TelegramHistoryDeliveryTest at telegram_history_delivery_test.exs:38, missing installed SDK requirements callback zaq-1lw.21; text fallback still confirms and attachment status is partial. No new regression and no weakened assertion. Logs: /tmp/channel-namespace-q-final.log, /tmp/channel-namespace-owned.log, /tmp/channel-namespace-consumers.log; suite manifest /tmp/channel-namespace-consumer-suites.json.\n\nFinal self-review/reuse check: all 33 changed source/test syntax trees and alias targets match baseline after module-name normalization (docs excluded; diagnostic module label updated); all 10 file moves complete; 2 active guides updated. Runtime smoke passes in both fresh dev and test builds: six new modules, three new Inspect implementations with private exclusions intact; no old module or old Inspect implementation loadable; compiled Engine Delivery.plan type targets Channel Delivery.Plan. TransportRequirements and Engine/Web/provider-local Delivery modules retain ownership. Repository-wide stale identifier/path search finds only 2 intentionally preserved historical PR835 handoff references; no active stale references. Diff and scope checks PASS; dependencies unchanged. E2E skipped for behavior-preserving namespace move per workflow; existing epic UX/E2E/approved review/coverage/final precommit gates remain pending. User now separately authorizes commit and SSH push after completion; proceeding with scoped publication, no merge or epic-finalization claim.",
       "timestamp": "2026-11-19T14:02:15Z"
+    },
+    {
+      "text": "Authorized publication complete: db336f6e959d4a6c01f7f52af071b6fc117f6d90 refactor(channels): group delivery orchestration modules (zaq-1lw.22), 35 logical files changed including 10 renames. Pre-commit qf and commit-message checks PASS; pre-push formatting PASS. Pushed via SSH to origin/feat/channel-files; ls-remote confirms exact local/remote SHA match. No merge or new dependency publication. Requested implementation/issue-level validation is complete, with sole existing zaq-1lw.21 Telegram failure retained. Existing feature UX/E2E/review/coverage/final-precommit gates and their issues remain open; publication is not feature finalization.",
+      "timestamp": "2026-11-19T14:03:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.22] Group Channel delivery modules under Delivery namespace",
   "type": "task",
-  "updated_at": "2026-11-19T14:02:15Z"
+  "updated_at": "2026-11-19T14:03:32Z"
 }
