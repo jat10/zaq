@@ -80,7 +80,7 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
       assert {:ok, result} =
                consume(observed, request, server)
 
-      assert result.attachments == []
+      assert result.delivery.attachments == []
       assert {:ok, status} = Jido.AgentServer.status(server)
       refute Map.has_key?(status.raw_state, :request_effects)
       assert Enum.any?(observed, &(&1.kind == :checkpoint and is_binary(&1.data[:token])))
@@ -105,7 +105,7 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
     assert {:ok, result} =
              consume(observed, request, server)
 
-    assert [%Record{id: "private-b"}] = result.attachments
+    assert [%Record{id: "private-b"}] = result.delivery.attachments
     assert result.answer == "Here is B."
     assert {:ok, status} = Jido.AgentServer.status(server)
     refute Map.has_key?(status.raw_state, :request_effects)
@@ -142,7 +142,7 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
     assert {:ok, result} =
              consume(events, request, server)
 
-    assert result.attachments == []
+    assert result.delivery.attachments == []
     assert {:ok, status} = Jido.AgentServer.status(server)
     assert length(result.tool_calls) == 5
     refute Map.has_key?(status.raw_state, :request_effects)
@@ -175,7 +175,7 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
     assert {:ok, result} =
              consume(events, request, server)
 
-    assert [%Record{id: "b"}, %Record{id: "a", parent_id: "root"}] = result.attachments
+    assert [%Record{id: "b"}, %Record{id: "a", parent_id: "root"}] = result.delivery.attachments
   end
 
   test "active steering removes a selected file within the same request" do
@@ -195,7 +195,10 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
 
     {busy_request, busy_events} = ask(server, configured, "Another request")
 
-    assert {:error, _, %{attachments: []}} =
+    assert {:error, _,
+            %{
+              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+            }} =
              consume(busy_events, busy_request, server)
 
     assert {:ok, status} = Jido.AgentServer.status(server)
@@ -219,7 +222,10 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
     assert Enum.any?(observed, &(&1.kind == :input_injected))
     assert Enum.all?(observed, &(&1.request_id == request.id))
 
-    assert {:ok, %{attachments: []}} =
+    assert {:ok,
+            %{
+              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+            }} =
              consume(observed, request, server)
   end
 
@@ -235,7 +241,10 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
     pending_ref = Process.monitor(status.raw_state.__strategy__.pending_input_server)
     assert :ok = Factory.cancel(server, request_id: request.id, reason: :user_cancelled)
 
-    assert {:error, _, %{attachments: []}} =
+    assert {:error, _,
+            %{
+              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+            }} =
              consume(events, request, server)
 
     send(model_pid, :release)
@@ -244,7 +253,8 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
     refute Map.has_key?(status.raw_state, :request_effects)
     {request, events} = ask(server, configured, "New request")
 
-    assert {:ok, %{attachments: [], answer: "Fresh."}} =
+    assert {:ok,
+            %{answer: "Fresh.", delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}}} =
              consume(events, request, server)
   end
 
@@ -273,7 +283,10 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
     observed = Enum.to_list(events)
     assert Enum.count(observed, &(&1.kind == :tool_completed)) == 3
 
-    assert {:ok, %{attachments: []} = result} =
+    assert {:ok,
+            %{
+              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+            } = result} =
              consume(observed ++ [completion], request, server)
 
     assert length(result.tool_calls) == 2
@@ -287,7 +300,10 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
 
     {request, events} = ask(server, configured, "Select then fail")
 
-    assert {:error, _, %{attachments: []}} =
+    assert {:error, _,
+            %{
+              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+            }} =
              consume(events, request, server)
 
     assert {:ok, status} = Jido.AgentServer.status(server)
@@ -295,7 +311,11 @@ defmodule Zaq.Agent.AttachmentSelectionRuntimeTest do
     refute Map.has_key?(status.raw_state, :request_effects)
     {request, events} = ask(server, configured, "Fresh after failure")
 
-    assert {:ok, %{attachments: [], answer: "Recovered."}} =
+    assert {:ok,
+            %{
+              answer: "Recovered.",
+              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+            }} =
              consume(events, request, server)
   end
 
@@ -358,7 +378,7 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
   alias Zaq.Accounts.People
   alias Zaq.Agent.Executor
   alias Zaq.Agent.Tools.DataSource.GetDocument
-  alias Zaq.Channels.{DeliveryFiles, EmailBridge, JidoChatBridge}
+  alias Zaq.Channels.{DeliveryAttachments, EmailBridge, JidoChatBridge}
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Event
@@ -404,7 +424,10 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
 
     refute outgoing.metadata.error
     assert outgoing.body == "Here is the requested file."
-    assert [%Record{id: id, content: nil, materialization_handle: handle}] = outgoing.attachments
+
+    assert [%Record{id: id, content: nil, materialization_handle: handle}] =
+             outgoing.delivery.attachments
+
     assert id == b.id
     assert is_binary(handle)
     refute Map.has_key?(outgoing.metadata, :attachments)
@@ -412,7 +435,7 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
 
     # Authoritative Storage permission checks still run at final redemption.
     assert {:error, _} =
-             DeliveryFiles.prepare(outgoing.attachments, %{})
+             DeliveryAttachments.prepare(outgoing.delivery.attachments, %{})
 
     smtp = smtp_config()
 
@@ -459,7 +482,7 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
         event: execution_event()
       )
 
-    assert [%Record{id: id}] = outgoing.attachments
+    assert [%Record{id: id}] = outgoing.delivery.attachments
     assert id == b.id
 
     owner = self()
@@ -528,7 +551,7 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
           event: execution_event()
         )
 
-      assert outgoing.attachments == []
+      assert outgoing.delivery.attachments == []
       if match?({:text, _}, terminal), do: assert(outgoing.body == "Text only.")
     end
   end
@@ -566,17 +589,17 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
       )
 
     refute outgoing.metadata.error
-    assert [%Record{id: id}] = outgoing.attachments
+    assert [%Record{id: id}] = outgoing.delivery.attachments
     assert id == b.id
     assert Enum.map(outgoing.metadata.tool_calls, & &1["outcome"]) == ["succeeded", "failed"]
 
     assert {:ok, [%{content: "B bytes"}]} =
-             DeliveryFiles.prepare(outgoing.attachments, %{actor: actor})
+             DeliveryAttachments.prepare(outgoing.delivery.attachments, %{actor: actor})
 
     assert :ok = Permissions.revoke(%StorageEntry{id: b.id}, grant)
 
     assert {:error, _} =
-             DeliveryFiles.prepare(outgoing.attachments, %{actor: actor})
+             DeliveryAttachments.prepare(outgoing.delivery.attachments, %{actor: actor})
   end
 
   defp execution_event,

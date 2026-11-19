@@ -504,64 +504,78 @@ and the Notification center. Delivered through
 
 When routed across nodes, this payload is typically returned in `%Zaq.Event.response`.
 
-`Outgoing.from_pipeline_result/2` copies routing fields and merges metadata from
-an `%Incoming{}` and pipeline result. Its explicit atom-keyed `:attachments`
-result is copied unchanged; omission defaults to `[]`. Producers own the list-of-Records
-contract, while chat and email validate attachments through `DeliveryFiles` during
-preparation. The builder does not reject the answer for malformed attachments. Incoming
-attachments are never echoed automatically. Attachment collections are excluded
-from metadata, so file bytes and handles do not travel there.
+`Outgoing.delivery` is a typed `%Outgoing.Delivery{attachments: [], error: nil,
+plan: nil}`. Agent selection and notification producers supply attachment Records;
+incoming attachments are never echoed automatically. `from_pipeline_result/2`
+copies typed or atom/string-keyed selection without rejecting an otherwise valid
+answer. Legacy pipeline attachment/error keys remain accepted; producer plans are
+discarded. Delivery and legacy attachment keys stay out of metadata. Workflow
+`RunAgent.attachments` and `NotifyPerson.attachments` retain their signed Record
+metadata format. Outgoing is not persisted; deploy the canonical struct change
+together across Agent, Engine and Channel nodes.
 
-`Outgoing.delivery_plan` is nullable, private Channel execution data. Producers
-leave it nil; the pipeline builder excludes it from metadata and inspection omits
-it. `FileRequirements` distinguishes positive resolved limits from explicit
-`:not_applicable` constraints. Missing required or `:unresolved` limits fail
-validation before file acquisition. Separate uploads can declare an independent
-request byte ceiling; the planner skips that ceiling when it is `:not_applicable`.
-`DeliveryPlan` keeps original file indices and descriptive steps separate from
-execution results. Prepared payloads are excluded from plan and step inspection.
-Bridges may supply requirements, exact candidate preparation and single-step
-execution through optional `Bridge` callbacks. These contracts add no Agent tools
-or permission authority.
+`delivery.error` retains selection feedback independently of answer success. With
+no attachments, planning returns Outgoing unchanged, even when that error is present
+or the connector uses stop policy. The Agent composes its answer from tool feedback.
+Channel adds no selection notice and performs no requirements lookup, materialization,
+planning or executor work for ordinary text delivery.
 
-`DeliveryFiles.build_plan/3` returns error-free ordinary text unchanged, with no
-requirements lookup or plan. Attachment attempts resolve requirements before
-acquiring content, then group prepared files in input order. Count, acquired byte
-sizes and exact bridge message sizing constrain groups. Separate upload requests
-are packed independently within each message group using the bridge's exact
-candidate representation. Steps retain that accepted representation and reference
-original attachment indices. Stop rejects preparation failures before execution;
-continue keeps usable files or plans an explicit text fallback. A resolved encoded
-message ceiling also applies to that fallback. Planning never uploads or sends.
+The bridge's `transport_requirements/2` resolves constraints and failure policy
+from the selected connector together. `TransportRequirements` distinguishes
+positive limits from explicit `:not_applicable` constraints. Save boundaries reject
+invalid settings; bridges validate provider and legacy settings when normalizing
+requirements. The planner handles unavailable requirements without revalidating
+values. The upstream SDK callback remains `file_requirements/1`. Missing policy
+defaults to continue through `ConnectorConfig.Settings`; explicit boolean/form false
+means stop (`:abort`). The selected SMTP sender owns email policy, including IMAP
+replies. Connection plumbing does not resolve policy again.
 
-`DeliveryExecutor.execute/4` owns attempt-local outcomes and failure policy. Stop
-finishes all separate uploads before publishing, then publishes sequentially.
-Continue preserves failed and unknown outcomes, promotes the next ordered root
-candidate with the original answer, and runs ready replies through
-`Zaq.TaskSupervisor` with bounded concurrency. It never retries a step. Receipts
-compose successful send/edit operations for the same provider message in order.
-Reports distinguish confirmed messages, original-index failures, uploaded-only
-references and unattempted steps. The optional `delivery_completed/3` bridge
-callback runs once after the attempt and receives its final confirmed message ID;
-individual step callbacks must not multiply notification reply callbacks.
+`DeliveryAttachments.build_plan/3` groups original Record metadata in input order
+using declared sizes and counts. Unknown sizes remain eligible for execution checks.
+Groups and steps reference stable original indices in `delivery.attachments`; the
+plan does not duplicate the source collection. Neither content acquisition nor
+provider encoding occurs while building a plan.
+
+`DeliveryExecutor.execute/4` acquires each eligible attachment once through the
+existing materialization and authorization boundary, then checks actual attachment
+and group sizes and exact MIME/multipart payload sizes before transport effects.
+Declared/actual size drift is allowed only when the fixed group still fits.
+An oversized payload fails its planned group or upload batch; execution never
+regroups or retries it. Continue retains original-index failures and proceeds with
+usable attachments or the existing text fallback. Stop preparation failures prevent
+new publication, and all separate uploads must succeed before stop publishes.
+
+Outgoing and the completed plan remain immutable inputs. Acquired bytes, prepared
+operation copies, outcomes and newly elected roots live in executor runtime state.
+Existing thread identity remains on Outgoing. Continue promotes confirmed roots and
+uses bounded concurrency for ready replies; stop publication remains sequential.
+Reports retain confirmed receipts, `failed_attachments`, `uploaded_attachments`,
+uploaded-only references and unattempted steps. Confirmation strips `delivery.plan`
+and clears Record content before crossing into Engine. Provider fields such as
+Mattermost `file_ids` and SDK `uploaded_files` retain their upstream names.
+The optional `delivery_completed/3` callback runs once after the attempt.
 
 Every planned upload, send and edit uses the configured step timeout under the
 task supervisor, including sequential execution and a sole remaining step. A
 timed-out operation is unconfirmed; stop halts further work, while continue can
 elect the next root. The timed-out task is terminated without retrying its effect.
 When preparation omits leading groups, the first surviving publication retains
-the existing streamed-message edit where supported. Original group and file
+the existing streamed-message edit where supported. Original group and attachment
 indices remain stable in the plan and its failure evidence.
 
 SMTP's Advanced SMTP form accepts a positive **Maximum encoded message size
 (MB)** and **Maximum attachments per email**. One MB is 1,000,000 bytes; the
 selected connector stores `max_encoded_message_bytes` and
-`max_files_per_message`. The size includes the complete MIME message, including
-body, headers, boundaries and encoded attachments. Missing legacy settings remain
-missing; ZAQ supplies no provider defaults. Ordinary text delivery does not
-require attachment limits. The existing failure switch remains independent.
+`max_attachments_per_message`. The size includes the complete MIME message, including
+body, headers, boundaries and encoded attachments. Enabled SMTP saves require
+both positive limits; disabled drafts may omit them. The count is saved as
+`max_attachments_per_message`; the old `max_files_per_message` key remains readable.
+Existing missing or invalid limits receive no guessed defaults: operators must
+enter valid values before the next enabled save. Attachment requirements fail at
+normalization until corrected; ordinary text remains available without those limits.
+The existing failure switch remains independent.
 
-`Zaq.Channels.DeliveryFiles` prepares supplied files in memory for both chat and
+`Zaq.Channels.DeliveryAttachments` prepares supplied files in memory for both chat and
 email. Lazy materialization requires trusted Event actor or bypass context; source
 paths, handles and credentials are not forwarded to the transport. Preparation
 creates no temporary files and never deletes source files. It acquires whole file
@@ -578,7 +592,7 @@ Providers without normalized delivered-media evidence do not fabricate channel
 attachment references.
 
 Chat sends prepared files as documents. `JidoChatBridge` reads the selected
-adapter's requirements callback and validates its mapping through `FileRequirements`.
+adapter's requirements callback and validates its mapping through `TransportRequirements`.
 An absent optional adapter
 upload-request constraint maps to `:not_applicable`; explicitly unresolved or
 invalid values remain errors. Mattermost declares no upload-request ceiling and
@@ -593,7 +607,7 @@ streamed post; other transports create a final post. Planned creates require a
 provider-confirmed message ID. Ordinary text retains Jido's existing generated-ID
 fallback and edit behavior.
 
-Email uses the same planner and executor with `:send_with_files`: each group is
+Email uses the same planner and executor with `:send_with_attachments`: each group is
 one SMTP submission. `EmailBridge` owns envelope, subject, MIME representation and
 email threading. `SmtpSender` reuses the locked Swoosh 1.27.0 encoder and the
 locked gen_smtp 1.3.0 submission/framing seam. The final MIME bytes are measured
@@ -613,9 +627,9 @@ HTTP-status categories and safe messages, never raw provider bodies or exception
 
 Channels resolves the exact connection before preparation. The selected
 connector's `settings.send_on_file_failure` defaults to true; boolean/form false
-selects `:abort`, otherwise `:continue`. This policy stays in ZAQ. Direct bridge
-calls without an explicit policy retain fail-fast behavior. Connection lookup
-itself does not acquire files or upload content.
+selects `:abort`. Other invalid values fail transport normalization. Direct bridge
+calls use the same saved-setting default as routed calls. Connection lookup itself
+does not acquire files or upload content.
 
 An IMAP route keeps its conversation identity while binding the selected SMTP
 sender, settings and policy. The SMTP connector's setting is authoritative over
@@ -623,9 +637,9 @@ the receiving inbox's setting. Execution revalidates that same connector ID and
 never switches to another connector. Configuration, password encryption and BO
 settings still use the existing Engine-owned boundaries.
 
-Continue retains usable files and safe failure facts with original indices. If
-none remain, it plans the original text; rejected selection also carries the safe
-selection notice. Stop rejects preparation failures before execution, uploads all
+Continue retains usable attachments and safe failure facts with original indices. If
+none remain, it uses the existing text fallback. Empty selections deliver the Agent's
+answer unchanged. Stop rejects preparation failures before publication, uploads all
 groups before new publication where separate uploads exist, and stops sequential
 publication after failure. Continue preserves failed/unknown sends, promotes the
 next ordered root candidate and never retries or redistributes its files. Ready

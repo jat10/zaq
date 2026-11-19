@@ -20,7 +20,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
     report = %{
       confirmation: :partial,
       messages: [receipt],
-      failed_files: [%{attachment_index: 0}]
+      failed_attachments: [%{attachment_index: 0}]
     }
 
     expect(Zaq.NodeRouterMock, :dispatch, 2, fn event ->
@@ -46,17 +46,27 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
 
       outgoing = %{
         outgoing()
-        | delivery_plan: %DeliveryPlan{
-            failure_policy: :continue,
-            placement: :threaded,
-            files: %{0 => %{content: private}}
+        | delivery: %{
+            outgoing().delivery
+            | plan: %DeliveryPlan{
+                failure_policy: :continue,
+                placement: :threaded,
+                steps: [
+                  %Zaq.Channels.DeliveryPlan.Step{
+                    id: :private,
+                    operation: :send,
+                    group_id: 0,
+                    prepared: %{content: private}
+                  }
+                ]
+              }
           }
       }
 
       receipt = %{confirmation: :confirmed, action: :created, message_id: "confirmed-plan"}
 
       expect(Zaq.NodeRouterMock, :dispatch, fn event ->
-        assert event.request.outgoing.delivery_plan == nil
+        assert event.request.outgoing.delivery.plan == nil
         refute inspect(event.request) =~ private
         %{event | response: {:ok, receipt}}
       end)
@@ -66,7 +76,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
                  delivery_node_router: Zaq.NodeRouterMock
                )
 
-      assert outgoing.delivery_plan.files[0].content == private
+      assert hd(outgoing.delivery.plan.steps).prepared.content == private
     end
   end
 
@@ -105,17 +115,22 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
 
       outgoing = %{
         outgoing()
-        | attachments: attachments,
-          metadata:
+        | metadata:
             Map.merge(ids, %{
               "attachments" => attachments,
               attachments: attachments,
               trace: "private"
-            })
+            }),
+          delivery: %{outgoing().delivery | attachments: attachments}
       }
 
       [materialized, lazy] = attachments
-      expected = %{outgoing | attachments: [%{materialized | content: nil}, lazy], metadata: ids}
+
+      expected = %{
+        outgoing
+        | metadata: ids,
+          delivery: %{outgoing.delivery | attachments: [%{materialized | content: nil}, lazy]}
+      }
 
       expect(Zaq.NodeRouterMock, :dispatch, fn event ->
         send(self(), {:projected_confirmation, event})
@@ -131,7 +146,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
       assert event.request == %{receipt: receipt, outgoing: expected}
       assert event.next_hop.destination == :engine
       assert event.opts == [action: :record_delivery_confirmation]
-      assert outgoing.attachments == attachments
+      assert outgoing.delivery.attachments == attachments
     end
   end
 
@@ -146,13 +161,17 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
             thread_id: "root"
           }
 
-    report = %{confirmation: :partial, messages: parts, failed_files: [%{filename: "failed.txt"}]}
+    report = %{
+      confirmation: :partial,
+      messages: parts,
+      failed_attachments: [%{filename: "failed.txt"}]
+    }
 
     for part <- parts do
       expect(Zaq.NodeRouterMock, :dispatch, fn event ->
         assert event.request.receipt == part
         assert event.request.outgoing.body == part.body
-        assert event.request.outgoing.attachments == []
+        assert event.request.outgoing.delivery.attachments == []
         %{event | response: {:ok, part}}
       end)
     end
@@ -177,7 +196,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
       }
     ]
 
-    outgoing = %{outgoing() | attachments: attachments}
+    outgoing = %{outgoing() | delivery: %{outgoing().delivery | attachments: attachments}}
 
     for partial? <- [false, true] do
       receipt = %{
@@ -191,10 +210,10 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
 
       request = capture_confirmation(report, outgoing)
 
-      assert outgoing.attachments == attachments
+      assert outgoing.delivery.attachments == attachments
 
       assert [%Record{id: "sent", content: nil, materialization_handle: "original-handle"}] =
-               request.outgoing.attachments
+               request.outgoing.delivery.attachments
 
       refute Map.has_key?(request.receipt, :delivered_attachment_indices)
       assert request.receipt.attachments == [%{"kind" => "file"}]
@@ -213,19 +232,22 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
           ) do
       outgoing = %{
         outgoing()
-        | attachments:
-            for index <- 0..(count - 1) do
-              %Record{
-                id: to_string(index),
-                name: "file-#{index}",
-                kind: :file,
-                content: "private bytes",
-                materialization_handle: "private handle",
-                path: "/private/path",
-                raw: %{token: "private credential"},
-                attributes: %{"materialization_source" => %{"file_id" => "private locator"}}
-              }
-            end
+        | delivery: %{
+            outgoing().delivery
+            | attachments:
+                for index <- 0..(count - 1) do
+                  %Record{
+                    id: to_string(index),
+                    name: "file-#{index}",
+                    kind: :file,
+                    content: "private bytes",
+                    materialization_handle: "private handle",
+                    path: "/private/path",
+                    raw: %{token: "private credential"},
+                    attributes: %{"materialization_source" => %{"file_id" => "private locator"}}
+                  }
+                end
+          }
       }
 
       selected =
@@ -247,7 +269,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
 
       assert request.receipt.attachments == selected
 
-      assert Enum.map(request.outgoing.attachments, & &1.id) ==
+      assert Enum.map(request.outgoing.delivery.attachments, & &1.id) ==
                Enum.map(selected, &String.replace_prefix(&1["name"], "file-", ""))
 
       refute Map.has_key?(request.receipt, :delivered_attachment_indices)
@@ -258,7 +280,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
   test "explicit provider attachment evidence takes precedence over selected source metadata" do
     outgoing = %{
       outgoing()
-      | attachments: [%Record{id: "source-file", kind: :file}]
+      | delivery: %{outgoing().delivery | attachments: [%Record{id: "source-file", kind: :file}]}
     }
 
     provider_metadata = %{
@@ -300,7 +322,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
     expect(Zaq.NodeRouterMock, :dispatch, fn event ->
       assert event.request.outgoing.body == "Original **answer**"
       assert event.request.outgoing.metadata == outgoing.metadata
-      assert event.request.outgoing.attachments == []
+      assert event.request.outgoing.delivery.attachments == []
       refute Map.has_key?(event.request.receipt, :body)
       %{event | response: {:ok, Map.put(event.request.receipt, :history_capture, :stored)}}
     end)
@@ -316,7 +338,10 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
   test "malformed SMTP selection cannot confirm additional source Records" do
     outgoing = %{
       outgoing()
-      | attachments: [%Record{id: "failed", kind: :file, content: "private"}]
+      | delivery: %{
+          outgoing().delivery
+          | attachments: [%Record{id: "failed", kind: :file, content: "private"}]
+        }
     }
 
     receipt = %{
@@ -326,7 +351,7 @@ defmodule Zaq.Channels.DeliveryConfirmationTest do
     }
 
     expect(Zaq.NodeRouterMock, :dispatch, fn event ->
-      assert event.request.outgoing.attachments == []
+      assert event.request.outgoing.delivery.attachments == []
       assert event.request.receipt.attachments == []
       %{event | response: {:ok, event.request.receipt}}
     end)

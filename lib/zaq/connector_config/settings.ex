@@ -27,7 +27,11 @@ defmodule Zaq.ConnectorConfig.Settings do
     value =
       Map.get(settings, "send_on_file_failure", Map.get(settings, :send_on_file_failure, true))
 
-    if value in [false, "false"], do: :abort, else: :continue
+    case value do
+      value when value in [false, "false"] -> :abort
+      value when value in [nil, true, "true"] -> :continue
+      _ -> :invalid
+    end
   end
 
   def imap_selected_mailboxes(config) do

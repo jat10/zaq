@@ -143,7 +143,11 @@ defmodule Zaq.Engine.Workflows.SendLeadsEmailThreadingE2ETest do
       url: "smtp://localhost",
       token: "t",
       enabled: true,
-      settings: %{"from_email" => "julien@zaq.test"}
+      settings: %{
+        "from_email" => "julien@zaq.test",
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10
+      }
     })
     |> Repo.insert!()
 

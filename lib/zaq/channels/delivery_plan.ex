@@ -2,21 +2,18 @@ defmodule Zaq.Channels.DeliveryPlan do
   @moduledoc """
   Private, transient description of one Channel delivery attempt.
 
-  Files retain their original attachment indices. Groups reference those indices;
-  steps reference groups and prior step outputs. Prepared request bodies stay in
-  the plan until synchronous execution finishes, never in metadata or history.
-  Runtime outcomes belong to the executor rather than this description.
+  Groups and steps reference original attachment indices in Outgoing.Delivery.
+  The plan contains metadata decisions only. Acquired bytes, prepared requests,
+  elected roots and operation outcomes belong to the executor runtime.
   """
 
   alias Zaq.Channels.DeliveryPlan.Step
 
-  @derive {Inspect, only: [:failure_policy, :placement, :root_message_id]}
+  @derive {Inspect, only: [:failure_policy, :placement]}
   defstruct [
     :failure_policy,
     :placement,
-    :root_message_id,
     :requirements,
-    files: %{},
     groups: [],
     steps: [],
     preparation_failures: []
@@ -25,9 +22,7 @@ defmodule Zaq.Channels.DeliveryPlan do
   @type t :: %__MODULE__{
           failure_policy: :continue | :abort,
           placement: :threaded | :independent,
-          root_message_id: String.t() | nil,
-          requirements: Zaq.Channels.FileRequirements.t() | nil,
-          files: %{non_neg_integer() => map()},
+          requirements: Zaq.Channels.TransportRequirements.t() | nil,
           groups: [map()],
           steps: [Step.t()],
           preparation_failures: [map()]

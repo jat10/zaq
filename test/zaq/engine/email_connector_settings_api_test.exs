@@ -40,7 +40,7 @@ defmodule Zaq.Engine.EmailConnectorSettingsApiTest do
 
     settings = Repo.get!(ChannelConfig, id).settings
     assert settings["max_encoded_message_bytes"] == 1_234_567
-    assert settings["max_files_per_message"] == 3
+    assert settings["max_attachments_per_message"] == 3
     assert Decimal.equal?(snapshot.form_config.max_message_size_mb, Decimal.new("1.234567"))
     assert snapshot.form_config.max_attachments_per_message == 3
   end
@@ -115,7 +115,11 @@ defmodule Zaq.Engine.EmailConnectorSettingsApiTest do
         enabled: true,
         url: "smtp://configured-in-settings",
         token: "__smtp_unused__",
-        settings: %{"relay" => "smtp.example.com"}
+        settings: %{
+          "relay" => "smtp.example.com",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
 

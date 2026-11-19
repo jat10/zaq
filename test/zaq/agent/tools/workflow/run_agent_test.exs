@@ -1051,7 +1051,7 @@ defmodule Zaq.Agent.Tools.Workflow.RunAgentTest do
                 body: "Files",
                 channel_id: "workflow",
                 provider: nil,
-                attachments: records
+                delivery: %Outgoing.Delivery{attachments: records}
               }
           }
         end)
@@ -1084,7 +1084,7 @@ defmodule Zaq.Agent.Tools.Workflow.RunAgentTest do
               body: "Files",
               channel_id: "workflow",
               provider: nil,
-              attachment_error: :invalid_attachment_selection
+              delivery: %Outgoing.Delivery{error: :invalid_attachment_selection}
             }
         }
       end)

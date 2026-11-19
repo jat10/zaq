@@ -297,8 +297,12 @@ defmodule Zaq.Agent.Tools.Workflow.RunAgent do
   defp maybe_put_actor(event, nil), do: event
   defp maybe_put_actor(event, actor), do: Map.put(event, :actor, actor)
 
-  defp handle_response(%Outgoing{attachment_error: :invalid_attachment_selection} = outgoing),
-    do: failure_result("agent_failed:invalid_attachment_selection", outgoing.metadata)
+  defp handle_response(
+         %Outgoing{
+           delivery: %Outgoing.Delivery{error: :invalid_attachment_selection}
+         } = outgoing
+       ),
+       do: failure_result("agent_failed:invalid_attachment_selection", outgoing.metadata)
 
   defp handle_response(%Outgoing{} = outgoing) do
     if error_metadata?(outgoing.metadata) do
@@ -337,7 +341,7 @@ defmodule Zaq.Agent.Tools.Workflow.RunAgent do
     outgoing.metadata
     |> StreamEvents.telemetry_fields(json_safe: true)
     |> Map.put(:output, outgoing.body)
-    |> Map.put(:attachments, Enum.map(outgoing.attachments, &Record.metadata/1))
+    |> Map.put(:attachments, Enum.map(outgoing.delivery.attachments, &Record.metadata/1))
   end
 
   # Build the optional `context` param into a `Jido.AI.Context`, or nil when the

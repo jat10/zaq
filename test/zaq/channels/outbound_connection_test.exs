@@ -26,8 +26,10 @@ defmodule Zaq.Channels.OutboundConnectionTest do
         EmailBridge.fetch_connection_details_for_config(imap, outgoing: outgoing)
       end)
 
-    assert {:ok, %{smtp_config_id: sender_id, attachment_failure_policy: :abort}} = result
+    assert {:ok, %{smtp_config_id: sender_id}} = result
     assert sender_id == smtp.id
+    assert {:ok, requirements} = EmailBridge.transport_requirements(outgoing, elem(result, 1))
+    assert requirements.failure_policy == :abort
     connector_queries = Enum.filter(queries, &(&1.source == "channel_configs"))
     assert Enum.any?(connector_queries, &(smtp.id in &1.params))
     refute Enum.any?(connector_queries, &(imap.id in &1.params))
@@ -52,10 +54,12 @@ defmodule Zaq.Channels.OutboundConnectionTest do
     ingress_details = Bridge.fetch_connection_details_for_config(imap)
     assert EmailBridge.fetch_connection_details_for_config(imap) == ingress_details
 
-    assert {:ok, %{smtp_config_id: smtp_id, attachment_failure_policy: :abort}} =
+    assert {:ok, %{smtp_config_id: smtp_id} = details} =
              EmailBridge.fetch_connection_details_for_config(imap, outgoing: outgoing)
 
     assert smtp_id == smtp.id
+    assert {:ok, requirements} = EmailBridge.transport_requirements(outgoing, details)
+    assert requirements.failure_policy == :abort
 
     smtp |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
 
@@ -75,7 +79,8 @@ defmodule Zaq.Channels.OutboundConnectionTest do
     assert {:ok, details} =
              JidoChatBridge.fetch_connection_details_for_config(config, outgoing: outgoing)
 
-    assert details == Map.put(expected, :attachment_failure_policy, :abort)
+    assert details == expected
+    refute Map.has_key?(details, :attachment_failure_policy)
     refute function_exported?(JidoChatBridge, :delivery_connection, 2)
     refute function_exported?(EmailBridge, :delivery_connection, 2)
   end

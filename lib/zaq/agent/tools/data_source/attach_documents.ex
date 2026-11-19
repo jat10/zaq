@@ -93,7 +93,7 @@ defmodule Zaq.Agent.Tools.DataSource.AttachDocuments do
       provider: incoming.provider,
       channel_id: incoming.channel_id,
       routing_context: incoming.routing_context,
-      attachments: Enum.map(records, &%{&1 | content: nil})
+      delivery: %Outgoing.Delivery{attachments: Enum.map(records, &%{&1 | content: nil})}
     }
 
     opts = TrustedContext.event_builder_opts(context)

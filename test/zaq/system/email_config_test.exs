@@ -16,6 +16,18 @@ defmodule Zaq.System.EmailConfigTest do
       end
     end
 
+    test "enabled SMTP requires both limits while disabled drafts may omit them" do
+      changeset =
+        EmailConfig.changeset(base_config(), %{enabled: true, relay: "smtp.example.com"})
+
+      assert %{
+               max_message_size_mb: ["is required when email is enabled"],
+               max_attachments_per_message: ["is required when email is enabled"]
+             } = errors_on(changeset)
+
+      assert EmailConfig.changeset(base_config(), %{enabled: false}).valid?
+    end
+
     test "attachment limits accept positive exact decimal MB and reject invalid values" do
       changeset =
         EmailConfig.changeset(base_config(), %{
@@ -41,9 +53,11 @@ defmodule Zaq.System.EmailConfigTest do
       assert changeset.valid?
     end
 
-    test "valid when enabled is true with relay and from_email" do
+    test "valid when enabled is true with relay, sender and explicit attachment limits" do
       attrs = %{
         enabled: true,
+        max_message_size_mb: "10",
+        max_attachments_per_message: 10,
         relay: "smtp.example.com",
         from_email: "noreply@example.com"
       }

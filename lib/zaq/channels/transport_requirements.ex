@@ -1,4 +1,4 @@
-defmodule Zaq.Channels.FileRequirements do
+defmodule Zaq.Channels.TransportRequirements do
   @moduledoc """
   Resolved constraints for attachment delivery through one selected connection.
 
@@ -10,11 +10,12 @@ defmodule Zaq.Channels.FileRequirements do
 
   alias Zaq.Channels.DeliveryError
 
-  @enforce_keys [:transfer_mode, :max_files_per_message]
+  @enforce_keys [:transfer_mode, :max_attachments_per_message]
   defstruct [
     :transfer_mode,
-    :max_files_per_message,
-    max_file_bytes: :unresolved,
+    :max_attachments_per_message,
+    failure_policy: :continue,
+    max_attachment_bytes: :unresolved,
     max_attachment_bytes_per_message: :unresolved,
     max_encoded_message_bytes: :unresolved,
     max_upload_request_bytes: :unresolved,
@@ -24,9 +25,10 @@ defmodule Zaq.Channels.FileRequirements do
 
   @type limit :: pos_integer() | :not_applicable | :unresolved
   @type t :: %__MODULE__{
-          transfer_mode: :upload_then_publish | :send_with_files,
-          max_files_per_message: pos_integer(),
-          max_file_bytes: limit(),
+          failure_policy: :continue | :abort,
+          transfer_mode: :upload_then_publish | :send_with_attachments,
+          max_attachments_per_message: pos_integer(),
+          max_attachment_bytes: limit(),
           max_attachment_bytes_per_message: limit(),
           max_encoded_message_bytes: limit(),
           max_upload_request_bytes: limit(),
@@ -35,7 +37,7 @@ defmodule Zaq.Channels.FileRequirements do
         }
 
   @limits [
-    :max_file_bytes,
+    :max_attachment_bytes,
     :max_attachment_bytes_per_message,
     :max_encoded_message_bytes,
     :max_upload_request_bytes
@@ -45,8 +47,9 @@ defmodule Zaq.Channels.FileRequirements do
   @spec validate(t()) :: :ok | {:error, DeliveryError.t()}
   def validate(%__MODULE__{} = requirements) do
     valid? =
-      requirements.transfer_mode in [:upload_then_publish, :send_with_files] and
-        positive?(requirements.max_files_per_message) and
+      requirements.failure_policy in [:continue, :abort] and
+        requirements.transfer_mode in [:upload_then_publish, :send_with_attachments] and
+        positive?(requirements.max_attachments_per_message) and
         is_boolean(requirements.supports_threads) and
         is_boolean(requirements.supports_attachment_edits) and
         Enum.all?(@limits, &resolved?(Map.fetch!(requirements, &1)))
@@ -63,7 +66,7 @@ defmodule Zaq.Channels.FileRequirements do
   defp invalid_requirements do
     {:error,
      %DeliveryError{
-       reason: :invalid_file_requirements,
+       reason: :invalid_transport_requirements,
        message: "Attachment delivery limits are missing or invalid for this connector.",
        stage: :configuration,
        delivery: :not_sent

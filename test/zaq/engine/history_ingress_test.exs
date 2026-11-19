@@ -10,7 +10,6 @@ defmodule Zaq.Engine.HistoryIngressTest do
     CommunicationBridge,
     DeliveryConfirmation,
     DeliveryExecutor,
-    DeliveryFiles,
     DeliveryPlan,
     JidoChatBridge
   }
@@ -245,22 +244,23 @@ defmodule Zaq.Engine.HistoryIngressTest do
           &%Record{id: "file-#{&1}", kind: :file, content: "bytes", name: "file-#{&1}.txt"}
         )
 
-      assert {:ok, files, []} =
-               DeliveryFiles.prepare(attachments, %{}, attachment_failure_policy: :continue)
-
-      groups = Enum.map(0..(count - 1), &%{id: &1, file_refs: [&1], body: "Files"})
+      groups = Enum.map(0..(count - 1), &%{id: &1, attachment_refs: [&1], body: "Files"})
 
       steps =
         Enum.map(
           groups,
-          &%Step{id: {:send, &1.id}, operation: :send, group_id: &1.id, file_refs: &1.file_refs}
+          &%Step{
+            id: {:send, &1.id},
+            operation: :send,
+            group_id: &1.id,
+            attachment_refs: &1.attachment_refs
+          }
         )
 
       plan = %DeliveryPlan{
         failure_policy: :continue,
         placement: :threaded,
         groups: groups,
-        files: Map.new(files, &{&1.attachment_index, &1}),
         steps: steps
       }
 
@@ -268,10 +268,9 @@ defmodule Zaq.Engine.HistoryIngressTest do
         provider: :mattermost,
         channel_id: "plan-room",
         body: "Files",
-        attachments: attachments,
-        delivery_plan: plan,
         routing_context: %{channel_config_id: config.id, conversation_type: :room},
-        metadata: %{user_message_id: binding.user_message_id, assistant_message_id: assistant_id}
+        metadata: %{user_message_id: binding.user_message_id, assistant_message_id: assistant_id},
+        delivery: %Outgoing.Delivery{attachments: attachments, plan: plan}
       }
 
       assert {:ok, report} =
@@ -531,7 +530,13 @@ defmodule Zaq.Engine.HistoryIngressTest do
     smtp = Repo.get_by!(ChannelConfig, name: "History SMTP")
 
     smtp
-    |> ChannelConfig.changeset(%{settings: %{"from_email" => "bot@example.com"}})
+    |> ChannelConfig.changeset(%{
+      settings: %{
+        "from_email" => "bot@example.com",
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10
+      }
+    })
     |> Repo.update!()
 
     config =
@@ -570,7 +575,11 @@ defmodule Zaq.Engine.HistoryIngressTest do
       kind: "retrieval",
       url: "https://example.invalid",
       token: "fixture-token",
-      settings: %{"from_email" => "other@example.com"}
+      settings: %{
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10,
+        "from_email" => "other@example.com"
+      }
     })
     |> Repo.insert!()
 
@@ -783,7 +792,13 @@ defmodule Zaq.Engine.HistoryIngressTest do
     smtp = Repo.get_by!(ChannelConfig, name: "History SMTP")
 
     smtp
-    |> ChannelConfig.changeset(%{settings: %{"from_email" => "julien@eweev.com"}})
+    |> ChannelConfig.changeset(%{
+      settings: %{
+        "from_email" => "julien@eweev.com",
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10
+      }
+    })
     |> Repo.update!()
 
     config =
@@ -832,7 +847,13 @@ defmodule Zaq.Engine.HistoryIngressTest do
     smtp = Repo.get_by!(ChannelConfig, name: "History SMTP")
 
     smtp
-    |> ChannelConfig.changeset(%{settings: %{"from_email" => "bot@example.com"}})
+    |> ChannelConfig.changeset(%{
+      settings: %{
+        "from_email" => "bot@example.com",
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10
+      }
+    })
     |> Repo.update!()
 
     config =
@@ -932,7 +953,11 @@ defmodule Zaq.Engine.HistoryIngressTest do
         provider: "email:smtp",
         kind: "retrieval",
         url: "https://example.invalid",
-        token: "test-token"
+        token: "test-token",
+        settings: %{
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
     end

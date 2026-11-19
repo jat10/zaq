@@ -7,7 +7,7 @@ defmodule Zaq.Channels.EmailBridge do
   `Zaq.Channels.EmailBridge.SmtpSender`; SMTP settings are read from
   `channel_configs.settings` under provider `email:smtp`.
 
-  Attachment delivery uses the shared `DeliveryFiles` planner and
+  Attachment delivery uses the shared `DeliveryAttachments` planner and
   `DeliveryExecutor`. This bridge supplies exact MIME candidates and submits one
   planned email at a time, retaining the selected SMTP settings and identity.
   Grouping, sequencing, root promotion and failure policy stay in ZAQ's shared
@@ -26,13 +26,13 @@ defmodule Zaq.Channels.EmailBridge do
   require Logger
 
   alias Zaq.Channels.Bridge
+  alias Zaq.Channels.DeliveryAttachments
   alias Zaq.Channels.DeliveryError
   alias Zaq.Channels.DeliveryExecutor
-  alias Zaq.Channels.DeliveryFiles
   alias Zaq.Channels.DeliveryPlan
   alias Zaq.Channels.EmailBridge.ImapConfigHelpers
   alias Zaq.Channels.EmailBridge.SelfAddresses
-  alias Zaq.Channels.FileRequirements
+  alias Zaq.Channels.TransportRequirements
   alias Zaq.ConnectorConfig.Settings
   alias Zaq.ConnectorConfig.SmtpSettings
   alias Zaq.Contracts.Record
@@ -44,38 +44,46 @@ defmodule Zaq.Channels.EmailBridge do
 
   @doc "Resolves explicit attachment limits from the frozen selected SMTP settings."
   @impl Zaq.Channels.Bridge
-  def file_requirements(_outgoing, %{smtp_settings: settings}) when is_map(settings) do
-    requirements = %FileRequirements{
-      transfer_mode: :send_with_files,
-      max_files_per_message: SmtpSettings.map_get(settings, "max_files_per_message"),
-      max_file_bytes: :not_applicable,
+  def transport_requirements(_outgoing, %{smtp_settings: settings}) when is_map(settings) do
+    requirements = %TransportRequirements{
+      failure_policy: Settings.attachment_failure_policy(%{settings: settings}),
+      transfer_mode: :send_with_attachments,
+      max_attachments_per_message: SmtpSettings.map_get(settings, "max_attachments_per_message"),
+      max_attachment_bytes: :not_applicable,
       max_attachment_bytes_per_message: :not_applicable,
       max_encoded_message_bytes: SmtpSettings.map_get(settings, "max_encoded_message_bytes"),
       max_upload_request_bytes: :not_applicable,
       supports_threads: true
     }
 
-    with :ok <- FileRequirements.validate(requirements), do: {:ok, requirements}
+    case TransportRequirements.validate(requirements) do
+      :ok -> {:ok, requirements}
+      {:error, error} -> requirements_error(error, requirements.failure_policy)
+    end
   end
 
-  def file_requirements(_outgoing, _connection), do: FileRequirements.validate(nil)
+  def transport_requirements(_outgoing, _connection) do
+    {:error, error} = TransportRequirements.validate(nil)
+    {:error, error, Settings.attachment_failure_policy(%{})}
+  end
 
   @doc "Prepares one complete MIME candidate through the selected SMTP sender without submission."
   @impl Zaq.Channels.Bridge
-  def prepare_delivery_message(outgoing, files, %{smtp_settings: settings} = connection)
+  def prepare_delivery_message(outgoing, attachments, %{smtp_settings: settings} = connection)
       when is_map(settings) do
     ceiling = SmtpSettings.map_get(settings, "max_encoded_message_bytes")
 
     if is_integer(ceiling) and ceiling > 0 do
       outgoing = candidate_message_identity(outgoing, Map.get(connection, :delivery_group_id, 0))
       {payload, threading} = email_payload(outgoing, %{settings: settings})
-      prepare_email_payload(outgoing, files, payload, threading, connection)
+      prepare_email_payload(outgoing, attachments, payload, threading, connection)
     else
-      FileRequirements.validate(nil)
+      TransportRequirements.validate(nil)
     end
   end
 
-  def prepare_delivery_message(_outgoing, _files, _connection), do: FileRequirements.validate(nil)
+  def prepare_delivery_message(_outgoing, _files, _connection),
+    do: TransportRequirements.validate(nil)
 
   @doc "Submits one planned email after validating its final body and thread headers."
   @impl Zaq.Channels.Bridge
@@ -102,20 +110,25 @@ defmodule Zaq.Channels.EmailBridge do
           recipients: envelope.recipient_addresses
         })
 
-      email_attachment_receipt({:ok, receipt}, inputs.files)
+      email_attachment_receipt({:ok, receipt}, inputs.attachments)
     else
       {:error, %DeliveryError{} = error} -> {:error, error, %{}}
       {:error, reason} -> {:error, smtp_delivery_error(reason), %{}}
     end
   end
 
-  defp prepare_email_payload(outgoing, files, payload, threading, connection) do
+  defp requirements_error(error, policy) when policy in [:continue, :abort],
+    do: {:error, error, policy}
+
+  defp requirements_error(error, _policy), do: {:error, error}
+
+  defp prepare_email_payload(outgoing, attachments, payload, threading, connection) do
     sender = selected_smtp_sender(connection)
 
     with {:ok, message} <-
            sender.prepare_notification(
              outgoing.channel_id,
-             Map.put(payload, "attachments", files),
+             Map.put(payload, "attachments", attachments),
              %{},
              connection.smtp_settings
            ) do
@@ -152,7 +165,7 @@ defmodule Zaq.Channels.EmailBridge do
         |> Map.put("html_body", nil)
         |> Map.put("headers", headers)
 
-      prepare_email_payload(inputs.outgoing, inputs.files, payload, threading, connection)
+      prepare_email_payload(inputs.outgoing, inputs.attachments, payload, threading, connection)
     else
       {:ok, prepared}
     end
@@ -388,16 +401,23 @@ defmodule Zaq.Channels.EmailBridge do
   """
   @spec send_reply(Outgoing.t(), map()) :: {:ok, map()} | {:error, DeliveryError.t()}
   @impl true
-  def send_reply(%Outgoing{delivery_plan: %DeliveryPlan{}} = outgoing, connection),
-    do: DeliveryExecutor.execute(outgoing, __MODULE__, connection)
+  def send_reply(
+        %Outgoing{
+          delivery: %Outgoing.Delivery{plan: %DeliveryPlan{}}
+        } = outgoing,
+        connection
+      ),
+      do: DeliveryExecutor.execute(outgoing, __MODULE__, connection)
 
   def send_reply(
-        %Outgoing{attachments: attachments, attachment_error: error} = outgoing,
+        %Outgoing{
+          delivery: %Outgoing.Delivery{attachments: attachments}
+        } = outgoing,
         connection
       )
-      when attachments != [] or not is_nil(error) do
+      when attachments != [] do
     with {:ok, connection} <- planned_smtp_connection(outgoing, connection),
-         {:ok, planned} <- DeliveryFiles.build_plan(outgoing, __MODULE__, connection),
+         {:ok, planned} <- DeliveryAttachments.build_plan(outgoing, __MODULE__, connection),
          do: DeliveryExecutor.execute(planned, __MODULE__, connection)
   end
 
@@ -422,11 +442,7 @@ defmodule Zaq.Channels.EmailBridge do
        details
        |> Map.put(:smtp_config_id, smtp_config && smtp_config.id)
        |> Map.put(:smtp_settings, (smtp_config && smtp_config.settings) || %{})
-       |> Map.put(:smtp_sender_module, smtp_sender_module())
-       |> Map.put(
-         :attachment_failure_policy,
-         Settings.attachment_failure_policy(smtp_config || %{})
-       )}
+       |> Map.put(:smtp_sender_module, smtp_sender_module())}
     else
       {:error, reason} -> {:error, smtp_delivery_error(reason)}
     end

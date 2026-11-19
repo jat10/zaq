@@ -10,12 +10,12 @@ defmodule Zaq.Engine.Messages.Outgoing do
   Nothing inside ZAQ should depend on adapter-specific envelope types — all outbound
   delivery flows through this struct.
 
-  `attachments` contains explicitly requested `Zaq.Contracts.Record` values. Incoming
+  `delivery.attachments` contains explicitly requested `Zaq.Contracts.Record` values. Incoming
   attachments are never automatically echoed, and runtime attachment collections
   are excluded from metadata.
-  `attachment_error` carries a rejected selection independently of answer success,
-  so Channels can report it through the delivery policy.
-  `delivery_plan` is private Channel execution data, excluded from inspection,
+  `delivery.error` carries a rejected selection independently of answer success,
+  while the Agent composes selection feedback into its answer.
+  `delivery.plan` is private Channel execution data, excluded from inspection,
   producer metadata and delivery confirmations.
 
   `thread_anchor` is the opaque prior-thread anchor resolved by the notification
@@ -25,12 +25,12 @@ defmodule Zaq.Engine.Messages.Outgoing do
   For cross-node routing, this struct is typically carried in `%Zaq.Event.response`.
   """
 
-  alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Engine.Messages.Incoming.RoutingContext
+  alias Zaq.Engine.Messages.Outgoing.Delivery
 
   @enforce_keys [:body, :channel_id, :provider]
-  @derive {Inspect, except: [:delivery_plan]}
+  @derive {Inspect, except: [:delivery]}
 
   defstruct [
     :body,
@@ -41,9 +41,7 @@ defmodule Zaq.Engine.Messages.Outgoing do
     :provider,
     :in_reply_to,
     :thread_anchor,
-    :attachment_error,
-    :delivery_plan,
-    attachments: [],
+    delivery: %Delivery{},
     routing_context: %RoutingContext{},
     metadata: %{}
   ]
@@ -57,9 +55,7 @@ defmodule Zaq.Engine.Messages.Outgoing do
           provider: atom() | String.t(),
           in_reply_to: String.t() | integer() | nil,
           thread_anchor: map() | nil,
-          attachments: [Record.t()],
-          attachment_error: :invalid_attachment_selection | nil,
-          delivery_plan: Zaq.Channels.DeliveryPlan.t() | nil,
+          delivery: Delivery.t(),
           routing_context: RoutingContext.t() | nil,
           metadata: map()
         }
@@ -71,7 +67,9 @@ defmodule Zaq.Engine.Messages.Outgoing do
   the incoming message, sets `body` from `result.answer`, and merges result metadata
   (answer, confidence_score, latency_ms, tokens, error).
 
-  Copies atom-keyed `result.attachments` unchanged, defaulting to `[]` when omitted.
+  Copies typed or restored `result.delivery` selection, defaulting to an empty
+  Delivery. Legacy pipeline attachment/error keys remain accepted. Producer plans
+  are discarded.
   Producers own the Record contract; Channels validates attachments during delivery.
   Attachment keys are excluded from merged metadata, including any incoming values.
   """
@@ -85,13 +83,14 @@ defmodule Zaq.Engine.Messages.Outgoing do
       author_name: incoming.author_name,
       provider: incoming.provider,
       in_reply_to: incoming.message_id,
-      attachments: Map.get(result, :attachments, []),
-      attachment_error: Map.get(result, :attachment_error),
+      delivery: Delivery.from_result(result),
       routing_context: incoming.routing_context,
       metadata:
         incoming.metadata
         |> Map.merge(result)
         |> Map.drop([
+          :delivery,
+          "delivery",
           :attachments,
           "attachments",
           :attachment_error,

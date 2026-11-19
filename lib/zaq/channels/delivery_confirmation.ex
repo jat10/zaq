@@ -19,14 +19,14 @@ defmodule Zaq.Channels.DeliveryConfirmation do
       Enum.map(messages, fn receipt ->
         attachments =
           if Map.has_key?(receipt, :delivered_attachment_indices),
-            do: outgoing.attachments,
+            do: outgoing.delivery.attachments,
             else: []
 
         part = %{
           outgoing
           | body: confirmation_body(receipt, outgoing),
             thread_id: receipt[:thread_id],
-            attachments: attachments
+            delivery: %{outgoing.delivery | attachments: attachments}
         }
 
         {:ok, recorded} = record({:ok, receipt}, part, opts)
@@ -38,7 +38,7 @@ defmodule Zaq.Channels.DeliveryConfirmation do
 
   def record({:ok, %{confirmation: :confirmed} = receipt}, outgoing, opts) do
     router = Keyword.get(opts, :delivery_node_router, NodeRouter)
-    attachments = confirmed_attachment_records(outgoing.attachments, receipt)
+    attachments = confirmed_attachment_records(outgoing.delivery.attachments, receipt)
 
     receipt =
       receipt
@@ -47,14 +47,17 @@ defmodule Zaq.Channels.DeliveryConfirmation do
 
     outgoing = %{
       outgoing
-      | attachments: Enum.map(attachments, &%{&1 | content: nil}),
-        delivery_plan: nil,
-        metadata:
+      | metadata:
           Map.take(outgoing.metadata || %{}, [
             :user_message_id,
             :assistant_message_id,
             :persisted_assistant_message_id
-          ])
+          ]),
+        delivery: %{
+          outgoing.delivery
+          | attachments: Enum.map(attachments, &%{&1 | content: nil}),
+            plan: nil
+        }
     }
 
     event =

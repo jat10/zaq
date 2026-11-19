@@ -2,7 +2,7 @@ defmodule Zaq.Channels.DeliveryErrorTest do
   use Zaq.DataCase, async: false
   use ExUnitProperties
 
-  alias Zaq.Channels.{Api, DeliveryError, DeliveryFiles, EmailBridge}
+  alias Zaq.Channels.{Api, DeliveryAttachments, DeliveryError, EmailBridge}
   alias Zaq.Contracts.Record
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Outgoing
@@ -41,7 +41,7 @@ defmodule Zaq.Channels.DeliveryErrorTest do
 
   property "preparation errors preserve their reason without disclosing arbitrary content" do
     check all(reason <- string(:printable)) do
-      error = DeliveryFiles.delivery_error(reason)
+      error = DeliveryAttachments.delivery_error(reason)
       assert error.reason == reason
       assert error.message == "The attachment content could not be accessed."
       assert error.stage == :preparation
@@ -68,7 +68,7 @@ defmodule Zaq.Channels.DeliveryErrorTest do
           settings: %{
             "from_email" => "sender@example.test",
             "max_encoded_message_bytes" => 10_000_000,
-            "max_files_per_message" => 10
+            "max_attachments_per_message" => 10
           }
         })
         |> Repo.insert!()
@@ -79,6 +79,13 @@ defmodule Zaq.Channels.DeliveryErrorTest do
     test "email preparation failure reports detail without attempting SMTP", %{
       smtp_config: config
     } do
+      config =
+        config
+        |> Ecto.Changeset.change(
+          settings: Map.put(config.settings, "send_on_file_failure", false)
+        )
+        |> Repo.update!()
+
       record = %Record{
         id: "file",
         kind: :file,
@@ -87,7 +94,13 @@ defmodule Zaq.Channels.DeliveryErrorTest do
       }
 
       assert {:error, %DeliveryError{} = error} =
-               EmailBridge.send_reply(%{outgoing(config.id) | attachments: [record]}, %{})
+               EmailBridge.send_reply(
+                 %{
+                   outgoing(config.id)
+                   | delivery: %{outgoing(config.id).delivery | attachments: [record]}
+                 },
+                 %{}
+               )
 
       assert error.reason == :invalid_attachment_base64
       assert error.message == "The attachment contains invalid Base64 content."
@@ -134,8 +147,8 @@ defmodule Zaq.Channels.DeliveryErrorTest do
 
         outgoing = %{
           outgoing(config.id)
-          | attachments: [record],
-            metadata: %{message_id: "email-id"}
+          | metadata: %{message_id: "email-id"},
+            delivery: %{outgoing(config.id).delivery | attachments: [record]}
         }
 
         event = Event.new(outgoing, :channels, opts: [action: :deliver_outgoing])
@@ -151,7 +164,7 @@ defmodule Zaq.Channels.DeliveryErrorTest do
         assert report.messages == []
 
         assert [%{attachment_index: 0, stage: :transport, delivery: ^delivery}] =
-                 report.failed_files
+                 report.failed_attachments
 
         refute inspect(planned_error) =~ "private"
         assert_received :smtp_attempt
@@ -172,8 +185,8 @@ defmodule Zaq.Channels.DeliveryErrorTest do
 
       outgoing = %{
         outgoing(config.id)
-        | attachments: [record],
-          metadata: %{html_body: "<p>Keep this answer</p>"}
+        | metadata: %{html_body: "<p>Keep this answer</p>"},
+          delivery: %{outgoing(config.id).delivery | attachments: [record]}
       }
 
       event = Event.new(outgoing, :channels, opts: [action: :deliver_outgoing])
@@ -182,7 +195,7 @@ defmodule Zaq.Channels.DeliveryErrorTest do
               %{
                 confirmation: :partial,
                 messages: [%{confirmation: :confirmed}],
-                failed_files: [failure]
+                failed_attachments: [failure]
               }} =
                Api.handle_event(event, :deliver_outgoing, nil).response
 

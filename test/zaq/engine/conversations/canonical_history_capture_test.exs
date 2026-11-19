@@ -27,6 +27,10 @@ defmodule Zaq.Engine.Conversations.CanonicalHistoryCaptureTest do
       %ChannelConfig{}
       |> ChannelConfig.changeset(%{
         name: "SMTP for history capture",
+        settings: %{
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        },
         provider: "email:smtp",
         kind: "retrieval",
         url: "https://example.invalid",

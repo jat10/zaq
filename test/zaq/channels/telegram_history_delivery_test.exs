@@ -44,15 +44,17 @@ defmodule Zaq.Channels.TelegramHistoryDeliveryTest do
       provider: :telegram,
       channel_id: "123",
       body: "Image as a file",
-      attachments: [
-        %Record{
-          id: "image",
-          kind: :file,
-          name: "image.png",
-          mime_type: "image/png",
-          content: bytes
-        }
-      ]
+      delivery: %Outgoing.Delivery{
+        attachments: [
+          %Record{
+            id: "image",
+            kind: :file,
+            name: "image.png",
+            mime_type: "image/png",
+            content: bytes
+          }
+        ]
+      }
     }
 
     assert {:ok, %{confirmation: :confirmed, message_id: "101"}} =

@@ -7,6 +7,8 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
   alias Zaq.Engine.Messages.Outgoing
 
   defmodule OperationBridge do
+    def prepare_upload_request(_attachments, _connection), do: {:ok, %{encoded_bytes: 0}}
+
     def execute_delivery_step(step, inputs, connection) do
       send(connection.test_pid, {:step_started, step.id, self(), inputs})
 
@@ -29,7 +31,10 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
     defp success(%{operation: :upload} = step) do
       {:ok,
-       %{uploaded_files: Enum.map(step.file_refs, &%{id: "upload-#{&1}", attachment_index: &1})}}
+       %{
+         uploaded_attachments:
+           Enum.map(step.attachment_refs, &%{id: "upload-#{&1}", attachment_index: &1})
+       }}
     end
 
     defp success(step),
@@ -64,7 +69,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
     assert report.confirmation == :partial
     assert [%{message_id: "message-0"}] = report.messages
-    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_files
+    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_attachments
     assert [%{step_id: {:send, 2}}] = report.unattempted_steps
     refute_received {:step_started, {:send, 2}, _, _}
   end
@@ -85,7 +90,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
            ] = report.messages
 
     assert [%{attachment_index: 0, reason: :timeout, delivery: :unconfirmed}] =
-             report.failed_files
+             report.failed_attachments
 
     assert_receive {:step_started, {:send, 1}, _,
                     %{outgoing: %{body: "Original answer"}, thread_id: nil}}
@@ -95,10 +100,35 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
     refute_received {:step_started, {:send, 0}, _, _}
   end
 
+  test "an unconfirmed edit does not turn the next group into another edit of the streamed message" do
+    outgoing = outgoing(:continue, 2)
+    [first, later] = outgoing.delivery.plan.steps
+    first = %{first | operation: :edit, message_ref: {:existing, "streamed"}}
+    outgoing = put_in(outgoing.delivery.plan.steps, [first, later])
+    immutable = outgoing
+
+    assert {:ok, _} =
+             DeliveryExecutor.execute(
+               outgoing,
+               OperationBridge,
+               connection(%{first.id => failure(:timeout)})
+             )
+
+    assert_receive {:step_started, id, _,
+                    %{message_id: nil, outgoing: %{body: "Original answer"}}}
+
+    assert id == later.id
+    assert outgoing == immutable
+  end
+
   test "duplicate step IDs are rejected before effects" do
     outgoing = outgoing(:continue, 1)
-    [step] = outgoing.delivery_plan.steps
-    outgoing = %{outgoing | delivery_plan: %{outgoing.delivery_plan | steps: [step, step]}}
+    [step] = outgoing.delivery.plan.steps
+
+    outgoing = %{
+      outgoing
+      | delivery: %{outgoing.delivery | plan: %{outgoing.delivery.plan | steps: [step, step]}}
+    }
 
     assert {:error, %{stage: :configuration}} =
              DeliveryExecutor.execute(outgoing, OperationBridge, connection())
@@ -131,7 +161,12 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
   test "independent messages overlap under continue without waiting for a root" do
     outgoing = outgoing(:continue, 2)
-    outgoing = %{outgoing | delivery_plan: %{outgoing.delivery_plan | placement: :independent}}
+
+    outgoing = %{
+      outgoing
+      | delivery: %{outgoing.delivery | plan: %{outgoing.delivery.plan | placement: :independent}}
+    }
+
     connection = connection(Map.new(0..1, &{{:send, &1}, {:wait, nil}}))
 
     task =
@@ -159,7 +194,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
     assert report.confirmation == :partial
 
     assert Enum.any?(
-             report.failed_files,
+             report.failed_attachments,
              &(&1.attachment_index == 1 and &1.delivery == :unconfirmed)
            )
 
@@ -179,7 +214,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
     assert report.confirmation == :partial
 
     assert Enum.any?(
-             report.failed_files,
+             report.failed_attachments,
              &(&1.attachment_index == 1 and &1.delivery == :unconfirmed)
            )
 
@@ -190,21 +225,24 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
   test "successful text followed by a failed attachment edit confirms only text" do
     outgoing = outgoing(:continue, 1, true)
-    [upload, send] = outgoing.delivery_plan.steps
-    text = %{send | file_refs: [], depends_on: []}
+    [upload, send] = outgoing.delivery.plan.steps
+    text = %{send | attachment_refs: [], depends_on: []}
 
     edit = %Step{
       id: {:edit, 0},
       operation: :edit,
       group_id: 0,
-      file_refs: [0],
+      attachment_refs: [0],
       depends_on: [upload.id, text.id],
       message_ref: {:result, text.id}
     }
 
     outgoing = %{
       outgoing
-      | delivery_plan: %{outgoing.delivery_plan | steps: [upload, text, edit]}
+      | delivery: %{
+          outgoing.delivery
+          | plan: %{outgoing.delivery.plan | steps: [upload, text, edit]}
+        }
     }
 
     assert {:ok, report} =
@@ -215,7 +253,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
              )
 
     assert [%{body: "Original answer", delivered_attachment_indices: []}] = report.messages
-    assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_files
+    assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_attachments
     assert [%{attachment_index: 0}] = report.uploaded_only
 
     assert_receive {:step_started, {:edit, 0}, _,
@@ -225,7 +263,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
   test "a blocked first root times out and the next root is promoted once" do
     assert {:ok, report} = timed_execution(outgoing(:continue, 3), {:send, 0})
     assert report.confirmation == :partial
-    assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_files
+    assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_attachments
 
     assert [
              %{message_id: "message-1", body: "Original answer"},
@@ -240,7 +278,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
   test "the single remaining reply times out after a confirmed root" do
     assert {:ok, report} = timed_execution(outgoing(:continue, 2), {:send, 1})
     assert [%{message_id: "message-0"}] = report.messages
-    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_files
+    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_attachments
     assert_receive {:step_started, {:send, 0}, _, _}
     refute_received {:step_started, _, _, _}
   end
@@ -248,7 +286,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
   test "sole send and existing-message edit both honor the deadline" do
     for operation <- [:send, :edit], placement <- [:threaded, :independent] do
       outgoing = outgoing(:continue, 1)
-      [step] = outgoing.delivery_plan.steps
+      [step] = outgoing.delivery.plan.steps
 
       step = %{
         step
@@ -257,13 +295,16 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
           message_ref: if(operation == :edit, do: {:existing, "streamed"})
       }
 
-      plan = %{outgoing.delivery_plan | steps: [step], placement: placement}
+      plan = %{outgoing.delivery.plan | steps: [step], placement: placement}
 
       assert {:error, %{delivery: :unconfirmed, reason: {:attachment_delivery_failed, report}}} =
-               timed_execution(%{outgoing | delivery_plan: plan}, step.id)
+               timed_execution(
+                 %{outgoing | delivery: %{outgoing.delivery | plan: plan}},
+                 step.id
+               )
 
       assert report.messages == []
-      assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_files
+      assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_attachments
       refute_received {:step_started, _, _, _}
     end
   end
@@ -271,7 +312,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
   test "stop times out publication and preserves earlier confirmations without later sends" do
     assert {:ok, report} = timed_execution(outgoing(:abort, 3), {:send, 1})
     assert [%{message_id: "message-0"}] = report.messages
-    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_files
+    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_attachments
     assert [%{step_id: {:send, 2}}] = report.unattempted_steps
     assert_receive {:step_started, {:send, 0}, _, _}
     refute_received {:step_started, _, _, _}
@@ -283,7 +324,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
     assert report.messages == []
     assert [%{attachment_index: 0}] = report.uploaded_only
-    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_files
+    assert [%{attachment_index: 1, delivery: :unconfirmed}] = report.failed_attachments
     assert Enum.any?(report.unattempted_steps, &(&1.step_id == {:upload, 2}))
     assert_receive {:step_started, {:upload, 0}, _, _}
     refute_received {:step_started, _, _, _}
@@ -292,14 +333,17 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
   test "continue makes progress after an upload times out without retrying it" do
     assert {:ok, report} = timed_execution(outgoing(:continue, 2, true), {:upload, 0})
     assert report.confirmation == :partial
-    assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_files
+    assert [%{attachment_index: 0, delivery: :unconfirmed}] = report.failed_attachments
 
     assert [%{delivered_attachment_indices: []}, %{delivered_attachment_indices: [1]}] =
              report.messages
 
     assert_receive {:step_started, {:upload, 1}, _, _}
-    assert_receive {:step_started, {:send, 0}, _, %{files: []}}
-    assert_receive {:step_started, {:send, 1}, _, %{uploaded_files: [%{attachment_index: 1}]}}
+    assert_receive {:step_started, {:send, 0}, _, %{attachments: []}}
+
+    assert_receive {:step_started, {:send, 1}, _,
+                    %{uploaded_attachments: [%{attachment_index: 1}]}}
+
     refute_received {:step_started, _, _, _}
   end
 
@@ -331,47 +375,48 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
 
   test "partial upload facts publish only confirmed references under continue" do
     outgoing = outgoing(:continue, 2, true)
-    files = outgoing.delivery_plan.files
-    group = %{id: 0, file_refs: [0, 1], body: outgoing.body}
-    upload = %Step{id: :upload, operation: :upload, group_id: 0, file_refs: [0, 1]}
+    group = %{id: 0, attachment_refs: [0, 1], body: outgoing.body}
+    upload = %Step{id: :upload, operation: :upload, group_id: 0, attachment_refs: [0, 1]}
 
     send = %Step{
       id: :send,
       operation: :send,
       group_id: 0,
-      file_refs: [0, 1],
+      attachment_refs: [0, 1],
       depends_on: [:upload]
     }
 
-    plan = %{outgoing.delivery_plan | files: files, groups: [group], steps: [upload, send]}
+    plan = %{outgoing.delivery.plan | groups: [group], steps: [upload, send]}
     {_, error, _} = failure(:timeout)
-    result = {:error, error, %{uploaded_files: [%{id: "confirmed-upload", attachment_index: 0}]}}
+
+    result =
+      {:error, error, %{uploaded_attachments: [%{id: "confirmed-upload", attachment_index: 0}]}}
 
     assert {:ok, report} =
              DeliveryExecutor.execute(
-               %{outgoing | delivery_plan: plan},
+               %{outgoing | delivery: %{outgoing.delivery | plan: plan}},
                OperationBridge,
                connection(%{upload.id => result})
              )
 
     assert [%{delivered_attachment_indices: [0]}] = report.messages
-    assert [%{attachment_index: 1}] = report.failed_files
+    assert [%{attachment_index: 1}] = report.failed_attachments
     assert report.uploaded_only == []
   end
 
   test "an unknown text-only publication retains unknown certainty" do
     outgoing = outgoing(:continue, 1)
-    [step] = outgoing.delivery_plan.steps
-    plan = %{outgoing.delivery_plan | steps: [%{step | file_refs: []}]}
+    [step] = outgoing.delivery.plan.steps
+    plan = %{outgoing.delivery.plan | steps: [%{step | attachment_refs: []}]}
 
     assert {:error, %{delivery: :unconfirmed, reason: {:attachment_delivery_failed, report}}} =
              DeliveryExecutor.execute(
-               %{outgoing | delivery_plan: plan},
+               %{outgoing | delivery: %{outgoing.delivery | plan: plan}},
                OperationBridge,
                connection(%{step.id => failure(:timeout)})
              )
 
-    assert report.failed_files == []
+    assert report.failed_attachments == []
     assert [%{delivery: :unconfirmed, status: :failed}] = report.step_outcomes
   end
 
@@ -390,7 +435,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
       assert length(ids) == count * 2
 
       for {{:send, index}, inputs} <- started do
-        assert [%{attachment_index: ^index}] = inputs.uploaded_files
+        assert [%{attachment_index: ^index}] = inputs.uploaded_attachments
       end
     end
   end
@@ -419,7 +464,7 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
     groups =
       Enum.map(
         0..(count - 1),
-        &%{id: &1, file_refs: [&1], body: "Original answer", prepared: nil}
+        &%{id: &1, attachment_refs: [&1], body: "Original answer", prepared: nil}
       )
 
     steps =
@@ -428,14 +473,14 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
           id: {:upload, group.id},
           operation: :upload,
           group_id: group.id,
-          file_refs: group.file_refs
+          attachment_refs: group.attachment_refs
         }
 
         send = %Step{
           id: {:send, group.id},
           operation: :send,
           group_id: group.id,
-          file_refs: group.file_refs,
+          attachment_refs: group.attachment_refs,
           depends_on: if(uploads?, do: [upload.id], else: [])
         }
 
@@ -459,12 +504,24 @@ defmodule Zaq.Channels.DeliveryExecutorTest do
       provider: :mattermost,
       channel_id: "room",
       body: "Original answer",
-      delivery_plan: %DeliveryPlan{
-        failure_policy: policy,
-        placement: :threaded,
-        files: files,
-        groups: groups,
-        steps: steps
+      delivery: %Outgoing.Delivery{
+        attachments:
+          Enum.map(Map.values(files), fn attachment ->
+            %Zaq.Contracts.Record{
+              id: to_string(attachment.attachment_index),
+              kind: :file,
+              content: attachment.content,
+              name: attachment.name,
+              mime_type: attachment.mime_type,
+              size: attachment.size
+            }
+          end),
+        plan: %DeliveryPlan{
+          failure_policy: policy,
+          placement: :threaded,
+          groups: groups,
+          steps: steps
+        }
       }
     }
   end

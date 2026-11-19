@@ -97,7 +97,7 @@ defmodule Zaq.Engine.EmailConnectorSettings do
           settings: %{
             "send_on_file_failure" => value.send_on_file_failure,
             "max_encoded_message_bytes" => SmtpHelpers.message_bytes(value.max_message_size_mb),
-            "max_files_per_message" => value.max_attachments_per_message,
+            "max_attachments_per_message" => value.max_attachments_per_message,
             "relay" => value.relay,
             "port" => to_string(value.port || 587),
             "transport_mode" => value.transport_mode,
@@ -191,7 +191,7 @@ defmodule Zaq.Engine.EmailConnectorSettings do
         Settings.attachment_failure_policy(%{settings: settings}) == :continue,
       max_message_size_mb:
         SmtpHelpers.message_megabytes(map_get(settings, "max_encoded_message_bytes")),
-      max_attachments_per_message: map_get(settings, "max_files_per_message"),
+      max_attachments_per_message: map_get(settings, "max_attachments_per_message"),
       relay: map_get(settings, "relay"),
       port: parse_int(map_get(settings, "port"), 587),
       transport_mode: map_get(settings, "transport_mode") || "starttls",

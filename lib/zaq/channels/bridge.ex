@@ -15,7 +15,6 @@ defmodule Zaq.Channels.Bridge do
   """
 
   alias Zaq.Channels.{CommunicationBridge, DataSourceBridge}
-  alias Zaq.ConnectorConfig.Settings
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Event
@@ -27,8 +26,10 @@ defmodule Zaq.Channels.Bridge do
 
   @callback to_internal(map(), map()) :: Incoming.t() | {:error, term()}
   @callback capability_snapshot(map()) :: {:ok, map()} | {:error, term()}
-  @callback file_requirements(Zaq.Engine.Messages.Outgoing.t(), map()) ::
-              {:ok, Zaq.Channels.FileRequirements.t()} | {:error, Zaq.Channels.DeliveryError.t()}
+  @callback transport_requirements(Zaq.Engine.Messages.Outgoing.t(), map()) ::
+              {:ok, Zaq.Channels.TransportRequirements.t()}
+              | {:error, Zaq.Channels.DeliveryError.t()}
+              | {:error, Zaq.Channels.DeliveryError.t(), :continue | :abort}
   @callback prepare_upload_request([map()], map()) :: {:ok, map()} | {:error, term()}
   @callback prepare_delivery_message(Zaq.Engine.Messages.Outgoing.t(), [map()], map()) ::
               {:ok, map()} | {:error, term()}
@@ -55,7 +56,7 @@ defmodule Zaq.Channels.Bridge do
               {:ok, {map(), map(), keyword()}} | {:error, term()}
   @callback after_incoming(map(), map(), keyword(), term(), module()) :: term()
 
-  @optional_callbacks file_requirements: 2,
+  @optional_callbacks transport_requirements: 2,
                       prepare_upload_request: 2,
                       prepare_delivery_message: 3,
                       execute_delivery_step: 3,
@@ -426,10 +427,7 @@ defmodule Zaq.Channels.Bridge do
         do: resolver.fetch_connection_details(Keyword.fetch!(opts, :outgoing).provider),
         else: resolver.fetch_connection_details_for_config(config)
 
-    {:ok,
-     Map.put_new_lazy(details, :attachment_failure_policy, fn ->
-       Settings.attachment_failure_policy(details)
-     end)}
+    {:ok, details}
   end
 
   @doc "Fetches an enabled connector by provider; supply its ID if the provider is ambiguous."

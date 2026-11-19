@@ -61,6 +61,26 @@ defmodule Zaq.ConnectorConfig.SettingsTest do
            }) == ["INBOX"]
   end
 
+  test "SMTP count compatibility preserves explicit new values and rejects malformed policies" do
+    assert SmtpSettings.map_get(%{"max_files_per_message" => 3}, "max_attachments_per_message") ==
+             3
+
+    assert SmtpSettings.map_get(%{max_files_per_message: 3}, "max_attachments_per_message") == 3
+
+    assert SmtpSettings.map_get(
+             %{"max_files_per_message" => 3, "max_attachments_per_message" => nil},
+             "max_attachments_per_message"
+           ) == nil
+
+    assert SmtpSettings.map_get(
+             %{"max_encoded_message_bytes" => false, :max_encoded_message_bytes => 1000},
+             "max_encoded_message_bytes"
+           ) == false
+
+    assert Settings.attachment_failure_policy(%{settings: %{"send_on_file_failure" => "invalid"}}) ==
+             :invalid
+  end
+
   test "connector policy defaults on and preserves explicit boolean and form false" do
     assert Settings.attachment_failure_policy(%{}) == :continue
 

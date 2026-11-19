@@ -177,13 +177,13 @@ defmodule Zaq.Engine.History.DeliveryTest do
       body: "Original answer",
       channel_id: "recipient@example.com",
       provider: "email:imap",
-      attachments: attachments,
       metadata: %{},
       routing_context: %{
         channel_config_id: config.id,
         conversation_type: :recipient_addressed,
         source_scope: "smtp:attachments"
-      }
+      },
+      delivery: %Outgoing.Delivery{attachments: attachments}
     }
 
     receipt = %{
@@ -200,7 +200,7 @@ defmodule Zaq.Engine.History.DeliveryTest do
     report = %{
       confirmation: :partial,
       messages: [receipt],
-      failed_files: [%{attachment_index: 1, stage: :preparation, delivery: :not_sent}]
+      failed_attachments: [%{attachment_index: 1, stage: :preparation, delivery: :not_sent}]
     }
 
     assert {:ok, %{messages: [%{history_capture: :stored}]}} =
@@ -327,7 +327,11 @@ defmodule Zaq.Engine.History.DeliveryTest do
         provider: "email:smtp",
         kind: "retrieval",
         url: "https://example.invalid",
-        token: "token"
+        token: "token",
+        settings: %{
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
     end

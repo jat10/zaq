@@ -7,7 +7,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   Jido.Chat event handling happen atomically.
 
   `send_reply/2` is called by Channels API for outbound delivery to any
-  jido_chat-backed platform. Explicit file Records use `DeliveryFiles` plans and
+  jido_chat-backed platform. Explicit file Records use `DeliveryAttachments` plans and
   `DeliveryExecutor`; the bridge translates one upload, post or edit at a time.
   Capable adapters attach files to the existing streamed post. Planned creates
   require provider-confirmed IDs; ordinary text retains Jido's existing behavior.
@@ -37,12 +37,12 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   alias Zaq.Channels.{
     Bridge,
+    DeliveryAttachments,
     DeliveryExecutor,
-    DeliveryFiles,
     DeliveryPlan,
-    FileRequirements,
     RetrievalChannel,
     Supervisor,
+    TransportRequirements,
     WebhookUrl
   }
 
@@ -67,7 +67,7 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   @doc "Maps the selected adapter's explicit requirements into ZAQ's delivery contract."
   @impl Zaq.Channels.Bridge
-  def file_requirements(%Outgoing{} = outgoing, connection) do
+  def transport_requirements(%Outgoing{} = outgoing, connection) do
     options = AdapterOptions.build(outgoing.provider, connection)
 
     with {:ok, adapter} <- adapter_for(outgoing.provider),
@@ -79,10 +79,11 @@ defmodule Zaq.Channels.JidoChatBridge do
           function_exported?(adapter, :prepare_upload, 3) and
           function_exported?(adapter, :upload_prepared, 2)
 
-      requirements = %FileRequirements{
-        transfer_mode: if(separate?, do: :upload_then_publish, else: :send_with_files),
-        max_files_per_message: Map.get(limits, :max_files_per_post, :unresolved),
-        max_file_bytes: Map.get(limits, :max_file_size, :unresolved),
+      requirements = %TransportRequirements{
+        failure_policy: Settings.attachment_failure_policy(connection),
+        transfer_mode: if(separate?, do: :upload_then_publish, else: :send_with_attachments),
+        max_attachments_per_message: Map.get(limits, :max_files_per_post, :unresolved),
+        max_attachment_bytes: Map.get(limits, :max_file_size, :unresolved),
         max_upload_request_bytes:
           if(separate?,
             do: Map.get(limits, :max_upload_request_size, :not_applicable),
@@ -95,12 +96,21 @@ defmodule Zaq.Channels.JidoChatBridge do
         supports_attachment_edits: capabilities[:edit_attachments] == :native
       }
 
-      with :ok <- FileRequirements.validate(requirements), do: {:ok, requirements}
+      case TransportRequirements.validate(requirements) do
+        :ok -> {:ok, requirements}
+        {:error, error} -> requirements_error(error, requirements.failure_policy)
+      end
     else
       {:error, _reason} ->
-        FileRequirements.validate(nil)
+        {:error, error} = TransportRequirements.validate(nil)
+        requirements_error(error, Settings.attachment_failure_policy(connection))
     end
   end
+
+  defp requirements_error(error, policy) when policy in [:continue, :abort],
+    do: {:error, error, policy}
+
+  defp requirements_error(error, _policy), do: {:error, error}
 
   defp adapter_file_requirements(adapter, options) do
     response =
@@ -149,10 +159,10 @@ defmodule Zaq.Channels.JidoChatBridge do
              )
            ) do
       uploaded =
-        Enum.zip(step.file_refs, result.files)
+        Enum.zip(step.attachment_refs, result.files)
         |> Enum.map(fn {index, file} -> Map.put(file, :attachment_index, index) end)
 
-      {:ok, %{uploaded_files: uploaded}}
+      {:ok, %{uploaded_attachments: uploaded}}
     else
       {:error, reason} -> {:error, operation_error(reason, :upload), %{}}
     end
@@ -164,13 +174,16 @@ defmodule Zaq.Channels.JidoChatBridge do
     case adapter_for(outgoing.provider) do
       {:ok, adapter} ->
         files =
-          if inputs.uploaded_files == [], do: Enum.map(inputs.files, &prepared_upload/1), else: []
+          if inputs.uploaded_attachments == [],
+            do: Enum.map(inputs.attachments, &prepared_upload/1),
+            else: []
 
         opts =
-          if inputs.uploaded_files == [],
+          if inputs.uploaded_attachments == [],
             do: [],
             else: [
-              uploaded_files: Enum.map(inputs.uploaded_files, &Map.delete(&1, :attachment_index))
+              uploaded_files:
+                Enum.map(inputs.uploaded_attachments, &Map.delete(&1, :attachment_index))
             ]
 
         result =
@@ -223,7 +236,11 @@ defmodule Zaq.Channels.JidoChatBridge do
   @impl Zaq.Channels.Bridge
   def existing_text_message(outgoing, _connection) do
     with {:ok, adapter} <- adapter_for(outgoing.provider),
-         {:use_update, id} <- send_mode(%{outgoing | attachments: []}, adapter),
+         {:use_update, id} <-
+           send_mode(
+             %{outgoing | delivery: %{outgoing.delivery | attachments: []}},
+             adapter
+           ),
          do: id,
          else: (_ -> nil)
   end
@@ -248,7 +265,7 @@ defmodule Zaq.Channels.JidoChatBridge do
 
       if function_exported?(adapter, :validate_files, 2) do
         adapter.validate_files(
-          outgoing.attachments,
+          outgoing.delivery.attachments,
           AdapterOptions.build(outgoing.provider, connection)
         )
       else
@@ -2057,11 +2074,18 @@ defmodule Zaq.Channels.JidoChatBridge do
   end
 
   @doc "Sends a reply outbound via the provider adapter. Called by the bridge state process."
-  def do_send_reply(%Outgoing{delivery_plan: %DeliveryPlan{}} = outgoing, connection),
-    do: DeliveryExecutor.execute(outgoing, __MODULE__, connection)
+  def do_send_reply(
+        %Outgoing{
+          delivery: %Outgoing.Delivery{plan: %DeliveryPlan{}}
+        } = outgoing,
+        connection
+      ),
+      do: DeliveryExecutor.execute(outgoing, __MODULE__, connection)
 
   def do_send_reply(
-        %Outgoing{attachments: [], attachment_error: nil} = outgoing,
+        %Outgoing{
+          delivery: %Outgoing.Delivery{attachments: []}
+        } = outgoing,
         %{url: _, token: _} = connection_details
       ) do
     case adapter_for(outgoing.provider) do
@@ -2075,7 +2099,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   end
 
   def do_send_reply(%Outgoing{} = outgoing, connection) do
-    with {:ok, planned} <- DeliveryFiles.build_plan(outgoing, __MODULE__, connection),
+    with {:ok, planned} <- DeliveryAttachments.build_plan(outgoing, __MODULE__, connection),
          do: DeliveryExecutor.execute(planned, __MODULE__, connection)
   end
 
@@ -2095,8 +2119,8 @@ defmodule Zaq.Channels.JidoChatBridge do
           report =
             Map.put(
               report,
-              :failed_files,
-              report_file_failures(Map.get(report, :failed_files, []))
+              :failed_attachments,
+              report_file_failures(Map.get(report, :failed_attachments, []))
             )
 
           {{:attachment_delivery_failed, report}, report.delivery}
@@ -2105,7 +2129,7 @@ defmodule Zaq.Channels.JidoChatBridge do
           {reason, delivery}
       end
 
-    subject = if outgoing.attachments == [], do: "Message", else: "Attachment"
+    subject = if outgoing.delivery.attachments == [], do: "Message", else: "Attachment"
 
     %DeliveryError{
       reason: reason,
@@ -2151,7 +2175,7 @@ defmodule Zaq.Channels.JidoChatBridge do
                outgoing: outgoing
              }
            ) do
-      if outgoing.attachments != [], do: dispatch_on_reply(metadata, receipt.message_id)
+      if outgoing.delivery.attachments != [], do: dispatch_on_reply(metadata, receipt.message_id)
       {:ok, Map.put_new(receipt, :confirmation, :confirmed)}
     else
       :create -> create_and_dispatch_reply(outgoing, adapter_module, details, opts)
@@ -2163,7 +2187,7 @@ defmodule Zaq.Channels.JidoChatBridge do
     case metadata_message_id(outgoing.metadata) do
       message_id when is_present_message_id(message_id) ->
         attachment_edit? =
-          outgoing.attachments == [] or
+          outgoing.delivery.attachments == [] or
             declared_adapter_capabilities(adapter_module)[:edit_attachments] == :native
 
         if supports_message_updates?(adapter_module) and attachment_edit?,
@@ -2217,7 +2241,10 @@ defmodule Zaq.Channels.JidoChatBridge do
     receipt
     |> Map.put(:confirmation, report.confirmation)
     |> Map.put(:messages, receipts)
-    |> Map.put(:failed_files, report_file_failures(Map.get(report, :failed_files, [])))
+    |> Map.put(
+      :failed_attachments,
+      report_file_failures(Map.get(report, :failed_attachments, []))
+    )
     |> Map.put(:uploaded_files, Map.get(report, :uploaded_files, []))
   end
 

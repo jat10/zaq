@@ -231,8 +231,8 @@ defmodule Zaq.TestSupport.ChannelFileDelivery do
       provider: scope.provider,
       channel_id: scope.channel_id,
       body: "Selected file #{scope.namespace}",
-      attachments: if(scope.files?, do: [scope.record], else: []),
-      routing_context: %{channel_config_id: scope.config.id}
+      routing_context: %{channel_config_id: scope.config.id},
+      delivery: %Outgoing.Delivery{attachments: if(scope.files?, do: [scope.record], else: [])}
     }
 
     if scope.provider == :mattermost do

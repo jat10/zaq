@@ -16,7 +16,7 @@ defmodule Zaq.Engine.ChannelConfig do
   alias Zaq.Channels.AgentRouting
   alias Zaq.Channels.Bridge
   alias Zaq.Channels.RetrievalChannel
-  alias Zaq.ConnectorConfig.{LiveUpdates, Settings, WidgetSettings}
+  alias Zaq.ConnectorConfig.{LiveUpdates, Settings, SmtpSettings, WidgetSettings}
   alias Zaq.Engine.IncomingMessageRouting
   alias Zaq.Event
   alias Zaq.NodeRouter
@@ -57,6 +57,7 @@ defmodule Zaq.Engine.ChannelConfig do
     |> maybe_validate_imap_settings()
     |> maybe_validate_disk_settings()
     |> maybe_validate_widget_settings()
+    |> maybe_validate_transport_settings()
     |> maybe_validate_max_file_size()
     |> maybe_validate_live_updates()
     |> preserve_live_update_policy()
@@ -64,6 +65,33 @@ defmodule Zaq.Engine.ChannelConfig do
     |> maybe_validate_imap_smtp_dependency_on_persist()
     |> maybe_encrypt_token()
     |> reject_archived_reactivation()
+  end
+
+  defp maybe_validate_transport_settings(changeset) do
+    settings =
+      case get_field(changeset, :settings) do
+        settings when is_map(settings) -> settings
+        _ -> %{}
+      end
+
+    changeset =
+      if get_field(changeset, :provider) == @smtp_provider do
+        Enum.reduce(
+          SmtpSettings.delivery_errors(
+            settings,
+            get_field(changeset, :enabled)
+          ),
+          changeset,
+          fn {key, message}, changeset -> add_error(changeset, :settings, "#{key} #{message}") end
+        )
+      else
+        changeset
+      end
+
+    case Map.get(settings, "send_on_file_failure", Map.get(settings, :send_on_file_failure)) do
+      value when value in [nil, true, false, "true", "false"] -> changeset
+      _ -> add_error(changeset, :settings, "send_on_file_failure must be true or false")
+    end
   end
 
   defp maybe_validate_max_file_size(changeset) do

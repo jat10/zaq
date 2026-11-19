@@ -531,7 +531,7 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
       delivered = await_delivery(destination.config.id)
       assert delivered.body == final_text(@operation)
 
-      assert Enum.map(delivered.attachments, & &1.id) ==
+      assert Enum.map(delivered.delivery.attachments, & &1.id) ==
                if(expected_file, do: [files.b.id], else: [])
 
       Task.await(ingress, 10_000)
@@ -548,7 +548,7 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
       refute_received {:delivery_upload, _, _}
       send(next_model, :release)
       assert_delivery(followup, namespace, nil)
-      assert await_delivery(destination.config.id).attachments == []
+      assert await_delivery(destination.config.id).delivery.attachments == []
       Task.await(next_ingress, 10_000)
       await_delivery_writer(destination.config.id)
       refute_receive {:delivery_upload, _, _}
@@ -620,7 +620,7 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
 
       if @scenario in [:cancel, :failure] do
         assert outgoing.metadata.error
-        assert outgoing.attachments == []
+        assert outgoing.delivery.attachments == []
         assert_receive {:DOWN, ^server_ref, :process, ^server, _}, 10_000
 
         if @provider == :mattermost do
@@ -633,7 +633,7 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
       end
 
       if @scenario == :steer do
-        assert outgoing.attachments == []
+        assert outgoing.delivery.attachments == []
         assert {:ok, status} = Jido.AgentServer.status(server)
         refute Map.has_key?(status.raw_state, :request_effects)
         trace = status.raw_state.__strategy__.request_traces[selection.request_id].events
@@ -667,7 +667,7 @@ defmodule Zaq.Channels.AttachmentAgentJourneyTest do
       refute Map.has_key?(next_status.raw_state, :request_effects)
       send(next_model, :release)
       assert_delivery(followup, namespace, nil)
-      assert await_delivery(destination.config.id).attachments == []
+      assert await_delivery(destination.config.id).delivery.attachments == []
       Task.await(next_ingress, 10_000)
       await_delivery_writer(destination.config.id)
       refute_received {:delivery_upload, _, _}

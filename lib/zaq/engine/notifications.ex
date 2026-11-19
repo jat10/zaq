@@ -298,7 +298,6 @@ defmodule Zaq.Engine.Notifications do
 
     outgoing = %Outgoing{
       body: Map.get(log.payload, "body", ""),
-      attachments: notification.attachments,
       channel_id: identifier,
       # The platform string as configured — the channels node resolves its own
       # bridge from it; the engine never maps providers to bridge modules.
@@ -309,7 +308,8 @@ defmodule Zaq.Engine.Notifications do
         Map.merge(notification.metadata, %{
           "subject" => Map.get(log.payload, "subject"),
           "html_body" => Map.get(log.payload, "html_body")
-        })
+        }),
+      delivery: %Outgoing.Delivery{attachments: notification.attachments}
     }
 
     result = deliver_via_channels(outgoing, opts)

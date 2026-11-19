@@ -8,7 +8,7 @@ defmodule Zaq.Channels.EmailBridge.SmtpSender do
   SMTP configuration UI).
 
   Attachment payloads contain prepared binary content, filenames, MIME types and
-  byte sizes from `DeliveryFiles`; paths and URLs are never opened here.
+  byte sizes from `DeliveryAttachments`; paths and URLs are never opened here.
 
   Planned delivery freezes MIME with the locked Swoosh 1.27.0 encoder and submits
   those bytes through gen_smtp 1.3.0 with retries disabled. This version-checked

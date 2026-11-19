@@ -143,6 +143,10 @@ defmodule Zaq.Repo.Migrations.ScopedPersonChannelsTest do
       %ChannelConfig{}
       |> ChannelConfig.changeset(%{
         name: "SMTP origin",
+        settings: %{
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        },
         provider: "email:smtp",
         kind: "retrieval",
         url: "smtp://localhost",

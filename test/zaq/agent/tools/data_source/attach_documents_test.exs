@@ -24,7 +24,7 @@ defmodule Zaq.Agent.Tools.DataSource.AttachDocumentsTest do
         assert event.opts[:bridge_module] == SelectedBridge
         assert Keyword.get(event.opts, :skip_permissions, false) == bypass?
         refute Keyword.has_key?(event.opts, :untrusted_option)
-        assert [%Record{content: nil}] = event.request.attachments
+        assert [%Record{content: nil}] = event.request.delivery.attachments
         %{event | response: :ok}
       end)
 

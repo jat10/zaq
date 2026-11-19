@@ -13,13 +13,43 @@ defmodule Zaq.ConnectorConfig.SmtpSettings do
     "from_email" => :from_email,
     "from_name" => :from_name,
     "max_encoded_message_bytes" => :max_encoded_message_bytes,
+    "max_attachments_per_message" => :max_attachments_per_message,
     "max_files_per_message" => :max_files_per_message
   }
 
   @doc "Looks up a SMTP settings key by string name, falling back to its atom equivalent."
+  def map_get(map, "max_attachments_per_message") when is_map(map) do
+    Map.get(
+      map,
+      "max_attachments_per_message",
+      Map.get(
+        map,
+        :max_attachments_per_message,
+        Map.get(map, "max_files_per_message", Map.get(map, :max_files_per_message))
+      )
+    )
+  end
+
   def map_get(map, key) when is_map(map) do
     atom_key = Map.get(@setting_atom_keys, key)
-    if atom_key, do: Map.get(map, key) || Map.get(map, atom_key), else: Map.get(map, key)
+    if atom_key, do: Map.get(map, key, Map.get(map, atom_key)), else: Map.get(map, key)
+  end
+
+  @doc "Returns actionable errors for attachment limits at SMTP save boundaries."
+  @spec delivery_errors(map(), boolean()) :: [{String.t(), String.t()}]
+  def delivery_errors(settings, required?) do
+    Enum.flat_map(["max_encoded_message_bytes", "max_attachments_per_message"], fn key ->
+      case map_get(settings, key) do
+        nil when not required? ->
+          []
+
+        value when is_integer(value) and value > 0 ->
+          []
+
+        _ ->
+          [{key, "must be a positive integer; configure SMTP attachment limits before enabling"}]
+      end
+    end)
   end
 
   @doc "Converts validated decimal MB to bytes, using 1 MB = 1,000,000 bytes."

@@ -76,7 +76,7 @@ Empty `recipient_channels` is valid.
 Optional `attachments` accepts up to 100 signed file Records or their JSON-safe
 maps. `Notification.build/1` verifies and reconstructs them, preserving order.
 They remain outside the notification log payload and travel in
-`Outgoing.attachments`. `NotifyPerson` forwards the trusted execution context
+`Outgoing.delivery.attachments`. `NotifyPerson` forwards the trusted execution context
 through Engine to Channels; attachment parameters cannot set the actor or bypass
 permissions. Channels owns materialization, current source authorization, and
 transport failure reporting. Attachment-bearing direct callers provide

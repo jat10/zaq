@@ -90,6 +90,8 @@ defmodule Zaq.Channels.EmailBridge.SmtpSenderTest do
   defp smtp_settings(overrides \\ %{}) do
     Map.merge(
       %{
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10,
         "relay" => "",
         "port" => "587",
         "transport_mode" => "starttls",

@@ -509,8 +509,8 @@ defmodule Zaq.Agent.ExecutorTest do
       )
 
     assert outgoing.body == "Here is your summary."
-    assert outgoing.attachments == []
-    assert outgoing.attachment_error == :invalid_attachment_selection
+    assert outgoing.delivery.attachments == []
+    assert outgoing.delivery.error == :invalid_attachment_selection
     assert outgoing.metadata.error == false
     refute Map.has_key?(outgoing.metadata, :attachment_error)
 
@@ -519,17 +519,12 @@ defmodule Zaq.Agent.ExecutorTest do
         opts: [action: :deliver_outgoing, bridge_module: PartialDeliveryBridge]
       )
 
-    assert {:error,
-            %Zaq.Channels.DeliveryError{
-              reason: :invalid_attachment_selection,
-              stage: :selection,
-              delivery: :not_sent
-            }} = ChannelsApi.handle_event(event, :deliver_outgoing, nil).response
+    assert {:ok, %{}} = ChannelsApi.handle_event(event, :deliver_outgoing, nil).response
 
     assert_received {:terminal_publication, notice}
-    assert notice.body == "Here is your summary.\n\nThe requested files could not be attached."
-    assert notice.attachments == []
-    assert notice.attachment_error == nil
+    assert notice.body == "Here is your summary."
+    assert notice.delivery.attachments == []
+    assert notice.delivery.error == :invalid_attachment_selection
     refute_received {:terminal_publication, _}
   end
 

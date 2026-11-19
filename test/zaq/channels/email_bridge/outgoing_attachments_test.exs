@@ -12,13 +12,19 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
   setup :verify_on_exit!
 
   test "count grouping uses unique email identities and threads continuations under the confirmed root" do
-    config = smtp_config("selected@example.test", %{"max_files_per_message" => 2})
+    config = smtp_config("selected@example.test", %{"max_attachments_per_message" => 2})
     files = Enum.map(0..4, &%{file("bytes-#{&1}") | id: "file-#{&1}", name: "file-#{&1}.txt"})
 
     assert {:ok, %{confirmation: :confirmed, messages: receipts}} =
-             EmailBridge.send_reply(%{outgoing(config.id) | attachments: files}, %{
-               attachment_failure_policy: :continue
-             })
+             EmailBridge.send_reply(
+               %{
+                 outgoing(config.id)
+                 | delivery: %{outgoing(config.id).delivery | attachments: files}
+               },
+               %{
+                 attachment_failure_policy: :continue
+               }
+             )
 
     assert Enum.map(receipts, & &1.delivered_attachment_indices) == [[0, 1], [2, 3], [4]]
     assert length(Enum.uniq(Enum.map(receipts, & &1.message_id))) == 3
@@ -38,7 +44,12 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
 
   test "exact encoded email ceiling accepts the boundary and rejects a body one byte over" do
     config = smtp_config("selected@example.test")
-    outgoing = %{outgoing(config.id) | attachments: [file("bytes")]}
+
+    outgoing = %{
+      outgoing(config.id)
+      | delivery: %{outgoing(config.id).delivery | attachments: [file("bytes")]}
+    }
+
     connection = %{smtp_config_id: config.id, smtp_settings: config.settings}
 
     assert {:ok, prepared} =
@@ -70,8 +81,12 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
   end
 
   test "final continuation headers are remeasured and an oversized email is never submitted" do
-    config = smtp_config("selected@example.test", %{"max_files_per_message" => 1})
-    outgoing = %{outgoing(config.id) | attachments: [file("one"), file("two")]}
+    config = smtp_config("selected@example.test", %{"max_attachments_per_message" => 1})
+
+    outgoing = %{
+      outgoing(config.id)
+      | delivery: %{outgoing(config.id).delivery | attachments: [file("one"), file("two")]}
+    }
 
     connection = %{
       smtp_config_id: config.id,
@@ -89,7 +104,7 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
     connection =
       put_in(connection.smtp_settings["max_encoded_message_bytes"], candidate.encoded_bytes)
 
-    assert {:ok, %{confirmation: :partial, messages: [root], failed_files: failures}} =
+    assert {:ok, %{confirmation: :partial, messages: [root], failed_attachments: failures}} =
              EmailBridge.send_reply(outgoing, connection)
 
     assert root.message_id == "sent@example.test"
@@ -105,14 +120,20 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
 
     outgoing = %{
       outgoing(selected.id)
-      | attachments: [file(bytes), %{file("second") | name: "notes.txt", mime_type: "text/plain"}],
-        thread_anchor: %{
+      | thread_anchor: %{
           "message_id" => "parent@example.test",
           "references" => ["root@example.test"]
         },
         routing_context: %{
           channel_config_id: selected.id,
           reply_targets: %{to: ["recipient@example.test"], cc: ["copied@example.test"]}
+        },
+        delivery: %{
+          outgoing(selected.id).delivery
+          | attachments: [
+              file(bytes),
+              %{file("second") | name: "notes.txt", mime_type: "text/plain"}
+            ]
         }
     }
 
@@ -144,7 +165,13 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
 
     check all(bytes <- binary(max_length: 2_048), max_runs: 30) do
       assert {:ok, _} =
-               EmailBridge.send_reply(%{outgoing(config.id) | attachments: [file(bytes)]}, %{})
+               EmailBridge.send_reply(
+                 %{
+                   outgoing(config.id)
+                   | delivery: %{outgoing(config.id).delivery | attachments: [file(bytes)]}
+                 },
+                 %{}
+               )
 
       assert_receive {:email, %{attachments: [attachment]}}
       assert Swoosh.Attachment.get_content(attachment) == bytes
@@ -153,12 +180,18 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
   end
 
   test "one failed preparation prevents sending already prepared files" do
-    config = smtp_config("selected@example.test")
+    config = smtp_config("selected@example.test", %{"send_on_file_failure" => false})
 
     for invalid <- [file("%%%", %{"encoding" => "base64"}), %{file(nil) | path: "/private/file"}] do
       assert {:error, _} =
                EmailBridge.send_reply(
-                 %{outgoing(config.id) | attachments: [file("ready"), invalid]},
+                 %{
+                   outgoing(config.id)
+                   | delivery: %{
+                       outgoing(config.id).delivery
+                       | attachments: [file("ready"), invalid]
+                     }
+                 },
                  %{}
                )
 
@@ -171,10 +204,13 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
 
     outgoing = %{
       outgoing(config.id)
-      | attachments: [file("ready"), file("%%%", %{"encoding" => "base64"})]
+      | delivery: %{
+          outgoing(config.id).delivery
+          | attachments: [file("ready"), file("%%%", %{"encoding" => "base64"})]
+        }
     }
 
-    assert {:ok, %{confirmation: :partial, messages: [receipt], failed_files: [_]}} =
+    assert {:ok, %{confirmation: :partial, messages: [receipt], failed_attachments: [_]}} =
              EmailBridge.send_reply(outgoing, %{attachment_failure_policy: :continue})
 
     assert receipt.confirmation == :confirmed
@@ -198,20 +234,32 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
     config = smtp_config("selected@example.test")
 
     assert {:ok, %{messages: [%{delivered_attachment_indices: []}]}} =
-             EmailBridge.send_reply(%{outgoing(config.id) | attachments: [file(nil)]}, %{
-               attachment_failure_policy: :continue
-             })
+             EmailBridge.send_reply(
+               %{
+                 outgoing(config.id)
+                 | delivery: %{outgoing(config.id).delivery | attachments: [file(nil)]}
+               },
+               %{
+                 attachment_failure_policy: :continue
+               }
+             )
 
     assert_receive {:email, %{attachments: []}}
     refute_receive {:email, _}
   end
 
   test "explicit abort sends no email after preparation failure" do
-    config = smtp_config("selected@example.test")
+    config = smtp_config("selected@example.test", %{"send_on_file_failure" => false})
 
     assert {:error, %{stage: :preparation, delivery: :not_sent}} =
              EmailBridge.send_reply(
-               %{outgoing(config.id) | attachments: [file("ready"), file(nil)]},
+               %{
+                 outgoing(config.id)
+                 | delivery: %{
+                     outgoing(config.id).delivery
+                     | attachments: [file("ready"), file(nil)]
+                   }
+               },
                %{attachment_failure_policy: :abort}
              )
 
@@ -244,7 +292,10 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
              EmailBridge.send_reply(
                %{
                  outgoing(config.id)
-                 | attachments: [%{file(nil) | materialization_handle: handle}]
+                 | delivery: %{
+                     outgoing(config.id).delivery
+                     | attachments: [%{file(nil) | materialization_handle: handle}]
+                   }
                },
                details
              )
@@ -286,7 +337,13 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
       })
 
     assert {:error, _} =
-             EmailBridge.send_reply(%{outgoing(config.id) | attachments: [file(<<255, 0>>)]}, %{})
+             EmailBridge.send_reply(
+               %{
+                 outgoing(config.id)
+                 | delivery: %{outgoing(config.id).delivery | attachments: [file(<<255, 0>>)]}
+               },
+               %{}
+             )
 
     refute_receive {:email, _}
   end
@@ -324,7 +381,7 @@ defmodule Zaq.Channels.EmailBridge.OutgoingAttachmentsTest do
             "from_email" => address,
             "from_name" => "Selected",
             "max_encoded_message_bytes" => 10_000_000,
-            "max_files_per_message" => 10
+            "max_attachments_per_message" => 10
           },
           overrides
         )

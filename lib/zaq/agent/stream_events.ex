@@ -36,9 +36,9 @@ defmodule Zaq.Agent.StreamEvents do
   Successful attachment-tool completions update this stream's selection before
   trace serialization. Scoped aliases are expanded only for delivery; ordinary
   private traces retain the same aliased results as other document tools. Only
-  successful terminal results expose selected files in `attachments`; failed,
+  successful terminal results expose selected attachments in `delivery.attachments`; failed,
   cancelled and incomplete streams return no selected files.
-  Rejected selection instructions clear the files and set `attachment_error`,
+  Rejected selection instructions clear the selection and set `delivery.error`,
   without failing the answer. A later valid instruction clears that error.
   """
 
@@ -48,7 +48,6 @@ defmodule Zaq.Agent.StreamEvents do
   alias Zaq.Agent.Tools.DataSource.AttachDocuments
   alias Zaq.Agent.TraceEvidence
   alias Zaq.ConnectorConfig.LiveUpdates
-  alias Zaq.Contracts.Record
   alias Zaq.Contracts.ToolStep
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Event
@@ -72,8 +71,7 @@ defmodule Zaq.Agent.StreamEvents do
           answer: term(),
           answer_published?: boolean(),
           pending_answer: String.t() | nil,
-          attachments: [Record.t()],
-          attachment_error: :invalid_attachment_selection | nil,
+          delivery: Zaq.Engine.Messages.Outgoing.Delivery.t(),
           usage: map(),
           llm_calls: [map()],
           trace: [map()],
@@ -153,8 +151,7 @@ defmodule Zaq.Agent.StreamEvents do
       tool_calls: %{},
       published_tool_steps: nil,
       answer: nil,
-      attachments: [],
-      attachment_error: nil,
+      delivery: %Zaq.Engine.Messages.Outgoing.Delivery{},
       request_completed: false,
       usage: %{},
       llm_calls: %{},
@@ -491,15 +488,23 @@ defmodule Zaq.Agent.StreamEvents do
              opaque_alias_scope: state.opaque_alias_scope
            }),
          {:ok, instruction} <- AttachDocuments.validate_output(expanded),
-         {:ok, selected} <- AttachDocuments.reduce_selection(state.attachments, instruction) do
-      %{state | attachments: selected, attachment_error: nil}
+         {:ok, selected} <-
+           AttachDocuments.reduce_selection(state.delivery.attachments, instruction) do
+      %{state | delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: selected}}
     else
-      _ -> %{state | attachments: [], attachment_error: :invalid_attachment_selection}
+      _ ->
+        %{
+          state
+          | delivery: %Zaq.Engine.Messages.Outgoing.Delivery{error: :invalid_attachment_selection}
+        }
     end
   end
 
   defp select_attachments(state, "attach_documents", {:ok, _output, _effects}),
-    do: %{state | attachments: [], attachment_error: :invalid_attachment_selection}
+    do: %{
+      state
+      | delivery: %Zaq.Engine.Messages.Outgoing.Delivery{error: :invalid_attachment_selection}
+    }
 
   defp select_attachments(state, _tool_name, _result), do: state
 
@@ -693,9 +698,14 @@ defmodule Zaq.Agent.StreamEvents do
       answer: state.answer || state.latest_answer || state.current_full,
       answer_published?: not is_nil(state.published_answer),
       pending_answer: pending_answer(state),
-      attachments:
-        if(state.request_completed and is_nil(state.error), do: state.attachments, else: []),
-      attachment_error: state.attachment_error,
+      delivery: %{
+        state.delivery
+        | attachments:
+            if(state.request_completed and is_nil(state.error),
+              do: state.delivery.attachments,
+              else: []
+            )
+      },
       usage: state.usage,
       llm_calls: public_llm_calls(state),
       trace: Enum.reverse(trace),

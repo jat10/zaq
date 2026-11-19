@@ -27,18 +27,12 @@ defmodule Zaq.Channels.Api do
 
   require Logger
 
-  alias Zaq.Channels.{
-    Bridge,
-    CommunicationBridge,
-    ConnectorRuntime,
-    DataSourceBridge,
-    WebBridge
-  }
+  alias Zaq.Channels.{Bridge, CommunicationBridge, ConnectorRuntime, DataSourceBridge, WebBridge}
 
+  alias Zaq.Channels.DeliveryAttachments
   alias Zaq.Channels.DeliveryConfirmation
   alias Zaq.Channels.DeliveryError
   alias Zaq.Channels.DeliveryExecutor
-  alias Zaq.Channels.DeliveryFiles
   alias Zaq.Channels.HttpClient
   alias Zaq.Channels.Materializers.CommunicationMedia
   alias Zaq.Channels.MessageFormatter
@@ -1098,8 +1092,12 @@ defmodule Zaq.Channels.Api do
   end
 
   defp deliver_reply(outgoing, bridge, details) do
-    case DeliveryFiles.build_plan(%{outgoing | delivery_plan: nil}, bridge, details) do
-      {:ok, %{delivery_plan: nil} = planned} ->
+    case DeliveryAttachments.build_plan(
+           %{outgoing | delivery: %{outgoing.delivery | plan: nil}},
+           bridge,
+           details
+         ) do
+      {:ok, %{delivery: %{plan: nil}} = planned} ->
         bridge.send_reply(planned, details)
 
       {:ok, planned} ->
@@ -1121,12 +1119,12 @@ defmodule Zaq.Channels.Api do
          opts
        )
        when is_binary(body) do
-    case DeliveryFiles.build_failure_plan(outgoing, error, bridge, details) do
+    case DeliveryAttachments.build_failure_plan(outgoing, error, bridge, details) do
       {:ok, notice} ->
         notice
         |> DeliveryExecutor.execute(bridge, details)
         |> DeliveryConfirmation.record(
-          %{canonical_outgoing | attachments: [], attachment_error: nil},
+          %{canonical_outgoing | delivery: %{canonical_outgoing.delivery | attachments: []}},
           opts
         )
 
@@ -1148,15 +1146,18 @@ defmodule Zaq.Channels.Api do
   defp report_file_failure(response, _outgoing, _canonical, _bridge, _details, _resolver, _opts),
     do: response
 
-  defp delivery_context(details, %Outgoing{attachments: [], attachment_error: nil}, _event),
-    do: details
+  defp delivery_context(
+         details,
+         %Outgoing{
+           delivery: %Outgoing.Delivery{attachments: []}
+         },
+         _event
+       ),
+       do: details
 
   defp delivery_context(details, %Outgoing{}, event) do
     details
     |> Map.put(:trusted_context, TrustedContext.from_event(event))
-    |> Map.put_new_lazy(:attachment_failure_policy, fn ->
-      Settings.attachment_failure_policy(details)
-    end)
   end
 
   defp validate_destination_files(bridge, resolver, outgoing, opts) do
@@ -1206,7 +1207,7 @@ defmodule Zaq.Channels.Api do
   end
 
   defp delivery_connection_details(resolver, bridge, config, outgoing) do
-    if (outgoing.attachments != [] or not is_nil(outgoing.attachment_error)) and
+    if outgoing.delivery.attachments != [] and
          supports_callback?(bridge, :fetch_connection_details_for_config, 2) do
       bridge.fetch_connection_details_for_config(config,
         outgoing: outgoing,

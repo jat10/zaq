@@ -15,10 +15,42 @@ defmodule Zaq.Engine.Messages.OutgoingTest do
     outgoing =
       Outgoing.from_pipeline_result(incoming, %{answer: "ok", delivery_plan: "private bytes"})
 
-    assert outgoing.delivery_plan == nil
+    assert outgoing.delivery.plan == nil
     refute Map.has_key?(outgoing.metadata, :delivery_plan)
     refute Map.has_key?(outgoing.metadata, "delivery_plan")
-    refute inspect(%{outgoing | delivery_plan: %{files: "private bytes"}}) =~ "private bytes"
+
+    refute inspect(%{outgoing | delivery: %{outgoing.delivery | plan: %{files: "private bytes"}}}) =~
+             "private bytes"
+  end
+
+  property "typed and restored selection preserve attachments and errors while discarding private plans" do
+    check all(
+            id <- string(:alphanumeric, min_length: 1),
+            error <- member_of([nil, :invalid_attachment_selection])
+          ) do
+      record = %Record{id: id, kind: :file, content: "private"}
+
+      for delivery <- [
+            %Outgoing.Delivery{attachments: [record], error: error, plan: :private},
+            %{attachments: [record], error: error, plan: :private},
+            %{"attachments" => [record], "error" => error, "plan" => :private}
+          ] do
+        outgoing = Outgoing.from_pipeline_result(incoming(), %{answer: "ok", delivery: delivery})
+        assert outgoing.delivery == %Outgoing.Delivery{attachments: [record], error: error}
+        refute Map.has_key?(outgoing.metadata, :delivery)
+        refute Map.has_key?(outgoing.metadata, "delivery")
+        refute inspect(outgoing) =~ "private"
+      end
+
+      restored =
+        Outgoing.from_pipeline_result(incoming(), %{
+          "attachments" => [record],
+          "attachment_error" => error,
+          :answer => "ok"
+        })
+
+      assert restored.delivery == %Outgoing.Delivery{attachments: [record], error: error}
+    end
   end
 
   test "attachments default to empty for direct and pipeline messages" do
@@ -26,12 +58,12 @@ defmodule Zaq.Engine.Messages.OutgoingTest do
 
     assert Map.fetch!(
              %Outgoing{body: "ok", channel_id: "c1", provider: :mattermost},
-             :attachments
-           ) ==
+             :delivery
+           ).attachments ==
              []
 
     for result <- [%{answer: "ok"}, %{answer: "ok", attachments: []}] do
-      assert Map.fetch!(Outgoing.from_pipeline_result(incoming, result), :attachments) == []
+      assert Outgoing.from_pipeline_result(incoming, result).delivery.attachments == []
     end
   end
 
@@ -48,13 +80,13 @@ defmodule Zaq.Engine.Messages.OutgoingTest do
       outgoing =
         Outgoing.from_pipeline_result(incoming, %{answer: "ok", attachment_error: error})
 
-      assert outgoing.attachment_error == error
+      assert outgoing.delivery.error == error
       assert outgoing.body == "ok"
       refute Map.has_key?(outgoing.metadata, :attachment_error)
       refute Map.has_key?(outgoing.metadata, "attachment_error")
     end
 
-    assert Outgoing.from_pipeline_result(incoming, %{answer: "ok"}).attachment_error == nil
+    assert Outgoing.from_pipeline_result(incoming, %{answer: "ok"}).delivery.error == nil
   end
 
   test "only explicit result records become outbound attachments" do
@@ -62,11 +94,11 @@ defmodule Zaq.Engine.Messages.OutgoingTest do
     requested = %Record{id: "requested", kind: :file, content: "report", name: "report.txt"}
     incoming = %{incoming() | attachments: [received]}
 
-    assert Map.fetch!(Outgoing.from_pipeline_result(incoming, %{answer: "ok"}), :attachments) ==
+    assert Outgoing.from_pipeline_result(incoming, %{answer: "ok"}).delivery.attachments ==
              []
 
     outgoing = Outgoing.from_pipeline_result(incoming, %{answer: "ok", attachments: [requested]})
-    assert Map.fetch!(outgoing, :attachments) == [requested]
+    assert outgoing.delivery.attachments == [requested]
     assert outgoing.in_reply_to == "m1"
   end
 
@@ -77,7 +109,9 @@ defmodule Zaq.Engine.Messages.OutgoingTest do
       outgoing =
         Outgoing.from_pipeline_result(incoming(), %{answer: "ok", attachments: attachments})
 
-      assert %Outgoing{body: "ok", attachments: ^attachments} = outgoing
+      assert %Outgoing{body: "ok", delivery: %Outgoing.Delivery{attachments: ^attachments}} =
+               outgoing
+
       refute Map.has_key?(outgoing.metadata, :attachments)
     end
   end
@@ -99,7 +133,7 @@ defmodule Zaq.Engine.Messages.OutgoingTest do
       })
 
     assert outgoing.metadata == %{answer: "ok", confidence_score: 0.9, kept: 1}
-    assert Map.fetch!(outgoing, :attachments) == [record]
+    assert outgoing.delivery.attachments == [record]
   end
 
   property "explicit records retain their order and never leak into metadata" do
@@ -109,7 +143,7 @@ defmodule Zaq.Engine.Messages.OutgoingTest do
       result = %{answer: "ok", attachments: records, tokens: 12}
 
       outgoing = Outgoing.from_pipeline_result(incoming, result)
-      assert Map.fetch!(outgoing, :attachments) == records
+      assert outgoing.delivery.attachments == records
       assert outgoing.metadata == %{answer: "ok", tokens: 12}
       assert Outgoing.from_pipeline_result(incoming, result) == outgoing
     end
@@ -123,7 +157,7 @@ defmodule Zaq.Engine.Messages.OutgoingTest do
       records = [%Record{id: id, kind: :file}, invalid]
 
       outgoing = Outgoing.from_pipeline_result(incoming(), %{answer: "ok", attachments: records})
-      assert %Outgoing{body: "ok", attachments: ^records} = outgoing
+      assert %Outgoing{body: "ok", delivery: %Outgoing.Delivery{attachments: ^records}} = outgoing
       refute Map.has_key?(outgoing.metadata, :attachments)
     end
   end

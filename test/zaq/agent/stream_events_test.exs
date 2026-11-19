@@ -63,9 +63,8 @@ defmodule Zaq.Agent.StreamEventsTest do
       assert {:ok,
               %{
                 answer: "The requested answer.",
-                attachments: [],
-                attachment_error: nil,
-                tool_calls: []
+                tool_calls: [],
+                delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: [], error: nil}
               }} =
                StreamEvents.consume(
                  RequestStream.events(request, stream_event_timeout_ms: 100),
@@ -74,7 +73,12 @@ defmodule Zaq.Agent.StreamEventsTest do
                  status_module: FakeStatus
                )
 
-      assert {:error, :other_request_failure, %{attachment_error: :invalid_attachment_selection}} =
+      assert {:error, :other_request_failure,
+              %{
+                delivery: %Zaq.Engine.Messages.Outgoing.Delivery{
+                  error: :invalid_attachment_selection
+                }
+              }} =
                StreamEvents.consume(
                  RequestStream.events(other_request, stream_event_timeout_ms: 100),
                  incoming(),
@@ -93,7 +97,11 @@ defmodule Zaq.Agent.StreamEventsTest do
     test "preserves a completed answer after attachment selection receives #{scenario}" do
       completion = event(:request_completed, 3, %{result: "Here is your summary."})
 
-      assert {:ok, %{answer: "Here is your summary.", attachments: []}} =
+      assert {:ok,
+              %{
+                answer: "Here is your summary.",
+                delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+              }} =
                StreamEvents.consume([completion], incoming(), status_module: FakeStatus)
 
       events = [
@@ -107,7 +115,11 @@ defmodule Zaq.Agent.StreamEventsTest do
         completion
       ]
 
-      assert {:ok, %{answer: "Here is your summary.", attachments: []}} =
+      assert {:ok,
+              %{
+                answer: "Here is your summary.",
+                delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+              }} =
                StreamEvents.consume(events, incoming(), status_module: FakeStatus)
     end
   end
@@ -127,8 +139,10 @@ defmodule Zaq.Agent.StreamEventsTest do
       assert {:ok,
               %{
                 answer: ^answer,
-                attachments: [],
-                attachment_error: :invalid_attachment_selection
+                delivery: %Zaq.Engine.Messages.Outgoing.Delivery{
+                  attachments: [],
+                  error: :invalid_attachment_selection
+                }
               }} = StreamEvents.consume(events, incoming(), status_module: FakeStatus)
     end
   end
@@ -147,7 +161,11 @@ defmodule Zaq.Agent.StreamEventsTest do
       event(:request_completed, 3, %{result: "No files needed."})
     ]
 
-    assert {:ok, %{answer: "No files needed.", attachments: [], attachment_error: nil}} =
+    assert {:ok,
+            %{
+              answer: "No files needed.",
+              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: [], error: nil}
+            }} =
              StreamEvents.consume(events, incoming(),
                status_module: FakeStatus,
                opaque_alias_scope: self()
@@ -171,8 +189,10 @@ defmodule Zaq.Agent.StreamEventsTest do
     assert {:ok,
             %{
               answer: "Here is your summary.",
-              attachments: [],
-              attachment_error: :invalid_attachment_selection
+              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{
+                attachments: [],
+                error: :invalid_attachment_selection
+              }
             }} =
              StreamEvents.consume(events, incoming(),
                status_module: FakeStatus,
@@ -188,7 +208,10 @@ defmodule Zaq.Agent.StreamEventsTest do
       event(:request_failed, 2, %{error: :provider_unavailable})
     ]
 
-    assert {:error, :provider_unavailable, %{attachments: []}} =
+    assert {:error, :provider_unavailable,
+            %{
+              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+            }} =
              StreamEvents.consume(events, incoming(), status_module: FakeStatus)
   end
 
@@ -1457,7 +1480,7 @@ defmodule Zaq.Agent.StreamEventsTest do
       foreign = %{add | request_id: "foreign", tool_call_id: "foreign"}
 
       assert {:ok, result} = consume([add, remove, add, foreign, b, completed(), add], scope)
-      assert [%Record{id: "b"}] = result.attachments
+      assert [%Record{id: "b"}] = result.delivery.attachments
       assert Enum.count(result.tool_calls, &(&1["name"] == "attach_documents")) == 3
 
       public = ToolStep.project(result.tool_calls)
@@ -1468,7 +1491,10 @@ defmodule Zaq.Agent.StreamEventsTest do
         refute inspect(step) =~ "provenance"
       end
 
-      assert {:ok, %{attachments: []}} = consume([completed()], scope)
+      assert {:ok,
+              %{
+                delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+              }} = consume([completed()], scope)
     end
 
     test "failed tools do not mutate and failed or incomplete requests expose no files", %{
@@ -1481,13 +1507,22 @@ defmodule Zaq.Agent.StreamEventsTest do
         | data: %{result: {:error, :unauthorized, []}}
       }
 
-      assert {:ok, %{attachments: [%Record{id: "a"}]}} =
+      assert {:ok,
+              %{
+                delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: [%Record{id: "a"}]}
+              }} =
                consume([add, failed, completed()], scope)
 
-      assert {:ok, %{attachments: []}} = consume([add], scope)
+      assert {:ok,
+              %{
+                delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+              }} = consume([add], scope)
 
       for kind <- [:request_failed, :request_cancelled] do
-        assert {:error, _, %{attachments: []}} =
+        assert {:error, _,
+                %{
+                  delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: []}
+                }} =
                  consume([add, %{kind: kind, request_id: "r", data: %{error: :failed}}], scope)
       end
     end
@@ -1499,8 +1534,10 @@ defmodule Zaq.Agent.StreamEventsTest do
         assert {:ok,
                 %{
                   answer: "Done",
-                  attachment_error: :invalid_attachment_selection,
-                  attachments: []
+                  delivery: %Zaq.Engine.Messages.Outgoing.Delivery{
+                    error: :invalid_attachment_selection,
+                    attachments: []
+                  }
                 }} =
                  consume([event, completed()], wrong_scope)
       end
@@ -1508,7 +1545,13 @@ defmodule Zaq.Agent.StreamEventsTest do
       OpaqueAliases.clear_scope(scope)
 
       assert {:ok,
-              %{answer: "Done", attachment_error: :invalid_attachment_selection, attachments: []}} =
+              %{
+                answer: "Done",
+                delivery: %Zaq.Engine.Messages.Outgoing.Delivery{
+                  error: :invalid_attachment_selection,
+                  attachments: []
+                }
+              }} =
                consume([event, completed()], scope)
     end
 
@@ -1526,8 +1569,10 @@ defmodule Zaq.Agent.StreamEventsTest do
         assert {:ok,
                 %{
                   answer: "Done",
-                  attachment_error: :invalid_attachment_selection,
-                  attachments: []
+                  delivery: %Zaq.Engine.Messages.Outgoing.Delivery{
+                    error: :invalid_attachment_selection,
+                    attachments: []
+                  }
                 }} =
                  consume([valid, invalid, completed()], scope)
       end
@@ -1540,7 +1585,7 @@ defmodule Zaq.Agent.StreamEventsTest do
       event = %{event | data: %{result: {:ok, %ReqLLM.ToolResult{output: output}, []}}}
 
       assert {:ok, result} = consume([event, completed()], scope)
-      assert [%Record{id: "structured-record"}] = result.attachments
+      assert [%Record{id: "structured-record"}] = result.delivery.attachments
       refute inspect(ToolStep.project(result.tool_calls)) =~ "structured-record"
     end
   end

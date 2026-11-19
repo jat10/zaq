@@ -33,7 +33,7 @@ defmodule Zaq.Channels.EmailConfirmationIntegrationTest do
           "tls" => "never",
           "from_email" => "sender@example.test",
           "max_encoded_message_bytes" => 10_000_000,
-          "max_files_per_message" => 10,
+          "max_attachments_per_message" => 10,
           "send_on_file_failure" => true
         })
 
@@ -90,12 +90,14 @@ defmodule Zaq.Channels.EmailConfirmationIntegrationTest do
         body: "Original answer",
         routing_context:
           Map.put(routing, :reply_targets, %{to: ["recipient@example.test"], cc: []}),
-        attachment_error: if(@scenario == :selection_failure, do: :invalid_attachment_selection),
-        attachments: attachments(@scenario),
         metadata: %{
           user_message_id: binding.user_message_id,
           assistant_message_id: assistant_id,
           persisted_assistant_message_id: assistant_id
+        },
+        delivery: %Outgoing.Delivery{
+          error: if(@scenario == :selection_failure, do: :invalid_attachment_selection),
+          attachments: attachments(@scenario)
         }
       }
 
@@ -132,10 +134,7 @@ defmodule Zaq.Channels.EmailConfirmationIntegrationTest do
       assert capture.recipients == ["recipient@example.test"]
       mail = Mail.parse(capture.raw)
 
-      expected_body =
-        if @scenario == :selection_failure,
-          do: "Original answer\n\nThe requested files could not be attached.",
-          else: outgoing.body
+      expected_body = "Original answer"
 
       assert Mail.get_text(mail).body == expected_body
 
@@ -151,37 +150,14 @@ defmodule Zaq.Channels.EmailConfirmationIntegrationTest do
       send(transport, :accept_delivery)
       result = Task.await(task, 5_000)
 
-      if @scenario == :selection_failure do
-        assert {:ok,
-                %{
-                  confirmation: :partial,
-                  messages: [
-                    %{
-                      confirmation: :confirmed,
-                      attachments: []
-                    }
-                  ],
-                  failed_files: [
-                    %{
-                      attachment_index: nil,
-                      stage: :selection,
-                      delivery: :not_sent,
-                      reason: "The requested files could not be attached."
-                    }
-                  ],
-                  uploaded_files: [],
-                  unattempted_steps: []
-                }} = result
-      else
-        assert {:ok, %{confirmation: :confirmed}} = result
-      end
+      assert {:ok, %{confirmation: :confirmed}} = result
 
       assert_receive {:recorded_confirmation, {:ok, %{history_capture: :stored}}}, 5_000
       assert_received {:confirmation_request, confirmation}
-      assert confirmation.outgoing.delivery_plan == nil
+      assert confirmation.outgoing.delivery.plan == nil
       refute Map.has_key?(confirmation.receipt, :delivered_attachment_indices)
-      assert Enum.all?(confirmation.outgoing.attachments, &is_nil(&1.content))
-      assert length(confirmation.outgoing.attachments) == length(expected_files)
+      assert Enum.all?(confirmation.outgoing.delivery.attachments, &is_nil(&1.content))
+      assert length(confirmation.outgoing.delivery.attachments) == length(expected_files)
       message = Repo.get!(Message, assistant_id)
       assert message.content == outgoing.body
       assert message.metadata["delivery_confirmation"]["message_id"]

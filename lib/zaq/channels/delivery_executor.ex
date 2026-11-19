@@ -11,7 +11,7 @@ defmodule Zaq.Channels.DeliveryExecutor do
   references alone never confirm message delivery. No operation is retried.
   """
 
-  alias Zaq.Channels.{DeliveryError, DeliveryPlan}
+  alias Zaq.Channels.{DeliveryAttachments, DeliveryError, DeliveryPlan}
   alias Zaq.Engine.Messages.Outgoing
 
   require Logger
@@ -22,16 +22,22 @@ defmodule Zaq.Channels.DeliveryExecutor do
   def execute(outgoing, bridge, connection, opts \\ [])
 
   def execute(
-        %Outgoing{delivery_plan: %DeliveryPlan{} = plan} = outgoing,
+        %Outgoing{
+          delivery: %Outgoing.Delivery{plan: %DeliveryPlan{} = plan}
+        } = outgoing,
         bridge,
         connection,
         opts
       ) do
-    with :ok <- validate_plan(plan),
-         {:ok, runtime} <- execution_context(outgoing, bridge, connection, opts) do
+    with :ok <- validate_plan(plan, outgoing),
+         {:ok, runtime} <- execution_context(outgoing, bridge, connection, opts),
+         {:ok, preparation} <-
+           DeliveryAttachments.prepare_execution(outgoing, bridge, runtime.connection) do
+      runtime = Map.merge(runtime, preparation)
+
       state = %{
         results: %{},
-        root_message_id: plan.root_message_id,
+        root_message_id: outgoing.thread_id,
         answer_confirmed?: false,
         halted?: false
       }
@@ -58,13 +64,16 @@ defmodule Zaq.Channels.DeliveryExecutor do
     if is_integer(concurrency) and concurrency > 0 and
          (timeout == :infinity or (is_integer(timeout) and timeout > 0)) and
          Code.ensure_loaded?(bridge) and
-         delivery_operations_available?(bridge, outgoing.delivery_plan) do
+         delivery_operations_available?(bridge, outgoing.delivery.plan) do
       {:ok,
        %{
          outgoing: outgoing,
          bridge: bridge,
-         connection: connection,
-         plan: outgoing.delivery_plan,
+         connection:
+           connection
+           |> Map.put(:delivery_channel_id, outgoing.channel_id)
+           |> Map.put(:delivery_provider, outgoing.provider),
+         plan: outgoing.delivery.plan,
          concurrency: concurrency,
          timeout: timeout
        }}
@@ -76,26 +85,29 @@ defmodule Zaq.Channels.DeliveryExecutor do
   defp delivery_operations_available?(bridge, plan) do
     function_exported?(bridge, :execute_delivery_step, 3) or
       (function_exported?(bridge, :send_reply, 2) and
-         Enum.all?(plan.steps, &(&1.operation == :send and &1.file_refs == [])))
+         Enum.all?(plan.steps, &(&1.operation == :send)))
   end
 
-  defp validate_plan(plan) do
+  defp validate_plan(plan, outgoing) do
     ids = Enum.map(plan.steps, & &1.id)
     group_ids = Enum.map(plan.groups, & &1.id)
 
     valid? =
       plan.failure_policy in [:abort, :continue] and length(ids) == length(Enum.uniq(ids)) and
-        Enum.all?(plan.steps, &valid_step?(&1, plan, ids, group_ids))
+        Enum.all?(plan.steps, &valid_step?(&1, plan, outgoing, ids, group_ids))
 
     if valid? and acyclic?(plan.steps, MapSet.new()),
       do: :ok,
       else: {:error, configuration_error()}
   end
 
-  defp valid_step?(step, plan, ids, group_ids) do
+  defp valid_step?(step, plan, outgoing, ids, group_ids) do
     step.operation in [:upload, :send, :edit] and step.group_id in group_ids and
       Enum.all?(step.depends_on, &(&1 in ids and &1 != step.id)) and
-      Enum.all?(step.file_refs, &Map.has_key?(plan.files, &1)) and
+      Enum.all?(
+        step.attachment_refs,
+        &(is_integer(&1) and &1 >= 0 and &1 < length(outgoing.delivery.attachments))
+      ) and
       upload_dependencies?(step, plan.steps)
   end
 
@@ -204,6 +216,7 @@ defmodule Zaq.Channels.DeliveryExecutor do
   end
 
   defp publication(step, runtime, state) do
+    step = publication_step(step, runtime, state)
     inputs = inputs(step, runtime, state)
 
     cond do
@@ -213,12 +226,47 @@ defmodule Zaq.Channels.DeliveryExecutor do
       step.message_ref != nil and inputs.message_id == nil ->
         %{status: :not_started}
 
-      step.file_refs != [] and inputs.files == [] and state.answer_confirmed? ->
+      skip_attachment_publication?(step, inputs, runtime, state) ->
         %{status: :not_started}
 
       true ->
         invoke(step, inputs, runtime)
     end
+  end
+
+  defp skip_attachment_publication?(step, inputs, runtime, state) do
+    step.attachment_refs != [] and inputs.attachments == [] and
+      (state.answer_confirmed? or
+         (preparation_omitted?(step, runtime) and later_usable_group?(step, runtime, state)))
+  end
+
+  defp publication_step(%{operation: :send} = step, runtime, %{answer_confirmed?: false} = state) do
+    case Enum.find(runtime.plan.steps, &(&1.operation == :edit)) do
+      %{message_ref: {:existing, _} = reference, group_id: group_id} = earlier
+      when group_id < step.group_id ->
+        if get_in(state.results, [earlier.id, :status]) == :not_started and
+             preparation_omitted?(earlier, runtime),
+           do: %{step | operation: :edit, message_ref: reference},
+           else: step
+
+      _ ->
+        step
+    end
+  end
+
+  defp publication_step(step, _runtime, _state), do: step
+
+  defp preparation_omitted?(step, runtime) do
+    Enum.all?(step.attachment_refs, &(not Map.has_key?(runtime.attachments, &1))) or
+      Enum.any?(step.depends_on, &Map.has_key?(runtime.preparation_errors, &1))
+  end
+
+  defp later_usable_group?(step, runtime, state) do
+    Enum.any?(runtime.plan.steps, fn candidate ->
+      candidate.operation != :upload and candidate.group_id > step.group_id and
+        not Map.has_key?(runtime.preparation_errors, candidate.id) and
+        inputs(candidate, runtime, state).attachments != []
+    end)
   end
 
   defp dependency_status(step, state) do
@@ -245,15 +293,21 @@ defmodule Zaq.Channels.DeliveryExecutor do
 
     uploaded =
       step.depends_on
-      |> Enum.flat_map(fn id -> get_in(state.results, [id, :uploaded_files]) || [] end)
+      |> Enum.flat_map(fn id -> get_in(state.results, [id, :uploaded_attachments]) || [] end)
 
     upload_dependencies? =
       Enum.any?(step.depends_on, fn id -> match?(%{operation: :upload}, state.results[id]) end)
 
     refs =
-      if upload_dependencies?, do: Enum.map(uploaded, & &1.attachment_index), else: step.file_refs
+      if upload_dependencies?,
+        do: Enum.map(uploaded, & &1.attachment_index),
+        else: step.attachment_refs
 
-    files = Enum.map(refs, &Map.fetch!(runtime.plan.files, &1))
+    attachments =
+      refs
+      |> Enum.filter(&Map.has_key?(runtime.attachments, &1))
+      |> Enum.map(&Map.fetch!(runtime.attachments, &1))
+
     body = publication_body(group, runtime, state)
     thread_id = resolved_thread(step, runtime, state)
 
@@ -261,26 +315,23 @@ defmodule Zaq.Channels.DeliveryExecutor do
       runtime.outgoing
       | body: body,
         thread_id: thread_id,
-        delivery_plan: nil,
-        attachments: [],
-        attachment_error: nil
+        delivery: %{runtime.outgoing.delivery | plan: nil, attachments: [], error: nil}
     }
 
     outgoing =
       if group[:notice?],
         do: %{
           outgoing
-          | attachments: [],
-            attachment_error: nil,
-            metadata:
-              Map.drop(outgoing.metadata || %{}, [:on_reply, "on_reply", :html_body, "html_body"])
+          | metadata:
+              Map.drop(outgoing.metadata || %{}, [:on_reply, "on_reply", :html_body, "html_body"]),
+            delivery: %{outgoing.delivery | attachments: [], error: nil}
         },
         else: outgoing
 
     %{
       outgoing: outgoing,
-      files: files,
-      uploaded_files: uploaded,
+      attachments: attachments,
+      uploaded_attachments: uploaded,
       continuation?: continuation?(group, runtime, state),
       thread_id: thread_id,
       message_id: resolve_message_ref(step.message_ref, state),
@@ -322,6 +373,19 @@ defmodule Zaq.Channels.DeliveryExecutor do
   defp resolve_message_ref(_reference, _state), do: nil
 
   defp invoke(step, inputs, runtime) do
+    step = %{
+      step
+      | prepared: Map.get(runtime.prepared_steps, step.id),
+        attachment_refs: Enum.map(inputs.attachments, & &1.attachment_index)
+    }
+
+    case Map.fetch(runtime.preparation_errors, step.id) do
+      {:ok, error} -> failed_result(error, %{})
+      :error -> invoke_prepared(step, inputs, runtime)
+    end
+  end
+
+  defp invoke_prepared(step, inputs, runtime) do
     case call_operation(step, inputs, runtime) do
       {:ok, output} when is_map(output) ->
         normalize_success(step, inputs, output)
@@ -341,13 +405,24 @@ defmodule Zaq.Channels.DeliveryExecutor do
     _, _ -> failed_result(execution_error(:operation_exit), %{})
   end
 
+  defp call_operation(%{operation: :upload}, %{attachments: []}, _runtime),
+    do: {:ok, %{uploaded_attachments: []}}
+
   defp call_operation(step, inputs, runtime) do
     if function_exported?(runtime.bridge, :execute_delivery_step, 3) do
       runtime.bridge.execute_delivery_step(step, inputs, runtime.connection)
     else
-      outgoing = %{inputs.outgoing | attachments: [], attachment_error: nil}
+      outgoing = %{
+        inputs.outgoing
+        | delivery: %{inputs.outgoing.delivery | attachments: [], error: nil}
+      }
 
-      case runtime.bridge.send_reply(outgoing, runtime.connection) do
+      response =
+        if inputs.attachments == [],
+          do: runtime.bridge.send_reply(outgoing, runtime.connection),
+          else: {:error, configuration_error()}
+
+      case response do
         :ok -> {:ok, %{confirmation: :unconfirmed}}
         {:error, %DeliveryError{}} = error -> error
         {:error, reason} -> {:error, execution_error(reason)}
@@ -357,11 +432,11 @@ defmodule Zaq.Channels.DeliveryExecutor do
   end
 
   defp normalize_success(%{operation: :upload} = step, _inputs, output) do
-    uploaded = uploaded_files(output)
+    uploaded = uploaded_attachments(output)
 
     if is_list(uploaded) and
-         Enum.sort(Enum.map(uploaded, & &1.attachment_index)) == Enum.sort(step.file_refs),
-       do: %{status: :confirmed, uploaded_files: uploaded},
+         Enum.sort(Enum.map(uploaded, & &1.attachment_index)) == Enum.sort(step.attachment_refs),
+       do: %{status: :confirmed, uploaded_attachments: uploaded},
        else: failed_result(execution_error(:invalid_upload_confirmation), output)
   end
 
@@ -371,7 +446,10 @@ defmodule Zaq.Channels.DeliveryExecutor do
         output
         |> Map.put(:body, Map.get(inputs.group, :canonical_body, inputs.outgoing.body))
         |> Map.put_new(:thread_id, inputs.thread_id)
-        |> Map.put(:delivered_attachment_indices, Enum.map(inputs.files, & &1.attachment_index))
+        |> Map.put(
+          :delivered_attachment_indices,
+          Enum.map(inputs.attachments, & &1.attachment_index)
+        )
 
       %{status: :confirmed, receipt: receipt}
     else
@@ -382,13 +460,14 @@ defmodule Zaq.Channels.DeliveryExecutor do
   defp present_id?(id), do: (is_binary(id) and id != "") or is_integer(id)
 
   defp failed_result(error, output),
-    do: %{status: :failed, error: error, uploaded_files: uploaded_files(output)}
+    do: %{status: :failed, error: error, uploaded_attachments: uploaded_attachments(output)}
 
-  defp uploaded_files(output) do
-    case Map.get(output, :uploaded_files, []) do
-      files when is_list(files) ->
-        Enum.filter(files, fn file ->
-          is_map(file) and is_integer(file[:attachment_index]) and present_id?(file[:id])
+  defp uploaded_attachments(output) do
+    case Map.get(output, :uploaded_attachments, []) do
+      attachments when is_list(attachments) ->
+        Enum.filter(attachments, fn attachment ->
+          is_map(attachment) and is_integer(attachment[:attachment_index]) and
+            present_id?(attachment[:id])
         end)
 
       _ ->
@@ -458,15 +537,24 @@ defmodule Zaq.Channels.DeliveryExecutor do
       |> compose_receipts()
       |> continuation_indices()
 
-    uploaded = Enum.flat_map(results, fn {_step, result} -> result[:uploaded_files] || [] end)
-    failed = Enum.flat_map(results, &step_failures(&1, runtime.plan.files))
+    uploaded =
+      Enum.flat_map(results, fn {_step, result} -> result[:uploaded_attachments] || [] end)
+
+    failed =
+      results
+      |> Enum.reject(fn {step, _result} -> Map.has_key?(runtime.preparation_errors, step.id) end)
+      |> Enum.flat_map(&step_failures(&1, runtime.attachments))
 
     unattempted =
       for {step, %{status: :not_started}} <- results,
-          do: %{step_id: step.id, group_id: step.group_id, attachment_indices: step.file_refs}
+          do: %{
+            step_id: step.id,
+            group_id: step.group_id,
+            attachment_indices: step.attachment_refs
+          }
 
     delivered = Enum.flat_map(messages, & &1.delivered_attachment_indices)
-    failures = runtime.plan.preparation_failures ++ failed
+    failures = runtime.preparation_failures ++ failed
 
     uncertain? =
       Enum.any?(results, fn {_step, result} ->
@@ -490,8 +578,8 @@ defmodule Zaq.Channels.DeliveryExecutor do
       message_id: last[:message_id],
       action: last[:action],
       messages: messages,
-      failed_files: failures,
-      uploaded_files: Enum.map(uploaded, &public_upload/1),
+      failed_attachments: failures,
+      uploaded_attachments: Enum.map(uploaded, &public_upload/1),
       uploaded_only:
         uploaded |> Enum.reject(&(&1.attachment_index in delivered)) |> Enum.map(&public_upload/1),
       unattempted_steps: unattempted,
@@ -505,13 +593,13 @@ defmodule Zaq.Channels.DeliveryExecutor do
   defp report_confirmation(_messages, [], []), do: :confirmed
   defp report_confirmation(_messages, _failures, _unattempted), do: :partial
 
-  defp step_failures({step, %{status: :failed, error: error} = result}, files) do
+  defp step_failures({step, %{status: :failed, error: error} = result}, attachments) do
     uploaded =
       if step.operation == :upload,
-        do: Enum.map(result.uploaded_files, & &1.attachment_index),
+        do: Enum.map(result.uploaded_attachments, & &1.attachment_index),
         else: []
 
-    step.file_refs
+    step.attachment_refs
     |> Enum.reject(&(&1 in uploaded))
     |> Enum.map(fn index ->
       %{
@@ -521,8 +609,8 @@ defmodule Zaq.Channels.DeliveryExecutor do
         reason: safe_reason(error),
         step_id: step.id,
         group_id: step.group_id,
-        filename: files[index].name,
-        size: files[index].size
+        filename: get_in(attachments, [index, :name]),
+        size: get_in(attachments, [index, :size])
       }
     end)
   end
@@ -578,7 +666,7 @@ defmodule Zaq.Channels.DeliveryExecutor do
     if not notice? and function_exported?(runtime.bridge, :delivery_completed, 3),
       do:
         runtime.bridge.delivery_completed(
-          %{runtime.outgoing | delivery_plan: nil},
+          %{runtime.outgoing | delivery: %{runtime.outgoing.delivery | plan: nil}},
           report,
           runtime.connection
         )

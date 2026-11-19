@@ -26,15 +26,17 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
         "tls" => "never",
         "from_email" => "sender@example.test",
         "max_encoded_message_bytes" => 1,
-        "max_files_per_message" => 1
+        "max_attachments_per_message" => 1
       })
 
     outgoing = %Outgoing{
       provider: :"email:smtp",
       channel_id: "recipient@example.test",
       body: "Original answer",
-      attachments: [%Record{id: "file", kind: :file, content: "bytes"}],
-      routing_context: %{channel_config_id: config.id}
+      routing_context: %{channel_config_id: config.id},
+      delivery: %Outgoing.Delivery{
+        attachments: [%Record{id: "file", kind: :file, content: "bytes"}]
+      }
     }
 
     task =
@@ -79,7 +81,7 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
 
       settings = %{
         "max_encoded_message_bytes" => 10_000_000,
-        "max_files_per_message" => 10,
+        "max_attachments_per_message" => 10,
         "relay" => "127.0.0.1",
         "port" => to_string(port),
         "tls" => "never",
@@ -95,6 +97,8 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
       config = smtp_connector!(namespace, settings)
 
       smtp_connector!(namespace <> "-other", %{
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10,
         "relay" => "127.0.0.1",
         "port" => "1",
         "from_email" => "other@example.test",
@@ -142,7 +146,6 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
           provider: provider,
           channel_id: "recipient@example.test",
           body: "Original answer",
-          attachments: files,
           routing_context: %{
             channel_config_id: route.id,
             reply_targets: %{to: ["recipient@example.test"], cc: ["copied@example.test"]}
@@ -150,11 +153,12 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
           metadata: %{
             "subject" => "Attachment policy",
             "threading" => %{"message_id" => "#{namespace}@example.test"}
-          }
+          },
+          delivery: %Outgoing.Delivery{attachments: files}
         }
 
         assert_policy_delivery!(outgoing, %{person_id: person.id}, namespace, @continue_delivery)
-        assert outgoing.attachments == files
+        assert outgoing.delivery.attachments == files
       end
     end
   end
@@ -210,14 +214,18 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
     mail = Mail.parse(capture.raw)
     assert mail.headers["subject"] == "Attachment policy"
     assert Mail.get_text(mail).body == outgoing.body
-    assert Mail.get_attachments(mail) == [{"usable.bin", hd(outgoing.attachments).content}]
+
+    assert Mail.get_attachments(mail) == [
+             {"usable.bin", hd(outgoing.delivery.attachments).content}
+           ]
+
     send(smtp, :accept_delivery)
 
     assert {:ok,
             %{
               confirmation: :partial,
               messages: [%{confirmation: :confirmed}],
-              failed_files: [failure]
+              failed_attachments: [failure]
             } = report} = Task.await(task, 5_000)
 
     assert failure == %{
@@ -229,7 +237,9 @@ defmodule Zaq.Channels.EmailFileDeliveryIntegrationTest do
 
     refute inspect(report) =~ "%%%"
     assert_received {:smtp_policy_confirmation, confirmation}
-    assert [%Record{id: "usable", content: nil}] = confirmation.request.outgoing.attachments
+
+    assert [%Record{id: "usable", content: nil}] =
+             confirmation.request.outgoing.delivery.attachments
 
     assert confirmation.request.outgoing.routing_context.channel_config_id ==
              outgoing.routing_context.channel_config_id

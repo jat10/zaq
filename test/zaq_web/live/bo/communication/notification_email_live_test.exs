@@ -61,6 +61,8 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationEmailLiveTest do
       token: "smtp-unused",
       enabled: true,
       settings: %{
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10,
         "relay" => "smtp.example.com",
         "port" => "587",
         "transport_mode" => "starttls",

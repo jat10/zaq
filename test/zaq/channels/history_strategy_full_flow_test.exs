@@ -1867,6 +1867,8 @@ defmodule Zaq.Channels.HistoryStrategyFullFlowTest do
   defp connector(:replicated, _endpoint) do
     smtp =
       insert_connector("email:smtp", %{
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10,
         "from_name" => "ZAQ",
         "from_email" => "bot@example.com"
       })

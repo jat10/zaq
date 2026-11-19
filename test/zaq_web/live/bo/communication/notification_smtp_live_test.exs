@@ -63,7 +63,7 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
     settings = Repo.get!(ChannelConfig, config.id).settings
     assert settings["max_encoded_message_bytes"] == 1_234_567
-    assert settings["max_files_per_message"] == 3
+    assert settings["max_attachments_per_message"] == 3
     assert settings["send_on_file_failure"] == true
     {:ok, reopened, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
     assert has_element?(reopened, "#smtp-max-message-size-mb[value='1.234567']")
@@ -72,6 +72,15 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
   test "invalid attachment limits show field errors and do not save", %{conn: conn} do
     config = insert_enabled_smtp_channel()
+
+    config =
+      config
+      |> Ecto.Changeset.change(
+        settings:
+          Map.drop(config.settings, ["max_encoded_message_bytes", "max_attachments_per_message"])
+      )
+      |> Repo.update!()
+
     {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
 
     html =
@@ -222,7 +231,12 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
         enabled: true,
         url: "smtp://configured-in-settings",
         token: "smtp-unused",
-        settings: %{"relay" => "second.example.com", "from_email" => "second@example.com"}
+        settings: %{
+          "relay" => "second.example.com",
+          "from_email" => "second@example.com",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
 
@@ -621,7 +635,12 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
         enabled: true,
         url: "smtp://configured-in-settings",
         token: "smtp-unused",
-        settings: %{"relay" => "smtp.other.example", "from_email" => "selected@example.com"}
+        settings: %{
+          "relay" => "smtp.other.example",
+          "from_email" => "selected@example.com",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
 
@@ -1022,7 +1041,17 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     }
 
     {:ok, channel} =
-      ChannelConfig.upsert_by_provider("email:smtp", Map.merge(defaults, attrs))
+      ChannelConfig.upsert_by_provider(
+        "email:smtp",
+        Map.update!(
+          Map.merge(defaults, attrs),
+          :settings,
+          &Map.merge(
+            %{"max_encoded_message_bytes" => 10_000_000, "max_attachments_per_message" => 10},
+            &1
+          )
+        )
+      )
 
     channel
   end

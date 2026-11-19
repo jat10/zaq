@@ -17,6 +17,15 @@ defmodule Zaq.TestSupport.ChannelFileFixtures do
   def connector!(provider, settings) do
     name = Ecto.UUID.generate()
 
+    settings =
+      if provider == "email:smtp",
+        do:
+          Map.merge(
+            %{"max_encoded_message_bytes" => 10_000_000, "max_attachments_per_message" => 10},
+            settings
+          ),
+        else: settings
+
     config!(provider, name, %{
       name: name,
       url: "https://fixture.invalid",
@@ -81,7 +90,7 @@ defmodule Zaq.TestSupport.ChannelFileFixtures do
             "port" => to_string(port),
             "tls" => "never",
             "max_encoded_message_bytes" => 10_000_000,
-            "max_files_per_message" => 10
+            "max_attachments_per_message" => 10
           },
           settings
         )

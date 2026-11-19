@@ -122,10 +122,12 @@ serialization can discard or truncate data. Missing, foreign or retired aliases
 reject selection with a bounded error and prevent final attachment delivery.
 Alias lifetime follows the existing runtime lifecycle; no additional store is
 created. Rejected instructions clear selected files and set a bounded
-`attachment_error` without failing a completed answer. A later valid instruction
-clears that error. Executor carries it into `Outgoing.attachment_error` for Channels
-to report through its delivery policy. Genuine request failures still fail the run.
-Executor preserves the final selection as `Outgoing.attachments`, outside
+`delivery.error` without failing a completed answer. A later valid instruction
+clears that error. Executor carries typed delivery selection into Outgoing. With
+no selected attachments, Channels delivers the Agent's composed answer through
+ordinary text delivery without a notice or attachment failure-policy branch.
+Genuine request failures still fail the run. Executor preserves the final selection
+as `Outgoing.delivery.attachments`, outside
 metadata and public tool-step projections. Incoming files are never auto-selected.
 
 For workflow execution, `RunAgent` returns selected files in `attachments` as

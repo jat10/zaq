@@ -69,7 +69,9 @@ defmodule Zaq.System.EmailConfig do
 
   defp maybe_require_relay(changeset) do
     if get_field(changeset, :enabled) do
-      validate_required(changeset, [:relay, :from_email],
+      validate_required(
+        changeset,
+        [:relay, :from_email, :max_message_size_mb, :max_attachments_per_message],
         message: "is required when email is enabled"
       )
     else
