@@ -11,11 +11,15 @@
     {
       "text": "Merge baseline: clean feat/channel-files at db336f6e9; origin/main 712b538ab has 17 incoming commits. Main tracks origin/main. Merge --no-commit exposed API/routing/registry conflicts plus modify/delete conflicts for moved Confirmation and its suite. Resolution plan: retain metadata planning and compatibility notice flow, use one final Confirmation.record/4 with main normalized observations, combine validate_files and delivery_observation callbacks, port main unsuccessful-reporting methods and 9 added observation checks into Delivery.Confirmation and its owning suite, retain branch attachment/private-plan projection; union registry keys including AttachDocuments and main EvaluateDecisions/Lua. Main new Engine consumer and guide identifiers migrate to Delivery namespace. Reuse assessment: existing NodeRouter observation/confirmation events and bridge normalization from main; existing Channel planner/executor/confirmation from branch; no new Action or duplicate operations. Retain main dependency/release/TLS/bootstrap updates without own pin changes. Existing assertions retained; test migrations limited to module references and union of approved branch/main tool registries. Target validation: q, focused conflict/consumer tests plus new history/Agent/Lua/TLS/bootstrap suites, stale refs and diff check; existing Telegram failure tracked separately.",
       "timestamp": "2026-11-19T14:07:15Z"
+    },
+    {
+      "text": "User approved incoming message_delivery_test real-HTTP assertion migration from raw provider error to Delivery.Error with exact original 403 reason/body, transport stage and existing no-resend/history/privacy checks retained. Also found an execution-boundary integration mismatch: main provider observation accepts raw adapter errors, while this branch wraps them in Delivery.Error. Added a property to preserve exactly the same adapter-specific bounded observation for typed transport errors; normalization will reuse DeliveryResult mapping, with unknown providers/results still unclassified. No new provider policy or raw response persistence.",
+      "timestamp": "2026-11-19T14:09:51Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.23] Merge main into the channel delivery branch",
   "type": "task",
-  "updated_at": "2026-11-19T14:07:15Z"
+  "updated_at": "2026-11-19T14:09:51Z"
 }
