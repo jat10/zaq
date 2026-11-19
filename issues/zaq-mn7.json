@@ -6,9 +6,15 @@
   "description": "Trace Executor callers and report consumers; normalize finish/2 to return every successful report while preserving partial/total failures and delivery side effects. Action reuse assessment: local-only adjustment to existing Delivery.Executor.finish/2 result packaging; reuse Executor.report/2, bridge single-operation APIs and Delivery.Confirmation.record/3. No new transport operation, Action, tool exposure, permission, retry or scheduling behavior. Preserve receipt support for non-Executor delivery. Existing user regression remains unchanged. New confirmation/property tests will cover body, provider IDs, threads and selected attachments. E2E unnecessary: internal return contract; unit/integration tests exercise affected boundaries.",
   "id": "zaq-mn7",
   "labels": [],
+  "comments": [
+    {
+      "text": "Caller trace: Executor invoked by JidoChatBridge.do_send_reply/2 (planned and attachment paths), EmailBridge.send_reply/2 (planned and attachment paths), Channels.Api.deliver_reply/3 and failure-notice reporting. Bridges pass results through; Jido delivery_completed consumes report.message_id before finish. Channels normalization accepts maps, Confirmation.record/3 enumerates report.messages then dispatches individual receipts; Engine.Api delegates those to History.Delivery.capture/3. Plain-text/non-Executor receipt paths remain supported. Serena overview and targeted symbols worked; reference query could not resolve execute symbol so bounded rg supplemented callers. Baseline: 169/170 focused checks passed, only supplied report inconsistency failed. Separate concurrent test about report.delivery observed after baseline; preserve without changing unrelated report semantics.",
+      "timestamp": "2026-11-19T15:26:53Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 12: normalize Executor success reports",
   "type": "bug",
-  "updated_at": "2026-11-19T15:26:51Z"
+  "updated_at": "2026-11-19T15:26:53Z"
 }
