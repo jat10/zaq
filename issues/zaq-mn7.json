@@ -34,11 +34,15 @@
     {
       "text": "Authoritative final isolated precommit completed normally with exit 2: 12564/12568 checks passed (48/48 doctests, 388/388 properties, 12128/12132 tests), 1 existing skipped, 167 excluded. Only four failures: separate report.delivery status regression, two Engine HTTP-error expectations, Telegram image attachment unavailable-limits/partial-report expectation. No database deadlocks in the isolated run. Final log: /tmp/candidate12-final-precommit.log. Formatting, strict Credo and compilation passed. Implementation remains uncommitted as requested; no push. Earlier overlapping/mixed-log attempts are superseded.",
       "timestamp": "2026-11-19T15:52:21Z"
+    },
+    {
+      "text": "Final baseline verification: TelegramHistoryDeliveryTest line 38 reproduces the same missing attachment-limit / partial-report / numeric-ID failure with original HEAD Executor compiled only in a temporary test VM. Therefore all four authoritative precommit failures are demonstrated against original Executor, not introduced by candidate 12. Candidate 12 supplied regression, added report property, single/multi confirmation tests, and all three approved bridge test updates pass. No production consumer changes required. No background validation remains.",
+      "timestamp": "2026-11-19T15:52:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 12: normalize Executor success reports",
   "type": "bug",
-  "updated_at": "2026-11-19T15:52:21Z"
+  "updated_at": "2026-11-19T15:52:28Z"
 }
