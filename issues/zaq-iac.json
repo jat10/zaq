@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-19T15:58:24Z",
@@ -7,8 +7,8 @@
   "id": "zaq-iac",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Candidate 13: scope report delivery certainty to total failure",
   "type": "bug",
-  "updated_at": "2026-11-19T15:58:24Z"
+  "updated_at": "2026-11-19T15:58:47Z"
 }
