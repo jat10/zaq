@@ -23,11 +23,15 @@
     {
       "text": "Broader run exposed exact dependency contract: pinned branch Mattermost Adapter.safe_transport neutral_failure deliberately converts raw HTTP response to {:http_error,status}, discarding bodies. This is inherited branch dependency behavior, not a new dependency edit. Main raw-response observation mapping therefore also needs to accept that neutral shape; added regression property reproduces RED 6/7 and GREEN 7/7 (4 properties) after adapter-specific delegation to existing HTTP classification. Requested explicit approval for both incoming real-HTTP test assertions to match Delivery.Error.reason {:http_error,403} with transport/unconfirmed fields while preserving exact code, no-repeat-send, failed-history evidence and privacy checks. First approved assertion assumed response body remained in SDK and correctly failed; no assertions relaxed to unknown results. Broad run still running with two pending assertion-migration failures so far.",
       "timestamp": "2026-11-19T14:19:00Z"
+    },
+    {
+      "text": "Final independent checks complete: final mix q PASS; focused API/CommunicationBridge observations/Delivery.Confirmation/Jido delivery/classification suites PASS 208 checks (9 properties,199 tests) against neutral-error integration. Broad 108-path run completed 2474/2477 PASS (6 doctests,80 properties,2388/2391 tests), 6 normally excluded; only failures were the two still-pending incoming raw-error assertion migrations and existing Telegram zaq-1lw.21. No other regressions. Main dependency fetch finished, lock unchanged beyond staged incoming pins. All merge conflicts resolved and staged; no old active module names or conflict markers; staged diff-check PASS.\n\nIntegration is prepared but MERGE_HEAD still pending; HEAD remains db336f6e9 until completion. Awaiting user answer to required second approval: both message_delivery_test real-HTTP assertions must expect typed Error.reason {:http_error,403}, stage :transport, delivery :unconfirmed, retaining 403/failed-history/no-repeat-send/privacy checks. Do not assume first approval (which explicitly retained raw body) authorizes this changed SDK representation. On approval, patch both assertions, run the entire Engine Conversations.MessageDeliveryTest suite and required q/diff checks, then complete authorized main integration. No commit/push performed this turn. Logs: /tmp/channel-main-deps.log, /tmp/channel-main-tests.log, /tmp/channel-main-final-checks.log; selected suites /tmp/channel-main-merge-suites.json. Existing feature finalization gates remain open.",
+      "timestamp": "2026-11-19T14:23:34Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.23] Merge main into the channel delivery branch",
   "type": "task",
-  "updated_at": "2026-11-19T14:19:00Z"
+  "updated_at": "2026-11-19T14:23:34Z"
 }
