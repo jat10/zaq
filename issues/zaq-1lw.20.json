@@ -61,11 +61,15 @@
     {
       "text": "Full-suite baseline completed: 12145/12250 passed, 105 failures (103 tests, 2 properties), 1 skipped, 164 excluded. Repaired explicit enabled-SMTP limits in existing test/setup builders and migrated AttachDocuments destination assertion to nested delivery.attachments, preserving its permissions/content assertions. mix test --failed now passes 104/105 checks (2/2 properties), sole retained failure Telegram real-document SDK requirements gap zaq-1lw.21. No assertions weakened or removed, production defaults unchanged. mix q running; full-suite confirmation follows.",
       "timestamp": "2026-11-19T10:42:28Z"
+    },
+    {
+      "text": "Full-suite impact extension: enabled-SMTP fixture builders now provide explicit max_encoded_message_bytes=10000000 and max_attachments_per_message=10 in test/support/people_auth_delivery.ex; AgentTest, NotifyPersonEmailDeliveryTest; Channels EmailBridgeTest, EmailHtmlDeliveryTest, SupervisorTest, HistoryStrategyFullFlowTest, EmailBridge.AttachmentMaterializationTest and IncomingAttachmentMaterializationIntegrationTest; Engine Conversations.CanonicalHistoryCaptureTest, ExecutionHistoryTest, Workflows.SendLeadsEmailThreadingE2ETest; People.IdentityResolverTest; Repo.Migrations.ScopedPersonChannelsTest; BO ChannelHistoryLiveTest, NotificationEmailLiveTest, NotificationImapLiveTest, ForgotPasswordLiveTest and PeopleLiveTest. AttachDocumentsTest keeps its destination/actor/content-free property assertion and uses request.delivery.attachments. These are 20 files total, fixture-only repairs plus the mechanical nested-field assertion. mix q PASS (strict Credo no issues, formatting/hooks/docs/compile), git diff --check PASS. Full mix test confirmation running, no concurrent database test process.",
+      "timestamp": "2026-11-19T10:43:25Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.20] Apply eight channel delivery review findings",
   "type": "task",
-  "updated_at": "2026-11-19T10:42:28Z"
+  "updated_at": "2026-11-19T10:43:25Z"
 }
