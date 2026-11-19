@@ -30,11 +30,15 @@
     {
       "text": "Precommit tool transport timed out at 300s although execution timeout was 900s. First process continued; an overlapping rerun caused database contention and invalidated that validation attempt. Duplicate stopped; a single isolated precommit is now running with unique durable /tmp/candidate12-final-precommit.log and status file, after verifying no prior precommit remains. Source and assertions unchanged. Do not treat mixed earlier precommit logs as authoritative.",
       "timestamp": "2026-11-19T15:44:15Z"
+    },
+    {
+      "text": "Authoritative final isolated precommit completed normally with exit 2: 12564/12568 checks passed (48/48 doctests, 388/388 properties, 12128/12132 tests), 1 existing skipped, 167 excluded. Only four failures: separate report.delivery status regression, two Engine HTTP-error expectations, Telegram image attachment unavailable-limits/partial-report expectation. No database deadlocks in the isolated run. Final log: /tmp/candidate12-final-precommit.log. Formatting, strict Credo and compilation passed. Implementation remains uncommitted as requested; no push. Earlier overlapping/mixed-log attempts are superseded.",
+      "timestamp": "2026-11-19T15:52:21Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 12: normalize Executor success reports",
   "type": "bug",
-  "updated_at": "2026-11-19T15:44:15Z"
+  "updated_at": "2026-11-19T15:52:21Z"
 }
