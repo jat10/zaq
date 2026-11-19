@@ -14,11 +14,15 @@
     {
       "text": "Human test behavior approval recorded 2026-11-19: user replied \"Approve these three test expectation updates\" to the async approval request. Authorized only JidoChatDeliveryTest scenarios: descriptor reads via report.messages[0].attachments; recording failure via report.messages[0].confirmation_recording with all no-resend/history assertions intact; configured limits requires messages: [receipt], retains ten attachment expectation and replaces absent :messages assertion. No other existing test behavior changes authorized. New report property and single/multi confirmation coverage added. mix q passed.",
       "timestamp": "2026-11-19T15:30:19Z"
+    },
+    {
+      "text": "Self-review: production change is only Executor.finish/2 success packaging plus its API doc; report construction, failure contract, publication, upload scheduling, root election, callbacks and history implementation unchanged. No consumer production changes needed: Confirmation already iterates report.messages; Engine receives individual receipts; Notifications reads anchor/message_id/thread_id/thread_metadata retained in report summary; Email runtime collapses any successful map to :ok; Jido state returns bridge result unchanged. New property validates reports across 1..6 groups and both policies. New confirmation test validates single/multi root and continuation bodies, source/provider IDs, thread IDs, attachment selection/content clearing and report retention. New tests: 23 checks passed (4 properties, 19 tests).",
+      "timestamp": "2026-11-19T15:31:44Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 12: normalize Executor success reports",
   "type": "bug",
-  "updated_at": "2026-11-19T15:30:19Z"
+  "updated_at": "2026-11-19T15:31:44Z"
 }
