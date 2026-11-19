@@ -69,11 +69,15 @@
     {
       "text": "Full-suite repair confirmation complete: mix test ran in 377.5s, 12249/12250 checks PASS (48/48 doctests, 366/366 properties, 11835/11836 tests), 1 skipped, 164 excluded. All 104 repaired failures remain green in the complete suite. Sole failure remains TelegramHistoryDeliveryTest exact-byte real-adapter document test at test/zaq/channels/telegram_history_delivery_test.exs:38, caused by installed SDK missing file_requirements/1, tracked zaq-1lw.21. mix q PASS and git diff --check PASS. Logs: /tmp/channel-full-suite-before.log, /tmp/channel-full-suite-repairs.log, /tmp/channel-full-suite-confirm.log, /tmp/channel-full-suite-q.log. Explicit configured-limits fallback was proposed to user, approval pending; no Telegram assertions weakened, no compatibility expansion implemented. No commits or pushes. Original feature approval/E2E/review/coverage/precommit gates remain pending as previously recorded.",
       "timestamp": "2026-11-19T10:50:11Z"
+    },
+    {
+      "text": "User explicitly authorized commit and push. Committed all findings/migrations and full-suite fixture repairs as b176f8ca7d7f2ad5fd311291989f47d2ed9855c5: fix(channels)!: apply delivery review findings (zaq-1lw.20). Pre-commit qf and commit-message hooks passed. SSH push verified using the macOS launchctl authentication agent; remote feat/channel-files contains this commit and pre-push formatting hook passed. Known Telegram SDK failure and existing UX/E2E/review/coverage/final-precommit gates remain open; no merge or closure claimed.",
+      "timestamp": "2026-11-19T13:47:22Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.20] Apply eight channel delivery review findings",
   "type": "task",
-  "updated_at": "2026-11-19T10:50:11Z"
+  "updated_at": "2026-11-19T13:47:22Z"
 }
