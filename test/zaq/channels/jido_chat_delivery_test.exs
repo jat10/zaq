@@ -93,6 +93,14 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
     end
   end
 
+  defmodule TextOnlyEditAdapter do
+    def capabilities, do: Map.put(Adapter.capabilities(), :edit_attachments, :unsupported)
+    defdelegate file_requirements(opts), to: Adapter
+    defdelegate prepare_upload(channel, files, opts), to: Adapter
+    defdelegate upload_prepared(prepared, opts), to: Adapter
+    defdelegate edit_message(channel, id, text, opts), to: Adapter
+  end
+
   defmodule DeliveryBridge do
     alias Zaq.Channels.Bridge
     alias Zaq.Channels.JidoChatDeliveryTest.FileTransport
@@ -143,6 +151,40 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
 
     on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
     {:ok, registry: previous}
+  end
+
+  test "attachment planning uses the same existing message decision as the bridge" do
+    for metadata <- [%{message_id: "streamed"}, %{"message_id" => "streamed"}] do
+      outgoing = %{file_outgoing() | metadata: metadata}
+      connection = file_connection("/success")
+
+      assert JidoChatBridge.existing_message(outgoing, connection) == "streamed"
+      assert {:ok, planned} = Attachments.build_plan(outgoing, JidoChatBridge, connection)
+
+      assert [%{operation: :edit, message_ref: {:existing, "streamed"}}] =
+               Enum.reject(planned.delivery.plan.steps, &(&1.operation == :upload))
+    end
+  end
+
+  test "text edit support does not select an attachment edit" do
+    channels = Application.fetch_env!(:zaq, :channels)
+
+    Application.put_env(
+      :zaq,
+      :channels,
+      put_in(channels, [:mattermost, :adapter], TextOnlyEditAdapter)
+    )
+
+    outgoing = %{file_outgoing() | metadata: %{message_id: "streamed"}}
+    connection = file_connection("/success")
+    text_only = put_in(outgoing.delivery.attachments, [])
+
+    assert JidoChatBridge.existing_message(text_only, connection) == "streamed"
+    assert JidoChatBridge.existing_message(outgoing, connection) == nil
+    assert {:ok, planned} = Attachments.build_plan(outgoing, JidoChatBridge, connection)
+
+    assert [%{operation: :send, message_ref: nil}] =
+             Enum.reject(planned.delivery.plan.steps, &(&1.operation == :upload))
   end
 
   test "strict policy rejects unresolved transport requirements before materialization" do
@@ -549,7 +591,9 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
           routing_context: %{channel_config_id: 10}
       }
 
-      assert {:ok, %{attachments: [descriptor]}} = JidoChatBridge.send_reply(outgoing, connection)
+      assert {:ok, %{messages: [%{attachments: [descriptor]}]}} =
+               JidoChatBridge.send_reply(outgoing, connection)
+
       assert descriptor["id"] == "channel-file"
       assert descriptor["mime_type"] == "image/png"
       source = descriptor["attributes"]["materialization_source"]["locator"]
@@ -698,7 +742,13 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
               %{
                 confirmation: :confirmed,
                 message_id: "accepted-post",
-                confirmation_recording: :unavailable
+                messages: [
+                  %{
+                    confirmation: :confirmed,
+                    message_id: "accepted-post",
+                    confirmation_recording: :unavailable
+                  }
+                ]
               }} =
                Api.handle_event(event, :deliver_outgoing, nil).response
 
@@ -742,9 +792,8 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
 
     for metadata <- [%{}, %{message_id: "existing-post"}] do
       outgoing = %{batch_outgoing(10) | metadata: metadata}
-      assert {:ok, receipt} = JidoChatBridge.send_reply(outgoing, connection)
+      assert {:ok, %{messages: [receipt]}} = JidoChatBridge.send_reply(outgoing, connection)
       assert length(receipt.attachments) == 10
-      refute Map.has_key?(receipt, :messages)
     end
 
     assert_received {:batch_post, _, ids, _}

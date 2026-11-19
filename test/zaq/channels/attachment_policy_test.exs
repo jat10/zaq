@@ -10,6 +10,11 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
   defmodule PlanningBridge do
     alias Zaq.ConnectorConfig.Settings
 
+    def existing_message(outgoing, connection) do
+      send(connection.test_pid, :existing_message_requested)
+      if connection.requirements.supports_attachment_edits, do: outgoing.metadata[:message_id]
+    end
+
     def transport_requirements(_outgoing, connection) do
       send(connection.test_pid, :requirements_requested)
 

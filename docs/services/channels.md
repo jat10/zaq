@@ -555,6 +555,12 @@ Groups and steps reference stable original indices in `delivery.attachments`; th
 plan does not duplicate the source collection. Neither content acquisition nor
 provider encoding occurs while building a plan.
 
+The optional bridge callback `existing_message/2` resolves an editable message ID
+for the actual outgoing content. JidoChatBridge shares its send-or-update decision
+with ordinary text delivery, including attachment edit capability checks. Planning
+resolves the ID once and stores it on the first edit step; bridges without the
+callback create messages.
+
 `Delivery.Executor.execute/4` acquires each eligible attachment once through the
 existing materialization and authorization boundary, then checks actual attachment
 and group sizes and exact MIME/multipart payload sizes before transport effects.

@@ -43,6 +43,48 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
          %{message_id: "message-#{step.group_id}", action: :created, confirmation: :confirmed}}
   end
 
+  test "successful delivery retains the report for both multiple groups and a single group" do
+    assert {:ok, multiple_group_report} =
+             Executor.execute(outgoing(:continue, 2, true), OperationBridge, connection())
+
+    assert %{
+             confirmation: :confirmed,
+             messages: [%{message_id: "message-0"}, %{message_id: "message-1"}],
+             failed_attachments: [],
+             unattempted_steps: []
+           } = multiple_group_report
+
+    assert {:ok, single_group_report} =
+             Executor.execute(outgoing(:continue, 1, true), OperationBridge, connection())
+
+    assert %{
+             confirmation: :confirmed,
+             messages: [%{message_id: "message-0", delivered_attachment_indices: [0]}],
+             uploaded_attachments: [%{attachment_index: 0}],
+             failed_attachments: [],
+             unattempted_steps: [],
+             step_outcomes: [_, _]
+           } = single_group_report
+  end
+
+  test "fully confirmed delivery does not report that its messages were not sent" do
+    assert {:ok, report} =
+             Executor.execute(outgoing(:continue, 2, true), OperationBridge, connection())
+
+    assert %{
+             confirmation: :confirmed,
+             messages: [
+               %{message_id: "message-0", delivered_attachment_indices: [0]},
+               %{message_id: "message-1", delivered_attachment_indices: [1]}
+             ],
+             failed_attachments: [],
+             unattempted_steps: []
+           } = report
+
+    refute report[:delivery] == :not_sent,
+           "Both messages and their attachments were confirmed, but the report says :not_sent"
+  end
+
   test "stop uploads every group before publication and a later upload failure blocks all sends" do
     outgoing = outgoing(:abort, 3, true)
     connection = connection(%{{:upload, 1} => failure(:timeout)})
@@ -416,6 +458,92 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
 
     assert report.failed_attachments == []
     assert [%{delivery: :unconfirmed, status: :failed}] = report.step_outcomes
+  end
+
+  property "only reports without confirmed messages carry overall error certainty" do
+    check all(
+            count <- integer(1..6),
+            confirmed_count <- integer(0..count),
+            policy <- member_of([:continue, :abort]),
+            certainty <- member_of([:not_sent, :unconfirmed])
+          ) do
+      error = %Error{
+        reason: :provider_failure,
+        message: "Provider did not confirm delivery.",
+        stage: :transport,
+        delivery: certainty
+      }
+
+      outcomes =
+        for index <- 0..(count - 1),
+            index >= confirmed_count,
+            into: %{},
+            do: {{:send, index}, {:error, error, %{}}}
+
+      result = Executor.execute(outgoing(policy, count), OperationBridge, connection(outcomes))
+
+      report =
+        if confirmed_count == 0 do
+          assert {:error,
+                  %Error{
+                    reason: {:attachment_delivery_failed, report},
+                    cause: :provider_failure,
+                    message: "Provider did not confirm delivery.",
+                    stage: :transport,
+                    delivery: ^certainty
+                  }} = result
+
+          assert report.confirmation == :unconfirmed
+          assert report.delivery == certainty
+          report
+        else
+          assert {:ok, report} = result
+
+          assert report.confirmation ==
+                   if(confirmed_count == count, do: :confirmed, else: :partial)
+
+          refute Map.has_key?(report, :delivery)
+          report
+        end
+
+      assert length(report.messages) == confirmed_count
+
+      expected_failures =
+        if policy == :abort and confirmed_count < count, do: 1, else: count - confirmed_count
+
+      assert length(report.failed_attachments) == expected_failures
+      assert Enum.all?(report.failed_attachments, &(&1.delivery == certainty))
+
+      failed_steps = Enum.filter(report.step_outcomes, &(&1.status == :failed))
+      assert length(failed_steps) == expected_failures
+      assert Enum.all?(failed_steps, &(&1.delivery == certainty))
+      collect_started([])
+    end
+  end
+
+  property "successful execution retains complete reports across group counts and policies" do
+    check all(count <- integer(1..6), policy <- member_of([:continue, :abort])) do
+      assert {:ok, report} =
+               Executor.execute(outgoing(policy, count, true), OperationBridge, connection())
+
+      assert report.confirmation == :confirmed
+
+      assert Enum.map(report.messages, & &1.message_id) ==
+               Enum.map(0..(count - 1), &"message-#{&1}")
+
+      assert Enum.map(report.messages, & &1.delivered_attachment_indices) ==
+               Enum.map(0..(count - 1), &[&1])
+
+      assert Enum.map(report.uploaded_attachments, & &1.attachment_index) ==
+               Enum.to_list(0..(count - 1))
+
+      assert report.failed_attachments == []
+      assert report.uploaded_only == []
+      assert report.unattempted_steps == []
+      assert length(report.step_outcomes) == count * 2
+      assert Enum.all?(report.step_outcomes, &(&1.status == :confirmed))
+      collect_started([])
+    end
   end
 
   property "every planned step starts at most once and receives resolved upload outputs" do

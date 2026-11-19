@@ -36,7 +36,7 @@ defmodule Zaq.Channels.Bridge do
   @callback execute_delivery_step(Zaq.Channels.Delivery.Plan.Step.t(), map(), map()) ::
               {:ok, map()} | {:error, Zaq.Channels.Delivery.Error.t(), map()}
   @callback delivery_completed(Zaq.Engine.Messages.Outgoing.t(), map(), map()) :: term()
-  @callback existing_text_message(Zaq.Engine.Messages.Outgoing.t(), map()) ::
+  @callback existing_message(Zaq.Engine.Messages.Outgoing.t(), map()) ::
               String.t() | integer() | nil
 
   @callback start_runtime(runtime_target()) :: :ok | {:error, term()}
@@ -61,7 +61,7 @@ defmodule Zaq.Channels.Bridge do
                       prepare_delivery_message: 3,
                       execute_delivery_step: 3,
                       delivery_completed: 3,
-                      existing_text_message: 2,
+                      existing_message: 2,
                       start_runtime: 1,
                       start_runtime: 2,
                       stop_runtime: 1,

@@ -224,15 +224,11 @@ defmodule Zaq.Channels.JidoChatBridge do
   def delivery_completed(outgoing, report, _connection),
     do: dispatch_on_reply(outgoing.metadata, report.message_id)
 
-  @doc "Returns a reusable text target without querying file requirements or performing transport."
+  @doc "Returns an editable message ID for the outgoing content without performing transport."
   @impl Zaq.Channels.Bridge
-  def existing_text_message(outgoing, _connection) do
+  def existing_message(outgoing, _connection) do
     with {:ok, adapter} <- adapter_for(outgoing.provider),
-         {:use_update, id} <-
-           send_mode(
-             %{outgoing | delivery: %{outgoing.delivery | attachments: []}},
-             adapter
-           ),
+         {:use_update, id} <- send_mode(outgoing, adapter),
          do: id,
          else: (_ -> nil)
   end

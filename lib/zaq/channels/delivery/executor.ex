@@ -16,7 +16,7 @@ defmodule Zaq.Channels.Delivery.Executor do
 
   require Logger
 
-  @doc "Executes planned effects once and returns confirmed receipts plus failure evidence."
+  @doc "Executes planned effects once and returns a report of confirmed receipts and failure evidence."
   @spec execute(Outgoing.t(), module(), map(), keyword()) ::
           {:ok, map()} | {:error, Error.t()}
   def execute(outgoing, bridge, connection, opts \\ [])
@@ -513,9 +513,7 @@ defmodule Zaq.Channels.Delivery.Executor do
       _ ->
         notify_completed(runtime, report)
 
-        if length(runtime.plan.groups) == 1 and report.confirmation == :confirmed,
-          do: {:ok, hd(report.messages)},
-          else: {:ok, report}
+        {:ok, report}
     end
   end
 
@@ -573,7 +571,7 @@ defmodule Zaq.Channels.Delivery.Executor do
         :audience
       ])
 
-    Map.merge(summary, %{
+    report = %{
       confirmation: report_confirmation(messages, failures, unattempted),
       message_id: last[:message_id],
       action: last[:action],
@@ -584,9 +582,14 @@ defmodule Zaq.Channels.Delivery.Executor do
         uploaded |> Enum.reject(&(&1.attachment_index in delivered)) |> Enum.map(&public_upload/1),
       unattempted_steps: unattempted,
       step_outcomes: Enum.map(results, &public_outcome/1),
-      stage: failure_stage(results),
-      delivery: if(uncertain?, do: :unconfirmed, else: :not_sent)
-    })
+      stage: failure_stage(results)
+    }
+
+    report = Map.merge(summary, report)
+
+    if messages == [],
+      do: Map.put(report, :delivery, if(uncertain?, do: :unconfirmed, else: :not_sent)),
+      else: report
   end
 
   defp report_confirmation([], _failures, _unattempted), do: :unconfirmed

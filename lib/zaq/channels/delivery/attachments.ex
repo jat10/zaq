@@ -47,7 +47,8 @@ defmodule Zaq.Channels.Delivery.Attachments do
         failures = failures ++ omitted
 
         with :ok <- preparation_gate(requirements.failure_policy, failures) do
-          {groups, steps} = plan_groups(batches, outgoing, requirements)
+          message_id = existing_message(outgoing, bridge, connection)
+          {groups, steps} = plan_groups(batches, outgoing, requirements, message_id)
 
           plan = %Plan{
             failure_policy: requirements.failure_policy,
@@ -67,7 +68,7 @@ defmodule Zaq.Channels.Delivery.Attachments do
           |> Enum.with_index()
           |> Enum.map(fn {_, index} -> planning_failure(index, error) end)
 
-        {groups, steps} = plan_groups([], outgoing, nil)
+        {groups, steps} = plan_groups([], outgoing, nil, nil)
 
         plan = %Plan{
           failure_policy: :continue,
@@ -111,7 +112,7 @@ defmodule Zaq.Channels.Delivery.Attachments do
           Map.drop(outgoing.metadata || %{}, [:on_reply, "on_reply", :html_body, "html_body"])
     }
 
-    {groups, steps} = plan_groups([], notice, nil)
+    {groups, steps} = plan_groups([], notice, nil, nil)
     groups = Enum.map(groups, &Map.merge(&1, %{canonical_body: outgoing.body, notice?: true}))
 
     plan = %Plan{
@@ -205,16 +206,22 @@ defmodule Zaq.Channels.Delivery.Attachments do
     end
   end
 
-  defp plan_groups([], outgoing, requirements), do: plan_groups([[]], outgoing, requirements)
+  defp existing_message(outgoing, bridge, connection) do
+    if function_exported?(bridge, :existing_message, 2),
+      do: bridge.existing_message(outgoing, connection)
+  end
 
-  defp plan_groups(batches, outgoing, requirements) do
+  defp plan_groups([], outgoing, requirements, message_id),
+    do: plan_groups([[]], outgoing, requirements, message_id)
+
+  defp plan_groups(batches, outgoing, requirements, message_id) do
     batches
     |> Enum.with_index()
     |> Enum.reduce({[], []}, fn {attachments, id}, {groups, steps} ->
       uploads = upload_steps(attachments, id, requirements)
 
       refs = Enum.map(attachments, & &1.attachment_index)
-      operation = publication_operation(outgoing, groups == [], requirements)
+      operation = if groups == [] and not is_nil(message_id), do: :edit, else: :send
 
       step = %Step{
         id: {operation, id},
@@ -222,7 +229,7 @@ defmodule Zaq.Channels.Delivery.Attachments do
         group_id: id,
         attachment_refs: refs,
         depends_on: Enum.map(uploads, & &1.id),
-        message_ref: if(operation == :edit, do: {:existing, message_id(outgoing)})
+        message_ref: if(operation == :edit, do: {:existing, message_id})
       }
 
       {groups ++ [%{id: id, attachment_refs: refs, body: outgoing.body}],
@@ -257,16 +264,6 @@ defmodule Zaq.Channels.Delivery.Attachments do
   defp placement(nil, %{thread_id: id}) when not is_nil(id), do: :threaded
   defp placement(%{supports_threads: true}, _outgoing), do: :threaded
   defp placement(_requirements, _outgoing), do: :independent
-
-  defp publication_operation(outgoing, true, %{supports_attachment_edits: true}),
-    do: if(message_id(outgoing), do: :edit, else: :send)
-
-  defp publication_operation(_outgoing, _first?, _requirements), do: :send
-
-  defp message_id(outgoing),
-    do:
-      Map.get(outgoing.metadata || %{}, :message_id) ||
-        Map.get(outgoing.metadata || %{}, "message_id")
 
   @doc "Acquires and checks a completed plan without changing it or its source Outgoing."
   @spec prepare_execution(Outgoing.t(), module(), map()) ::

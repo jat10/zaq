@@ -40,6 +40,94 @@ defmodule Zaq.Channels.Delivery.ConfirmationTest do
              )
   end
 
+  test "single and multiple message reports retain canonical bodies, threads and delivered attachments" do
+    attachments =
+      for index <- 0..5 do
+        %Record{
+          id: "source-#{index}",
+          kind: :file,
+          name: "file-#{index}.txt",
+          content: "private bytes",
+          materialization_handle: "handle-#{index}"
+        }
+      end
+
+    outgoing = %{
+      outgoing()
+      | body: "Original **answer**",
+        thread_id: "existing-root",
+        delivery: %Outgoing.Delivery{attachments: attachments}
+    }
+
+    for count <- [1, 3] do
+      messages =
+        for index <- 0..(count - 1) do
+          receipt = %{
+            confirmation: :confirmed,
+            message_id: "provider-#{index}",
+            thread_id: "existing-root",
+            body:
+              if(index == 0, do: "<p>Original <strong>answer</strong></p>", else: "More files"),
+            delivered_attachment_indices: [index * 2]
+          }
+
+          if index == 0, do: receipt, else: Map.put(receipt, :delivery_part_index, index)
+        end
+
+      for {receipt, index} <- Enum.with_index(messages) do
+        expect(Zaq.NodeRouterMock, :dispatch, fn event ->
+          assert event.opts == [action: :record_delivery_confirmation]
+          assert event.request.receipt.message_id == "provider-#{index}"
+          assert event.request.receipt.body == receipt.body
+          assert event.request.receipt.thread_id == "existing-root"
+          refute Map.has_key?(event.request.receipt, :delivered_attachment_indices)
+          assert event.request.outgoing.thread_id == "existing-root"
+
+          assert event.request.outgoing.metadata == %{
+                   user_message_id: "u-1",
+                   assistant_message_id: "a-1"
+                 }
+
+          assert event.request.outgoing.body ==
+                   if(index == 0, do: "Original **answer**", else: "More files")
+
+          assert [%Record{id: id, content: nil, materialization_handle: handle}] =
+                   event.request.outgoing.delivery.attachments
+
+          assert id == "source-#{index * 2}"
+          assert handle == "handle-#{index * 2}"
+
+          assert event.request.receipt.attachments == [
+                   %{"kind" => "file", "name" => "file-#{index * 2}.txt"}
+                 ]
+
+          %{event | response: {:ok, Map.put(event.request.receipt, :history_capture, :stored)}}
+        end)
+      end
+
+      report = %{
+        confirmation: :confirmed,
+        messages: messages,
+        uploaded_attachments: [],
+        uploaded_only: [],
+        failed_attachments: [],
+        unattempted_steps: [],
+        step_outcomes: []
+      }
+
+      assert {:ok, recorded} =
+               Confirmation.record({:ok, report}, outgoing,
+                 delivery_node_router: Zaq.NodeRouterMock
+               )
+
+      assert Map.delete(recorded, :messages) == Map.delete(report, :messages)
+      assert Enum.map(recorded.messages, & &1.message_id) == Enum.map(messages, & &1.message_id)
+      assert Enum.all?(recorded.messages, &(&1.history_capture == :stored))
+    end
+
+    assert Enum.all?(outgoing.delivery.attachments, &(&1.content == "private bytes"))
+  end
+
   property "private prepared plans never cross the Engine confirmation boundary" do
     check all(bytes <- binary(max_length: 1024)) do
       private = "PRIVATE_PREPARED_" <> Base.encode64(bytes)
