@@ -18,11 +18,15 @@
     {
       "text": "Self-review: production change is only Executor.finish/2 success packaging plus its API doc; report construction, failure contract, publication, upload scheduling, root election, callbacks and history implementation unchanged. No consumer production changes needed: Confirmation already iterates report.messages; Engine receives individual receipts; Notifications reads anchor/message_id/thread_id/thread_metadata retained in report summary; Email runtime collapses any successful map to :ok; Jido state returns bridge result unchanged. New property validates reports across 1..6 groups and both policies. New confirmation test validates single/multi root and continuation bodies, source/provider IDs, thread IDs, attachment selection/content clearing and report retention. New tests: 23 checks passed (4 properties, 19 tests).",
       "timestamp": "2026-11-19T15:31:44Z"
+    },
+    {
+      "text": "Focused matrix: 414/417 checks passed (17/17 properties, 397/400 tests), across executor, confirmation, Mattermost/Jido delivery/state, email bridge/file delivery/confirmation, attachment policy, Channels API, Engine history/history ingress/delivery observations and notification attachments. Three failures: separate concurrently added fully-confirmed report.delivery status regression, MessageDeliveryTest real HTTP rejection response expectation (line 349), and HTTP recording raises/throws rejection expectation (line 136). All three reproduced unchanged using original HEAD Executor compiled only in a temporary test VM, without mutating working tree or persisted BEAMs. Candidate 12 regression and three approved bridge expectation updates pass. No unrelated fixes or assertion weakening.",
+      "timestamp": "2026-11-19T15:33:55Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 12: normalize Executor success reports",
   "type": "bug",
-  "updated_at": "2026-11-19T15:31:44Z"
+  "updated_at": "2026-11-19T15:33:55Z"
 }
