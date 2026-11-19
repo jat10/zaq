@@ -26,11 +26,15 @@
     {
       "text": "Final mix q passed after approved test changes; git diff --check clean. Running final mix precommit with 900000 ms timeout. Coverage phase not invoked: no PR review/merge requested; regression and property checks completed. No commit or push authorized.",
       "timestamp": "2026-11-19T15:38:12Z"
+    },
+    {
+      "text": "Precommit tool transport timed out at 300s although execution timeout was 900s. First process continued; an overlapping rerun caused database contention and invalidated that validation attempt. Duplicate stopped; a single isolated precommit is now running with unique durable /tmp/candidate12-final-precommit.log and status file, after verifying no prior precommit remains. Source and assertions unchanged. Do not treat mixed earlier precommit logs as authoritative.",
+      "timestamp": "2026-11-19T15:44:15Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 12: normalize Executor success reports",
   "type": "bug",
-  "updated_at": "2026-11-19T15:38:12Z"
+  "updated_at": "2026-11-19T15:44:15Z"
 }
