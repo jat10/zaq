@@ -19,11 +19,15 @@
     {
       "text": "Resolved all conflicts and ported main observation reporting plus tests into Delivery.Confirmation without restoring old paths. Adapter wrapping property reproduced RED (5/6 pass, 1 property fails) then GREEN (6/6,3 properties) using an isolated Elixir VM while main locked deps downloaded. Added only transport-stage Delivery.Error unwrap delegating to existing adapter classification; Telegram/unknown adapters remain unclassified. User-approved HTTP assertion now retains exact 403 reason/body, transport stage and unconfirmed certainty. mix deps.get completed with no lockfile changes beyond incoming main; main llm_db/req_llm pins installed. Merged-tree mix q PASS, strict Credo 1821 files no issues, hooks/docs/compile PASS. All 108 selected path tests now running: incoming changed suites plus existing Channel delivery/Agent/Engine/notification journeys. Merge not committed yet; no remote publication in this integration turn.",
       "timestamp": "2026-11-19T14:15:07Z"
+    },
+    {
+      "text": "Broader run exposed exact dependency contract: pinned branch Mattermost Adapter.safe_transport neutral_failure deliberately converts raw HTTP response to {:http_error,status}, discarding bodies. This is inherited branch dependency behavior, not a new dependency edit. Main raw-response observation mapping therefore also needs to accept that neutral shape; added regression property reproduces RED 6/7 and GREEN 7/7 (4 properties) after adapter-specific delegation to existing HTTP classification. Requested explicit approval for both incoming real-HTTP test assertions to match Delivery.Error.reason {:http_error,403} with transport/unconfirmed fields while preserving exact code, no-repeat-send, failed-history evidence and privacy checks. First approved assertion assumed response body remained in SDK and correctly failed; no assertions relaxed to unknown results. Broad run still running with two pending assertion-migration failures so far.",
+      "timestamp": "2026-11-19T14:19:00Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.23] Merge main into the channel delivery branch",
   "type": "task",
-  "updated_at": "2026-11-19T14:15:07Z"
+  "updated_at": "2026-11-19T14:19:00Z"
 }
