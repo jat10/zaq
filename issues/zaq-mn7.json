@@ -10,11 +10,15 @@
     {
       "text": "Caller trace: Executor invoked by JidoChatBridge.do_send_reply/2 (planned and attachment paths), EmailBridge.send_reply/2 (planned and attachment paths), Channels.Api.deliver_reply/3 and failure-notice reporting. Bridges pass results through; Jido delivery_completed consumes report.message_id before finish. Channels normalization accepts maps, Confirmation.record/3 enumerates report.messages then dispatches individual receipts; Engine.Api delegates those to History.Delivery.capture/3. Plain-text/non-Executor receipt paths remain supported. Serena overview and targeted symbols worked; reference query could not resolve execute symbol so bounded rg supplemented callers. Baseline: 169/170 focused checks passed, only supplied report inconsistency failed. Separate concurrent test about report.delivery observed after baseline; preserve without changing unrelated report semantics.",
       "timestamp": "2026-11-19T15:26:53Z"
+    },
+    {
+      "text": "Human test behavior approval recorded 2026-11-19: user replied \"Approve these three test expectation updates\" to the async approval request. Authorized only JidoChatDeliveryTest scenarios: descriptor reads via report.messages[0].attachments; recording failure via report.messages[0].confirmation_recording with all no-resend/history assertions intact; configured limits requires messages: [receipt], retains ten attachment expectation and replaces absent :messages assertion. No other existing test behavior changes authorized. New report property and single/multi confirmation coverage added. mix q passed.",
+      "timestamp": "2026-11-19T15:30:19Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 12: normalize Executor success reports",
   "type": "bug",
-  "updated_at": "2026-11-19T15:26:53Z"
+  "updated_at": "2026-11-19T15:30:19Z"
 }
