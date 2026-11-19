@@ -6,9 +6,15 @@
   "description": "Preserve candidate 12 changes in the current working tree. Adjust only Executor.report/2 so confirmation is the overall status and delivery exists only when messages is empty. Action reuse assessment: local-only adjustment to the existing report serializer; reuse report_confirmation/3, step_failures/2, public_outcome/1 and finish/2. No new transport operation, Action, permission, retry, scheduling or tool exposure. Consumer search via Serena found only Executor.finish total-failure Error and JidoChatBridge.chat_delivery_error reading report.delivery; Channels API, Confirmation, EmailBridge and Engine history use confirmation/messages or error-only evidence. Preserve total-failure delivery/cause/message/stage and individual certainty. Existing assertions require no changes. Add a bounded property covering group counts, confirmed counts, both policies and both failure certainties; run mix q and focused executor/bridge/confirmation/history tests. E2E unnecessary for internal report metadata.",
   "id": "zaq-iac",
   "labels": [],
+  "comments": [
+    {
+      "text": "Baseline executor tests: 21/22 passed (2/2 properties); only supplied fully-confirmed delivery status regression fails. Existing candidate 12 report regression passes. Existing uncommitted files belong to the authorized previous candidate and regression work and will be preserved. Reusing unchanged policy sections from current session: workflow, testing, Channels, code quality, conventions and Action reuse. No existing test expectation updates planned.",
+      "timestamp": "2026-11-19T15:58:49Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 13: scope report delivery certainty to total failure",
   "type": "bug",
-  "updated_at": "2026-11-19T15:58:47Z"
+  "updated_at": "2026-11-19T15:58:49Z"
 }
