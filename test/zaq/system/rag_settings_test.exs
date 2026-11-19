@@ -1,9 +1,10 @@
 defmodule Zaq.System.RAGSettingsTest do
-  use Zaq.DataCase, async: true
+  # Fixed configuration keys retain unique-index locks until sandbox rollback.
+  use Zaq.DataCase, async: true, group: :system_model_config
 
   alias Zaq.Engine.{Api, Events}
   alias Zaq.System
-  alias Zaq.System.RAGModelConfig
+  alias Zaq.System.OperationModelConfig, as: RAGModelConfig
   alias Zaq.System.RetrievalConfig
 
   test "retrieval defaults and invalid stored values retain the cosine cutoff default" do

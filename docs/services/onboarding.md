@@ -1,7 +1,7 @@
 # Onboarding (User Portal)
 
-This document describes the first-run admin onboarding flow and the dashboard
-portal-activation retry flow. Both paths share the same orchestrator,
+This document describes first-run admin onboarding, connecting an existing
+Portal account, and the dashboard portal-activation retry. These paths share the same orchestrator,
 `Zaq.UserPortal.Onboarding`, and the same external dependency: the **ZAQ User
 Portal** API (provisions a LiteLLM API key for the "ZAQ Router" provider).
 
@@ -78,6 +78,40 @@ On a successful `:accepted` provisioning, a "you're all set" modal is shown;
 `close_post_accept_modal` navigates to `/bo/ingestion`. Declined, unavailable,
 and `:accepted`-with-failed-provisioning onboarding redirect to `/bo/dashboard`.
 
+## Connect an existing Portal account
+
+On an unregistered instance, `/bo/connect?portal_token=…` opens a password-only
+setup form. ZAQ removes the token from the URL before showing the form and
+validates the password and its confirmation locally before calling the Portal.
+An existing administrator cannot be replaced using this route.
+
+The first `POST /connect` sends `Authorization: Bearer <portal_token>`. Its JSON
+body contains only `machine_signals` and `network`.
+The Portal returns `user.email`, `user.litellm_api_key`, `confirmation_token`,
+`installation_url` and `deploy_on_own_cluster`. ZAQ never sends the password,
+email or plan in this request. If the exchange fails, the form shows an error
+without completing registration.
+
+ZAQ completes the seeded administrator, queues a job with only the installation
+URL and cluster flag, and records consent in one transaction. It runs the same
+synchronous credential, assistant, routing and model setup using the returned key
+before committing registration. If ZAQ cannot queue the job, registration remains
+pending and no confirmation is sent. Return to Portal to request a new connection
+link and try again.
+
+After the transaction commits, ZAQ sends a second `POST /connect` containing only
+`{"confirmation_token":"…"}` in the JSON body and no bearer header. Portal
+acknowledges queued setup, not job completion, with `200 {"status":"connected"}`.
+Any other response leaves the connection unconfirmed without blocking local setup.
+ZAQ does not persist the confirmation token.
+
+The job sets Global URL and, for own-cluster installations, enables Disk with
+`Documents` as the default volume at relative path `.`. It creates `.web_browser`
+and `.SKILLS` under that volume and saves them as the screenshot and skill resource
+destinations. This requires a writable Storage base path. Job retries do not
+contact the Portal or repeat synchronous provisioning. The authenticated setup
+page reports failures and redirects to Ingestion when the job completes.
+
 ## Dashboard Retry Flow (`activate_portal/2`)
 
 Mounted via `PortalConsentLive` in the BO header for users who didn't accept at
@@ -127,12 +161,17 @@ Persisted on `users.portal_consent`:
   - Embedding: `baai/bge-m3`, 1024 dimensions.
   - Image-to-text: `deepseek/deepseek-v4.1-flash`.
   - Knowledge-query translation: `openai/gpt-oss-20b`.
+  - Global Small model (conversation titles): `openai/gpt-oss-20b`.
   - Re-ranking: `Qwen/Qwen3-Reranker-0.6B`.
-  - Decision selection: `typesafe/jev-1.14` (does not activate decision inference).
-  Translation, re-ranking and decision defaults initialize only settings that have
-  never been saved. Retries preserve customized, partial and explicitly cleared
-  selections; clearing re-ranking disables that optional step. Failed model saves
-  are logged and can be retried without undoing credential/agent provisioning.
+  - Global decision selection: `typesafe/jev-1.14`, used by the shared decision Action.
+  Translation, Small model, re-ranking and decision defaults initialize only
+  settings that have never been saved. Retries preserve customized, partial and
+  explicitly cleared selections; clearing re-ranking disables that optional step.
+  Failed model saves are logged and can be retried without undoing credential/agent
+  provisioning.
+  Sampling-only settings also count as saved selections. Existing installations
+  with absent selections receive these defaults on successful provisioning retry,
+  not on application startup.
   Existing embeddings and vector dimensions are not migrated or regenerated.
   No legacy `LLMConfig` is read or written.
 - Recorded matching claims survive local failures and successful bootstrap, so a

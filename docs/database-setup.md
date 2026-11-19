@@ -68,10 +68,13 @@ host authentication, backups, or secret storage.
   an empty ledger left by a failed first migration. Nothing in an existing rejected
   database, including role passwords, is changed. Do not delete a real ledger to
   bypass this protection; request a DBA-managed repair instead.
-- Existing roles must have no administrative flags, role memberships (in either
-  direction), or dependencies in another database. The reader must own no objects.
-  Unsafe/shared roles are rejected rather than silently repurposed. Roles are
-  cluster-wide: use separate role names for separate ZAQ databases.
+- Existing roles must have no administrative flags except optional owner
+  `CREATEROLE`, and no dependencies in another database. The owner may have
+  ADMIN-only membership in other non-administrative roles, with neither INHERIT
+  nor SET enabled; PostgreSQL creates this membership when the owner creates a
+  role. Other memberships involving the owner or reader are rejected. The reader
+  must own no objects. Unsafe/shared roles are rejected rather than silently
+  repurposed. Roles are cluster-wide: use separate names for separate ZAQ databases.
 - Role/password changes, extensions, target ownership and ACLs share one transaction.
   `CREATE DATABASE` cannot run inside it: failure can leave a new **DBA-owned empty
   database**, which can be retried. No automatic destructive cleanup is performed.
@@ -87,6 +90,136 @@ runtime chunk creation/reset. `public` follows the database owner using
 `pg_database_owner`; existing application-object ownership is not transferred.
 An existing database containing objects owned by another role needs explicit DBA
 reconciliation. Never transfer DBA-owned extension objects to ZAQ.
+
+## Application database TLS
+
+Application connections (including release migrations) use Ecto/Postgrex, not
+libpq. `PGSSLMODE` configures psql provisioning connections only; setting it does
+not enable application TLS.
+
+| Setting | Contract |
+| --- | --- |
+| `ZAQ_DATABASE_SSL` | Optional, exactly `true` or `false`. The image entrypoint adds `?ssl=true` or `?ssl=false` when constructing `DATABASE_URL` from `PGHOST`, `PGPORT`, `ZAQ_OWNER`, `ZAQ_OWNER_PASSWORD` and `ZAQ_DATABASE`. Unset/empty preserves the existing URL without a TLS option. |
+| `DATABASE_URL` | A nonempty explicit URL is preserved and takes precedence over component settings, including `ZAQ_DATABASE_SSL` (even an invalid switch is ignored). Use `?ssl=true` in that URL to enable application TLS. |
+| `ZAQ_DATABASE_SSL_CA_CERT_FILE` | Optional readable PEM CA bundle **inside the application container**, used with `ssl=true`. Mount it read-only on every application/migration container and on automatic provisioning/adoption jobs. Without it, the application uses the Erlang/system trust store. |
+
+`ssl=true` requires encryption, a trusted server certificate chain, and a matching
+server hostname. The pinned Ecto 3.14.3 parses this URL boolean; Postgrex 0.22.4
+defaults to peer verification, system CA roots, and HTTPS-style hostname checking.
+The custom-CA path preserves those verification requirements explicitly. Use the
+certificate's DNS name in `PGHOST` or the explicit URL, not an unrelated service
+alias or IP address. Trust-store contents must include the issuing CA; mounting a
+private CA file does not install it into system trust. There is no encryption-only
+or skip-verification setting. `ssl=false` explicitly uses plaintext. Unset TLS
+retains the previous plaintext default, so an SSL-required database rejects it.
+
+An explicit URL without `ssl=true` does not inherit the component TLS switch.
+The CA setting still applies to an explicit TLS URL; a CA setting without
+`ssl=true` fails configuration rather than being ignored. Invalid TLS values,
+duplicate `ssl` options, and libpq-only TLS URL keys such as `sslmode` and
+`sslrootcert` are rejected with credential-safe diagnostics. Configure trust
+through the CA setting, not `ssl_opts` in a URL. Invalid/unreadable CA files,
+untrusted or expired certificates, and hostname mismatches fail the connection;
+there is no plaintext retry. Migration failure prevents server startup.
+
+For an external PostgreSQL deployment using component settings, the image contract
+for Helm or another orchestrator is:
+
+```yaml
+PGHOST: database.example.com
+PGPORT: "5432"
+ZAQ_DATABASE: zaq_prod
+ZAQ_OWNER: zaq_owner
+ZAQ_DATABASE_SSL: "true"
+ZAQ_DATABASE_SSL_CA_CERT_FILE: /etc/zaq/database-ca/ca.pem
+```
+
+Inject `ZAQ_OWNER_PASSWORD` from a Secret, unencoded; the entrypoint percent-encodes
+the username, password and database name. Omit `DATABASE_URL` when using these
+components. Omit the CA-file setting only if the server's CA is already trusted
+by the container's system store. Chart support must pass these settings and mount
+the CA in the **fixed image**; setting them on an older image does not add support.
+For direct release execution without the image entrypoint, supply `DATABASE_URL`
+with its TLS boolean explicitly. Never print connection URLs or enable shell tracing.
+
+### Provisioning TLS and owner authentication
+
+Configure DBA and separate owner/reader psql checks independently with libpq
+settings, normally `PGSSLMODE=verify-full` and `PGSSLROOTCERT` pointing to the
+provisioning container's CA bundle. Application CA settings do not configure those
+connections. A server requiring TLS also needs these provisioning settings.
+
+Automatic bootstrap and adoption continue authenticating the **actual application
+URL** as the owner against the same server/database. For that check only, the
+wrapper converts Ecto `ssl=true` to libpq `sslmode=verify-full` with the application
+CA file, or `sslrootcert=system` when no file is set. Use libpq 17+ for this
+system-root mode; the image supplies it and Python 3 for URL adaptation. `ssl=false` becomes
+`sslmode=disable`; absent `ssl` leaves libpq's environment behavior unchanged.
+The owner check's explicit TLS options override `PGSSLMODE`/`PGSSLROOTCERT` for
+that connection. Ecto pool/timing options (`pool_size`, `timeout`, `idle_interval`)
+are removed for psql, not passed as unsupported libpq parameters. Unknown
+owner-validation options fail before provisioning. Owner credentials, receipts,
+ownership and migration-ledger checks remain mandatory; TLS failures do not
+authorize password rotation or database repair.
+
+### TLS regression checks
+
+Run `sh test/docker_entrypoint_test.sh` and
+`mix test test/zaq/database_config_test.exs` for URL/precedence/configuration tests.
+The opt-in `python3 test/integration/database_tls_test.py` creates and removes one
+disposable SSL-required pgvector PostgreSQL container. It requires Docker,
+`pgvector/pgvector:pg18`, OpenSSL, psql 17+, and compiled Mix dependencies. It uses
+ephemeral credentials and certificates to exercise provisioning, real release
+migrations/application startup, rejected trust/hostname/plaintext connections,
+and post-migration receipt/owner authentication. It never targets an existing DB.
+
+## Owner-managed logins and schema access
+
+The owner receives `CREATEROLE` and can create logins, create schemas, and grant
+access to schemas and objects it owns. It remains `NOSUPERUSER`, `NOCREATEDB`,
+`NOREPLICATION`, `NOBYPASSRLS` and `NOINHERIT`; the reader remains `NOCREATEROLE`.
+`CREATEROLE` is cluster-wide, not limited to the ZAQ database. Treat owner
+credentials as role-administration credentials, not a schema-isolated account.
+Restart/adoption checks allow the owner's ADMIN-only memberships in
+non-administrative roles, but reject inherited or SET ROLE access and memberships
+involving the reader. These checks detect drift; they do not sandbox owner SQL.
+
+For a separate read-only login, first create it as the owner and set its password
+through your protected credential-management process. Then grant only the intended
+schema and its objects. For example, for an existing `reporting_reader` login and
+an owner-created `reporting` schema in `zaq_prod`, run as the owner:
+
+```sql
+GRANT CONNECT ON DATABASE zaq_prod TO reporting_reader;
+GRANT USAGE ON SCHEMA reporting TO reporting_reader;
+GRANT SELECT ON ALL TABLES IN SCHEMA reporting TO reporting_reader;
+GRANT SELECT ON ALL SEQUENCES IN SCHEMA reporting TO reporting_reader;
+ALTER DEFAULT PRIVILEGES IN SCHEMA reporting
+  GRANT SELECT ON TABLES TO reporting_reader;
+ALTER DEFAULT PRIVILEGES IN SCHEMA reporting
+  GRANT SELECT ON SEQUENCES TO reporting_reader;
+```
+
+When `pg_search` is installed, provisioning grants the owner USAGE on the
+extension-owned `pdb` schema WITH GRANT OPTION. Before a scoped login queries
+application tables, the owner also grants it this prerequisite:
+
+```sql
+GRANT USAGE ON SCHEMA pdb TO reporting_reader;
+```
+
+ParadeDB needs this internal schema even for ordinary SELECT queries, including
+when ZAQ uses native full-text search with `pg_search` installed. Only USAGE is
+delegable: this grant does not let the owner delegate schema CREATE, table access
+or routine execution, and does not transfer extension ownership. PUBLIC and reader
+permissions remain unchanged. No additional DBA intervention is needed per login.
+
+Schema USAGE alone does not grant table access. Default privileges apply only to
+future objects created by the role configuring them; other creators need their
+own defaults. Grant schema CREATE, table writes, or sequence USAGE separately only
+when intended. New logins still receive any PUBLIC privileges: audit those grants
+and do not grant the broad bootstrap reader role to a schema-scoped login. The
+bootstrap reader retains its database-wide read access described below.
 
 ## Read-only access
 
@@ -113,6 +246,32 @@ against future privileged schema changes. It does not revoke PUBLIC CONNECT on
 other databases in the cluster.
 
 ## Existing deployments and development/CI
+
+### Enable owner-managed logins on an existing deployment
+
+For an already migrated deployment whose owner has `NOCREATEROLE`, stop ZAQ and
+migrators and have the DBA review the owner identity and run the following SQL,
+substituting the actual owner login:
+
+```sql
+ALTER ROLE zaq_owner CREATEROLE;
+```
+
+If `pg_search` is installed in the target database, the DBA also runs:
+
+```sql
+GRANT USAGE ON SCHEMA pdb TO zaq_owner WITH GRANT OPTION;
+```
+
+This applies even when ZAQ uses the native backend. Automatic restart and adoption
+require these capabilities but never grant or repair them.
+Unmigrated databases can use the normal provisioning rerun. Do not rerun bootstrap
+against a migrated database or delete its migration ledger. These DBA operations
+do not rotate passwords or grant access to application data. Afterward, validate
+with normal automatic startup, or use adoption below if no receipt exists. The
+legacy ownership repair applies the extension-schema grant through the shared
+ACL setup, but does not change role flags; it still needs the CREATEROLE step
+before adoption when its owner has `NOCREATEROLE`.
 
 ### Docker image and automatic Compose bootstrap
 

@@ -14,25 +14,25 @@ jobs:
 
     # One runner per browser. Each leg has its own Postgres and Phoenix, so
     # POST /e2e/reset stays a whole-node reset within its
-    # leg and no test isolation work is needed. fail-fast is off so one browser
-    # failing still tells us about the other two.
+    # leg and no test isolation work is needed. PRs require all three browsers;
+    # the merge queue revalidates Chromium only. fail-fast stays off for PR coverage.
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - browser: chromium
-            runner: ubuntu-24.04
-            postgres-image: pgvector/pgvector:pg18
-          - browser: firefox
-            runner: ubuntu-24.04
-            postgres-image: pgvector/pgvector:pg18
-          - browser: webkit
-            runner: macos-15
-            # An empty image disables the service; macOS runs Postgres natively.
-            postgres-image: ""
+        include: >-
+          ${{ fromJSON(
+            github.event_name == 'merge_group'
+              && '[{"browser":"chromium","runner":"ubuntu-24.04","postgres-image":"pgvector/pgvector:pg18"}]'
+              || '[
+                {"browser":"chromium","runner":"ubuntu-24.04","postgres-image":"pgvector/pgvector:pg18"},
+                {"browser":"firefox","runner":"ubuntu-24.04","postgres-image":"pgvector/pgvector:pg18"},
+                {"browser":"webkit","runner":"macos-15","postgres-image":""}
+              ]'
+          ) }}
 
     services:
       postgres:
+        # An empty image disables the service; macOS runs Postgres natively.
         image: ${{ matrix.postgres-image }}
         env:
           POSTGRES_USER: postgres
@@ -59,7 +59,31 @@ jobs:
 
       - name: Install inotify-tools
         if: runner.os == 'Linux'
-        run: sudo apt-get install -y --no-install-recommends inotify-tools
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          # Browser dependencies only need Ubuntu, not optional runner repositories.
+          test -f /etc/apt/sources.list.d/ubuntu.sources
+          # Mirror fallback retains the runner's Ubuntu signing-key verification.
+          printf '%s\n' \
+            'https://archive.ubuntu.com/ubuntu/' \
+            'https://mirrors.edge.kernel.org/ubuntu/' \
+            | sudo tee /etc/apt/apt-mirrors.txt > /dev/null
+          printf '%s\n' \
+            'https://security.ubuntu.com/ubuntu/' \
+            'https://mirrors.edge.kernel.org/ubuntu/' \
+            | sudo tee /etc/apt/apt-mirrors-security.txt > /dev/null
+          # Keep these bounds for Playwright's later APT dependency installation too.
+          printf '%s\n' \
+            'Dir::Etc::sourcelist "/etc/apt/sources.list.d/ubuntu.sources";' \
+            'Dir::Etc::sourceparts "-";' \
+            'Acquire::Retries "3";' \
+            'Acquire::http::Timeout "15";' \
+            'Acquire::https::Timeout "15";' \
+            'APT::Update::Error-Mode "any";' \
+            | sudo tee /etc/apt/apt.conf.d/80-e2e-network > /dev/null
+          sudo apt-get update -o APT::Update::Error-Mode=any
+          sudo apt-get install -y --no-install-recommends inotify-tools
 
       - name: Set up PostgreSQL 18 and pgvector on macOS
         if: runner.os == 'macOS'
@@ -158,6 +182,9 @@ jobs:
       - name: Install Playwright browser
         run: npx --prefix test/e2e playwright install --with-deps ${{ matrix.browser }}
 
+      - name: Verify browser navigation lifecycle
+        run: node --test --test-name-pattern='^${{ matrix.browser }}:' test/e2e/support/bo-navigation.test.cjs
+
       - name: Provision E2E database extensions as DBA
         run: mix run --no-start .github/scripts/provision-test-database.exs postgres
 
@@ -187,7 +214,7 @@ jobs:
           fi
 
   # The repository ruleset "Bypassable Main Branch" requires a check named
-  # exactly "User Journeys QA". The matrix above reports three differently-named
+  # exactly "User Journeys QA". The matrix above reports browser-specific
   # checks, so this job carries the required name and fails if any leg failed.
   # `if: always()` is required — a skipped job leaves the required check pending
   # forever and blocks the PR just as hard as a failure.

@@ -12,6 +12,7 @@ defmodule Zaq.Agent.Tools.RegistryTest do
     "answering.knowledge_base_overview",
     "answering.get_knowledge_base_chunks",
     "general.encode_base64",
+    "general.evaluate_decisions",
     "general.decode_base64",
     "general.encode_json",
     "general.decode_json",

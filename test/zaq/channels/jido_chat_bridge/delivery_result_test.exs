@@ -4,6 +4,74 @@ defmodule Zaq.Channels.JidoChatBridge.DeliveryResultTest do
 
   alias Zaq.Channels.JidoChatBridge.DeliveryResult
 
+  describe "delivery_observation/2" do
+    property "neutral SDK HTTP failures preserve attested provider status evidence" do
+      check all(code <- integer(100..599)) do
+        for adapter <- [Jido.Chat.Mattermost.Adapter, Jido.Chat.Telegram.Adapter] do
+          assert DeliveryResult.delivery_observation(adapter, {:error, {:http_error, code}}) ==
+                   DeliveryResult.delivery_observation(adapter, {:error, {code, "private"}})
+        end
+      end
+    end
+
+    property "typed transport errors preserve the adapter's bounded evidence" do
+      check all(code <- integer(100..599)) do
+        reason = {code, "PRIVATE_PROVIDER_BODY"}
+
+        response =
+          {:error,
+           %Zaq.Channels.Delivery.Error{
+             reason: reason,
+             message: "Delivery was not confirmed.",
+             stage: :transport,
+             delivery: :unconfirmed
+           }}
+
+        for adapter <- [Jido.Chat.Mattermost.Adapter, Jido.Chat.Telegram.Adapter] do
+          assert DeliveryResult.delivery_observation(adapter, response) ==
+                   DeliveryResult.delivery_observation(adapter, {:error, reason})
+        end
+      end
+    end
+
+    test "only the Mattermost adapter's attested rejection statuses prove failure" do
+      for code <- [400, 401, 403, 404, 405, 413, 415, 422, 429] do
+        response = {:error, {code, %{"message" => "PRIVATE_PROVIDER_BODY"}}}
+
+        assert DeliveryResult.delivery_observation(Jido.Chat.Mattermost.Adapter, response) ==
+                 %{outcome: :failed, reason: :rejected, provider_code: code}
+
+        assert DeliveryResult.delivery_observation(Jido.Chat.Telegram.Adapter, response) == nil
+      end
+    end
+
+    test "Mattermost ambiguous HTTP outcomes retain bounded codes without bodies" do
+      for code <- [408, 500, 502, 503, 504] do
+        response = {:error, {code, "PRIVATE_PROVIDER_BODY"}}
+
+        assert DeliveryResult.delivery_observation(Jido.Chat.Mattermost.Adapter, response) ==
+                 %{outcome: :unconfirmed, reason: :unknown, provider_code: code}
+      end
+    end
+
+    property "only HTTP-range integers are extracted as Mattermost provider codes" do
+      check all(code <- integer(-1000..2000)) do
+        result =
+          DeliveryResult.delivery_observation(
+            Jido.Chat.Mattermost.Adapter,
+            {:error, {code, "private"}}
+          )
+
+        if code in 100..599 do
+          assert result.provider_code == code
+          refute Map.has_key?(result, :body)
+        else
+          assert result == nil
+        end
+      end
+    end
+  end
+
   describe "normalize_edit/2 unexpected responses" do
     test "rejects an unexpected adapter response and preserves it exactly" do
       assert DeliveryResult.normalize_edit(Jido.Chat.Mattermost.Adapter, :unexpected) ==

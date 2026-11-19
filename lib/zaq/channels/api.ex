@@ -238,12 +238,26 @@ defmodule Zaq.Channels.Api do
           bridge_module,
           event.opts
         )
-        |> Confirmation.record(outgoing, event.opts)
 
-      %{event | response: response}
+      observation = CommunicationBridge.delivery_observation(bridge, outgoing, response)
+
+      %{
+        event
+        | response: Confirmation.record(response, outgoing, observation, event.opts)
+      }
     else
-      {:error, reason} -> %{event | response: {:error, reason}}
+      {:error, reason} ->
+        response = report_outgoing_failure(event, {:error, reason})
+        %{event | response: response}
     end
+  rescue
+    exception ->
+      report_outgoing_failure(event, {:error, :delivery_outcome_unknown})
+      reraise exception, __STACKTRACE__
+  catch
+    kind, reason ->
+      report_outgoing_failure(event, {:error, :delivery_outcome_unknown})
+      :erlang.raise(kind, reason, __STACKTRACE__)
   end
 
   def handle_event(
@@ -1055,6 +1069,37 @@ defmodule Zaq.Channels.Api do
   defp outgoing_from_event(%Event{request: %Outgoing{} = outgoing}), do: {:ok, outgoing}
   defp outgoing_from_event(%Event{response: %Outgoing{} = outgoing}), do: {:ok, outgoing}
   defp outgoing_from_event(_event), do: {:error, {:invalid_request, :missing_outgoing_payload}}
+
+  defp report_outgoing_failure(event, response) do
+    case outgoing_from_event(event) do
+      {:ok, outgoing} ->
+        Confirmation.record(
+          response,
+          outgoing,
+          pre_send_observation(response),
+          event.opts
+        )
+
+      _ ->
+        response
+    end
+  end
+
+  defp pre_send_observation({:error, {:no_bridge, _}}),
+    do: %{outcome: :failed, reason: :unsupported_provider}
+
+  defp pre_send_observation({:error, reason})
+       when reason in [
+              :missing_connection_details,
+              :invalid_connector_id,
+              :connector_mismatch,
+              :channel_disabled,
+              :channel_archived,
+              :channel_config_not_found
+            ],
+       do: %{outcome: :failed, reason: :missing_configuration}
+
+  defp pre_send_observation(_response), do: %{outcome: :unconfirmed, reason: :unknown}
 
   defp upsert_outgoing_from_event(%Event{request: %Outgoing{} = outgoing}), do: {:ok, outgoing}
 
