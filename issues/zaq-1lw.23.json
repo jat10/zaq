@@ -31,11 +31,15 @@
     {
       "text": "User explicitly instructed push after the staged-merge/validation handoff. Publishing the prepared merge as reviewed, without inferring approval for the separately pending neutral SDK error assertion changes. Known two incoming MessageDeliveryTest expectation failures and existing Telegram zaq-1lw.21 are documented in the merge commit. No assertions changed further. Final existing q and 208 focused checks pass; staged diff-check passes and there are no unstaged edits or unresolved conflicts.",
       "timestamp": "2026-11-19T14:42:54Z"
+    },
+    {
+      "text": "Published at explicit user push instruction: merge commit 320511d35a7bbecdc80541f208d89225d54c50b1 with parents db336f6e9 and origin/main 712b538ab. Pre-commit qf and commit-message hooks PASS; pre-push format PASS. SSH push to origin/feat/channel-files succeeded and ls-remote matches local HEAD. Main ancestry verified, working tree clean. Pending two neutral SDK HTTP error test assertion migrations remain unmodified beyond the earlier approved typed wrapper; their separate approval question is still pending. Existing Telegram failure remains zaq-1lw.21. Integration publication is complete; no final green suite or feature-gate completion claimed. Issue stays in_progress for the documented test-contract follow-up.",
+      "timestamp": "2026-11-19T14:44:23Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.23] Merge main into the channel delivery branch",
   "type": "task",
-  "updated_at": "2026-11-19T14:42:54Z"
+  "updated_at": "2026-11-19T14:44:23Z"
 }
