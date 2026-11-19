@@ -10,11 +10,15 @@
     {
       "text": "Baseline executor tests: 21/22 passed (2/2 properties); only supplied fully-confirmed delivery status regression fails. Existing candidate 12 report regression passes. Existing uncommitted files belong to the authorized previous candidate and regression work and will be preserved. Reusing unchanged policy sections from current session: workflow, testing, Channels, code quality, conventions and Action reuse. No existing test expectation updates planned.",
       "timestamp": "2026-11-19T15:58:49Z"
+    },
+    {
+      "text": "Implementation: report/2 builds the existing report facts and adds top-level delivery only when messages == []; confirmation remains the overall status. Individual failed_attachments and step_outcomes certainty and finish/2 Error construction unchanged. Candidate 12 finish/2 consistent report preserved. New property covers 1..6 groups, 0..count confirmed prefix, continue/abort, not_sent/unconfirmed, exact failed count and error reason/cause/message/stage/delivery. No existing assertion edited. mix q passed; focused consumers validating.",
+      "timestamp": "2026-11-19T16:01:05Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Candidate 13: scope report delivery certainty to total failure",
   "type": "bug",
-  "updated_at": "2026-11-19T15:58:49Z"
+  "updated_at": "2026-11-19T16:01:05Z"
 }
