@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-19T14:05:31Z",
+  "description": "Integrate origin/main into feat/channel-files without rewriting branch history. Preserve channel delivery findings and Delivery namespace while adopting incoming history outcome reporting, Agent/workflow changes, TLS/bootstrap fixes and dependency updates from main. Resolve conflicts using both contracts, run mix q and focused merge regressions, distinguish known Telegram zaq-1lw.21 failure. Action reuse: reuse existing operations from both branches; no parallel implementation or new tools. This is a Git integration task, not candidates 9–14 or Telegram expansion.",
+  "id": "zaq-1lw.23",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "Merge main into the channel delivery branch",
+  "type": "task",
+  "updated_at": "2026-11-19T14:05:31Z"
+}
