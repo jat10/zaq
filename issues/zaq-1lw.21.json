@@ -21,11 +21,15 @@
     {
       "text": "Approved migration implemented: exact binary \u003c\u003c255,0,128\u003e\u003e, image.png filename, Image as a file caption, provider message ID101 and one sendDocument call are asserted through real Telegram Adapter.send_file/3 using FileUpload(kind: :file). Added actual bridge regression verifying missing requirements produce partial text-only delivery with original answer, configuration/not_sent failure at index0, no uploaded or delivered file refs, one HTTP sendMessage, and abort policy rejects before HTTP. No wrapper adapter, invented limits, dependency edits or production changes. Existing history/edit tests retained.",
       "timestamp": "2026-11-20T08:59:55Z"
+    },
+    {
+      "text": "Telegram migration validated in both complete reported modules (22 PASS) and related regression suite (395 PASS,12 properties). Exact document payload/ID/no-duplicate assertions and bridge continue/abort missing-requirements assertions all pass. Limitation intentionally remains: installed adapter does not expose file_requirements/1; upstream adapter/pin adoption stays deferred rather than inventing host limits. No commits/pushes.",
+      "timestamp": "2026-11-20T09:02:51Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.21] Reconcile Telegram attachment transport requirements",
   "type": "bug",
-  "updated_at": "2026-11-20T08:59:55Z"
+  "updated_at": "2026-11-20T09:02:51Z"
 }
