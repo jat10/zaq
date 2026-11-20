@@ -9,7 +9,7 @@
   "parent": "zaq-1lw",
   "priority": 2,
   "status": "open",
-  "title": "Remove obsolete bulk attachment preparation API and migrate coverage",
+  "title": "[zaq-1lw.26] Remove obsolete bulk attachment preparation API and migrate coverage",
   "type": "task",
-  "updated_at": "2026-11-20T07:35:50Z"
+  "updated_at": "2026-11-20T07:35:51Z"
 }
