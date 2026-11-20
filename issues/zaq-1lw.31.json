@@ -7,9 +7,15 @@
   "id": "zaq-1lw.31",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "User explicitly approved exact executor consolidation in current request. .30 checks passed before starting. Action reuse not applicable: test-only reuse of same Executor.execute(outgoing(:continue,2,true),OperationBridge,connection()) execution. Move both multi-group delivered_attachment_indices assertions and not_sent refutation with original diagnostic into existing multi/single success test before deleting only duplicate execution. Keep all single-group upload/outcome assertions, properties and failure/concurrency/deadline tests. No production behavior change, new property or E2E needed. No commit/push.",
+      "timestamp": "2026-11-20T09:13:29Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.31] Combine duplicate successful delivery executor tests",
   "type": "task",
-  "updated_at": "2026-11-20T09:13:28Z"
+  "updated_at": "2026-11-20T09:13:29Z"
 }
