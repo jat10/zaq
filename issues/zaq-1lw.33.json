@@ -13,11 +13,15 @@
     {
       "text": "User explicitly approved error-contract migration in current session. Reproduced both failures in isolation: line349 expects raw {403, body}, line136 expects Delivery.Error.reason={403, body}; installed Mattermost ReqClient.failure_reason/1 bounds HTTP errors to {:http_error, status}, and bridge wraps ordinary text failures in Delivery.Error. Preserve all actual HTTP, request count, Engine recording raise/throw recovery, persisted evidence and privacy assertions. Test-only changes to existing tests; no production behavior change, new Action or tool. No commit/push.",
       "timestamp": "2026-11-20T08:58:24Z"
+    },
+    {
+      "text": "Approved migration implemented in existing MessageDelivery tests only: both rejection paths now assert Delivery.Error(reason: {:http_error,403}, stage: :transport, delivery: :unconfirmed); existing HTTP body/count, Engine raise/throw safety, accepted receipt, bounded persisted evidence, unchanged canonical content, no transcript association and private body exclusion assertions retained. Added result privacy assertion. Production and dependencies untouched; prior zaq-1lw.28 edits preserved. Property rationale: finite contract migration with existing confirmation-dominance property and related DeliveryResult status properties; no new input invariant.",
+      "timestamp": "2026-11-20T08:59:54Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw] Migrate Mattermost delivery observation tests to structured errors",
   "type": "task",
-  "updated_at": "2026-11-20T08:58:24Z"
+  "updated_at": "2026-11-20T08:59:54Z"
 }
