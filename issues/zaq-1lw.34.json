@@ -13,11 +13,15 @@
     {
       "text": "Investigation/plan: Attachments owns trusted acquisition, actual-size validation, bridge preparation and safe errors; Executor owns scheduling/failure policy, publication dependencies and reporting. Extend shared preparation helpers with group-scoped preparation, retaining prepare_execution/3 compatibility for direct-send and existing callers. Reuse JidoChatBridge.prepare_upload_request/2 and execute_delivery_step/3 unchanged; no Action/tool/transport additions. Cache original-index acquisition outcomes across groups; release source content, consumed upload requests and runtime bytes after their last consumer while retaining display metadata/references. Direct-send decision: preserve whole-plan preparation before any SMTP/direct send, including abort on later preparation failure; SMTP final continuation/header encoding checks remain unchanged. Tests first: new observable acquisition/preparation/upload ordering for 15 files, failure-policy matrix, multi-batch/partial confirmations, shared references, actual limits and stop/accounting properties; existing executor/policy/Jido/email/materialization suites retained. No existing assertion requiring all upload groups prepared first found so far; preserve early preparation error shape and existing payload assertions. No test behavior changes authorized or planned. Documentation: update Attachments moduledoc and channels execution contract; diagram reconciliation belongs to .12. Existing issue supplies this implementation step; .13 owns final coverage/precommit. No UI/E2E changes. Git initially clean; preserve concurrent edits. No commit/push.",
       "timestamp": "2026-11-20T10:38:21Z"
+    },
+    {
+      "text": "Implementation progress: added new GroupExecutionTest and isolated support bridge; initial RED reproduced eager later-group acquisition. Group-scoped preparation reuses acquisition/size/bridge helpers; Executor now uploads groups in order before the unchanged publication scheduler. Preserve early raw preparation errors; later abort preparation errors return delivery reports with earlier uploaded_only references. Upload requests and source bytes released by remaining consumers; direct-send preparation barrier retained. Focused new tests 28 PASS, including first/middle failures across acquisition/upload preparation/message preparation/upload under both policies, 15-file ordering, multi-batch partials, shared success/failure acquisition cache, actual-size drift and stop/accounting property. Existing executor/policy checks previously 69 PASS. No existing test behavioral expectations changed. Broad affected suites running; initial foreground command hit tool 60-second limit without reported failures and was restarted detached. Required mix q running.",
+      "timestamp": "2026-11-20T10:47:23Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.34] Materialize and prepare delivery attachments one group at a time",
   "type": "task",
-  "updated_at": "2026-11-20T10:38:21Z"
+  "updated_at": "2026-11-20T10:47:23Z"
 }
