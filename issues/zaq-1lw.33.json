@@ -29,11 +29,15 @@
     {
       "text": "Final validation complete: mix q PASS (format/hooks/strict Credo/docs/compile) against final tests; /tmp/zaq-delivery-reported-quality-final.log. git diff --check PASS. Full reported modules22 PASS; related regressions395 PASS (12 properties). Only message_delivery_test.exs and telegram_history_delivery_test.exs changed in this follow-up; all earlier work retained. No commit/push. Issues remain open for review/landing; final epic coverage/precommit remains .13.",
       "timestamp": "2026-11-20T09:03:19Z"
+    },
+    {
+      "text": "User authorized commit/push. Approved error-contract migration and final Telegram test removal are included in 17eb5d84d, pushed to origin/feat/channel-files. Hooks passed and working tree clean. Related validation recorded above; no merge.",
+      "timestamp": "2026-11-20T09:09:14Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw] Migrate Mattermost delivery observation tests to structured errors",
   "type": "task",
-  "updated_at": "2026-11-20T09:03:19Z"
+  "updated_at": "2026-11-20T09:09:14Z"
 }
