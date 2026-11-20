@@ -2,7 +2,7 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
-  alias Zaq.Channels.Delivery.{Attachments, Executor}
+  alias Zaq.Channels.Delivery.{Attachments, Executor, Plan}
   alias Zaq.Channels.TransportRequirements
   alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Outgoing
@@ -415,7 +415,8 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
           assert {:ok, planned} =
                    Attachments.build_plan(outgoing, PlanningBridge, connection)
 
-          assert planned.delivery.plan.failure_policy == :continue
+          assert Plan.failure_policy(planned.delivery.plan) == :continue
+          assert planned.delivery.plan.requirements == nil
 
           assert [%{attachment_index: 0, stage: :configuration}] =
                    planned.delivery.plan.preparation_failures

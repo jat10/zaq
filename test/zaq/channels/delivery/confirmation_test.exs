@@ -128,7 +128,7 @@ defmodule Zaq.Channels.Delivery.ConfirmationTest do
     assert Enum.all?(outgoing.delivery.attachments, &(&1.content == "private bytes"))
   end
 
-  property "private prepared plans never cross the Engine confirmation boundary" do
+  property "private plans never cross the Engine confirmation boundary" do
     check all(bytes <- binary(max_length: 1024)) do
       private = "PRIVATE_PREPARED_" <> Base.encode64(bytes)
 
@@ -137,14 +137,12 @@ defmodule Zaq.Channels.Delivery.ConfirmationTest do
         | delivery: %{
             outgoing().delivery
             | plan: %Plan{
-                failure_policy: :continue,
                 placement: :threaded,
                 steps: [
                   %Zaq.Channels.Delivery.Plan.Step{
-                    id: :private,
+                    id: private,
                     operation: :send,
-                    group_id: 0,
-                    prepared: %{content: private}
+                    group_id: 0
                   }
                 ]
               }
@@ -164,7 +162,7 @@ defmodule Zaq.Channels.Delivery.ConfirmationTest do
                  delivery_node_router: Zaq.NodeRouterMock
                )
 
-      assert hd(outgoing.delivery.plan.steps).prepared.content == private
+      assert hd(outgoing.delivery.plan.steps).id == private
     end
   end
 

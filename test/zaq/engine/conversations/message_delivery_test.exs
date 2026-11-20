@@ -6,7 +6,7 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
   import Zaq.ChannelDeliveryFixtures
 
   alias Zaq.Channels.Api, as: ChannelsApi
-  alias Zaq.Channels.Delivery.Confirmation
+  alias Zaq.Channels.Delivery.{Confirmation, Error}
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.ChannelHistoryUpdates
   alias Zaq.Engine.Conversations
@@ -218,11 +218,13 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
 
         _ ->
           assert {:error,
-                  %Zaq.Channels.Delivery.Error{
-                    reason: {403, ^response_body},
+                  %Error{
+                    reason: {:http_error, 403},
                     stage: :transport,
                     delivery: :unconfirmed
                   }} = result
+
+          refute inspect(result) =~ response_body["message"]
 
           refute stored.metadata["delivery_observation"]
           refute inspect(stored.metadata) =~ "private provider response"
@@ -376,7 +378,9 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
       Event.new(outgoing, :channels, opts: [action: :deliver_outgoing])
       |> then(&ChannelsApi.handle_event(&1, :deliver_outgoing, nil))
 
-    assert {:error, {403, _}} = result.response
+    assert {:error, %Error{reason: {:http_error, 403}, stage: :transport, delivery: :unconfirmed}} =
+             result.response
+
     stored = Repo.get!(Message, ctx.answer.id)
     assert stored.content == ctx.answer.content
     assert stored.metadata["delivery_observation"]["outcome"] == "failed"

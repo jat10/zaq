@@ -239,7 +239,7 @@ defmodule Zaq.Engine.HistoryIngressTest do
           &%Record{id: "file-#{&1}", kind: :file, content: "bytes", name: "file-#{&1}.txt"}
         )
 
-      groups = Enum.map(0..(count - 1), &%{id: &1, attachment_refs: [&1], body: "Files"})
+      groups = Enum.map(0..(count - 1), &%{id: &1, attachment_refs: [&1]})
 
       steps =
         Enum.map(
@@ -253,7 +253,15 @@ defmodule Zaq.Engine.HistoryIngressTest do
         )
 
       plan = %Plan{
-        failure_policy: :continue,
+        requirements: %Zaq.Channels.TransportRequirements{
+          transfer_mode: :send_with_attachments,
+          max_attachments_per_message: 1,
+          max_attachment_bytes: :not_applicable,
+          max_attachment_bytes_per_message: :not_applicable,
+          max_encoded_message_bytes: :not_applicable,
+          max_upload_request_bytes: :not_applicable,
+          supports_threads: true
+        },
         placement: :threaded,
         groups: groups,
         steps: steps

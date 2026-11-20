@@ -2,8 +2,9 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
-  alias Zaq.Channels.Delivery.{Error, Executor, Plan}
+  alias Zaq.Channels.Delivery.{Attachments, Error, Executor, Plan}
   alias Zaq.Channels.Delivery.Plan.Step
+  alias Zaq.Channels.TransportRequirements
   alias Zaq.Engine.Messages.Outgoing
 
   defmodule OperationBridge do
@@ -41,6 +42,141 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
       do:
         {:ok,
          %{message_id: "message-#{step.group_id}", action: :created, confirmation: :confirmed}}
+  end
+
+  defmodule PreparedBridge do
+    def prepare_upload_request(attachments, _connection),
+      do: {:ok, %{encoded_bytes: 0, request: %{files: attachments}}}
+
+    def prepare_delivery_message(outgoing, attachments, _connection),
+      do: {:ok, %{encoded_bytes: 0, body: outgoing.body, files: attachments}}
+
+    def execute_delivery_step(step, inputs, connection) do
+      send(connection.test_pid, {:prepared_operation, step, inputs.prepared})
+      OperationBridge.execute_delivery_step(step, inputs, connection)
+    end
+  end
+
+  defmodule FallbackBridge do
+    def transport_requirements(_outgoing, _connection) do
+      {:error, error} = TransportRequirements.validate(nil)
+      {:error, error, :continue}
+    end
+
+    defdelegate execute_delivery_step(step, inputs, connection), to: OperationBridge
+  end
+
+  test "prepared transport payloads stay in runtime inputs while the plan stays immutable" do
+    outgoing = outgoing(:abort, 1, true)
+    original_plan = outgoing.delivery.plan
+
+    assert {:ok, %{confirmation: :confirmed}} =
+             Executor.execute(outgoing, PreparedBridge, connection())
+
+    assert_receive {:prepared_operation, upload, %{request: %{files: [file]}}}
+    assert upload.operation == :upload
+    assert file.content == "private bytes"
+    refute Map.has_key?(upload, :prepared)
+
+    assert_receive {:prepared_operation, publication, %{body: "Original answer", files: [^file]}}
+    assert publication.operation == :send
+    refute Map.has_key?(publication, :prepared)
+    assert outgoing.delivery.plan == original_plan
+    refute inspect(original_plan) =~ "private bytes"
+  end
+
+  test "requirements-error fallback publishes the answer without acquiring discarded files" do
+    outgoing = outgoing(:continue, 1)
+
+    outgoing =
+      put_in(outgoing.delivery.attachments, [%Zaq.Contracts.Record{id: "lazy", kind: :file}])
+
+    assert {:ok, planned} = Attachments.build_plan(outgoing, FallbackBridge, connection())
+    assert planned.delivery.plan.requirements == nil
+    assert Plan.failure_policy(planned.delivery.plan) == :continue
+
+    assert {:ok, report} = Executor.execute(planned, FallbackBridge, connection())
+    assert [%{body: "Original answer", delivered_attachment_indices: []}] = report.messages
+    assert [%{attachment_index: 0, stage: :configuration}] = report.failed_attachments
+    assert_receive {:step_started, {:send, 0}, _, %{attachments: [], prepared: nil}}
+    refute_received {:step_started, {:upload, _}, _, _}
+  end
+
+  test "malformed-input notices publish notice text and retain the original canonical answer" do
+    outgoing = outgoing(:continue, 1)
+
+    error = %Error{
+      reason: :invalid_attachments,
+      message: "Files could not be sent.",
+      stage: :planning,
+      delivery: :not_sent
+    }
+
+    assert {:ok, planned} =
+             Attachments.build_failure_plan(outgoing, error, FallbackBridge, connection())
+
+    assert {:ok, report} = Executor.execute(planned, FallbackBridge, connection())
+    assert [%{body: "Original answer", delivered_attachment_indices: []}] = report.messages
+
+    assert_receive {:step_started, {:send, 0}, _,
+                    %{
+                      outgoing: %{body: "Original answer\n\nFiles could not be sent."},
+                      attachments: []
+                    }}
+  end
+
+  property "attachment-bearing plans require resolved constraints before preparation or transport" do
+    check all(
+            policy <- member_of([:abort, :continue]),
+            invalid <- member_of([:missing, :unresolved, :invalid_policy, :plain_map])
+          ) do
+      outgoing = outgoing(policy, 1, true)
+      requirements = outgoing.delivery.plan.requirements
+
+      invalid_requirements =
+        case invalid do
+          :missing -> nil
+          :unresolved -> %{requirements | max_attachment_bytes: :unresolved}
+          :invalid_policy -> %{requirements | failure_policy: nil}
+          :plain_map -> Map.from_struct(requirements)
+        end
+
+      outgoing = put_in(outgoing.delivery.plan.requirements, invalid_requirements)
+
+      assert {:error, %{reason: :invalid_delivery_plan, delivery: :not_sent}} =
+               Executor.execute(outgoing, PreparedBridge, connection())
+
+      assert {:error, %{reason: :invalid_transport_requirements, delivery: :not_sent}} =
+               Attachments.prepare_execution(outgoing, PreparedBridge, connection())
+
+      refute_received {:prepared_operation, _, _}
+      refute_received {:step_started, _, _, _}
+    end
+  end
+
+  test "requirements-less fallback rejects attachment references in either owner and upload steps" do
+    outgoing = outgoing(:continue, 1)
+    assert {:ok, planned} = Attachments.build_plan(outgoing, FallbackBridge, connection())
+    plan = planned.delivery.plan
+    [group] = plan.groups
+    [step] = plan.steps
+
+    for invalid_plan <- [
+          %{plan | groups: [%{group | attachment_refs: [0]}]},
+          %{plan | steps: [%{step | attachment_refs: [0]}]},
+          %{plan | steps: [%{step | operation: :upload}]},
+          %{plan | preparation_failures: []}
+        ] do
+      outgoing = put_in(planned.delivery.plan, invalid_plan)
+
+      assert {:error, %{reason: :invalid_delivery_plan}} =
+               Executor.execute(outgoing, PreparedBridge, connection())
+
+      assert {:error, %{reason: :invalid_transport_requirements}} =
+               Attachments.prepare_execution(outgoing, PreparedBridge, connection())
+
+      refute_received {:step_started, _, _, _}
+    end
   end
 
   test "successful delivery retains the report for both multiple groups and a single group" do
@@ -415,7 +551,7 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
 
   test "partial upload facts publish only confirmed references under continue" do
     outgoing = outgoing(:continue, 2, true)
-    group = %{id: 0, attachment_refs: [0, 1], body: outgoing.body}
+    group = %{id: 0, attachment_refs: [0, 1]}
     upload = %Step{id: :upload, operation: :upload, group_id: 0, attachment_refs: [0, 1]}
 
     send = %Step{
@@ -590,7 +726,7 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
     groups =
       Enum.map(
         0..(count - 1),
-        &%{id: &1, attachment_refs: [&1], body: "Original answer", prepared: nil}
+        &%{id: &1, attachment_refs: [&1]}
       )
 
     steps =
@@ -643,7 +779,16 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
             }
           end),
         plan: %Plan{
-          failure_policy: policy,
+          requirements: %TransportRequirements{
+            failure_policy: policy,
+            transfer_mode: if(uploads?, do: :upload_then_publish, else: :send_with_attachments),
+            max_attachments_per_message: 10,
+            max_attachment_bytes: :not_applicable,
+            max_attachment_bytes_per_message: :not_applicable,
+            max_encoded_message_bytes: :not_applicable,
+            max_upload_request_bytes: :not_applicable,
+            supports_threads: true
+          },
           placement: :threaded,
           groups: groups,
           steps: steps

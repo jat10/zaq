@@ -143,7 +143,7 @@ defmodule Zaq.Channels.JidoChatBridge do
          {:ok, result} <-
            Adapter.upload_prepared(
              adapter,
-             step.prepared.request,
+             inputs.prepared.request,
              Keyword.put(
                AdapterOptions.build(provider, connection),
                :thread_id,

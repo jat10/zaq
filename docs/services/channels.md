@@ -553,7 +553,8 @@ replies. Connection plumbing does not resolve policy again.
 using declared sizes and counts. Unknown sizes remain eligible for execution checks.
 Groups and steps reference stable original indices in `delivery.attachments`; the
 plan does not duplicate the source collection. Neither content acquisition nor
-provider encoding occurs while building a plan.
+provider encoding occurs while building a plan. Resolved `TransportRequirements`
+owns attachment failure policy; failure plans without requirements publish text only.
 
 The optional bridge callback `existing_message/2` resolves an editable message ID
 for the actual outgoing content. JidoChatBridge shares its send-or-update decision
@@ -571,7 +572,7 @@ usable attachments or the existing text fallback. Stop preparation failures prev
 new publication, and all separate uploads must succeed before stop publishes.
 
 Outgoing and the completed plan remain immutable inputs. Acquired bytes, prepared
-operation copies, outcomes and newly elected roots live in executor runtime state.
+operation inputs, outcomes and newly elected roots live in executor runtime state.
 Existing thread identity remains on Outgoing. Continue promotes confirmed roots and
 uses bounded concurrency for ready replies; stop publication remains sequential.
 Reports retain confirmed receipts, `failed_attachments`, `uploaded_attachments`,

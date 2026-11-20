@@ -8,6 +8,7 @@ defmodule Zaq.Channels.TelegramHistoryDeliveryTest do
   alias Zaq.Agent.ServerManager
   alias Zaq.Agent.Status
   alias Zaq.Channels.{Api, CommunicationBridge, JidoChatBridge}
+  alias Zaq.Channels.Delivery.Error
   alias Zaq.Channels.JidoChatBridge.DeliveryResult
   alias Zaq.Contracts.Record
   alias Zaq.Engine.{ChannelConfig, Conversations, HistoryIngress}
@@ -17,29 +18,7 @@ defmodule Zaq.Channels.TelegramHistoryDeliveryTest do
   alias Zaq.Event
   alias Zaq.TestSupport.OpenAIStub
 
-  defmodule DocumentTransport do
-    def call(_token, method, payload, _opts) do
-      send(self(), {:document_call, method, payload})
-
-      {:ok,
-       %{
-         "message_id" => 101,
-         "date" => 1,
-         "chat" => %{"id" => 123},
-         "document" => %{
-           "file_id" => "upload-id",
-           "file_name" => "image.png",
-           "mime_type" => "image/png"
-         }
-       }}
-    end
-  end
-
-  test "an image attachment uses the real adapter document operation with exact file bytes", %{
-    config: config
-  } do
-    bytes = <<255, 0, 128>>
-
+  test "missing adapter file requirements retain text fallback and stop policy", %{config: config} do
     outgoing = %Outgoing{
       provider: :telegram,
       channel_id: "123",
@@ -51,23 +30,42 @@ defmodule Zaq.Channels.TelegramHistoryDeliveryTest do
             kind: :file,
             name: "image.png",
             mime_type: "image/png",
-            content: bytes
+            content: <<255, 0, 128>>
           }
         ]
       }
     }
 
-    assert {:ok, %{confirmation: :confirmed, message_id: "101"}} =
-             JidoChatBridge.send_reply(outgoing, %{
-               url: config.url,
-               token: config.token,
-               transport: DocumentTransport
-             })
+    connection = %{url: config.url, token: config.token}
 
-    assert_received {:document_call, "sendDocument", payload}
-    assert payload["document"] == {:file_content, bytes, "image.png"}
-    assert payload["caption"] == "Image as a file"
-    refute_received {:document_call, _, _}
+    assert {:ok, report} = JidoChatBridge.send_reply(outgoing, connection)
+    assert report.confirmation == :partial
+    assert [%{body: "Image as a file", delivered_attachment_indices: []}] = report.messages
+
+    assert [%{attachment_index: 0, stage: :configuration, delivery: :not_sent}] =
+             report.failed_attachments
+
+    assert report.uploaded_attachments == []
+    assert report.uploaded_only == []
+    assert report.unattempted_steps == []
+
+    assert_receive {:openai_request, "POST", path, "", body}
+    assert String.ends_with?(path, "/sendMessage")
+    assert Jason.decode!(body)["text"] == outgoing.body
+    refute_received {:openai_request, _, _, _, _}
+
+    assert {:error,
+            %Error{
+              reason: :invalid_transport_requirements,
+              stage: :configuration,
+              delivery: :not_sent
+            }} =
+             JidoChatBridge.send_reply(
+               outgoing,
+               Map.put(connection, :settings, %{"send_on_file_failure" => false})
+             )
+
+    refute_received {:openai_request, _, _, _, _}
   end
 
   setup context do

@@ -93,7 +93,7 @@ defmodule Zaq.Channels.Delivery.Executor do
     group_ids = Enum.map(plan.groups, & &1.id)
 
     valid? =
-      plan.failure_policy in [:abort, :continue] and length(ids) == length(Enum.uniq(ids)) and
+      Plan.failure_policy(plan) in [:abort, :continue] and length(ids) == length(Enum.uniq(ids)) and
         Enum.all?(plan.steps, &valid_step?(&1, plan, outgoing, ids, group_ids))
 
     if valid? and acyclic?(plan.steps, MapSet.new()),
@@ -139,7 +139,7 @@ defmodule Zaq.Channels.Delivery.Executor do
 
       state = put_result(state, step, result)
 
-      if runtime.plan.failure_policy == :abort and result.status != :confirmed,
+      if Plan.failure_policy(runtime.plan) == :abort and result.status != :confirmed,
         do: {:halt, %{state | halted?: true}},
         else: {:cont, state}
     end)
@@ -153,7 +153,7 @@ defmodule Zaq.Channels.Delivery.Executor do
   defp run_publications(runtime, state) do
     steps = Enum.reject(runtime.plan.steps, &(&1.operation == :upload))
 
-    case runtime.plan.failure_policy do
+    case Plan.failure_policy(runtime.plan) do
       :abort -> run_sequential(steps, runtime, state)
       :continue -> run_continue(steps, runtime, state)
     end
@@ -330,6 +330,7 @@ defmodule Zaq.Channels.Delivery.Executor do
 
     %{
       outgoing: outgoing,
+      prepared: Map.get(runtime.prepared_steps, step.id),
       attachments: attachments,
       uploaded_attachments: uploaded,
       continuation?: continuation?(group, runtime, state),
@@ -344,7 +345,7 @@ defmodule Zaq.Channels.Delivery.Executor do
       ordinal = Enum.find_index(runtime.plan.groups, &(&1.id == group.id)) + 1
       "Additional files (#{ordinal}/#{length(runtime.plan.groups)})."
     else
-      Map.get(group, :body, runtime.outgoing.body)
+      runtime.outgoing.body
     end
   end
 
@@ -375,8 +376,7 @@ defmodule Zaq.Channels.Delivery.Executor do
   defp invoke(step, inputs, runtime) do
     step = %{
       step
-      | prepared: Map.get(runtime.prepared_steps, step.id),
-        attachment_refs: Enum.map(inputs.attachments, & &1.attachment_index)
+      | attachment_refs: Enum.map(inputs.attachments, & &1.attachment_index)
     }
 
     case Map.fetch(runtime.preparation_errors, step.id) do

@@ -40,10 +40,9 @@ defmodule Zaq.Channels.Delivery.Attachments do
 
         with :ok <- preparation_gate(requirements.failure_policy, failures) do
           message_id = existing_message(outgoing, bridge, connection)
-          {groups, steps} = plan_groups(batches, outgoing, requirements, message_id)
+          {groups, steps} = plan_groups(batches, requirements, message_id)
 
           plan = %Plan{
-            failure_policy: requirements.failure_policy,
             requirements: requirements,
             placement: placement(requirements, outgoing),
             groups: groups,
@@ -60,10 +59,9 @@ defmodule Zaq.Channels.Delivery.Attachments do
           |> Enum.with_index()
           |> Enum.map(fn {_, index} -> planning_failure(index, error) end)
 
-        {groups, steps} = plan_groups([], outgoing, nil, nil)
+        {groups, steps} = plan_groups([], nil, nil)
 
         plan = %Plan{
-          failure_policy: :continue,
           placement: placement(nil, outgoing),
           groups: groups,
           steps: steps,
@@ -104,11 +102,10 @@ defmodule Zaq.Channels.Delivery.Attachments do
           Map.drop(outgoing.metadata || %{}, [:on_reply, "on_reply", :html_body, "html_body"])
     }
 
-    {groups, steps} = plan_groups([], notice, nil, nil)
+    {groups, steps} = plan_groups([], nil, nil)
     groups = Enum.map(groups, &Map.merge(&1, %{canonical_body: outgoing.body, notice?: true}))
 
     plan = %Plan{
-      failure_policy: :continue,
       placement: placement(nil, outgoing),
       groups: groups,
       steps: steps,
@@ -203,10 +200,10 @@ defmodule Zaq.Channels.Delivery.Attachments do
       do: bridge.existing_message(outgoing, connection)
   end
 
-  defp plan_groups([], outgoing, requirements, message_id),
-    do: plan_groups([[]], outgoing, requirements, message_id)
+  defp plan_groups([], requirements, message_id),
+    do: plan_groups([[]], requirements, message_id)
 
-  defp plan_groups(batches, outgoing, requirements, message_id) do
+  defp plan_groups(batches, requirements, message_id) do
     batches
     |> Enum.with_index()
     |> Enum.reduce({[], []}, fn {attachments, id}, {groups, steps} ->
@@ -224,8 +221,7 @@ defmodule Zaq.Channels.Delivery.Attachments do
         message_ref: if(operation == :edit, do: {:existing, message_id})
       }
 
-      {groups ++ [%{id: id, attachment_refs: refs, body: outgoing.body}],
-       steps ++ uploads ++ [step]}
+      {groups ++ [%{id: id, attachment_refs: refs}], steps ++ uploads ++ [step]}
     end)
   end
 
@@ -268,6 +264,18 @@ defmodule Zaq.Channels.Delivery.Attachments do
   @spec prepare_execution(Outgoing.t(), module(), map()) ::
           {:ok, map()} | {:error, Error.t()}
   def prepare_execution(outgoing, bridge, connection) do
+    plan = outgoing.delivery.plan
+
+    case Plan.failure_policy(plan) do
+      policy when policy in [:abort, :continue] ->
+        prepare_execution(outgoing, bridge, connection, policy)
+
+      _ ->
+        TransportRequirements.validate(nil)
+    end
+  end
+
+  defp prepare_execution(outgoing, bridge, connection, policy) do
     plan = outgoing.delivery.plan
     refs = plan.groups |> Enum.flat_map(& &1.attachment_refs) |> Enum.uniq()
 
@@ -319,8 +327,8 @@ defmodule Zaq.Channels.Delivery.Attachments do
         end
       end)
 
-    with :ok <- acquisition_gate(plan.failure_policy, acquisition_error),
-         :ok <- preparation_gate(plan.failure_policy, failures) do
+    with :ok <- acquisition_gate(policy, acquisition_error),
+         :ok <- preparation_gate(policy, failures) do
       {:ok,
        %{
          attachments: attachments,

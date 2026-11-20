@@ -87,9 +87,9 @@ defmodule Zaq.Channels.EmailBridge do
 
   @doc "Submits one planned email after validating its final body and thread headers."
   @impl Zaq.Channels.Bridge
-  def execute_delivery_step(%{operation: :send} = step, inputs, connection) do
+  def execute_delivery_step(%{operation: :send}, inputs, connection) do
     with {:ok, _config} <- selected_smtp_config(connection.smtp_config_id),
-         {:ok, prepared} <- final_email_message(step.prepared, inputs, connection),
+         {:ok, prepared} <- final_email_message(inputs.prepared, inputs, connection),
          :ok <- email_size_valid(prepared, connection),
          {:ok, envelope} <-
            selected_smtp_sender(connection).submit_prepared(
