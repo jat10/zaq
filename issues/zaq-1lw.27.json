@@ -9,9 +9,15 @@
   "id": "zaq-1lw.27",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Action reuse assessment and producer verification before removal:\nExecutor is the existing aggregate report owner; JidoChatBridge normalizes individual create/edit receipts, provider media, and source-author Records. No Action/tool/wrapper additions.\nHistory: ZAQ 20aa137bc added legacy delivery_attachments report clause for Mattermost splitting; d531d4e84 extended failure policy; 14fee186e centralized execution. Mattermost 2d55d9f introduced splitting; 73b7e10 removed file orchestration and retained explicit nil invalidation for stale serialized edit reports. Selected Mattermost 98cd98c8f4171f2baef3177dfdeb193c607d941f contains retirement.\nPins verified from mix.lock and installed Git HEAD: Jido SDK f17679337a9975bee43b9540cb08ac5cfc12b86a; Mattermost 98cd98c8f4171f2baef3177dfdeb193c607d941f; Telegram 1e69e21722437f5a383d8a6f1d9667bb0d1693c1; Discord Hex 1.1.0. Config has exactly Mattermost/Discord/Telegram Jido adapters. Inspected send_message/edit_message/post/upload implementations and SDK adapter callback/result contract: per-publication single response, no legacy delivery_report contract. Full installed SDK/adapter lib search finds only Mattermost reset_edit_report -\u003e delivery_report nil. Full lib/test/config search finds no custom producer/test double for that shape; supported registrations and adapter_for selection checked. No installed external consumer of obsolete preparation APIs.\nCurrent Jido bridge/delivery tests contain no fake legacy-report fixture/test to delete (git history search confirms none in these files). Retain multi-group/partial/unknown/original-index tests at Executor, Confirmation and actual Mattermost HTTP bridge paths; no dependency edits. Remove only exclusive recursive aggregate clause. Keep report_file_failures/safe_file_failure/reported_file_failure_reason: live error normalization callers remain.",
+      "timestamp": "2026-11-20T07:50:41Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.27] Retire unused adapter multi-message delivery report compatibility",
   "type": "task",
-  "updated_at": "2026-11-20T07:50:40Z"
+  "updated_at": "2026-11-20T07:50:41Z"
 }
