@@ -15,11 +15,15 @@
     {
       "text": "Coverage map: all four delivery tests retain their exact script, job instructions and incoming message. First email final-B scenario keeps explicit system event/skip_permissions:true, metadata-free lazy handle assertions, denied final redemption then explicit trusted bypass, exact MIME B bytes/caption and no second email. Mattermost final-B scenario keeps system bypass, actual HTTP upload, exact B bytes/name/MIME, selected shared-room/root-bot IDs, acceptance synchronization and no duplicate upload. Empty replacement keeps both normal text and HTTP400 terminal scripts plus incoming file/no-echo assertion. Person scenario keeps explicit person event with no skip_permissions key, actual Storage grant, failed unauthorized whole replacement, successful B redemption, revocation and denied re-redemption/no email. Private run_selection helper only starts supervised LLM stub, generates fresh UUID scope, calls existing IntegrationAgent.create! with original job/tool and Executor.run with caller opts; IntegrationAgent still owns runtime cleanup. No test, property, assertion or transport boundary removed; baseline full file14 PASS (1 property,13 tests).",
       "timestamp": "2026-11-20T09:16:03Z"
+    },
+    {
+      "text": "Implementation/validation complete: entire attachment_selection_test.exs14 PASS (1 property,13 tests), same as baseline. mix q PASS; git diff --check PASS. Standalone AST audit confirms all120 scenario/property/assertion expressions across all three modules are unchanged after helper extraction and formatting. All four delivery tests retained. Net32 lines saved (15 added,47 removed). Logs /tmp/zaq-1lw-32-{before,after,quality}.log; AST audit /tmp/zaq-1lw-32-audit.exs. Prior issues validated sequentially. No production files changed, so numerical production coverage phase and feature E2E authoring are not applicable to this test-only refactor; existing eight focused properties remain exercised. Proceeding to requested final mix precommit with900s timeout. No commit/push.",
+      "timestamp": "2026-11-20T09:17:05Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.32] Share attachment selection delivery agent setup",
   "type": "task",
-  "updated_at": "2026-11-20T09:16:03Z"
+  "updated_at": "2026-11-20T09:17:05Z"
 }
