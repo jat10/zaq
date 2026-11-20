@@ -55,11 +55,15 @@
     {
       "text": "Screenshot follow-up implemented: common observation classifier maps selection/not_sent Delivery.Error to failed/attachment_selection_failed; Confirmation and Engine allow/persist that reason; history presentation explains stop-on-failure prevented delivery. Tool instructions require all requested files without size prefilter and prohibit claiming delivered based on selection success, disclose earlier failures after retry.54 checks passed(6 properties,48 tests), mix q PASS; logs /tmp/zaq-selection-history-tests.log and /tmp/zaq-selection-history-quality.log. No DB backfill, commit or push. IMPORTANT: no per-file error is fabricated: latest request failed provenance for file8, omitted file2. Structured requested-set/per-file retention remains unresolved; prior intentionally failing subset-only contract test remains.",
       "timestamp": "2026-11-20T12:07:31Z"
+    },
+    {
+      "text": "Architecture decision pending: current Action sees only selected records; no trusted requested set exists. Do not make omission test pass via filename parsing or treating every listed file as requested. Candidate1: reuse Zaq.Agent.Actions.EvaluateDecisions through Jido.Exec to independently compare original request and final selection before delivery; fail closed for abort on incomplete/unknown/unavailable verification. Adds model cost/latency and remains model-based, not a deterministic natural-language guarantee. Candidate2: user-confirmed structured requested file manifest, deterministic set comparison but UX confirmation. Requested user choice per WORKFLOW_AGENT architecture gate. No further production changes in this turn.",
+      "timestamp": "2026-11-20T12:14:45Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T12:07:31Z"
+  "updated_at": "2026-11-20T12:14:45Z"
 }
