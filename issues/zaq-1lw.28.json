@@ -29,11 +29,15 @@
     {
       "text": "User explicitly authorized commit and push in current session. Reviewed 13-file accumulated diff including Plan/Step ownership cleanup, approved Mattermost error-contract test migration and removal of the direct-adapter Telegram document test. Final mix q and affected validations already recorded. origin/feat/channel-files fetched and matches HEAD a6405a766 before commit; publishing to the existing feature branch, no main push or merge. Final epic review/coverage/precommit gates remain .12/.13.",
       "timestamp": "2026-11-20T09:08:23Z"
+    },
+    {
+      "text": "User-authorized accumulated work committed as 17eb5d84d (refactor(channels): simplify delivery plan ownership (zaq-1lw)) and pushed fast-forward to origin/feat/channel-files. Includes 13 scoped files: Plan/Step ownership cleanup, error-contract test migrations and requested removal of direct-adapter Telegram test. Commit qf and Conventional Commit hooks PASS; push format hook PASS. Working tree clean; HEAD matches remote tracking branch. No merge; existing architecture/final coverage/precommit gates remain .12/.13.",
+      "timestamp": "2026-11-20T09:09:13Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.28] Simplify delivery Plan and Step data ownership",
   "type": "task",
-  "updated_at": "2026-11-20T09:08:23Z"
+  "updated_at": "2026-11-20T09:09:13Z"
 }
