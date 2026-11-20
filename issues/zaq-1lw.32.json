@@ -7,9 +7,15 @@
   "id": "zaq-1lw.32",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "User explicitly approved focused helper extraction while retaining all four delivery tests and every assertion. .31 validated before starting .32. Evidence: four tests duplicate AttachmentSelectionLLMStub.server/start_supervised!, UUID scope, IntegrationAgent.create! and Executor.run; existing IntegrationAgent support already owns configured runtime cleanup, and must remain owner. Private helper will delegate to these APIs, retain exact scenario job strings, accept script/incoming/execution opts, create a unique scope per invocation, and add no permission/actor defaults. Scripts, system/person events, explicit bypass choices, actual Storage grants/revocation and transport assertions stay at call sites. Action reuse not applicable to production operations: test-only reuse; no new lifecycle, Action, tool, dependency, production behavior or E2E/property work.",
+      "timestamp": "2026-11-20T09:15:06Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.32] Share attachment selection delivery agent setup",
   "type": "task",
-  "updated_at": "2026-11-20T09:15:05Z"
+  "updated_at": "2026-11-20T09:15:06Z"
 }
