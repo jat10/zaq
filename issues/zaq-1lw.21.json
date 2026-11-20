@@ -17,11 +17,15 @@
     {
       "text": "User reported telegram_history_delivery_test.exs:38 and explicitly approved test migration in current session: keep accepted missing file_requirements adapter limitation, move exact bytes/name/caption assertions to the real adapter document operation, and separately assert bridge missing-requirements fallback. No invented host limits, dependency edits or pin changes. Baseline reproduced: partial text message, no delivered attachments, configuration failure. Reuse installed Extensions.send_document and existing DocumentTransport plus the actual Jido bridge for fallback; test-only, no new Action/tool/host transport. Preserve provider-ID, exact bytes, caption and duplicate-send coverage at the supported boundaries. Keep upstream adoption gap tracked; no commit/push.",
       "timestamp": "2026-11-20T08:58:23Z"
+    },
+    {
+      "text": "Approved migration implemented: exact binary \u003c\u003c255,0,128\u003e\u003e, image.png filename, Image as a file caption, provider message ID101 and one sendDocument call are asserted through real Telegram Adapter.send_file/3 using FileUpload(kind: :file). Added actual bridge regression verifying missing requirements produce partial text-only delivery with original answer, configuration/not_sent failure at index0, no uploaded or delivered file refs, one HTTP sendMessage, and abort policy rejects before HTTP. No wrapper adapter, invented limits, dependency edits or production changes. Existing history/edit tests retained.",
+      "timestamp": "2026-11-20T08:59:55Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.21] Reconcile Telegram attachment transport requirements",
   "type": "bug",
-  "updated_at": "2026-11-20T08:58:23Z"
+  "updated_at": "2026-11-20T08:59:55Z"
 }
