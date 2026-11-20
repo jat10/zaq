@@ -25,11 +25,15 @@
     {
       "text": "Final related regression suite PASS: 395 checks (12 properties,383 tests) covering both full reported modules plus API, Jido bridge, DeliveryResult status evidence, delivery confirmation and executor. Exit0, no error log entries; /tmp/zaq-delivery-reported-regression.log. Initial reported-only run: all3 failures reproduced; fixed full modules:22 PASS. Final mix q running after the final settings-fixture correction. This follow-up modifies only the two reported test files, retains all pre-existing Plan/Step workspace edits, and changes no production or dependency files.",
       "timestamp": "2026-11-20T09:02:49Z"
+    },
+    {
+      "text": "Final validation complete: mix q PASS (format/hooks/strict Credo/docs/compile) against final tests; /tmp/zaq-delivery-reported-quality-final.log. git diff --check PASS. Full reported modules22 PASS; related regressions395 PASS (12 properties). Only message_delivery_test.exs and telegram_history_delivery_test.exs changed in this follow-up; all earlier work retained. No commit/push. Issues remain open for review/landing; final epic coverage/precommit remains .13.",
+      "timestamp": "2026-11-20T09:03:19Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw] Migrate Mattermost delivery observation tests to structured errors",
   "type": "task",
-  "updated_at": "2026-11-20T09:02:49Z"
+  "updated_at": "2026-11-20T09:03:19Z"
 }
