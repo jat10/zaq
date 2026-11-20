@@ -23,11 +23,15 @@
     {
       "text": "Requested final validation complete: mix precommit rerun PASS exit0,12570 checks (48 doctests,390 properties,12132 tests),1 skipped,167 excluded,457.4s. Log /tmp/zaq-1lw-consolidation-precommit-rerun.log. All per-issue isolated checks and mix q passed sequentially. Combined six changed files plus SMTP integration157 PASS (8 properties). AST audits confirm all eight complete property bodies unchanged and all120 selection-file scenario/assertion expressions unchanged. First gate SMTP timeouts remain recorded; no assertions, timeouts or unrelated files were changed to obtain the passing rerun. Final diff: six test files only,53 additions/135 deletions,82 net lines saved. No production/config/dependency changes; no commit/push. Implementation complete; issue remains open pending review/landing per workflow.",
       "timestamp": "2026-11-20T09:36:20Z"
+    },
+    {
+      "text": "Independent validation requested by user on 2026-11-20. PASS: both SMTP tests mapped to the linked-account test, preserving selected sender, no IMAP re-query, SMTP policy precedence, ingress independence after sender disablement, and existing send/binding/default checks. Jido test retained. Net 35 lines saved. Fresh combined run of six changed suites plus SMTP confirmation: 157 passed (8 properties,149 tests), exit 0. Fresh mix q and git diff --check passed. Independent AST comparison against HEAD confirms all 8 property bodies unchanged and only the four approved duplicate test names removed. No correctness findings; no production changes. Prior final precommit log inspected: 12570 passed; not rerun during this review because no changes were made. Review scope is the uncommitted working tree on HEAD 17eb5d84d, diff SHA256 c99aef3cc85038d79468301cfc18d48fd07133891ee0143420153524045d96a7. Logs: /tmp/zaq-1lw-review-29-32-tests.log and /tmp/zaq-1lw-review-29-32-quality.log. Review does not commit, push, close, or approve the overall epic.",
+      "timestamp": "2026-11-20T09:40:52Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.30] Consolidate SMTP binding checks into the existing linked-account test",
   "type": "task",
-  "updated_at": "2026-11-20T09:36:20Z"
+  "updated_at": "2026-11-20T09:40:52Z"
 }
