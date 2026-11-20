@@ -31,11 +31,15 @@
     {
       "text": "Fix validation:118 checks passed (17 properties,101 tests) across stream reducer, configured-agent selection, AttachDocuments, destination validation and attachment policy. Final mix q PASS. Abort rejects subset after selection failure; continue delivers11 and reports selection failure; fresh request resets error. ACL test migration approved by user preserves authorized byte acquisition and revoked-access exclusion. Final targeted rerun verifies strengthened exact unauthorized reason assertion. No commit/push; final epic review/coverage/precommit remain separate.",
       "timestamp": "2026-11-20T11:26:45Z"
+    },
+    {
+      "text": "Final ACL rerun passed3 checks: continue projects sanitized failure reason (The attachment content could not be accessed.), not abort acquisition error text. Exact safe-reason assertion corrected; no bytes acquired after revoke. Log /tmp/zaq-selection-abort-acl-final.log. Final quality rerun follows this test-only correction.",
+      "timestamp": "2026-11-20T11:27:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T11:26:45Z"
+  "updated_at": "2026-11-20T11:27:27Z"
 }
