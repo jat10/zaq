@@ -63,11 +63,15 @@
     {
       "text": "User authorizes concrete existing-contract fix after code diagnosis: AttachDocuments returns eligible records plus structured per-file validation errors; StreamEvents preserves errors; Outgoing carries them; Channels applies abort including empty rejected selection. Authorization/schema failures stay whole-batch failures. Update existing size-rejection tests and the previously invalid free-text omission assertion to full requested records with explicit rejected-file facts; user approved after detailed diagnosis. No new model call or UX confirmation. Action reuse: extend existing AttachDocuments and destination validation callbacks, reuse stream reducer and planning gate; no new Action. Preserve concurrent group-execution edits.",
       "timestamp": "2026-11-20T12:26:41Z"
+    },
+    {
+      "text": "Implemented the authorized full-set rejection contract: AttachDocuments returns eligible records plus allowlisted per-file size errors; StreamEvents retains them through subset retries and malformed later outputs; Outgoing carries them into Channels abort gating, including all-rejected selections. Common delivery observations and Engine history preserve the failed filename, size and limit. RunAgent recognizes structured selection errors. Extended existing regression/property/history tests; no new test cases. Final focused validation: 226 passed (24 properties, 202 tests); mix q passed; git diff --check passed. Logs: /tmp/zaq-structured-selection-final.log and /tmp/zaq-structured-selection-q.log. Preserved concurrent group-materialization changes. No live Mattermost rerun, commit, push or history backfill. Explicit limitation: files never submitted to AttachDocuments cannot produce these validation facts. Epic final coverage/precommit gates remain separate.",
+      "timestamp": "2026-11-20T12:34:02Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T12:26:41Z"
+  "updated_at": "2026-11-20T12:34:02Z"
 }
