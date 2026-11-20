@@ -17,11 +17,15 @@
     {
       "text": "Implementation complete in working tree: both success paths share confirmed_email_receipt/3; attachment enrichment and text :ok compatibility retained. Focused four email suites: 111 passed (2 properties, 109 tests); mix q passed (format, hooks, Credo, docs). No tests or fixtures removed: existing public receipt, MIME, SMTP rejection/no-fallback coverage remains relevant. No commit/push; final coverage/precommit remain zaq-1lw.13; pending integration review/landing.",
       "timestamp": "2026-11-20T07:43:01Z"
+    },
+    {
+      "text": "User authorized commit and push. All four cleanups committed together as a6405a766 (refactor(channels): remove obsolete delivery paths (zaq-1lw)) and pushed to origin/feat/channel-files. Pre-commit qf and commit-message hooks passed; pre-push format hook passed. Working tree clean and HEAD matches remote. Focused validation and test removal mappings remain in prior notes. Architecture review/final coverage/precommit gates remain in .12/.13; no merge performed.",
+      "timestamp": "2026-11-20T08:00:50Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.24] Share confirmed SMTP receipt construction",
   "type": "task",
-  "updated_at": "2026-11-20T07:43:01Z"
+  "updated_at": "2026-11-20T08:00:50Z"
 }
