@@ -9,9 +9,15 @@
   "id": "zaq-1lw.28",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Implementation authorized by user request 2026-11-20; representation-only test migrations explicitly authorized. Workspace initially clean at a6405a766. Plan: audit fallback/producer/consumer contracts; remove duplicated policy and body, move prepared into existing operation inputs; retain publication refs if dependency/subset semantics require them; validate affected suites and mix q. Action reuse: local-only extension of Plan/Attachments/Executor and existing Jido/SMTP execute_delivery_step operations; same inputs/outputs, trusted identity, effects, no retries or new Actions/tools. Policy snapshot stays selected-connector-owned; prepared payload lifetime stays executor-owned. Reject malformed attachment plans before acquisition/transport. Preserve stop barriers, continue concurrency/root promotion, notices/canonical body and confirmations. Roll back any candidate that changes supported behavior or requires weakening tests. E2E unnecessary for this behavior-preserving refactor; final coverage/precommit remain .13.",
+      "timestamp": "2026-11-20T08:37:50Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.28] Simplify delivery Plan and Step data ownership",
   "type": "task",
-  "updated_at": "2026-11-20T08:36:52Z"
+  "updated_at": "2026-11-20T08:37:50Z"
 }
