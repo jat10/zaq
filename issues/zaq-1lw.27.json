@@ -17,11 +17,15 @@
     {
       "text": "Implementation complete in working tree: removed only recursive adapter multi-message delivery_report clause. Single-message media/source-author normalization, Record attachment metadata conversion, report_file_failures/error sanitization, Executor aggregation and Confirmation bookkeeping unchanged.\nFocused Jido delivery/bridge + Executor + Confirmation suites: 276 passed (8 properties, 268 tests). mix q passed (format, hooks, Credo, docs).\nDeleted tests/fixtures: none for .27; verified no fake legacy aggregate producer exists in current tests. Retained supported coverage includes Jido \"ZAQ-owned splitting returns separate receipts for all fifteen files\", \"continue promotes a later confirmed root and invokes the reply callback once with the final ID\", \"adapter partial delivery remains partial through the bridge\", provider media descriptors/history create/edit and neutral failure sanitization; Executor partial/unknown/root-promotion/deadline/original-index properties; Confirmation \"single and multiple message reports retain canonical bodies, threads and delivered attachments\" and per-message partial recording. No history assertions were removed.\nNo implementation blockers. Existing :license_manager configuration warning and intentional failing-handler log appear in tests; all checks exit 0. E2E unnecessary for behavior-preserving cleanup. No dependency edits, commit or push. Final coverage/precommit remain .13; pending integration review/landing.",
       "timestamp": "2026-11-20T07:52:17Z"
+    },
+    {
+      "text": "User authorized commit and push. All four cleanups committed together as a6405a766 (refactor(channels): remove obsolete delivery paths (zaq-1lw)) and pushed to origin/feat/channel-files. Pre-commit qf and commit-message hooks passed; pre-push format hook passed. Working tree clean and HEAD matches remote. Focused validation and test removal mappings remain in prior notes. Architecture review/final coverage/precommit gates remain in .12/.13; no merge performed.",
+      "timestamp": "2026-11-20T08:00:53Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.27] Retire unused adapter multi-message delivery report compatibility",
   "type": "task",
-  "updated_at": "2026-11-20T07:52:17Z"
+  "updated_at": "2026-11-20T08:00:53Z"
 }
