@@ -67,11 +67,15 @@
     {
       "text": "Implemented the authorized full-set rejection contract: AttachDocuments returns eligible records plus allowlisted per-file size errors; StreamEvents retains them through subset retries and malformed later outputs; Outgoing carries them into Channels abort gating, including all-rejected selections. Common delivery observations and Engine history preserve the failed filename, size and limit. RunAgent recognizes structured selection errors. Extended existing regression/property/history tests; no new test cases. Final focused validation: 226 passed (24 properties, 202 tests); mix q passed; git diff --check passed. Logs: /tmp/zaq-structured-selection-final.log and /tmp/zaq-structured-selection-q.log. Preserved concurrent group-materialization changes. No live Mattermost rerun, commit, push or history backfill. Explicit limitation: files never submitted to AttachDocuments cannot produce these validation facts. Epic final coverage/precommit gates remain separate.",
       "timestamp": "2026-11-20T12:34:02Z"
+    },
+    {
+      "text": "User authorized commit and push. Committed combined selection-failure propagation and group materialization changes as 8d987fa5c and pushed origin/feat/channel-files. Final mix precommit passed: 11134 checks (17 doctests, 289 properties, 10828 tests), 1 skipped, 159 excluded; group suite separately passed 28 checks. Git commit and push hooks passed. Log /tmp/zaq-prepush-precommit.log. SyncReply investigation changed no code.",
+      "timestamp": "2026-11-20T13:46:20Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T12:34:02Z"
+  "updated_at": "2026-11-20T13:46:20Z"
 }
