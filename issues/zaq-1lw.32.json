@@ -27,11 +27,15 @@
     {
       "text": "First final gate completed exit2:12568/12570 checks passed (48/48 doctests,390/390 properties,12130/12132 tests),1 skipped,167 excluded,452.3s. Only failures were unchanged EmailConfirmationIntegrationTest stale_metadata/selection_failure waiting for SMTP boundary. No failing scoped consolidation tests. Reproducing unchanged suite with seed758067; auditing isolation without changing assertions, timeouts or production. Log /tmp/zaq-1lw-consolidation-precommit.log. Final gate not yet passing.",
       "timestamp": "2026-11-20T09:26:01Z"
+    },
+    {
+      "text": "SMTP failures do not reproduce in isolation: unchanged email_confirmation_integration_test.exs4/4 PASS with same final-gate seed758067 in2.6s, with no code/assertion/timeout changes. This supports an order/load-dependent full-suite failure, not yet a proven root cause. Checking all six consolidation files together with SMTP integration under the same seed before rerunning precommit. No new production work or changed test expectations outside approved consolidation scope.",
+      "timestamp": "2026-11-20T09:27:07Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.32] Share attachment selection delivery agent setup",
   "type": "task",
-  "updated_at": "2026-11-20T09:26:01Z"
+  "updated_at": "2026-11-20T09:27:07Z"
 }
