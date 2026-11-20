@@ -47,11 +47,15 @@
     {
       "text": "Implementation investigation: the latest added subset-only assertion is unsound as a StreamEvents contract: incoming text is the only representation of the missing request set. No structured manifest exists; AttachDocuments sees only submitted records. Asked user approval to correct existing regression to exercise full requested set through Action and retained rejected-file details, plus explicit no-prefilter tool instruction. Must not implement natural-language filename parsing in reducer or mark arbitrary list_documents results as requested. Awaiting response before dependent production/test-contract changes.",
       "timestamp": "2026-11-20T11:53:40Z"
+    },
+    {
+      "text": "Latest screenshot trace verified in local DB: answer7f18f257 at12:02:47UTC has failed attach_documents validation at records[6] (file8 provenance mismatch), then successful subset excluding file2. Selection error is now retained and abort works; history stores unconfirmed/unknown. User requests accurate history error and response wording. Implement bounded attachment_selection_failed classification through existing observation path and explicit tool instructions full requested set/no prefilter/no delivered claims. Do not fabricate file2 failure for this trace. Per-file requested-set contract and intentionally failing omission assertion remain unresolved pending explicit contract decision.",
+      "timestamp": "2026-11-20T12:06:10Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T11:53:40Z"
+  "updated_at": "2026-11-20T12:06:10Z"
 }
