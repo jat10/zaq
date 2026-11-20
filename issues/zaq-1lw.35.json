@@ -19,11 +19,15 @@
     {
       "text": "User now requests fix after explicit diagnosis: earlier selection failure must survive later successful tool calls and abort final subset delivery. Authorized scope includes changing StreamEvents test that currently clears a prior selection error, as discussed with user. Action reuse: local-only request state handling in existing StreamEvents.select_attachments; reuse AttachDocuments validation/reducer and Channels selection_failures/preparation_gate. Preserve authorization and final policy ownership; no new Action or transport path. Retain bounded error only, not raw provider/tool errors. Existing unrelated group preparation edits are staged and will not be touched.",
       "timestamp": "2026-11-20T11:23:37Z"
+    },
+    {
+      "text": "Fix retains bounded attachment-tool errors and preserves them through successful subset updates; no raw errors stored. Original regression passes. Added continue partial-delivery assertions and property for 2/3-tuple errors across add/remove/replace and fresh-request reset. Broader run:117/118 pass; existing ACL integration expects abort planning success after denied replacement. Requested explicit permission to change that expectation to abort rejection then retain acquisition/revocation assertions under continue, per testing policy. Awaiting user response; existing ACL test unchanged.",
+      "timestamp": "2026-11-20T11:25:15Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T11:23:37Z"
+  "updated_at": "2026-11-20T11:25:15Z"
 }
