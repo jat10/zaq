@@ -9,9 +9,15 @@
   "id": "zaq-1lw.33",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "User explicitly approved error-contract migration in current session. Reproduced both failures in isolation: line349 expects raw {403, body}, line136 expects Delivery.Error.reason={403, body}; installed Mattermost ReqClient.failure_reason/1 bounds HTTP errors to {:http_error, status}, and bridge wraps ordinary text failures in Delivery.Error. Preserve all actual HTTP, request count, Engine recording raise/throw recovery, persisted evidence and privacy assertions. Test-only changes to existing tests; no production behavior change, new Action or tool. No commit/push.",
+      "timestamp": "2026-11-20T08:58:24Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw] Migrate Mattermost delivery observation tests to structured errors",
   "type": "task",
-  "updated_at": "2026-11-20T08:58:22Z"
+  "updated_at": "2026-11-20T08:58:24Z"
 }
