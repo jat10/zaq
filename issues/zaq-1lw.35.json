@@ -35,11 +35,15 @@
     {
       "text": "Final ACL rerun passed3 checks: continue projects sanitized failure reason (The attachment content could not be accessed.), not abort acquisition error text. Exact safe-reason assertion corrected; no bytes acquired after revoke. Log /tmp/zaq-selection-abort-acl-final.log. Final quality rerun follows this test-only correction.",
       "timestamp": "2026-11-20T11:27:27Z"
+    },
+    {
+      "text": "Live trace investigation found a distinct path: requests 1..11 and 1..13 call list_documents then one successful attach_documents excluding file2; no rejected call. User explicitly requests extending an existing test, not adding another. Extend the existing file-validation regression with successful-subset-only stream and explicit full user request; assert missing-selection evidence and abort planning rejection. This is an intentionally failing contract test; no production fix authorized in this turn. It proves the requested-set/omission boundary is absent, not that AttachDocuments can infer an omitted record from current arguments.",
+      "timestamp": "2026-11-20T11:43:20Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T11:27:27Z"
+  "updated_at": "2026-11-20T11:43:20Z"
 }
