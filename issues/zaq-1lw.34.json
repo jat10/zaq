@@ -9,9 +9,15 @@
   "id": "zaq-1lw.34",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Investigation/plan: Attachments owns trusted acquisition, actual-size validation, bridge preparation and safe errors; Executor owns scheduling/failure policy, publication dependencies and reporting. Extend shared preparation helpers with group-scoped preparation, retaining prepare_execution/3 compatibility for direct-send and existing callers. Reuse JidoChatBridge.prepare_upload_request/2 and execute_delivery_step/3 unchanged; no Action/tool/transport additions. Cache original-index acquisition outcomes across groups; release source content, consumed upload requests and runtime bytes after their last consumer while retaining display metadata/references. Direct-send decision: preserve whole-plan preparation before any SMTP/direct send, including abort on later preparation failure; SMTP final continuation/header encoding checks remain unchanged. Tests first: new observable acquisition/preparation/upload ordering for 15 files, failure-policy matrix, multi-batch/partial confirmations, shared references, actual limits and stop/accounting properties; existing executor/policy/Jido/email/materialization suites retained. No existing assertion requiring all upload groups prepared first found so far; preserve early preparation error shape and existing payload assertions. No test behavior changes authorized or planned. Documentation: update Attachments moduledoc and channels execution contract; diagram reconciliation belongs to .12. Existing issue supplies this implementation step; .13 owns final coverage/precommit. No UI/E2E changes. Git initially clean; preserve concurrent edits. No commit/push.",
+      "timestamp": "2026-11-20T10:38:21Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.34] Materialize and prepare delivery attachments one group at a time",
   "type": "task",
-  "updated_at": "2026-11-20T10:38:00Z"
+  "updated_at": "2026-11-20T10:38:21Z"
 }
