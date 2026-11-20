@@ -9,7 +9,7 @@
   "parent": "zaq-1lw",
   "priority": 2,
   "status": "open",
-  "title": "Consolidate SMTP binding checks into the existing linked-account test",
+  "title": "[zaq-1lw.30] Consolidate SMTP binding checks into the existing linked-account test",
   "type": "task",
-  "updated_at": "2026-11-20T08:36:25Z"
+  "updated_at": "2026-11-20T08:36:27Z"
 }
