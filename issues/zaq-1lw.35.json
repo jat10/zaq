@@ -51,11 +51,15 @@
     {
       "text": "Latest screenshot trace verified in local DB: answer7f18f257 at12:02:47UTC has failed attach_documents validation at records[6] (file8 provenance mismatch), then successful subset excluding file2. Selection error is now retained and abort works; history stores unconfirmed/unknown. User requests accurate history error and response wording. Implement bounded attachment_selection_failed classification through existing observation path and explicit tool instructions full requested set/no prefilter/no delivered claims. Do not fabricate file2 failure for this trace. Per-file requested-set contract and intentionally failing omission assertion remain unresolved pending explicit contract decision.",
       "timestamp": "2026-11-20T12:06:10Z"
+    },
+    {
+      "text": "Screenshot follow-up implemented: common observation classifier maps selection/not_sent Delivery.Error to failed/attachment_selection_failed; Confirmation and Engine allow/persist that reason; history presentation explains stop-on-failure prevented delivery. Tool instructions require all requested files without size prefilter and prohibit claiming delivered based on selection success, disclose earlier failures after retry.54 checks passed(6 properties,48 tests), mix q PASS; logs /tmp/zaq-selection-history-tests.log and /tmp/zaq-selection-history-quality.log. No DB backfill, commit or push. IMPORTANT: no per-file error is fabricated: latest request failed provenance for file8, omitted file2. Structured requested-set/per-file retention remains unresolved; prior intentionally failing subset-only contract test remains.",
+      "timestamp": "2026-11-20T12:07:31Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T12:06:10Z"
+  "updated_at": "2026-11-20T12:07:31Z"
 }
