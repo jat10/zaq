@@ -1285,7 +1285,12 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationImapLiveTest do
         name: "Email SMTP",
         kind: "retrieval",
         enabled: true,
-        settings: %{"relay" => "smtp.example.com", "port" => "587"}
+        settings: %{
+          "relay" => "smtp.example.com",
+          "port" => "587",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
   end
 

@@ -6,7 +6,7 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
   import Zaq.ChannelDeliveryFixtures
 
   alias Zaq.Channels.Api, as: ChannelsApi
-  alias Zaq.Channels.DeliveryConfirmation
+  alias Zaq.Channels.Delivery.{Confirmation, Error}
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.ChannelHistoryUpdates
   alias Zaq.Engine.Conversations
@@ -59,6 +59,50 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
 
   test "reporter table preserves errors and stores only bounded evidence", _ctx do
     cases = [
+      %{
+        name: :rejected_file,
+        response: {:error, :invalid_attachment_selection},
+        observation: %{
+          outcome: :failed,
+          reason: :attachment_selection_failed,
+          attachment_failures: [
+            %{
+              record_id: "file-2",
+              name: "zaq-file-2.txt",
+              reason: "file_too_large",
+              size: 348_160,
+              limit: 307_200,
+              content: "PRIVATE_BYTES"
+            }
+          ]
+        },
+        expected: %{
+          "outcome" => "failed",
+          "reason_code" => "attachment_selection_failed",
+          "attachment_failures" => [
+            %{
+              "record_id" => "file-2",
+              "name" => "zaq-file-2.txt",
+              "reason" => "file_too_large",
+              "size" => 348_160,
+              "limit" => 307_200
+            }
+          ]
+        }
+      },
+      %{
+        name: :attachment_selection_failed,
+        response:
+          {:error,
+           %Error{
+             reason: :invalid_attachment_selection,
+             message: "The requested attachments could not be attached.",
+             stage: :selection,
+             delivery: :not_sent
+           }},
+        observation: %{outcome: :failed, reason: :attachment_selection_failed},
+        expected: %{"outcome" => "failed", "reason_code" => "attachment_selection_failed"}
+      },
       %{
         name: :two_tuple,
         response: {:error, :transport},
@@ -118,6 +162,24 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
         assert Map.drop(evidence, ["observed_at"]) ==
                  Map.merge(%{"version" => 1, "provider_code" => nil}, scenario.expected)
 
+        if scenario.name == :attachment_selection_failed do
+          assert %{state: :failed, reason: reason} = MessageDelivery.presentation(stored)
+
+          assert reason ==
+                   "Attachment selection failed. The stop-on-failure policy prevented delivery."
+        end
+
+        if scenario.name == :rejected_file do
+          assert %{state: :failed, reason: reason} = MessageDelivery.presentation(stored)
+
+          assert reason ==
+                   "zaq-file-2.txt exceeds the attachment size limit (348160 bytes; limit 307200 bytes). The stop-on-failure policy prevented delivery."
+
+          refute inspect(evidence) =~ "PRIVATE_BYTES"
+          assert reporter_record(scenario, outgoing) == response
+          assert Repo.get!(Message, ctx.answer.id).metadata == stored.metadata
+        end
+
         refute Repo.get_by(TranscriptMessage, message_id: ctx.answer.id)
       end
     end
@@ -126,10 +188,10 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
   defp reporter_record(scenario, outgoing) do
     case scenario do
       %{observation: observation} ->
-        DeliveryConfirmation.record(scenario.response, outgoing, observation, [])
+        Confirmation.record(scenario.response, outgoing, observation, [])
 
       _ ->
-        DeliveryConfirmation.record(scenario.response, outgoing, [])
+        Confirmation.record(scenario.response, outgoing, [])
     end
   end
 
@@ -217,7 +279,15 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
           assert recording_event.request.receipt.message_id == "post-accepted"
 
         _ ->
-          assert result == {:error, {403, response_body}}
+          assert {:error,
+                  %Error{
+                    reason: {:http_error, 403},
+                    stage: :transport,
+                    delivery: :unconfirmed
+                  }} = result
+
+          refute inspect(result) =~ response_body["message"]
+
           refute stored.metadata["delivery_observation"]
           refute inspect(stored.metadata) =~ "private provider response"
       end
@@ -370,7 +440,9 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
       Event.new(outgoing, :channels, opts: [action: :deliver_outgoing])
       |> then(&ChannelsApi.handle_event(&1, :deliver_outgoing, nil))
 
-    assert {:error, {403, _}} = result.response
+    assert {:error, %Error{reason: {:http_error, 403}, stage: :transport, delivery: :unconfirmed}} =
+             result.response
+
     stored = Repo.get!(Message, ctx.answer.id)
     assert stored.content == ctx.answer.content
     assert stored.metadata["delivery_observation"]["outcome"] == "failed"

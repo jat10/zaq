@@ -26,6 +26,18 @@ defmodule Zaq.Channels.Bridge do
 
   @callback to_internal(map(), map()) :: Incoming.t() | {:error, term()}
   @callback capability_snapshot(map()) :: {:ok, map()} | {:error, term()}
+  @callback transport_requirements(Zaq.Engine.Messages.Outgoing.t(), map()) ::
+              {:ok, Zaq.Channels.TransportRequirements.t()}
+              | {:error, Zaq.Channels.Delivery.Error.t()}
+              | {:error, Zaq.Channels.Delivery.Error.t(), :continue | :abort}
+  @callback prepare_upload_request([map()], map()) :: {:ok, map()} | {:error, term()}
+  @callback prepare_delivery_message(Zaq.Engine.Messages.Outgoing.t(), [map()], map()) ::
+              {:ok, map()} | {:error, term()}
+  @callback execute_delivery_step(Zaq.Channels.Delivery.Plan.Step.t(), map(), map()) ::
+              {:ok, map()} | {:error, Zaq.Channels.Delivery.Error.t(), map()}
+  @callback delivery_completed(Zaq.Engine.Messages.Outgoing.t(), map(), map()) :: term()
+  @callback existing_message(Zaq.Engine.Messages.Outgoing.t(), map()) ::
+              String.t() | integer() | nil
 
   @callback start_runtime(runtime_target()) :: :ok | {:error, term()}
   @callback start_runtime(runtime_target(), keyword()) :: :ok | {:error, term()}
@@ -44,7 +56,13 @@ defmodule Zaq.Channels.Bridge do
               {:ok, {map(), map(), keyword()}} | {:error, term()}
   @callback after_incoming(map(), map(), keyword(), term(), module()) :: term()
 
-  @optional_callbacks start_runtime: 1,
+  @optional_callbacks transport_requirements: 2,
+                      prepare_upload_request: 2,
+                      prepare_delivery_message: 3,
+                      execute_delivery_step: 3,
+                      delivery_completed: 3,
+                      existing_message: 2,
+                      start_runtime: 1,
                       start_runtime: 2,
                       stop_runtime: 1,
                       sync_runtime: 2,
@@ -115,6 +133,7 @@ defmodule Zaq.Channels.Bridge do
       defdelegate fetch_channel_config(provider), to: Zaq.Channels.Bridge
       defdelegate fetch_channel_config_by_id(id), to: Zaq.Channels.Bridge
       defdelegate fetch_connection_details_for_config(config), to: Zaq.Channels.Bridge
+      defdelegate fetch_connection_details_for_config(config, opts), to: Zaq.Channels.Bridge
       defdelegate fetch_any_channel_config(provider), to: Zaq.Channels.Bridge
 
       defdelegate dispatch_provider_runtime_sync(bridge, config),
@@ -165,7 +184,8 @@ defmodule Zaq.Channels.Bridge do
 
       def runtime_bridge_id(config), do: ChannelBridge.default_bridge_id(config)
 
-      defoverridable start_runtime: 1,
+      defoverridable fetch_connection_details_for_config: 2,
+                     start_runtime: 1,
                      start_runtime: 2,
                      stop_runtime: 1,
                      sync_runtime: 2,
@@ -383,8 +403,31 @@ defmodule Zaq.Channels.Bridge do
 
     %{
       url: Map.get(runtime_config, :url) || Map.get(runtime_config, "url"),
-      token: Map.get(runtime_config, :token) || Map.get(runtime_config, "token")
+      token: Map.get(runtime_config, :token) || Map.get(runtime_config, "token"),
+      settings: Map.get(runtime_config, :settings) || Map.get(runtime_config, "settings") || %{}
     }
+  end
+
+  @doc """
+  Resolves connection details and attachment policy for an outgoing delivery.
+
+  Uses the selected config's existing projection, or provider lookup when config
+  is nil. `:outgoing` supplies the delivery context; `:connection_resolver` can
+  supply the existing lookup implementation. Bridges may extend this lookup to
+  resolve an outbound binding without changing the outgoing history identity.
+  The one-argument projection remains independent of delivery resolution.
+  """
+  @spec fetch_connection_details_for_config(map() | nil, keyword()) ::
+          {:ok, map()} | {:error, term()}
+  def fetch_connection_details_for_config(config, opts) do
+    resolver = Keyword.get(opts, :connection_resolver, __MODULE__)
+
+    details =
+      if is_nil(config),
+        do: resolver.fetch_connection_details(Keyword.fetch!(opts, :outgoing).provider),
+        else: resolver.fetch_connection_details_for_config(config)
+
+    {:ok, details}
   end
 
   @doc "Fetches an enabled connector by provider; supply its ID if the provider is ambiguous."

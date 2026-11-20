@@ -653,7 +653,13 @@ defmodule Zaq.AgentTest do
         name: "SMTP",
         kind: "retrieval",
         enabled: true,
-        settings: %{"relay" => "", "port" => "587", "transport_mode" => "starttls"}
+        settings: %{
+          "relay" => "",
+          "port" => "587",
+          "transport_mode" => "starttls",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
 
     {:ok, imap_config} =

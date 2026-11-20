@@ -17,7 +17,11 @@ defmodule Zaq.TestSupport.PeopleAuthDelivery do
         name: "Test delivery",
         kind: "retrieval",
         enabled: true,
-        settings: %{"relay" => "test.invalid"}
+        settings: %{
+          "relay" => "test.invalid",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
 
     :ok

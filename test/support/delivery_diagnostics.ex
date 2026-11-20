@@ -22,7 +22,7 @@ defmodule Zaq.TestSupport.DeliveryDiagnostics do
     {Zaq.Agent.Factory, :apply_history_context, 3},
     {Zaq.Engine.Conversations, :finalize_incoming, 4},
     {Zaq.Channels.JidoChatBridge, :do_send_reply, 2},
-    {Zaq.Channels.DeliveryConfirmation, :record, 3},
+    {Zaq.Channels.Delivery.Confirmation, :record, 3},
     {Zaq.Engine.HistoryIngress, :capture_confirmed, 1},
     {Zaq.Engine.HistoryIngress, :record_confirmation, 1},
     {Zaq.Engine.HistoryIngress, :associate_confirmation, 1}

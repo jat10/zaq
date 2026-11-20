@@ -23,6 +23,7 @@ defmodule Zaq.Channels.CommunicationBridge do
   """
 
   alias Zaq.Channels.Bridge
+  alias Zaq.Channels.Delivery.Error
   alias Zaq.Engine.Messages.{ConversationIdentity, Incoming}
   alias Zaq.Engine.Messages.Incoming.RoutingContext
   alias Zaq.Engine.Messages.Outgoing
@@ -34,7 +35,18 @@ defmodule Zaq.Channels.CommunicationBridge do
   # `{:ok, receipt}` carries channel-assigned threading pointers (the delivered
   # message's id/anchor) back to the caller; bridges without receipts return `:ok`,
   # which `Zaq.Channels.Api` normalizes to `{:ok, %{}}`.
+  @doc """
+  Sends an outgoing message and returns its receipt or failure.
+
+  Jido chat and email bridges map failures to `Zaq.Channels.Delivery.Error`:
+  the original reason is internal, the message is safe for presentation, and
+  stage/delivery describe the failure without choosing fallback policy.
+  Other bridges may retain legacy error reasons; callers must not infer delivery
+  certainty or retry eligibility from an arbitrary error term.
+  """
   @callback send_reply(term(), map()) :: :ok | {:ok, receipt :: map()} | {:error, term()}
+  @callback validate_files(Outgoing.t(), map(), keyword()) :: :ok | {:error, term()}
+
   @doc """
   Purely projects a bridge error into `outcome`, allowlisted `reason` and optional
   bounded `provider_code` facts. Returns nil for unrecognized responses. This
@@ -81,6 +93,7 @@ defmodule Zaq.Channels.CommunicationBridge do
 
   @optional_callbacks delivery_observation: 2,
                       send_typing: 3,
+                      validate_files: 3,
                       upsert_message: 3,
                       add_reaction: 5,
                       remove_reaction: 5,
@@ -130,6 +143,17 @@ defmodule Zaq.Channels.CommunicationBridge do
   end
 
   def delivery_observation(_bridge, _outgoing, _response), do: nil
+
+  defp common_delivery_observation(
+         {:error, %Error{stage: :selection, delivery: :not_sent} = error}
+       ) do
+    facts = %{outcome: :failed, reason: :attachment_selection_failed}
+
+    case Outgoing.Delivery.selection_failures(error.cause) do
+      [] -> facts
+      failures -> Map.put(facts, :attachment_failures, failures)
+    end
+  end
 
   defp common_delivery_observation({:error, :timeout}),
     do: %{outcome: :unconfirmed, reason: :timeout}

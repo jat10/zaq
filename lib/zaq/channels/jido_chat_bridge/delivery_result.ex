@@ -11,9 +11,17 @@ defmodule Zaq.Channels.JidoChatBridge.DeliveryResult do
   classes. Other HTTP results stay unconfirmed; their bodies are never evidence.
   """
 
+  alias Zaq.Channels.Delivery.Error
+
   @unchanged_prefix "Bad Request: message is not modified:"
 
   @doc "Projects adapter-specific rejection evidence without retaining its response body."
+  def delivery_observation(adapter, {:error, %Error{stage: :transport, reason: reason}}),
+    do: delivery_observation(adapter, {:error, reason})
+
+  def delivery_observation(Jido.Chat.Mattermost.Adapter = adapter, {:error, {:http_error, code}}),
+    do: delivery_observation(adapter, {:error, {code, nil}})
+
   def delivery_observation(Jido.Chat.Mattermost.Adapter, {:error, {code, _body}})
       when code in 100..599 do
     if code in [400, 401, 403, 404, 405, 413, 415, 422, 429],

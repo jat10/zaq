@@ -14,15 +14,21 @@ defmodule Zaq.Agent.Tools.People.NotifyPerson do
   use Zaq.Engine.Workflows.Action,
     name: "notify_person",
     description: "Notify a person through the notification center.",
-    schema: [
-      person: [
-        type: :map,
-        required: true,
-        doc: "Person payload to notify, usually returned by EnsurePerson."
-      ],
-      subject: [type: :string, required: true, doc: "Notification subject / title."],
-      message: [type: :string, required: true, doc: "Notification body text."]
-    ],
+    schema:
+      Zoi.object(%{
+        person:
+          Zoi.map(description: "Person payload to notify, usually returned by EnsurePerson."),
+        subject: Zoi.string(description: "Notification subject / title."),
+        message: Zoi.string(description: "Notification body text."),
+        # Engine validates signed Records; this semantic marker enables alias
+        # expansion without changing the forwarded map or struct representation.
+        attachments:
+          Zoi.list(
+            Zoi.any(metadata: [zaq_semantic_type: Zaq.Contracts.Record.semantic_type()]),
+            description: "Signed file Records to deliver."
+          )
+          |> Zoi.default([])
+      }),
     output_schema: [
       notified: [type: :boolean, required: true],
       status: [type: :atom, required: true],
@@ -82,24 +88,36 @@ defmodule Zaq.Agent.Tools.People.NotifyPerson do
     ]
 
   alias Jido.Action.Error
+  alias Jido.Action.Tool
   alias Zaq.Accounts.Person
   alias Zaq.Engine.Events
+  alias Zaq.Events.TrustedContext
   alias Zaq.NodeRouter
   require Logger
+
+  @impl Jido.Action
+  def on_before_validate_params(params) when is_map(params),
+    do: {:ok, Tool.convert_params_using_schema(params, schema())}
+
+  def on_before_validate_params(params), do: {:ok, params}
 
   @spec run(%{person: Person.t() | map(), subject: String.t(), message: String.t()}, map()) ::
           {:ok, %{notified: boolean(), status: atom()}} | {:error, String.t() | Exception.t()}
   @impl Jido.Action
-  def run(%{person: person, subject: subject, message: message}, context) do
+  def run(%{person: person, subject: subject, message: message} = params, context) do
     node_router = Map.get(context, :node_router, NodeRouter)
 
     case person_id(person) do
       id when is_integer(id) ->
         %{person_id: id, subject: subject, message: message}
-        |> Events.build_invoke_event(:notify_person,
-          event_opts: [
-            confidential: Keyword.get(Map.get(context, :event_opts, []), :confidential) == true
-          ]
+        |> Map.merge(Map.take(params, [:attachments]))
+        |> Events.build_invoke_event(
+          :notify_person,
+          TrustedContext.event_builder_opts(context,
+            event_opts: [
+              confidential: Keyword.get(Map.get(context, :event_opts, []), :confidential) == true
+            ]
+          )
         )
         |> dispatch_notification(node_router)
         |> handle_response(subject, message, person)

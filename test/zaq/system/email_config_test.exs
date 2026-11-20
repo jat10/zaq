@@ -6,14 +6,58 @@ defmodule Zaq.System.EmailConfigTest do
   defp base_config, do: %EmailConfig{}
 
   describe "changeset/2" do
+    test "attachment limits remain missing for legacy connectors and blank forms" do
+      for attrs <- [%{}, %{max_message_size_mb: "", max_attachments_per_message: ""}] do
+        changeset = EmailConfig.changeset(base_config(), attrs)
+        assert changeset.valid?
+        config = Ecto.Changeset.apply_changes(changeset)
+        assert config.max_message_size_mb == nil
+        assert config.max_attachments_per_message == nil
+      end
+    end
+
+    test "enabled SMTP requires both limits while disabled drafts may omit them" do
+      changeset =
+        EmailConfig.changeset(base_config(), %{enabled: true, relay: "smtp.example.com"})
+
+      assert %{
+               max_message_size_mb: ["is required when email is enabled"],
+               max_attachments_per_message: ["is required when email is enabled"]
+             } = errors_on(changeset)
+
+      assert EmailConfig.changeset(base_config(), %{enabled: false}).valid?
+    end
+
+    test "attachment limits accept positive exact decimal MB and reject invalid values" do
+      changeset =
+        EmailConfig.changeset(base_config(), %{
+          max_message_size_mb: "1.234567",
+          max_attachments_per_message: "3"
+        })
+
+      assert changeset.valid?
+
+      for value <- ["0", "-1", "no", "0.0000001"] do
+        changeset = EmailConfig.changeset(base_config(), %{max_message_size_mb: value})
+        assert %{max_message_size_mb: _} = errors_on(changeset)
+      end
+
+      for value <- ["0", "-1", "no", "1.5"] do
+        changeset = EmailConfig.changeset(base_config(), %{max_attachments_per_message: value})
+        assert %{max_attachments_per_message: _} = errors_on(changeset)
+      end
+    end
+
     test "valid when enabled is false with no relay" do
       changeset = EmailConfig.changeset(base_config(), %{enabled: false})
       assert changeset.valid?
     end
 
-    test "valid when enabled is true with relay and from_email" do
+    test "valid when enabled is true with relay, sender and explicit attachment limits" do
       attrs = %{
         enabled: true,
+        max_message_size_mb: "10",
+        max_attachments_per_message: 10,
         relay: "smtp.example.com",
         from_email: "noreply@example.com"
       }

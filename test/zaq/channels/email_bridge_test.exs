@@ -3,6 +3,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
   use ExUnitProperties
   import ExUnit.CaptureLog
 
+  alias Zaq.Channels.Bridge
   alias Zaq.Channels.CommunicationBridge
   alias Zaq.Channels.EmailBridge
   alias Zaq.Channels.EmailBridge.ImapConfigHelpers
@@ -10,6 +11,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
   alias Zaq.Channels.Supervisor, as: ChannelsSupervisor
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.IncomingMessageRouting
+  alias Zaq.QueryRecorder
   alias Zaq.Repo
   alias Zaq.SystemConfigFixtures
 
@@ -289,6 +291,8 @@ defmodule Zaq.Channels.EmailBridgeTest do
   defp smtp_settings(overrides \\ %{}) do
     Map.merge(
       %{
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10,
         "relay" => "",
         "port" => "587",
         "transport_mode" => "starttls",
@@ -854,7 +858,9 @@ defmodule Zaq.Channels.EmailBridgeTest do
       assert_receive {:email, %{from: {"ZAQ", "selected@example.com"}}}
 
       second |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
-      assert {:error, :connector_mismatch} = EmailBridge.send_reply(outgoing, %{})
+
+      assert {:error, %Zaq.Channels.Delivery.Error{reason: :connector_mismatch}} =
+               EmailBridge.send_reply(outgoing, %{})
     end
 
     test "receipt describes actual selected sender and envelope recipient, not claimed Bcc" do
@@ -894,7 +900,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
                  %{}
                )
 
-      assert {:error, :smtp_rejected} =
+      assert {:error, %Zaq.Channels.Delivery.Error{reason: :smtp_rejected}} =
                EmailBridge.send_reply(
                  %Zaq.Engine.Messages.Outgoing{
                    body: "reply",
@@ -935,7 +941,11 @@ defmodule Zaq.Channels.EmailBridgeTest do
           url: "smtp.example.com",
           token: "smtp-unused",
           enabled: true,
-          settings: smtp_settings(%{"from_email" => "second@second.example.org"})
+          settings:
+            smtp_settings(%{
+              "from_email" => "second@second.example.org",
+              "send_on_file_failure" => false
+            })
         })
         |> Repo.insert!()
 
@@ -949,6 +959,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
           token: "imap-secret",
           enabled: true,
           settings: %{
+            "send_on_file_failure" => true,
             "imap" => %{
               "username" => "inbox@example.com",
               "selected_mailboxes" => ["INBOX"],
@@ -964,6 +975,23 @@ defmodule Zaq.Channels.EmailBridgeTest do
         provider: :"email:imap",
         routing_context: %Zaq.Engine.Messages.Incoming.RoutingContext{channel_config_id: imap.id}
       }
+
+      ingress_details = Bridge.fetch_connection_details_for_config(imap)
+      assert EmailBridge.fetch_connection_details_for_config(imap) == ingress_details
+
+      {result, queries} =
+        QueryRecorder.capture(fn ->
+          EmailBridge.fetch_connection_details_for_config(imap, outgoing: outgoing)
+        end)
+
+      assert {:ok, %{smtp_config_id: sender_id} = details} = result
+      assert sender_id == second.id
+      assert details.smtp_settings["from_email"] == "second@second.example.org"
+      assert {:ok, requirements} = EmailBridge.transport_requirements(outgoing, details)
+      assert requirements.failure_policy == :abort
+      connector_queries = Enum.filter(queries, &(&1.source == "channel_configs"))
+      assert Enum.any?(connector_queries, &(second.id in &1.params))
+      refute Enum.any?(connector_queries, &(imap.id in &1.params))
 
       assert {:ok, receipt} = EmailBridge.send_reply(outgoing, %{})
 
@@ -988,7 +1016,8 @@ defmodule Zaq.Channels.EmailBridgeTest do
       |> Ecto.Changeset.change(settings: %{"imap" => %{"selected_mailboxes" => ["INBOX"]}})
       |> Repo.update!()
 
-      assert {:error, :missing_smtp_binding} = EmailBridge.send_reply(outgoing, %{})
+      assert {:error, %Zaq.Channels.Delivery.Error{reason: :missing_smtp_binding}} =
+               EmailBridge.send_reply(outgoing, %{})
 
       imap.id
       |> then(&Repo.get!(ChannelConfig, &1))
@@ -996,7 +1025,14 @@ defmodule Zaq.Channels.EmailBridgeTest do
       |> Repo.update!()
 
       second |> Ecto.Changeset.change(enabled: false) |> Repo.update!()
-      assert {:error, :connector_mismatch} = EmailBridge.send_reply(outgoing, %{})
+
+      assert EmailBridge.fetch_connection_details_for_config(imap) == ingress_details
+
+      assert {:error, %Zaq.Channels.Delivery.Error{delivery: :not_sent}} =
+               EmailBridge.fetch_connection_details_for_config(imap, outgoing: outgoing)
+
+      assert {:error, %Zaq.Channels.Delivery.Error{reason: :connector_mismatch}} =
+               EmailBridge.send_reply(outgoing, %{})
     end
 
     test "delivers notifications using the email:smtp ChannelConfig" do
