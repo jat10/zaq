@@ -17,11 +17,15 @@
     {
       "text": "Implementation: removed Plan.failure_policy and copied group.body; Plan.failure_policy/1 derives from validated TransportRequirements or the exact single-send text fallback (no group/step refs, dependencies or message target, with failure evidence). Preparation and executor share it; invalid attachment-bearing plans fail before acquisition/effects. Removed Step.prepared; existing executor inputs.prepared carries runtime payloads to Jido upload and SMTP. Retained publication attachment_refs: executor unknown-text-only scenario deliberately uses empty step membership inside an attachment-bearing group; dependency/upload subsets and effective successful refs differ from group membership. Deriving these would change supported synthetic/dependency contracts or add branching. Kept canonical_body, notice?, placement, stable IDs, effective operation, message_ref, dependencies, failure evidence and upload subsets. Confirmation property migrated its private sentinel to opaque step identity while preserving Engine boundary stripping and immutability. Executor/history fixtures now provide resolved constraints. Focused executor/policy: 46 passed (7 properties), including new fallback, notice, runtime-payload and invalid-constraints coverage. Broader validation running. Context Mode transport is closed; logs redirected locally with bounded summaries; Serena Elixir navigation works.",
       "timestamp": "2026-11-20T08:42:36Z"
+    },
+    {
+      "text": "Broad affected validation passed: 648 checks (21 properties, 627 tests), covering delivery preparation/executor/confirmation/error, attachment policy, API, Jido bridge and HTTP file delivery, SMTP/email outgoing attachments/sender/threading/collisions, Engine confirmation/history ingress and delivery, Agent attachment selection. Log: /tmp/zaq-1lw-28-affected.log. One background NodeRouter Channels API task logged DB sandbox owner exit after its test owner exited; ExUnit completed exit 0 with no failed checks. mix q initially caught one alias-style suggestion introduced in the policy assertion; corrected via the existing grouped alias. Final mix q passed (hooks, strict Credo, docs, compile/format), log /tmp/zaq-1lw-28-quality.log. Final focused rerun is checking the small plan_groups argument removal and formatted files. No commits/pushes; no dependency changes or unrelated workspace edits. Source/test/active-doc search found no stale plan.failure_policy, Step.prepared, step.prepared, group.body or group-body override reads. Final coverage/precommit remain .13; issue remains in progress pending review/landing per workflow.",
+      "timestamp": "2026-11-20T08:44:16Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.28] Simplify delivery Plan and Step data ownership",
   "type": "task",
-  "updated_at": "2026-11-20T08:42:36Z"
+  "updated_at": "2026-11-20T08:44:16Z"
 }
