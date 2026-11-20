@@ -11,11 +11,15 @@
     {
       "text": "User explicitly approved focused helper extraction while retaining all four delivery tests and every assertion. .31 validated before starting .32. Evidence: four tests duplicate AttachmentSelectionLLMStub.server/start_supervised!, UUID scope, IntegrationAgent.create! and Executor.run; existing IntegrationAgent support already owns configured runtime cleanup, and must remain owner. Private helper will delegate to these APIs, retain exact scenario job strings, accept script/incoming/execution opts, create a unique scope per invocation, and add no permission/actor defaults. Scripts, system/person events, explicit bypass choices, actual Storage grants/revocation and transport assertions stay at call sites. Action reuse not applicable to production operations: test-only reuse; no new lifecycle, Action, tool, dependency, production behavior or E2E/property work.",
       "timestamp": "2026-11-20T09:15:06Z"
+    },
+    {
+      "text": "Coverage map: all four delivery tests retain their exact script, job instructions and incoming message. First email final-B scenario keeps explicit system event/skip_permissions:true, metadata-free lazy handle assertions, denied final redemption then explicit trusted bypass, exact MIME B bytes/caption and no second email. Mattermost final-B scenario keeps system bypass, actual HTTP upload, exact B bytes/name/MIME, selected shared-room/root-bot IDs, acceptance synchronization and no duplicate upload. Empty replacement keeps both normal text and HTTP400 terminal scripts plus incoming file/no-echo assertion. Person scenario keeps explicit person event with no skip_permissions key, actual Storage grant, failed unauthorized whole replacement, successful B redemption, revocation and denied re-redemption/no email. Private run_selection helper only starts supervised LLM stub, generates fresh UUID scope, calls existing IntegrationAgent.create! with original job/tool and Executor.run with caller opts; IntegrationAgent still owns runtime cleanup. No test, property, assertion or transport boundary removed; baseline full file14 PASS (1 property,13 tests).",
+      "timestamp": "2026-11-20T09:16:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.32] Share attachment selection delivery agent setup",
   "type": "task",
-  "updated_at": "2026-11-20T09:15:06Z"
+  "updated_at": "2026-11-20T09:16:03Z"
 }
