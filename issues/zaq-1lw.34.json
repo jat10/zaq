@@ -17,11 +17,15 @@
     {
       "text": "Implementation progress: added new GroupExecutionTest and isolated support bridge; initial RED reproduced eager later-group acquisition. Group-scoped preparation reuses acquisition/size/bridge helpers; Executor now uploads groups in order before the unchanged publication scheduler. Preserve early raw preparation errors; later abort preparation errors return delivery reports with earlier uploaded_only references. Upload requests and source bytes released by remaining consumers; direct-send preparation barrier retained. Focused new tests 28 PASS, including first/middle failures across acquisition/upload preparation/message preparation/upload under both policies, 15-file ordering, multi-batch partials, shared success/failure acquisition cache, actual-size drift and stop/accounting property. Existing executor/policy checks previously 69 PASS. No existing test behavioral expectations changed. Broad affected suites running; initial foreground command hit tool 60-second limit without reported failures and was restarted detached. Required mix q running.",
       "timestamp": "2026-11-20T10:47:23Z"
+    },
+    {
+      "text": "Completed in working tree. Upload-then-publish now acquires/prepares/uploads each fixed group before the next; Executor owns abort/continue and retains the publication barrier. Later abort preparation failures report earlier confirmed uploads as uploaded_only; no retry/deletion. Existing trusted materialization, original indices, actual/encoded limits, bridge operations, threaded root/edit promotion, notices and confirmation paths preserved. Shared original-index acquisition outcomes (success/failure) are cached once. Runtime source content, prepared upload requests and publication payloads are released after remaining consumers finish; reports retain metadata/references. Direct-send/SMTP decision: whole-plan preparation remains before first publication, with final SMTP body/header sizing unchanged. Existing-test gate: audit found no all-groups-prepared-before-upload assertion requiring migration; no existing tests/fixtures/assertions changed. New GroupExecutionTest covers observable 15-file ordering, first/middle failures under both policies, batches/partials, shared references, actual-size drift, direct-send barrier and stop/accounting property. Final affected validation PASS: 360 checks (18 properties, 342 tests), covering delivery, attachment policy, Jido, real Disk/SMTP journeys, confirmation, API, SMTP outgoing attachments/sender. mix q PASS (format/hooks/Credo/docs/compile), git diff --check PASS. Earlier malformed-record cleanup regression fixed and existing regression preserved. Service execution contract updated; diagram reconciliation remains .12; final coverage/precommit remains .13. No commit, push, staging or application Git publication.",
+      "timestamp": "2026-11-20T10:51:36Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.34] Materialize and prepare delivery attachments one group at a time",
   "type": "task",
-  "updated_at": "2026-11-20T10:47:23Z"
+  "updated_at": "2026-11-20T10:51:36Z"
 }
