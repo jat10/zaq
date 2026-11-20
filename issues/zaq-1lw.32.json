@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-20T08:36:30Z",
+  "description": "PR #876 test-refactoring review requested by the user on 2026-11-20.\n\nFile: test/zaq/agent/attachment_selection_test.exs, Zaq.Agent.AttachmentSelectionDeliveryTest.\nFour tests repeat LLM stub startup, scope creation, IntegrationAgent creation, and Executor.run/2.\n\nExtract a focused private fixture helper for that common setup, accepting the script, incoming message, and execution options needed by the existing scenarios. Keep scenario-specific scripts, assertions, destination setup, and authorization choices visible in each test. Reuse existing support helpers rather than creating a generic test framework.\n\nAcceptance: preserve all four tests and their assertions; retain system-actor versus person-actor execution, explicit permission bypass only where already present, real Storage ACL checks and revocation, no incoming-file echo, HTTP failure versus normal completion, final-B selection, exact bytes, recipient/thread identity, and no duplicate uploads/emails. Preserve supervision, unique scopes, isolation, and cleanup. Do not merge direct Mattermost creation with streamed-ingress edit coverage, or SMTP/MIME with persisted-confirmation coverage.\nValidation: mix q and the focused attachment selection suite, including all modules in the file. Final validation remains owned by zaq-1lw.13.\n\nAction reuse assessment: not applicable to production operations; this is test-only consolidation using existing public contracts and fixtures. No production API or behavior changes.\nRead AGENTS.md, docs/WORKFLOW_AGENT.md, docs/testing-approach.md, docs/code-quality.md, and docs/conventions.md before implementation. This issue records the requested work; the user's request to create issues is not an implementation or broader test-behavior approval. Follow the existing-test-behavior gate for retiring tests; preserve assertions and map source coverage to its destination.",
+  "id": "zaq-1lw.32",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "Share attachment selection delivery agent setup",
+  "type": "task",
+  "updated_at": "2026-11-20T08:36:30Z"
+}
