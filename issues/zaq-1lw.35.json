@@ -39,11 +39,15 @@
     {
       "text": "Live trace investigation found a distinct path: requests 1..11 and 1..13 call list_documents then one successful attach_documents excluding file2; no rejected call. User explicitly requests extending an existing test, not adding another. Extend the existing file-validation regression with successful-subset-only stream and explicit full user request; assert missing-selection evidence and abort planning rejection. This is an intentionally failing contract test; no production fix authorized in this turn. It proves the requested-set/omission boundary is absent, not that AttachDocuments can infer an omitted record from current arguments.",
       "timestamp": "2026-11-20T11:43:20Z"
+    },
+    {
+      "text": "Extended existing file_validation_test.exs:150 only; no new test case. Added successful-subset-only stream matching live trace, full requested names in Incoming, assertion that omitted file2 creates delivery.error and abort planning rejects. Current failure at line254: delivery.error remains nil. Earlier abort/continue assertions pass. Module result9/10 passed (1 property,8 tests passed;1 test failed intentionally). Log /tmp/zaq-selection-omission-test.log. This is a contract-gap test, not an implemented requested-set comparison.",
+      "timestamp": "2026-11-20T11:43:46Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T11:43:20Z"
+  "updated_at": "2026-11-20T11:43:46Z"
 }
