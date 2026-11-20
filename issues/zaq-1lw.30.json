@@ -7,9 +7,15 @@
   "id": "zaq-1lw.30",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "User explicitly approved this exact SMTP consolidation in the current request. .29 isolated validation and mix q passed before starting .30. Action reuse not applicable to production: tests call existing EmailBridge/Bridge resolution, SMTP transport and QueryRecorder contracts. Reuse destination linked-account fixtures; move sender identity/policy and no-IMAP-refetch query checks plus ingress equivalence/outbound-disabled checks into destination before deleting the two source tests. Keep separate Jido lookup compatibility test and all destination delivery/missing/default/disabled assertions. No production changes, dependency changes, new property or E2E required; preserve existing property coverage.",
+      "timestamp": "2026-11-20T09:11:22Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.30] Consolidate SMTP binding checks into the existing linked-account test",
   "type": "task",
-  "updated_at": "2026-11-20T09:11:20Z"
+  "updated_at": "2026-11-20T09:11:22Z"
 }
