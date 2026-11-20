@@ -23,11 +23,15 @@
     {
       "text": "Fix retains bounded attachment-tool errors and preserves them through successful subset updates; no raw errors stored. Original regression passes. Added continue partial-delivery assertions and property for 2/3-tuple errors across add/remove/replace and fresh-request reset. Broader run:117/118 pass; existing ACL integration expects abort planning success after denied replacement. Requested explicit permission to change that expectation to abort rejection then retain acquisition/revocation assertions under continue, per testing policy. Awaiting user response; existing ACL test unchanged.",
       "timestamp": "2026-11-20T11:25:15Z"
+    },
+    {
+      "text": "User explicitly approved updating the ACL test via async reply: Yes, update the test. Abort now asserts selection-stage not_sent error; continue retains authorized materialization and revoked-access exclusion with indexed failure evidence. No permission assertions removed.",
+      "timestamp": "2026-11-20T11:25:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T11:25:15Z"
+  "updated_at": "2026-11-20T11:25:32Z"
 }
