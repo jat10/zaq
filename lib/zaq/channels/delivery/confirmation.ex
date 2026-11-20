@@ -16,7 +16,14 @@ defmodule Zaq.Channels.Delivery.Confirmation do
   alias Zaq.Event
   alias Zaq.NodeRouter
 
-  @reasons [:rejected, :missing_configuration, :unsupported_provider, :timeout, :unknown]
+  @reasons [
+    :rejected,
+    :missing_configuration,
+    :unsupported_provider,
+    :attachment_selection_failed,
+    :timeout,
+    :unknown
+  ]
 
   @doc "Forwards a confirmed receipt and outgoing copy with content-free attachment Records to Engine."
   def record({:ok, %{messages: messages} = report}, outgoing, opts) when is_list(messages) do
@@ -140,8 +147,22 @@ defmodule Zaq.Channels.Delivery.Confirmation do
   defp safe_observation(%{outcome: outcome, reason: reason} = observation)
        when outcome in [:failed, :unconfirmed] and reason in @reasons and
               (outcome != :failed or
-                 reason in [:rejected, :missing_configuration, :unsupported_provider]) do
+                 reason in [
+                   :rejected,
+                   :missing_configuration,
+                   :unsupported_provider,
+                   :attachment_selection_failed
+                 ]) do
     facts = Map.take(observation, [:outcome, :reason])
+
+    facts =
+      case Outgoing.Delivery.selection_failures(%{failures: observation[:attachment_failures]}) do
+        [_ | _] = failures when reason == :attachment_selection_failed ->
+          Map.put(facts, :attachment_failures, failures)
+
+        _ ->
+          facts
+      end
 
     case observation[:provider_code] do
       code when is_integer(code) and code in 0..999 -> Map.put(facts, :provider_code, code)

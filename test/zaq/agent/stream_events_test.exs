@@ -147,7 +147,7 @@ defmodule Zaq.Agent.StreamEventsTest do
     end
   end
 
-  test "a valid selection instruction clears a prior selection error" do
+  test "a valid selection instruction preserves a prior selection error for this request" do
     events = [
       event(:tool_completed, 1, %{tool_name: "attach_documents", result: {:ok, nil, []}},
         tool_call_id: "invalid-selection"
@@ -164,12 +164,59 @@ defmodule Zaq.Agent.StreamEventsTest do
     assert {:ok,
             %{
               answer: "No files needed.",
-              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: [], error: nil}
+              delivery: %Zaq.Engine.Messages.Outgoing.Delivery{
+                attachments: [],
+                error: :invalid_attachment_selection
+              }
             }} =
              StreamEvents.consume(events, incoming(),
                status_module: FakeStatus,
                opaque_alias_scope: self()
              )
+  end
+
+  property "attachment tool errors survive later valid instructions but not a new request" do
+    check all(
+            reason <- string(:printable, min_length: 1),
+            with_effects? <- boolean(),
+            operations <-
+              list_of(member_of(["add", "remove", "replace"]), min_length: 1, max_length: 5)
+          ) do
+      failure = if with_effects?, do: {:error, reason, []}, else: {:error, reason}
+
+      corrections =
+        operations
+        |> Enum.with_index(2)
+        |> Enum.map(fn {operation, index} ->
+          event(
+            :tool_completed,
+            index,
+            %{
+              tool_name: "attach_documents",
+              result: {:ok, %{operation: operation, records: []}, []}
+            },
+            tool_call_id: "correction-#{index}"
+          )
+        end)
+
+      completion = event(:request_completed, 10, %{result: "Answer"})
+
+      events =
+        [
+          event(:tool_completed, 1, %{tool_name: "attach_documents", result: failure},
+            tool_call_id: "failed"
+          )
+        ] ++
+          corrections ++ [completion]
+
+      opts = [status_module: FakeStatus, opaque_alias_scope: self()]
+      assert {:ok, result} = StreamEvents.consume(events, incoming(), opts)
+      assert result.delivery.error == :invalid_attachment_selection
+      assert result.answer == "Answer"
+
+      assert {:ok, fresh} = StreamEvents.consume(corrections ++ [completion], incoming(), opts)
+      assert fresh.delivery.error == nil
+    end
   end
 
   test "output validation failure preserves the answer when an alias scope is available" do

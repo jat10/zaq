@@ -559,6 +559,7 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
     assert [%Record{id: id}] = outgoing.delivery.attachments
     assert id == b.id
     assert Enum.map(outgoing.metadata.tool_calls, & &1["outcome"]) == ["succeeded", "failed"]
+    assert outgoing.delivery.error == :invalid_attachment_selection
 
     smtp = smtp_config()
 
@@ -575,6 +576,10 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
         routing_context: %{channel_config_id: smtp.id}
     }
 
+    assert {:error, %{stage: :selection, delivery: :not_sent}} =
+             Attachments.build_plan(outgoing, EmailBridge, connection)
+
+    connection = put_in(connection.smtp_settings["send_on_file_failure"], true)
     assert {:ok, planned} = Attachments.build_plan(outgoing, EmailBridge, connection)
 
     assert {:ok, %{attachments: %{0 => %{content: "B bytes"}}}} =
@@ -582,8 +587,15 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
 
     assert :ok = Permissions.revoke(%StorageEntry{id: b.id}, grant)
 
-    assert {:error, %{reason: "Attachment preparation failed: :unauthorized"}} =
+    assert {:ok, %{attachments: attachments, preparation_failures: failures}} =
              Attachments.prepare_execution(planned, EmailBridge, connection)
+
+    assert attachments == %{}
+
+    assert Enum.any?(failures, fn failure ->
+             failure.attachment_index == 0 and failure.stage == :preparation and
+               failure.reason == "The attachment content could not be accessed."
+           end)
 
     refute_received {:email, _}
   end

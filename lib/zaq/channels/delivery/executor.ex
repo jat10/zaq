@@ -31,8 +31,7 @@ defmodule Zaq.Channels.Delivery.Executor do
       ) do
     with :ok <- validate_plan(plan, outgoing),
          {:ok, runtime} <- execution_context(outgoing, bridge, connection, opts),
-         {:ok, preparation} <-
-           Attachments.prepare_execution(outgoing, bridge, runtime.connection) do
+         {:ok, preparation} <- prepare_execution(runtime) do
       runtime = Map.merge(runtime, preparation)
 
       state = %{
@@ -42,13 +41,37 @@ defmodule Zaq.Channels.Delivery.Executor do
         halted?: false
       }
 
-      state = run_uploads(runtime, state)
-      state = if state.halted?, do: state, else: run_publications(runtime, state)
-      finish(runtime, state)
+      execute_prepared(runtime, state)
     end
   end
 
   def execute(_outgoing, _bridge, _connection, _opts), do: {:error, configuration_error()}
+
+  defp execute_prepared(runtime, state) do
+    with {:ok, runtime, state} <- run_uploads(runtime, state) do
+      {runtime, state} =
+        if state.halted?, do: {runtime, state}, else: run_publications(runtime, state)
+
+      finish(runtime, state)
+    end
+  end
+
+  defp prepare_execution(
+         %{plan: %{requirements: %{transfer_mode: :upload_then_publish}}} = runtime
+       ) do
+    {:ok,
+     %{
+       attachments: %{},
+       acquired_indices: MapSet.new(),
+       prepared_steps: %{},
+       preparation_errors: %{},
+       preparation_failures: runtime.plan.preparation_failures,
+       preparation_error: nil
+     }}
+  end
+
+  defp prepare_execution(runtime),
+    do: Attachments.prepare_execution(runtime.outgoing, runtime.bridge, runtime.connection)
 
   defp execution_context(outgoing, bridge, connection, opts) do
     concurrency =
@@ -129,21 +152,106 @@ defmodule Zaq.Channels.Delivery.Executor do
   end
 
   defp run_uploads(runtime, state) do
+    if runtime.plan.requirements &&
+         runtime.plan.requirements.transfer_mode == :upload_then_publish,
+       do: run_upload_groups(runtime.plan.groups, runtime, state),
+       else: {:ok, runtime, state}
+  end
+
+  defp run_upload_groups([], runtime, state), do: {:ok, runtime, state}
+
+  defp run_upload_groups([group | remaining], runtime, state) do
+    runtime =
+      Attachments.prepare_group(
+        runtime.outgoing,
+        group,
+        runtime.bridge,
+        runtime.connection,
+        runtime
+      )
+
+    if Plan.failure_policy(runtime.plan) == :abort and runtime.preparation_error do
+      abort_preparation(group, runtime, state)
+    else
+      {runtime, state} = run_group_uploads(group, remaining, runtime, state)
+      runtime = release_upload_payloads(runtime, if(state.halted?, do: [], else: remaining))
+
+      if state.halted?,
+        do: {:ok, %{runtime | prepared_steps: %{}}, state},
+        else: run_upload_groups(remaining, runtime, state)
+    end
+  end
+
+  defp abort_preparation(group, runtime, state) do
+    if map_size(state.results) == 0 do
+      {:error, runtime.preparation_error}
+    else
+      steps = Enum.filter(runtime.plan.steps, &(&1.group_id == group.id))
+      step = Enum.find(steps, &Map.has_key?(runtime.preparation_errors, &1.id)) || hd(steps)
+      error = runtime.preparation_error
+      state = put_result(state, step, failed_result(error, %{}))
+
+      runtime = %{
+        runtime
+        | preparation_errors: Map.put(runtime.preparation_errors, step.id, error),
+          prepared_steps: %{}
+      }
+
+      {:ok, release_upload_payloads(runtime, []), %{state | halted?: true}}
+    end
+  end
+
+  defp run_group_uploads(group, remaining_groups, runtime, state) do
     runtime.plan.steps
-    |> Enum.filter(&(&1.operation == :upload))
-    |> Enum.reduce_while(state, fn step, state ->
+    |> Enum.filter(&(&1.operation == :upload and &1.group_id == group.id))
+    |> Enum.reduce_while({runtime, state}, fn step, {runtime, state} ->
       result =
         if dependency_status(step, state) == :ready,
           do: upload(step, runtime, state),
           else: %{status: :not_started}
 
       state = put_result(state, step, result)
+      runtime = %{runtime | prepared_steps: Map.delete(runtime.prepared_steps, step.id)}
+
+      pending_uploads =
+        Enum.filter(runtime.plan.steps, fn pending ->
+          pending.operation == :upload and pending.group_id == group.id and
+            not Map.has_key?(state.results, pending.id)
+        end)
+
+      runtime = release_upload_payloads(runtime, remaining_groups ++ pending_uploads)
 
       if Plan.failure_policy(runtime.plan) == :abort and result.status != :confirmed,
-        do: {:halt, %{state | halted?: true}},
-        else: {:cont, state}
+        do: {:halt, {runtime, %{state | halted?: true}}},
+        else: {:cont, {runtime, state}}
     end)
   end
+
+  defp release_upload_payloads(runtime, remaining_groups) do
+    needed = MapSet.new(Enum.flat_map(remaining_groups, & &1.attachment_refs))
+    release_attachment_content(runtime, needed)
+  end
+
+  defp release_attachment_content(runtime, needed) do
+    attachments =
+      Map.new(runtime.attachments, fn {index, attachment} ->
+        {index,
+         if(MapSet.member?(needed, index), do: attachment, else: Map.delete(attachment, :content))}
+      end)
+
+    records =
+      runtime.outgoing.delivery.attachments
+      |> Enum.with_index()
+      |> Enum.map(fn {record, index} ->
+        if MapSet.member?(needed, index), do: record, else: record_without_content(record)
+      end)
+
+    outgoing = %{runtime.outgoing | delivery: %{runtime.outgoing.delivery | attachments: records}}
+    %{runtime | attachments: attachments, outgoing: outgoing}
+  end
+
+  defp record_without_content(%Zaq.Contracts.Record{} = record), do: %{record | content: nil}
+  defp record_without_content(record), do: record
 
   defp upload(step, runtime, state) do
     [result] = run_steps([step], runtime, &invoke(&1, inputs(&1, runtime, state), runtime))
@@ -160,26 +268,31 @@ defmodule Zaq.Channels.Delivery.Executor do
   end
 
   defp run_sequential(steps, runtime, state) do
-    Enum.reduce_while(steps, state, fn step, state ->
+    Enum.reduce_while(steps, {runtime, state}, fn step, {runtime, state} ->
       [result] = run_ready([step], runtime, state)
       state = put_result(state, step, result)
-      if result.status == :confirmed, do: {:cont, state}, else: {:halt, %{state | halted?: true}}
+      runtime = release_publication_payloads(runtime, state)
+
+      if result.status == :confirmed,
+        do: {:cont, {runtime, state}},
+        else: {:halt, {runtime, %{state | halted?: true}}}
     end)
   end
 
-  defp run_continue([], _runtime, state), do: state
+  defp run_continue([], runtime, state), do: {runtime, state}
 
   defp run_continue(steps, runtime, state) do
     {ready, waiting} = Enum.split_with(steps, &(dependency_status(&1, state) != :waiting))
 
     cond do
       ready == [] ->
-        state
+        {runtime, state}
 
       not state.answer_confirmed? and runtime.plan.placement == :threaded ->
         [step | remaining] = ready
         [result] = run_ready([step], runtime, state)
         state = put_result(state, step, result)
+        runtime = release_publication_payloads(runtime, state)
         run_continue(remaining ++ waiting, runtime, state)
 
       true ->
@@ -191,8 +304,16 @@ defmodule Zaq.Channels.Delivery.Executor do
             put_result(state, step, result)
           end)
 
+        runtime = release_publication_payloads(runtime, state)
         run_continue(waiting, runtime, state)
     end
+  end
+
+  defp release_publication_payloads(runtime, state) do
+    remaining = Enum.reject(runtime.plan.steps, &Map.has_key?(state.results, &1.id))
+    needed = MapSet.new(Enum.flat_map(remaining, & &1.attachment_refs))
+    runtime = release_attachment_content(runtime, needed)
+    %{runtime | prepared_steps: Map.drop(runtime.prepared_steps, Map.keys(state.results))}
   end
 
   defp run_ready(steps, runtime, state),
@@ -495,6 +616,7 @@ defmodule Zaq.Channels.Delivery.Executor do
   end
 
   defp finish(runtime, state) do
+    runtime = release_attachment_content(%{runtime | prepared_steps: %{}}, MapSet.new())
     report = report(runtime, state)
 
     case report.messages do

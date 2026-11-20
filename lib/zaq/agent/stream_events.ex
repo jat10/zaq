@@ -39,7 +39,9 @@ defmodule Zaq.Agent.StreamEvents do
   successful terminal results expose selected attachments in `delivery.attachments`; failed,
   cancelled and incomplete streams return no selected files.
   Rejected selection instructions clear the selection and set `delivery.error`,
-  without failing the answer. A later valid instruction clears that error.
+  without failing the answer. Failed tool calls retain the previous selection and
+  set the same bounded error. Later valid instructions cannot clear that request's
+  failure evidence; Channels applies the selected connector's delivery policy.
   """
 
   alias ReqLLM.ToolResult
@@ -50,6 +52,7 @@ defmodule Zaq.Agent.StreamEvents do
   alias Zaq.ConnectorConfig.LiveUpdates
   alias Zaq.Contracts.ToolStep
   alias Zaq.Engine.Messages.Incoming
+  alias Zaq.Engine.Messages.Outgoing.Delivery
   alias Zaq.Event
 
   @tool_trace_fields ~w(id type turn_id content name arguments response duration_ms started_at started_at_ms ended_at ended_at_ms status invocation_id sequence outcome invocation_path parent_id origin)
@@ -490,12 +493,32 @@ defmodule Zaq.Agent.StreamEvents do
          {:ok, instruction} <- AttachDocuments.validate_output(expanded),
          {:ok, selected} <-
            AttachDocuments.reduce_selection(state.delivery.attachments, instruction) do
-      %{state | delivery: %Zaq.Engine.Messages.Outgoing.Delivery{attachments: selected}}
+      delivery = %{state.delivery | attachments: selected}
+      errors = Map.get(instruction, :errors, [])
+
+      delivery =
+        if errors == [] do
+          delivery
+        else
+          previous = Delivery.selection_failures(delivery.error)
+
+          %{
+            delivery
+            | error: %{
+                reason: :invalid_attachment_selection,
+                failures: Enum.take(Enum.uniq(previous ++ errors), 100)
+              }
+          }
+        end
+
+      %{state | delivery: delivery}
     else
       _ ->
         %{
           state
-          | delivery: %Zaq.Engine.Messages.Outgoing.Delivery{error: :invalid_attachment_selection}
+          | delivery: %Zaq.Engine.Messages.Outgoing.Delivery{
+              error: state.delivery.error || :invalid_attachment_selection
+            }
         }
     end
   end
@@ -503,8 +526,19 @@ defmodule Zaq.Agent.StreamEvents do
   defp select_attachments(state, "attach_documents", {:ok, _output, _effects}),
     do: %{
       state
-      | delivery: %Zaq.Engine.Messages.Outgoing.Delivery{error: :invalid_attachment_selection}
+      | delivery: %Zaq.Engine.Messages.Outgoing.Delivery{
+          error: state.delivery.error || :invalid_attachment_selection
+        }
     }
+
+  defp select_attachments(state, "attach_documents", {:error, _reason}),
+    do: %{
+      state
+      | delivery: %{state.delivery | error: state.delivery.error || :invalid_attachment_selection}
+    }
+
+  defp select_attachments(state, "attach_documents", {:error, _reason, _effects}),
+    do: select_attachments(state, "attach_documents", {:error, nil})
 
   defp select_attachments(state, _tool_name, _result), do: state
 

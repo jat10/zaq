@@ -60,6 +60,50 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
   test "reporter table preserves errors and stores only bounded evidence", _ctx do
     cases = [
       %{
+        name: :rejected_file,
+        response: {:error, :invalid_attachment_selection},
+        observation: %{
+          outcome: :failed,
+          reason: :attachment_selection_failed,
+          attachment_failures: [
+            %{
+              record_id: "file-2",
+              name: "zaq-file-2.txt",
+              reason: "file_too_large",
+              size: 348_160,
+              limit: 307_200,
+              content: "PRIVATE_BYTES"
+            }
+          ]
+        },
+        expected: %{
+          "outcome" => "failed",
+          "reason_code" => "attachment_selection_failed",
+          "attachment_failures" => [
+            %{
+              "record_id" => "file-2",
+              "name" => "zaq-file-2.txt",
+              "reason" => "file_too_large",
+              "size" => 348_160,
+              "limit" => 307_200
+            }
+          ]
+        }
+      },
+      %{
+        name: :attachment_selection_failed,
+        response:
+          {:error,
+           %Error{
+             reason: :invalid_attachment_selection,
+             message: "The requested attachments could not be attached.",
+             stage: :selection,
+             delivery: :not_sent
+           }},
+        observation: %{outcome: :failed, reason: :attachment_selection_failed},
+        expected: %{"outcome" => "failed", "reason_code" => "attachment_selection_failed"}
+      },
+      %{
         name: :two_tuple,
         response: {:error, :transport},
         expected: %{"outcome" => "unconfirmed", "reason_code" => "unknown"}
@@ -117,6 +161,24 @@ defmodule Zaq.Engine.Conversations.MessageDeliveryTest do
 
         assert Map.drop(evidence, ["observed_at"]) ==
                  Map.merge(%{"version" => 1, "provider_code" => nil}, scenario.expected)
+
+        if scenario.name == :attachment_selection_failed do
+          assert %{state: :failed, reason: reason} = MessageDelivery.presentation(stored)
+
+          assert reason ==
+                   "Attachment selection failed. The stop-on-failure policy prevented delivery."
+        end
+
+        if scenario.name == :rejected_file do
+          assert %{state: :failed, reason: reason} = MessageDelivery.presentation(stored)
+
+          assert reason ==
+                   "zaq-file-2.txt exceeds the attachment size limit (348160 bytes; limit 307200 bytes). The stop-on-failure policy prevented delivery."
+
+          refute inspect(evidence) =~ "PRIVATE_BYTES"
+          assert reporter_record(scenario, outgoing) == response
+          assert Repo.get!(Message, ctx.answer.id).metadata == stored.metadata
+        end
 
         refute Repo.get_by(TranscriptMessage, message_id: ctx.answer.id)
       end

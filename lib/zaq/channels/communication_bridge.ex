@@ -23,6 +23,7 @@ defmodule Zaq.Channels.CommunicationBridge do
   """
 
   alias Zaq.Channels.Bridge
+  alias Zaq.Channels.Delivery.Error
   alias Zaq.Engine.Messages.{ConversationIdentity, Incoming}
   alias Zaq.Engine.Messages.Incoming.RoutingContext
   alias Zaq.Engine.Messages.Outgoing
@@ -142,6 +143,17 @@ defmodule Zaq.Channels.CommunicationBridge do
   end
 
   def delivery_observation(_bridge, _outgoing, _response), do: nil
+
+  defp common_delivery_observation(
+         {:error, %Error{stage: :selection, delivery: :not_sent} = error}
+       ) do
+    facts = %{outcome: :failed, reason: :attachment_selection_failed}
+
+    case Outgoing.Delivery.selection_failures(error.cause) do
+      [] -> facts
+      failures -> Map.put(facts, :attachment_failures, failures)
+    end
+  end
 
   defp common_delivery_observation({:error, :timeout}),
     do: %{outcome: :unconfirmed, reason: :timeout}

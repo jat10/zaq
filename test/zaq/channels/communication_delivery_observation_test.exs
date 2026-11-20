@@ -4,6 +4,7 @@ defmodule Zaq.Channels.CommunicationDeliveryObservationTest do
   import Mox
 
   alias Zaq.Channels.CommunicationBridge
+  alias Zaq.Channels.Delivery.Error
   alias Zaq.Channels.JidoChatBridge
   alias Zaq.Channels.PeopleAuthDeliveryMock, as: BridgeMock
   alias Zaq.Engine.Messages.Outgoing
@@ -32,6 +33,13 @@ defmodule Zaq.Channels.CommunicationDeliveryObservationTest do
 
   test "an absent optional classifier uses only common communication failure facts" do
     for {response, facts} <- [
+          {{:error,
+            %Error{
+              reason: :invalid_attachment_selection,
+              message: "The requested attachments could not be attached.",
+              stage: :selection,
+              delivery: :not_sent
+            }}, %{outcome: :failed, reason: :attachment_selection_failed}},
           {{:error, :timeout}, %{outcome: :unconfirmed, reason: :timeout}},
           {{:error, :missing_connection_details},
            %{outcome: :failed, reason: :missing_configuration}},

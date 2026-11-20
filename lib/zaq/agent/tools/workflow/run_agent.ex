@@ -299,9 +299,10 @@ defmodule Zaq.Agent.Tools.Workflow.RunAgent do
 
   defp handle_response(
          %Outgoing{
-           delivery: %Outgoing.Delivery{error: :invalid_attachment_selection}
+           delivery: %Outgoing.Delivery{error: error}
          } = outgoing
-       ),
+       )
+       when not is_nil(error),
        do: failure_result("agent_failed:invalid_attachment_selection", outgoing.metadata)
 
   defp handle_response(%Outgoing{} = outgoing) do

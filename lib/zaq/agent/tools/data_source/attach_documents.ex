@@ -29,6 +29,16 @@ defmodule Zaq.Agent.Tools.DataSource.AttachDocuments do
     deselects without deleting sources, replace sets the exact selection (empty
     clears it). Selection is not delivery; files are sent only after a successful
     final answer. Pass complete Records returned by document tools.
+    Include every file the user requested, even when its size exceeds a transport
+    limit. Do not omit files based on size or anticipated delivery failures;
+    Channels applies the configured stop-or-continue policy.
+    Tool success confirms selection only, not upload or delivery. Never claim
+    files are attached, uploaded or sent based on this tool's result. Say they
+    are selected for delivery. If any selection call failed in this request,
+    explain that failure even after a successful retry: stop-on-failure can still
+    prevent delivery of the entire selection.
+    The errors list reports rejected files even when the call succeeds. Report
+    these failures; do not retry with a subset to erase them.
     """,
     schema:
       Zoi.object(%{
@@ -38,7 +48,19 @@ defmodule Zaq.Agent.Tools.DataSource.AttachDocuments do
     output_schema:
       Zoi.object(%{
         operation: Zoi.enum(["add", "remove", "replace"]),
-        records: Zoi.list(Record.zoi_type(), max_length: 100)
+        records: Zoi.list(Record.zoi_type(), max_length: 100),
+        errors:
+          Zoi.list(
+            Zoi.object(%{
+              record_id: Zoi.string(),
+              name: Zoi.string(),
+              reason: Zoi.literal("file_too_large"),
+              size: Zoi.integer(),
+              limit: Zoi.integer()
+            }),
+            max_length: 100
+          )
+          |> Zoi.default([])
       })
 
   @impl Jido.Action
@@ -51,8 +73,45 @@ defmodule Zaq.Agent.Tools.DataSource.AttachDocuments do
   def run(%{operation: operation, records: records}, context) do
     with :ok <- active_request(context),
          {:ok, records} <- authorize(records, context),
-         :ok <- validate_destination(operation, records, context) do
-      {:ok, %{operation: operation, records: records}}
+         {:ok, records, errors} <- select_for_destination(operation, records, context) do
+      {:ok, %{operation: operation, records: records, errors: errors}}
+    end
+  end
+
+  defp select_for_destination(operation, records, context) do
+    case validate_destination(operation, records, context) do
+      :ok ->
+        {:ok, records, []}
+
+      {:error, {:file_too_large, %{filename: name, size: size, limit: limit}}} = error
+      when is_binary(name) and is_integer(size) and is_integer(limit) and size > limit and
+             limit > 0 ->
+        {rejected, remaining} = Enum.split_with(records, &(&1.name == name and &1.size == size))
+
+        retain_rejections(rejected, remaining, operation, context, error)
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  defp retain_rejections([], _remaining, _operation, _context, error), do: error
+
+  defp retain_rejections(
+         rejected,
+         remaining,
+         operation,
+         context,
+         {:error, {:file_too_large, %{size: size, limit: limit}}}
+       ) do
+    failures =
+      Enum.map(
+        rejected,
+        &%{record_id: &1.id, name: &1.name, reason: "file_too_large", size: size, limit: limit}
+      )
+
+    with {:ok, selected, later_failures} <- select_for_destination(operation, remaining, context) do
+      {:ok, selected, failures ++ later_failures}
     end
   end
 

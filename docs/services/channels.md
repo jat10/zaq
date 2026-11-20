@@ -26,6 +26,10 @@ through a confidential Engine event containing only persisted message references
 connector ID and allowlisted outcome/reason codes. A bounded numeric provider code
 can accompany the reason, without retaining its response body. Definite pre-send configuration
 failure and attested rejection are distinct from uncertain transport outcomes.
+Selection-stage errors with `delivery: :not_sent` are recorded as failed with
+reason `attachment_selection_failed`; history explains that stop-on-failure
+prevented delivery. Structured size rejections retain the file ID, name, declared
+size and limit; history displays those facts without file content or provider bodies.
 Timeouts, partial/unknown results and transport interruptions do not prove that a
 provider failed to accept the message. Reporting preserves the original transport
 result or exception; unavailable observation recording never schedules another
@@ -534,8 +538,9 @@ metadata format. Outgoing is not persisted; deploy the canonical struct change
 together across Agent, Engine and Channel nodes.
 
 `delivery.error` retains selection feedback independently of answer success. With
-no attachments, planning returns Outgoing unchanged, even when that error is present
-or the connector uses stop policy. The Agent composes its answer from tool feedback.
+no attachments and no structured rejected-file facts, planning returns Outgoing
+unchanged. Structured size rejections still enter planning so stop policy prevents
+delivery even when every selected file was rejected. The Agent composes its answer from tool feedback.
 Channel adds no selection notice and performs no requirements lookup, materialization,
 planning or executor work for ordinary text delivery.
 
@@ -563,8 +568,18 @@ resolves the ID once and stores it on the first edit step; bridges without the
 callback create messages.
 
 `Delivery.Executor.execute/4` acquires each eligible attachment once through the
-existing materialization and authorization boundary, then checks actual attachment
-and group sizes and exact MIME/multipart payload sizes before transport effects.
+existing materialization and authorization boundary. For upload-then-publish delivery,
+it acquires and prepares one fixed group, uploads that group's batches, then starts
+the next group. Both policies keep publication after the upload phase. Stop halts
+before acquiring later groups after an acquisition, preparation or upload failure;
+continue records the failure and proceeds with usable files and later groups.
+If later preparation fails under stop, earlier confirmed uploads remain uploaded-only
+and nothing is published. Direct-send adapters, including SMTP, prepare the entire
+plan before the first submission, preventing a later preparation failure from
+causing partial publication under stop.
+
+Execution checks actual attachment and group sizes and exact MIME/multipart payload
+sizes before the affected transport operation.
 Declared/actual size drift is allowed only when the fixed group still fits.
 An oversized payload fails its planned group or upload batch; execution never
 regroups or retries it. Continue retains original-index failures and proceeds with
@@ -573,6 +588,9 @@ new publication, and all separate uploads must succeed before stop publishes.
 
 Outgoing and the completed plan remain immutable inputs. Acquired bytes, prepared
 operation inputs, outcomes and newly elected roots live in executor runtime state.
+Shared indices reuse their acquisition outcome, including failures. Runtime content
+and prepared requests are released after their last consumer; publication retains
+display metadata and confirmed transport references.
 Existing thread identity remains on Outgoing. Continue promotes confirmed roots and
 uses bounded concurrency for ready replies; stop publication remains sequential.
 Reports retain confirmed receipts, `failed_attachments`, `uploaded_attachments`,
@@ -664,8 +682,8 @@ never switches to another connector. Configuration, password encryption and BO
 settings still use the existing Engine-owned boundaries.
 
 Continue retains usable attachments and safe failure facts with original indices. If
-none remain, it uses the existing text fallback. Empty selections deliver the Agent's
-answer unchanged. Stop rejects preparation failures before publication, uploads all
+none remain, it uses the existing text fallback. Ordinary empty selections deliver
+the Agent's answer unchanged. Stop rejects preparation failures before publication, uploads all
 groups before new publication where separate uploads exist, and stops sequential
 publication after failure. Continue preserves failed/unknown sends, promotes the
 next ordered root candidate and never retries or redistributes its files. Ready
@@ -725,7 +743,9 @@ lazy Records. It reuses delivery's connector lookup and delegates to the optiona
 bridge `validate_files/3` callback. `JidoChatBridge` passes the Records and resolved
 adapter options to the adapter's `validate_files/2` extension. Mattermost checks
 declared size against `max_file_size`; unknown sizes and oversized files return
-errors before selection succeeds. If an adapter does not export `validate_files/2`,
+validation errors. AttachDocuments returns eligible Records together with structured
+size rejections; Channels applies the configured failure policy to both. Other
+validation failures reject the instruction. If an adapter does not export `validate_files/2`,
 the bridge returns `:ok` regardless of its declared capabilities. File-size checks
 remain adapter-owned during validation and delivery.
 

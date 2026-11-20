@@ -4,7 +4,8 @@ defmodule Zaq.Channels.Delivery.Attachments do
 
   Plans retain stable original indices, never a second source collection. Execution
   redeems each required Record once with trusted identity, checks actual fixed-group
-  limits, and prepares exact provider payloads before any upload or publication.
+  limits, and prepares exact provider payloads before their transport operations.
+  Upload groups can be prepared incrementally; direct sends retain whole-plan preparation.
   Size drift is accepted only when actual payloads fit; execution never regroups.
   Source files are preserved and no temporary files are created.
   """
@@ -18,11 +19,16 @@ defmodule Zaq.Channels.Delivery.Attachments do
   alias Zaq.Events.TrustedContext
   alias Zaq.Materialization
 
-  @doc "Builds a metadata-only plan; empty selections return unchanged, including selection errors."
+  @doc "Builds a metadata-only plan; ordinary text bypasses planning, but rejected-file facts enforce policy."
   @spec build_plan(Outgoing.t(), module(), map()) ::
           {:ok, Outgoing.t()} | {:error, Error.t()}
-  def build_plan(%Outgoing{delivery: %{attachments: []}} = outgoing, _bridge, _connection),
-    do: {:ok, outgoing}
+  def build_plan(
+        %Outgoing{delivery: %{attachments: [], error: error}} = outgoing,
+        _bridge,
+        _connection
+      )
+      when error in [nil, :invalid_attachment_selection],
+      do: {:ok, outgoing}
 
   def build_plan(%Outgoing{delivery: %{attachments: attachments}}, _bridge, _connection)
       when not is_list(attachments), do: {:error, delivery_error(:invalid_attachments)}
@@ -116,6 +122,20 @@ defmodule Zaq.Channels.Delivery.Attachments do
   end
 
   defp selection_failures(nil), do: []
+
+  defp selection_failures(error) when is_map(error) do
+    case Outgoing.Delivery.selection_failures(error) do
+      [] ->
+        selection_failures(:invalid_attachment_selection)
+
+      failures ->
+        Enum.map(failures, fn failure ->
+          planning_failure(nil, delivery_error(:invalid_attachment_selection))
+          |> Map.put(:selection_failure, failure)
+        end)
+    end
+  end
+
   defp selection_failures(reason), do: [planning_failure(nil, delivery_error(reason))]
 
   defp metadata(records) do
@@ -279,64 +299,119 @@ defmodule Zaq.Channels.Delivery.Attachments do
     plan = outgoing.delivery.plan
     refs = plan.groups |> Enum.flat_map(& &1.attachment_refs) |> Enum.uniq()
 
-    {attachments, failures, acquisition_error} =
-      Enum.reduce(refs, {%{}, plan.preparation_failures, nil}, fn index,
-                                                                  {prepared, failures,
-                                                                   first_error} ->
-        record = Enum.at(outgoing.delivery.attachments, index)
+    preparation = %{
+      attachments: %{},
+      acquired_indices: MapSet.new(),
+      prepared_steps: %{},
+      preparation_errors: %{},
+      preparation_failures: plan.preparation_failures,
+      preparation_error: nil
+    }
 
-        context =
-          Map.get(connection, :trusted_context, %{})
-          |> TrustedContext.normalize()
-          |> Map.from_struct()
-          |> Map.merge(Map.take(connection, [:node_router]))
-
-        with {:ok, attachment} <- acquire_for_execution(record, context),
-             true <-
-               is_nil(plan.requirements) or
-                 within_limit?(attachment.size, plan.requirements.max_attachment_bytes) do
-          {Map.put(prepared, index, Map.put(attachment, :attachment_index, index)), failures,
-           first_error}
-        else
-          false ->
-            {prepared,
-             failures ++ [planning_failure(index, normalize_planning_error(:file_too_large))],
-             first_error || normalize_planning_error(:file_too_large)}
-
-          {:error, reason} ->
-            {prepared, failures ++ [planning_failure(index, normalize_planning_error(reason))],
-             first_error || normalize_planning_error(reason)}
-        end
-      end)
-
-    {prepared_steps, errors, failures} =
-      Enum.reduce(plan.steps, {%{}, %{}, failures}, fn step, {prepared, errors, failures} ->
-        selected =
-          step.attachment_refs
-          |> Enum.filter(&Map.has_key?(attachments, &1))
-          |> Enum.map(&Map.fetch!(attachments, &1))
-
-        case prepare_operation(step, selected, outgoing, bridge, connection, plan.requirements) do
-          {:ok, payload} ->
-            {Map.put(prepared, step.id, payload), errors, failures}
-
-          {:error, reason} ->
-            error = normalize_planning_error(reason)
-            omitted = Enum.map(selected, &planning_failure(&1.attachment_index, error))
-            {prepared, Map.put(errors, step.id, error), failures ++ omitted}
-        end
-      end)
+    preparation = acquire_attachments(refs, outgoing, connection, preparation)
+    acquisition_error = preparation.preparation_error
+    preparation = prepare_operations(plan.steps, outgoing, bridge, connection, preparation)
 
     with :ok <- acquisition_gate(policy, acquisition_error),
-         :ok <- preparation_gate(policy, failures) do
-      {:ok,
-       %{
-         attachments: attachments,
-         prepared_steps: prepared_steps,
-         preparation_errors: errors,
-         preparation_failures: Enum.uniq(failures)
-       }}
+         :ok <- preparation_gate(policy, preparation.preparation_failures) do
+      {:ok, preparation}
     end
+  end
+
+  @doc """
+  Prepares one fixed group's operations, reusing prior original-index acquisitions.
+
+  Returns cumulative runtime preparation and the first error in this group. The
+  executor decides whether to upload or proceed to later groups under its policy.
+  Failed acquisitions are remembered too, so shared references are never retried.
+  """
+  @spec prepare_group(Outgoing.t(), map(), module(), map(), map()) :: map()
+  def prepare_group(outgoing, group, bridge, connection, preparation) do
+    steps = Enum.filter(outgoing.delivery.plan.steps, &(&1.group_id == group.id))
+
+    preparation =
+      acquire_attachments(
+        group.attachment_refs,
+        outgoing,
+        connection,
+        %{preparation | preparation_error: nil}
+      )
+
+    prepare_operations(steps, outgoing, bridge, connection, preparation)
+  end
+
+  defp acquire_attachments(refs, outgoing, connection, preparation) do
+    context =
+      Map.get(connection, :trusted_context, %{})
+      |> TrustedContext.normalize()
+      |> Map.from_struct()
+      |> Map.merge(Map.take(connection, [:node_router]))
+
+    refs
+    |> Enum.uniq()
+    |> Enum.reject(&MapSet.member?(preparation.acquired_indices, &1))
+    |> Enum.reduce(preparation, fn index, preparation ->
+      preparation = %{
+        preparation
+        | acquired_indices: MapSet.put(preparation.acquired_indices, index)
+      }
+
+      record = Enum.at(outgoing.delivery.attachments, index)
+      requirements = outgoing.delivery.plan.requirements
+
+      with {:ok, attachment} <- acquire_for_execution(record, context),
+           true <-
+             is_nil(requirements) or
+               within_limit?(attachment.size, requirements.max_attachment_bytes) do
+        put_in(preparation.attachments[index], Map.put(attachment, :attachment_index, index))
+      else
+        false -> preparation_failure(preparation, index, :file_too_large)
+        {:error, reason} -> preparation_failure(preparation, index, reason)
+      end
+    end)
+  end
+
+  defp preparation_failure(preparation, index, reason) do
+    error = normalize_planning_error(reason)
+
+    %{
+      preparation
+      | preparation_failures:
+          preparation.preparation_failures ++ [planning_failure(index, error)],
+        preparation_error: preparation.preparation_error || error
+    }
+  end
+
+  defp prepare_operations(steps, outgoing, bridge, connection, preparation) do
+    Enum.reduce(steps, preparation, fn step, preparation ->
+      selected =
+        step.attachment_refs
+        |> Enum.filter(&Map.has_key?(preparation.attachments, &1))
+        |> Enum.map(&Map.fetch!(preparation.attachments, &1))
+
+      case prepare_operation(
+             step,
+             selected,
+             outgoing,
+             bridge,
+             connection,
+             outgoing.delivery.plan.requirements
+           ) do
+        {:ok, payload} ->
+          put_in(preparation.prepared_steps[step.id], payload)
+
+        {:error, reason} ->
+          error = normalize_planning_error(reason)
+          omitted = Enum.map(selected, &planning_failure(&1.attachment_index, error))
+
+          %{
+            preparation
+            | preparation_errors: Map.put(preparation.preparation_errors, step.id, error),
+              preparation_failures: Enum.uniq(preparation.preparation_failures ++ omitted),
+              preparation_error: preparation.preparation_error || error
+          }
+      end
+    end)
   end
 
   defp acquire_for_execution(record, context) do
@@ -423,8 +498,18 @@ defmodule Zaq.Channels.Delivery.Attachments do
   defp within_limit?(_size, :not_applicable), do: true
   defp within_limit?(size, limit), do: is_integer(limit) and size <= limit
 
-  defp preparation_gate(:abort, [%{stage: :selection} | _]),
-    do: {:error, delivery_error(:invalid_attachment_selection)}
+  defp preparation_gate(:abort, [%{stage: :selection} | _] = failures) do
+    details =
+      Enum.flat_map(failures, fn failure ->
+        case failure[:selection_failure] do
+          nil -> []
+          detail -> [detail]
+        end
+      end)
+
+    error = delivery_error(:invalid_attachment_selection)
+    {:error, %{error | cause: %{failures: details}}}
+  end
 
   defp preparation_gate(:abort, [failure | _]),
     do:

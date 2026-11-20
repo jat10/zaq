@@ -80,14 +80,19 @@ signed data-source identity are refreshed through the existing validated
 `GetDocument` Action, which delegates current read authorization to Channels and
 the source owner (including Storage for Disk). This reads metadata, never document
 bytes. Other signed Records use `Record.Authorization`; a missing or unusable
-permission projection fails closed. The entire batch must pass before selection
+permission projection fails closed. The entire batch must pass authorization before selection
 changes. Selection success is not delivery.
+The tool instructions require the complete requested set, without filtering files
+by transport limits, and distinguish selection from confirmed attachment delivery.
+The model must disclose selection failures even after a successful retry.
 
 For requests with an incoming destination, `add` and nonempty `replace` dispatch
 a synchronous `:validate_files` event to Channels after authorization. Channels
 uses the destination connector's delivery configuration and asks its bridge and
-adapter to validate the unmaterialized Records. Adapter errors return to the
-tool before its selection instruction succeeds. No file content is sent in this
+adapter to validate the unmaterialized Records. Known size rejections return in
+the instruction's `errors` list with file ID, name, size and limit; `records`
+contains the eligible selection. Other validation errors fail the instruction.
+No file content is sent in this
 event. Remove and clear operations, and workflow selections without a destination,
 do not perform this preflight. Delivery still checks the acquired bytes.
 
@@ -122,9 +127,13 @@ serialization can discard or truncate data. Missing, foreign or retired aliases
 reject selection with a bounded error and prevent final attachment delivery.
 Alias lifetime follows the existing runtime lifecycle; no additional store is
 created. Rejected instructions clear selected files and set a bounded
-`delivery.error` without failing a completed answer. A later valid instruction
-clears that error. Executor carries typed delivery selection into Outgoing. With
-no selected attachments, Channels delivers the Agent's composed answer through
+`delivery.error` without failing a completed answer. Failed attachment-tool calls
+retain the previous selection and set the same bounded error. Later valid
+instructions update selection but retain the error for the current request. Size
+rejections accumulate as bounded per-file facts in `delivery.error.failures`, so
+Channels can enforce the connector's failure policy even after a subset retry.
+Each new request starts without that error. Executor carries typed delivery selection into Outgoing. With
+no selected attachments or structured rejected-file facts, Channels delivers the Agent's composed answer through
 ordinary text delivery without a notice or attachment failure-policy branch.
 Genuine request failures still fail the run. Executor preserves the final selection
 as `Outgoing.delivery.attachments`, outside
