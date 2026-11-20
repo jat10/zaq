@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-20T08:36:23Z",
+  "description": "PR #876 test-refactoring review requested by the user on 2026-11-20. Reduce duplicated setup and executions while preserving coverage.\n\nSource: test/zaq/engine/notifications/notification_attachments_test.exs, test \"omitted attachments preserve text-only notifications\".\nDestination: test/zaq/engine/notifications/notification_test.exs, existing build/1 valid-input test \"returns {:ok, %Notification{}} with all required fields\".\n\nAdd assert n.attachments == [] to the existing test, whose attributes omit attachments. Retire only the redundant standalone default test after verifying its contract is preserved. Keep signed metadata serialization, tampering, and malformed-collection tests in the new attachment module.\n\nAcceptance: every existing destination assertion remains; omitted attachments still build a text-only notification; no property or validation scenario is removed.\nValidation: mix q and both focused notification suites. Final validation remains owned by zaq-1lw.13.\n\nAction reuse assessment: not applicable to production operations; this is test-only consolidation using existing public contracts and fixtures. No production API or behavior changes.\nRead AGENTS.md, docs/WORKFLOW_AGENT.md, docs/testing-approach.md, docs/code-quality.md, and docs/conventions.md before implementation. This issue records the requested work; the user's request to create issues is not an implementation or broader test-behavior approval. Follow the existing-test-behavior gate for retiring tests; preserve assertions and map source coverage to its destination.",
+  "id": "zaq-1lw.29",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "Fold notification attachment defaults into the existing build test",
+  "type": "task",
+  "updated_at": "2026-11-20T08:36:23Z"
+}
