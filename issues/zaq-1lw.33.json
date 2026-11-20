@@ -17,11 +17,15 @@
     {
       "text": "Approved migration implemented in existing MessageDelivery tests only: both rejection paths now assert Delivery.Error(reason: {:http_error,403}, stage: :transport, delivery: :unconfirmed); existing HTTP body/count, Engine raise/throw safety, accepted receipt, bounded persisted evidence, unchanged canonical content, no transcript association and private body exclusion assertions retained. Added result privacy assertion. Production and dependencies untouched; prior zaq-1lw.28 edits preserved. Property rationale: finite contract migration with existing confirmation-dominance property and related DeliveryResult status properties; no new input invariant.",
       "timestamp": "2026-11-20T08:59:54Z"
+    },
+    {
+      "text": "Both complete reported test modules now PASS: 22 checks (1 property,21 tests), /tmp/zaq-delivery-reported-fixed.log. The two original Mattermost failures and the Telegram document test pass. Added Telegram bridge test also passes text fallback and explicit stored settings.send_on_file_failure=false stop policy, with no duplicate HTTP requests. Related API/Jido/DeliveryResult/executor/confirmation regression run in progress; final mix q will run after it. Existing workspace implementation changes preserved; this follow-up modifies only the two reported test files.",
+      "timestamp": "2026-11-20T09:01:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw] Migrate Mattermost delivery observation tests to structured errors",
   "type": "task",
-  "updated_at": "2026-11-20T08:59:54Z"
+  "updated_at": "2026-11-20T09:01:18Z"
 }
