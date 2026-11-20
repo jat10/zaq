@@ -9,9 +9,15 @@
   "id": "zaq-1lw.25",
   "labels": [],
   "parent": "zaq-1lw",
+  "comments": [
+    {
+      "text": "Action reuse assessment: local-only text orchestration in JidoChatBridge. Serena callers confirm send_prepared_reply/4 is called only by do_send_reply with attachments [] and prepared []; handle_send_with_adapter/4 only by that helper. Reuse send_mode, create_message, edit_message and dispatch_on_reply; prepared_upload remains used by executor send/upload operations. Preserve text creates one callback, edits no callback, no replacement after failed edit, and strict planned confirmation. No Action/tool surface changes. Retain existing bridge/delivery/executor tests; inspect obsolete fixtures before deletion. User approved scoped cleanup; workspace contains only .24 edits.",
+      "timestamp": "2026-11-20T07:43:04Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.25] Remove unreachable attachment handling from Jido text delivery",
   "type": "task",
-  "updated_at": "2026-11-20T07:43:02Z"
+  "updated_at": "2026-11-20T07:43:04Z"
 }
