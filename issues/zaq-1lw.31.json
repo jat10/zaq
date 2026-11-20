@@ -15,11 +15,15 @@
     {
       "text": "Coverage mapping: duplicate fully-confirmed test delivered_attachment_indices[0]/[1] -\u003e destination multiple_group_report.messages entries; report[:delivery]!=:not_sent and original diagnostic -\u003e destination multiple_group_report refutation before single-group execution. Destination multi-group confirmation/message IDs/no failures/no unattempted steps and all single-group delivered index/upload/outcome assertions retained. Added destination assertions before retiring duplicate; original executor suite baseline28 PASS (4 properties,24 tests). No other tests/properties touched.",
       "timestamp": "2026-11-20T09:14:01Z"
+    },
+    {
+      "text": "Implementation/validation complete. Moved destination test1 PASS before retirement; full executor suite27 PASS (4 properties,23 tests), versus28 baseline. mix q PASS and diff check PASS. Net12 lines saved (7 added,19 removed); exact diagnostic and single/multiple-group assertions preserved, all four properties and every failure/concurrency/timeout scenario retained. Logs /tmp/zaq-1lw-31-{before,moved,after,quality}.log. No production change/commit/push. Moving to .32 after validation.",
+      "timestamp": "2026-11-20T09:15:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.31] Combine duplicate successful delivery executor tests",
   "type": "task",
-  "updated_at": "2026-11-20T09:14:01Z"
+  "updated_at": "2026-11-20T09:15:03Z"
 }
