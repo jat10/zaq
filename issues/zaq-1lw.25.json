@@ -21,11 +21,15 @@
     {
       "text": "Exact focused result: 254 passed (5 properties, 249 tests). All .25 requirements verified; no obsolete public-path test/fixture needed deletion.",
       "timestamp": "2026-11-20T07:52:15Z"
+    },
+    {
+      "text": "User authorized commit and push. All four cleanups committed together as a6405a766 (refactor(channels): remove obsolete delivery paths (zaq-1lw)) and pushed to origin/feat/channel-files. Pre-commit qf and commit-message hooks passed; pre-push format hook passed. Working tree clean and HEAD matches remote. Focused validation and test removal mappings remain in prior notes. Architecture review/final coverage/precommit gates remain in .12/.13; no merge performed.",
+      "timestamp": "2026-11-20T08:00:51Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.25] Remove unreachable attachment handling from Jido text delivery",
   "type": "task",
-  "updated_at": "2026-11-20T07:52:15Z"
+  "updated_at": "2026-11-20T08:00:51Z"
 }
