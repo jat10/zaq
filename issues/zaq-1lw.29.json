@@ -15,11 +15,15 @@
     {
       "text": "Coverage mapping: source omitted attachments preserve text-only notifications -\u003e existing NotificationTest build/1 valid-input test returns {:ok,%Notification{}} with all required fields, via n.attachments==[]. Destination @valid_attrs already omits attachments and all prior subject/body/sender/recipient assertions remain. Added destination assertion before removing only the redundant source test. Signed metadata JSON/order and provenance verification property, tampering whole-collection property and malformed/unsigned/non-file validation examples remain unchanged in NotificationAttachmentsTest. Baseline both suites33 PASS (2 properties,31 tests); after-consolidation validation running. No production files changed.",
       "timestamp": "2026-11-20T09:10:35Z"
+    },
+    {
+      "text": "Implementation/validation complete. Coverage map above verified: both focused suites32 PASS (2 properties,30 tests), previously33 including the redundant execution. mix q PASS; diff check PASS. Net3 lines saved (4 removed,1 added), no properties or validation cases removed, production unchanged. Logs /tmp/zaq-1lw-29-{before,after,quality}.log. Moving to .30 only after these checks. No commit/push; issue remains open for review/landing.",
+      "timestamp": "2026-11-20T09:11:19Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.29] Fold notification attachment defaults into the existing build test",
   "type": "task",
-  "updated_at": "2026-11-20T09:10:35Z"
+  "updated_at": "2026-11-20T09:11:19Z"
 }
