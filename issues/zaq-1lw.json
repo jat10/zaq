@@ -26,11 +26,15 @@
     {
       "text": "User explicitly authorized commit and push. Committed accumulated 46-file Channel file-delivery implementation and fixes as 14fee186e (feat(channels): centralize file delivery planning and execution (zaq-1lw)); pushed fast-forward to origin/feat/channel-files on jat10/zaq. Commit pre-commit qf and Conventional Commit check passed; pre-push format passed. Recent focused validation remains recorded per child issue, including zaq-1lw.19 email/history 163 passed and mix q. No merge performed. Pending UX/E2E/review/coverage/final-precommit gates and separately tracked Mattermost coverage gap remain open; publication is not a claim of epic completion. Dependency pins retained; temporary tracing removed.",
       "timestamp": "2026-11-17T21:24:01Z"
+    },
+    {
+      "text": "Added four user-requested cleanup tasks on 2026-11-20: zaq-1lw.24 SMTP confirmed receipts; zaq-1lw.25 unreachable Jido text attachment handling; zaq-1lw.26 obsolete bulk prepare API; zaq-1lw.27 legacy adapter aggregate reports. Each contains scope, reuse evidence, retained contracts, obsolete-test deletion/migration instructions and validation. User explicitly approved removing tests related to these cleanups; supported behavior coverage must remain. No implementation or test edits performed. The four tasks are independent roots and each blocks existing architecture review .12; coordinate .25/.27 edits in the shared Jido module. Existing UX/E2E and final validation gates are unchanged.\n\n```mermaid\ngraph LR\n  c24[zaq-1lw.24] --\u003e review[zaq-1lw.12]\n  c25[zaq-1lw.25] --\u003e review\n  c26[zaq-1lw.26] --\u003e review\n  c27[zaq-1lw.27] --\u003e review\n```",
+      "timestamp": "2026-11-20T07:36:09Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw] Implement shared Channel file delivery plans",
   "type": "epic",
-  "updated_at": "2026-11-17T21:24:01Z"
+  "updated_at": "2026-11-20T07:36:09Z"
 }
