@@ -59,11 +59,15 @@
     {
       "text": "Architecture decision pending: current Action sees only selected records; no trusted requested set exists. Do not make omission test pass via filename parsing or treating every listed file as requested. Candidate1: reuse Zaq.Agent.Actions.EvaluateDecisions through Jido.Exec to independently compare original request and final selection before delivery; fail closed for abort on incomplete/unknown/unavailable verification. Adds model cost/latency and remains model-based, not a deterministic natural-language guarantee. Candidate2: user-confirmed structured requested file manifest, deterministic set comparison but UX confirmation. Requested user choice per WORKFLOW_AGENT architecture gate. No further production changes in this turn.",
       "timestamp": "2026-11-20T12:14:45Z"
+    },
+    {
+      "text": "User authorizes concrete existing-contract fix after code diagnosis: AttachDocuments returns eligible records plus structured per-file validation errors; StreamEvents preserves errors; Outgoing carries them; Channels applies abort including empty rejected selection. Authorization/schema failures stay whole-batch failures. Update existing size-rejection tests and the previously invalid free-text omission assertion to full requested records with explicit rejected-file facts; user approved after detailed diagnosis. No new model call or UX confirmation. Action reuse: extend existing AttachDocuments and destination validation callbacks, reuse stream reducer and planning gate; no new Action. Preserve concurrent group-execution edits.",
+      "timestamp": "2026-11-20T12:26:41Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T12:14:45Z"
+  "updated_at": "2026-11-20T12:26:41Z"
 }
