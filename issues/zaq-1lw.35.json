@@ -27,11 +27,15 @@
     {
       "text": "User explicitly approved updating the ACL test via async reply: Yes, update the test. Abort now asserts selection-stage not_sent error; continue retains authorized materialization and revoked-access exclusion with indexed failure evidence. No permission assertions removed.",
       "timestamp": "2026-11-20T11:25:32Z"
+    },
+    {
+      "text": "Fix validation:118 checks passed (17 properties,101 tests) across stream reducer, configured-agent selection, AttachDocuments, destination validation and attachment policy. Final mix q PASS. Abort rejects subset after selection failure; continue delivers11 and reports selection failure; fresh request resets error. ACL test migration approved by user preserves authorized byte acquisition and revoked-access exclusion. Final targeted rerun verifies strengthened exact unauthorized reason assertion. No commit/push; final epic review/coverage/precommit remain separate.",
+      "timestamp": "2026-11-20T11:26:45Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T11:25:32Z"
+  "updated_at": "2026-11-20T11:26:45Z"
 }
