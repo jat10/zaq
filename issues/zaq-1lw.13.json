@@ -17,11 +17,15 @@
     {
       "text": "Validation observation from .29-.32 test-only consolidation: first requested local mix precommit ran12570 checks,12568 passed including all390 properties; two unchanged EmailConfirmationIntegrationTest scenarios (stale_metadata,selection_failure) timed out at existing5000ms delivery_boundary assertion. Exact suite4/4 passes unchanged in isolation with seed758067. Investigating interaction with six changed test files before local gate rerun. No claim that epic review/coverage/E2E prerequisites or .13 are complete. Log /tmp/zaq-1lw-consolidation-precommit.log; isolated /tmp/zaq-1lw-consolidation-smtp-isolated.log.",
       "timestamp": "2026-11-20T09:27:08Z"
+    },
+    {
+      "text": "Local final validation for .29-.32 test consolidation now PASS: full mix precommit rerun12570 checks passed (48 doctests,390 properties,12132 tests),1 skipped,167 excluded,457.4s; /tmp/zaq-1lw-consolidation-precommit-rerun.log. Earlier two SMTP boundary timeouts did not reproduce in the unchanged suite alone or combined157-check same-seed interaction run, and all SMTP cases pass in the final full rerun. No assertion/timeout weakening or out-of-scope changes. Existing epic review/UX/E2E/production coverage prerequisites remain unchanged; this records the requested test-only local gate, not completion of .13 or the epic.",
+      "timestamp": "2026-11-20T09:36:23Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.13] Complete post-review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-20T09:27:08Z"
+  "updated_at": "2026-11-20T09:36:23Z"
 }
