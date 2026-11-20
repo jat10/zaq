@@ -43,11 +43,15 @@
     {
       "text": "Extended existing file_validation_test.exs:150 only; no new test case. Added successful-subset-only stream matching live trace, full requested names in Incoming, assertion that omitted file2 creates delivery.error and abort planning rejects. Current failure at line254: delivery.error remains nil. Earlier abort/continue assertions pass. Module result9/10 passed (1 property,8 tests passed;1 test failed intentionally). Log /tmp/zaq-selection-omission-test.log. This is a contract-gap test, not an implemented requested-set comparison.",
       "timestamp": "2026-11-20T11:43:46Z"
+    },
+    {
+      "text": "Implementation investigation: the latest added subset-only assertion is unsound as a StreamEvents contract: incoming text is the only representation of the missing request set. No structured manifest exists; AttachDocuments sees only submitted records. Asked user approval to correct existing regression to exercise full requested set through Action and retained rejected-file details, plus explicit no-prefilter tool instruction. Must not implement natural-language filename parsing in reducer or mark arbitrary list_documents results as requested. Awaiting response before dependent production/test-contract changes.",
+      "timestamp": "2026-11-20T11:53:40Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T11:43:46Z"
+  "updated_at": "2026-11-20T11:53:40Z"
 }
