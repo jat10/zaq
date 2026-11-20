@@ -185,10 +185,16 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
 
     assert %{
              confirmation: :confirmed,
-             messages: [%{message_id: "message-0"}, %{message_id: "message-1"}],
+             messages: [
+               %{message_id: "message-0", delivered_attachment_indices: [0]},
+               %{message_id: "message-1", delivered_attachment_indices: [1]}
+             ],
              failed_attachments: [],
              unattempted_steps: []
            } = multiple_group_report
+
+    refute multiple_group_report[:delivery] == :not_sent,
+           "Both messages and their attachments were confirmed, but the report says :not_sent"
 
     assert {:ok, single_group_report} =
              Executor.execute(outgoing(:continue, 1, true), OperationBridge, connection())
@@ -201,24 +207,6 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
              unattempted_steps: [],
              step_outcomes: [_, _]
            } = single_group_report
-  end
-
-  test "fully confirmed delivery does not report that its messages were not sent" do
-    assert {:ok, report} =
-             Executor.execute(outgoing(:continue, 2, true), OperationBridge, connection())
-
-    assert %{
-             confirmation: :confirmed,
-             messages: [
-               %{message_id: "message-0", delivered_attachment_indices: [0]},
-               %{message_id: "message-1", delivered_attachment_indices: [1]}
-             ],
-             failed_attachments: [],
-             unattempted_steps: []
-           } = report
-
-    refute report[:delivery] == :not_sent,
-           "Both messages and their attachments were confirmed, but the report says :not_sent"
   end
 
   test "stop uploads every group before publication and a later upload failure blocks all sends" do

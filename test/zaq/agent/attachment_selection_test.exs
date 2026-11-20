@@ -404,21 +404,8 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
       {:text, "Here is the requested file."}
     ]
 
-    {child, endpoint} = AttachmentSelectionLLMStub.server(script, self())
-    start_supervised!(child)
-    scope = "delivery-#{Ecto.UUID.generate()}"
-
-    configured =
-      IntegrationAgent.create!(endpoint, scope, "Select the requested files.", [
-        "data_source.attach_document"
-      ])
-
-    incoming = incoming()
-
     outgoing =
-      Executor.run(incoming,
-        agent_id: configured.id,
-        scope: scope,
+      run_selection(script, incoming(), "Select the requested files.",
         skip_permissions: true,
         event: execution_event()
       )
@@ -477,17 +464,8 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
       {:text, "Here is B."}
     ]
 
-    {child, endpoint} = AttachmentSelectionLLMStub.server(script, self())
-    start_supervised!(child)
-    scope = "mattermost-selection-#{Ecto.UUID.generate()}"
-
-    configured =
-      IntegrationAgent.create!(endpoint, scope, "Select files.", ["data_source.attach_document"])
-
     outgoing =
-      Executor.run(incoming(),
-        agent_id: configured.id,
-        scope: scope,
+      run_selection(script, incoming(), "Select files.",
         skip_permissions: true,
         event: execution_event()
       )
@@ -544,19 +522,9 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
 
     for terminal <- [{:text, "Text only."}, {:http_error, 400}] do
       script = [{:tool, "add", [model_record(a)]}, {:tool, "replace", []}, terminal]
-      {child, endpoint} = AttachmentSelectionLLMStub.server(script, self())
-      start_supervised!(child)
-      scope = "empty-#{Ecto.UUID.generate()}"
-
-      configured =
-        IntegrationAgent.create!(endpoint, scope, "Clear the selection.", [
-          "data_source.attach_document"
-        ])
 
       outgoing =
-        Executor.run(%{incoming() | attachments: [a]},
-          agent_id: configured.id,
-          scope: scope,
+        run_selection(script, %{incoming() | attachments: [a]}, "Clear the selection.",
           skip_permissions: true,
           event: execution_event()
         )
@@ -580,21 +548,10 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
       {:text, "Selected your file."}
     ]
 
-    {child, endpoint} = AttachmentSelectionLLMStub.server(script, self())
-    start_supervised!(child)
-    scope = "person-selection-#{Ecto.UUID.generate()}"
-
-    configured =
-      IntegrationAgent.create!(endpoint, scope, "Select the file.", [
-        "data_source.attach_document"
-      ])
-
     actor = %{person: %{id: person.id}}
 
     outgoing =
-      Executor.run(incoming(),
-        agent_id: configured.id,
-        scope: scope,
+      run_selection(script, incoming(), "Select the file.",
         event: Event.new(%{}, :agent, actor: actor)
       )
 
@@ -629,6 +586,17 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
              Attachments.prepare_execution(planned, EmailBridge, connection)
 
     refute_received {:email, _}
+  end
+
+  defp run_selection(script, incoming, job, opts) do
+    {child, endpoint} = AttachmentSelectionLLMStub.server(script, self())
+    start_supervised!(child)
+    scope = "attachment-selection-#{Ecto.UUID.generate()}"
+
+    configured =
+      IntegrationAgent.create!(endpoint, scope, job, ["data_source.attach_document"])
+
+    Executor.run(incoming, Keyword.merge(opts, agent_id: configured.id, scope: scope))
   end
 
   defp execution_event,

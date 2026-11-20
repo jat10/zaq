@@ -51,8 +51,4 @@ defmodule Zaq.Engine.Notifications.NotificationAttachmentsTest do
                Notification.build(%{subject: "Files", body: "Attached", attachments: invalid})
     end
   end
-
-  test "omitted attachments preserve text-only notifications" do
-    assert {:ok, %{attachments: []}} = Notification.build(%{subject: "Hello", body: "Text"})
-  end
 end

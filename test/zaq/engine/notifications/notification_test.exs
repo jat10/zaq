@@ -173,6 +173,7 @@ defmodule Zaq.Engine.Notifications.NotificationTest do
       assert n.body == "World"
       assert n.sender == "system"
       assert length(n.recipient_channels) == 1
+      assert n.attachments == []
     end
 
     test "sender defaults to \"system\" when omitted" do
