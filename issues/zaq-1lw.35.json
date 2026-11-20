@@ -15,11 +15,15 @@
     {
       "text": "Final mix q PASS after alias ordering correction; /tmp/zaq-selection-abort-quality.log. Regression intentionally remains failing on unexpected upload, with 9 other module checks passing. No production fix, no existing test expectation changes, no commit/push.",
       "timestamp": "2026-11-20T11:21:52Z"
+    },
+    {
+      "text": "User now requests fix after explicit diagnosis: earlier selection failure must survive later successful tool calls and abort final subset delivery. Authorized scope includes changing StreamEvents test that currently clears a prior selection error, as discussed with user. Action reuse: local-only request state handling in existing StreamEvents.select_attachments; reuse AttachDocuments validation/reducer and Channels selection_failures/preparation_gate. Preserve authorization and final policy ownership; no new Action or transport path. Retain bounded error only, not raw provider/tool errors. Existing unrelated group preparation edits are staged and will not be touched.",
+      "timestamp": "2026-11-20T11:23:37Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.35] Regress abort delivery after oversized selection and subset retry",
   "type": "bug",
-  "updated_at": "2026-11-20T11:21:52Z"
+  "updated_at": "2026-11-20T11:23:37Z"
 }
