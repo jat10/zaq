@@ -25,11 +25,15 @@
     {
       "text": "Final validation complete: focused rerun against final formatted sources passed 123 checks (15 properties, 108 tests) in 7.7s; log /tmp/zaq-1lw-28-final-focused.log. Final mix q PASS and git diff --check PASS. Total broad run was 648 passed (21 properties); no test failures. Implementation complete in 11 scoped files, no commits/pushes. Candidate publication attachment_refs deliberately retained for distinct step subsets, successful upload references and supported synthetic dependency/text-only plans. No behavior expectations removed or weakened; representation-only property/fixture migrations were authorized by the user. Existing final review/coverage/precommit gates remain .12/.13.",
       "timestamp": "2026-11-20T08:44:45Z"
+    },
+    {
+      "text": "User explicitly authorized commit and push in current session. Reviewed 13-file accumulated diff including Plan/Step ownership cleanup, approved Mattermost error-contract test migration and removal of the direct-adapter Telegram document test. Final mix q and affected validations already recorded. origin/feat/channel-files fetched and matches HEAD a6405a766 before commit; publishing to the existing feature branch, no main push or merge. Final epic review/coverage/precommit gates remain .12/.13.",
+      "timestamp": "2026-11-20T09:08:23Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.28] Simplify delivery Plan and Step data ownership",
   "type": "task",
-  "updated_at": "2026-11-20T08:44:45Z"
+  "updated_at": "2026-11-20T09:08:23Z"
 }
