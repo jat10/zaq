@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-20T08:36:28Z",
+  "description": "PR #876 test-refactoring review requested by the user on 2026-11-20.\n\nFile: test/zaq/channels/delivery/executor_test.exs.\nDestination: \"successful delivery retains the report for both multiple groups and a single group\".\nSource: \"fully confirmed delivery does not report that its messages were not sent\".\n\nBoth execute Executor.execute(outgoing(:continue, 2, true), OperationBridge, connection()). Extend the destination's multiple-group report pattern with delivered_attachment_indices [0] and [1], and carry over the assertion and diagnostic message rejecting report[:delivery] == :not_sent. Retire only the redundant second test execution.\n\nAcceptance: retain all multi-group and single-group assertions, uploaded attachments, failed attachments, unattempted steps, and step outcomes. Keep existing properties and failure/timeout/concurrency tests. Expected saving is roughly 15 lines; readability and complete coverage take precedence over a numeric target.\nValidation: mix q and the focused delivery executor suite. Final validation remains owned by zaq-1lw.13.\n\nAction reuse assessment: not applicable to production operations; this is test-only consolidation using existing public contracts and fixtures. No production API or behavior changes.\nRead AGENTS.md, docs/WORKFLOW_AGENT.md, docs/testing-approach.md, docs/code-quality.md, and docs/conventions.md before implementation. This issue records the requested work; the user's request to create issues is not an implementation or broader test-behavior approval. Follow the existing-test-behavior gate for retiring tests; preserve assertions and map source coverage to its destination.",
+  "id": "zaq-1lw.31",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "Combine duplicate successful delivery executor tests",
+  "type": "task",
+  "updated_at": "2026-11-20T08:36:28Z"
+}
