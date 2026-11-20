@@ -13,11 +13,15 @@
     {
       "text": "Action reuse assessment: local-only text orchestration in JidoChatBridge. Serena callers confirm send_prepared_reply/4 is called only by do_send_reply with attachments [] and prepared []; handle_send_with_adapter/4 only by that helper. Reuse send_mode, create_message, edit_message and dispatch_on_reply; prepared_upload remains used by executor send/upload operations. Preserve text creates one callback, edits no callback, no replacement after failed edit, and strict planned confirmation. No Action/tool surface changes. Retain existing bridge/delivery/executor tests; inspect obsolete fixtures before deletion. User approved scoped cleanup; workspace contains only .24 edits.",
       "timestamp": "2026-11-20T07:43:04Z"
+    },
+    {
+      "text": "Implementation complete in working tree: text helpers now take three arguments, skip empty prepared-file conversion, and remove unreachable attachment callback conditional. Shared prepared_upload/create/edit/send_mode and executor path retained. Focused Jido bridge, delivery and executor suites passed; mix q passed. No tests/fixtures removed: all current tests exercise supported public behavior; none reference retired private plumbing. Final coverage/precommit stay in .13; no commit/push; pending integration review/landing.",
+      "timestamp": "2026-11-20T07:44:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.25] Remove unreachable attachment handling from Jido text delivery",
   "type": "task",
-  "updated_at": "2026-11-20T07:43:04Z"
+  "updated_at": "2026-11-20T07:44:27Z"
 }
