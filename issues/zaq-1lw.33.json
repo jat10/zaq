@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-20T08:58:02Z",
+  "description": "User reported failures in message_delivery_test.exs:136 and :349. Current Jido/Mattermost returns Delivery.Error with bounded {:http_error, 403}; tests expect raw {403, body} error contracts. User explicitly approved error-contract test migration in this session. Reuse existing HTTP/Channels/Engine tests and fixtures; preserve exact request/count, raised/thrown recording recovery, persisted rejection evidence, canonical content, no transcript association and private-response exclusion. Test-only migration; no new operation/Action/tool. Run both full reported suites, related delivery observation/result regressions and mix q. Preserve all existing workspace changes; no commit/push.",
+  "id": "zaq-1lw.33",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-1lw] Migrate Mattermost delivery observation tests to structured errors",
+  "type": "task",
+  "updated_at": "2026-11-20T08:58:02Z"
+}
