@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-1lw.12"
+  ],
   "created": "2026-11-20T07:35:46Z",
   "description": "Problem and evidence\nlib/zaq/channels/email_bridge.ex repeats confirmed receipt construction in execute_delivery_step/3 and send_reply_with_smtp/3: delivery_receipt(threading), confirmation, source_scope, delivery_conversation_id, and Incoming.Audience. Text and planned attachment submission should share this mapping.\n\nImplementation\nExtract one private confirmed_email_receipt(outgoing, threading, envelope) helper (or an equally clear name), and use it from both success paths. Keep attachment enrichment in email_attachment_receipt after common construction. Preserve the text sender's plain :ok compatibility branch and existing envelope validation. Do not merge submission paths or alter MIME encoding, selected connector, sender/recipients, threading, retries, telemetry, error handling, or history semantics.\n\nAction reuse: extend existing delivery_receipt/1 and delivery_conversation_id/2 composition; no parallel receipt module or new public API.\n\nTests\nReview test/zaq/channels/email_bridge_test.exs, email_bridge/outgoing_attachments_test.exs, email_file_delivery_integration_test.exs and email_html_delivery_test.exs. Retain text and attachment observable receipt assertions and SMTP rejection/no-fallback coverage. Delete only redundant implementation-specific tests or fixtures made obsolete by this extraction, if any; test deletion is not a quota. Acceptance: both paths use the same builder and existing public results remain unchanged.\n\nAuthorization and boundaries\nUser explicitly requested these four cleanup issues on 2026-11-20 and approved removing tests related to this cleanup. Remove tests/fixtures that exist solely for retired APIs, unreachable branches, or unsupported legacy report shapes. Migrate assertions for still-supported behavior to the retained production boundary; do not remove security, byte-integrity, history, callback, or delivery-policy coverage merely because its old entry point disappears. Record the exact deleted tests and retained/migrated coverage in completion notes. This approval does not authorize unrelated behavior changes, dependency publication, commit/push, or final UX/E2E acceptance.\n\nImplementation guidance\nRead AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/services/channels.md, and applicable naming/code-quality guidance. Read docs/documentation.md before updating stale API documentation. Recheck live callers and workspace changes before editing; review evidence was collected at f6a1d3070. No new Action or tool exposure is needed: this is local cleanup of existing Channel operations.\n\nValidation and completion\nRun focused affected existing suites and mix q per docs/WORKFLOW_AGENT.md. Preserve meaningful existing properties; introduce no tests that merely mirror private helpers. Report failures honestly, including unrelated known failures. Final coverage and mix precommit remain under zaq-1lw.13. This issue blocks architecture review zaq-1lw.12; sibling cleanups have no semantic dependency. Coordinate edits with other workers.",
   "id": "zaq-1lw.24",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-1lw.24] Share confirmed SMTP receipt construction",
   "type": "task",
-  "updated_at": "2026-11-20T07:35:47Z"
+  "updated_at": "2026-11-20T07:36:05Z"
 }

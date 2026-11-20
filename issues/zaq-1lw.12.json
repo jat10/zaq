@@ -5,7 +5,8 @@
     "zaq-1lw.15",
     "zaq-1lw.17",
     "zaq-1lw.18",
-    "zaq-1lw.19"
+    "zaq-1lw.19",
+    "zaq-1lw.24"
   ],
   "blocks": [
     "zaq-1lw.13"
@@ -19,5 +20,5 @@
   "status": "open",
   "title": "[zaq-1lw.12] Review full delivery architecture and reconcile implementation documentation",
   "type": "task",
-  "updated_at": "2026-11-17T20:05:33Z"
+  "updated_at": "2026-11-20T07:36:05Z"
 }
