@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-20T11:18:49Z",
+  "description": "User requested a regression test for an oversized file rejected by AttachDocuments followed by a valid subset under abort. Add a thin selection/stream/planning/execution test asserting no transport. Production fixes and existing test behavior changes are not authorized. Action reuse: test existing public paths, no new production operations. Preserve concurrent group preparation edits. Test may remain failing to demonstrate the missing request-level stop contract.",
+  "id": "zaq-1lw.35",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "Regress abort delivery after oversized attachment selection and subset retry",
+  "type": "bug",
+  "updated_at": "2026-11-20T11:18:49Z"
+}
