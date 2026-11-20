@@ -15,11 +15,15 @@
     {
       "text": "Coverage mapped and destination verified before retirement: (1) selected SMTP id + stop policy + channel_configs query capture of SMTP/read and no IMAP/refetch -\u003e linked-account test before send; (2) ingress equality to Bridge lookup before/after disabling bound SMTP + outbound Error.delivery:not_sent -\u003e same test before send and after disabled update. Destination now explicitly sets SMTP send_on_file_failure:false and inbox:true to preserve policy-precedence scenario. Existing two-SMTP selection, envelope audience/from, Message-ID sender domain, missing binding, default non-substitution and disabled connector_mismatch assertions remain verbatim. Separate Jido compatibility source remains. Baseline82 PASS (1 property); moved destination plus still-present sources4 PASS before deleting sources. Logs /tmp/zaq-1lw-30-before.log and /tmp/zaq-1lw-30-moved.log.",
       "timestamp": "2026-11-20T09:12:26Z"
+    },
+    {
+      "text": "Implementation/validation complete. After source retirement, outbound_connection_test and email_bridge_test80 PASS (1 property,79 tests), versus82 baseline. mix q PASS; git diff --check PASS. Net35 lines saved (30 added,65 removed across two files). The moved destination was also verified before deletion (4 focused checks). All destination sender/audience/Message-ID/default/missing/disabled checks retained; standalone Jido lookup test and existing email property remain. Logs /tmp/zaq-1lw-30-{before,moved,after,quality}.log. No production changes/commit/push. Moving to .31 only after validation.",
+      "timestamp": "2026-11-20T09:13:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.30] Consolidate SMTP binding checks into the existing linked-account test",
   "type": "task",
-  "updated_at": "2026-11-20T09:12:26Z"
+  "updated_at": "2026-11-20T09:13:27Z"
 }
