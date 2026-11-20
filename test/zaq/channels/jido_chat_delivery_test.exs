@@ -828,10 +828,10 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
 
     connection = batch_connection()
 
-    assert {:ok, files, []} =
-             Attachments.prepare(outgoing.delivery.attachments, %{},
-               attachment_failure_policy: :continue
-             )
+    assert {:ok, initial_plan} = Attachments.build_plan(outgoing, JidoChatBridge, connection)
+
+    assert {:ok, %{attachments: files}} =
+             Attachments.prepare_execution(initial_plan, JidoChatBridge, connection)
 
     preparation_connection =
       Map.merge(connection, %{
@@ -840,7 +840,7 @@ defmodule Zaq.Channels.JidoChatDeliveryTest do
       })
 
     assert {:ok, candidate} =
-             JidoChatBridge.prepare_upload_request(Enum.take(files, 2), preparation_connection)
+             JidoChatBridge.prepare_upload_request([files[0], files[1]], preparation_connection)
 
     Process.put(:declared_upload_ceiling, candidate.encoded_bytes)
     assert {:ok, planned} = Attachments.build_plan(outgoing, JidoChatBridge, connection)

@@ -18,14 +18,6 @@ defmodule Zaq.Channels.Delivery.Attachments do
   alias Zaq.Events.TrustedContext
   alias Zaq.Materialization
 
-  @type prepared :: %{
-          optional(:attachment_index) => non_neg_integer(),
-          content: binary(),
-          name: String.t(),
-          mime_type: String.t(),
-          size: non_neg_integer()
-        }
-
   @doc "Builds a metadata-only plan; empty selections return unchanged, including selection errors."
   @spec build_plan(Outgoing.t(), module(), map()) ::
           {:ok, Outgoing.t()} | {:error, Error.t()}
@@ -265,7 +257,14 @@ defmodule Zaq.Channels.Delivery.Attachments do
   defp placement(%{supports_threads: true}, _outgoing), do: :threaded
   defp placement(_requirements, _outgoing), do: :independent
 
-  @doc "Acquires and checks a completed plan without changing it or its source Outgoing."
+  @doc """
+  Acquires and checks a completed plan without changing it or its source Outgoing.
+
+  Returns prepared attachments keyed by original index, prepared steps and safe
+  failures under the plan's policy. Lazy files require the connection's trusted
+  context. Only declared standard base64 is decoded, accepting whitespace and
+  optional padding; absent or `"binary"` encoding preserves bytes verbatim.
+  """
   @spec prepare_execution(Outgoing.t(), module(), map()) ::
           {:ok, map()} | {:error, Error.t()}
   def prepare_execution(outgoing, bridge, connection) do
@@ -452,42 +451,6 @@ defmodule Zaq.Channels.Delivery.Attachments do
 
   defp normalize_planning_error(reason), do: delivery_error(reason)
 
-  @doc """
-  Returns prepared attachments in input order, or a preparation error.
-
-  Decodes only explicitly declared standard base64 content through `DecodeBase64`,
-  accepting whitespace and optional padding; nil or `"binary"` encoding
-  preserves bytes verbatim. Empty attachments return `{:ok, []}` without source access.
-  `:node_router` in opts is a local execution dependency, never an identity input.
-  With `:attachment_failure_policy`, returns `{:ok, attachments, failures}` and gives
-  each prepared attachment its original `:attachment_index`. `:continue` retains usable
-  attachments after failures; `:abort` returns the first preparation error. Omitting the
-  option preserves the two-element success tuple and fail-fast behavior.
-  """
-  @spec prepare([Record.t()], map(), keyword()) ::
-          {:ok, [prepared()]} | {:ok, [prepared()], [map()]} | {:error, term()}
-  def prepare(records, context, opts \\ [])
-
-  def prepare(records, context, opts)
-      when is_list(records) and is_map(context) and is_list(opts) do
-    source_context =
-      context
-      |> TrustedContext.normalize()
-      |> Map.from_struct()
-      |> Map.merge(Map.new(Keyword.take(opts, [:node_router])))
-
-    case Keyword.get(opts, :attachment_failure_policy) do
-      policy when policy in [nil, :continue, :abort] ->
-        prepare_all(records, source_context, policy)
-
-      policy ->
-        {:error, {:invalid_attachment_failure_policy, policy}}
-    end
-  end
-
-  def prepare(_records, _context, _opts),
-    do: {:error, :invalid_attachments}
-
   @doc "Maps shared attachment selection and preparation failures before transport."
   @spec delivery_error(term()) :: Error.t()
   def delivery_error(:invalid_attachment_selection) do
@@ -524,42 +487,6 @@ defmodule Zaq.Channels.Delivery.Attachments do
        do: "The attachment data is invalid."
 
   defp preparation_message(_reason), do: "The attachment content could not be accessed."
-
-  defp prepare_all(records, context, policy) do
-    records
-    |> Enum.with_index()
-    |> Enum.reduce_while({:ok, [], []}, fn {record, index}, accumulator ->
-      prepare_next(record, index, context, policy, accumulator)
-    end)
-    |> case do
-      {:ok, attachments, _failures} when is_nil(policy) -> {:ok, Enum.reverse(attachments)}
-      {:ok, attachments, failures} -> {:ok, Enum.reverse(attachments), Enum.reverse(failures)}
-      error -> error
-    end
-  end
-
-  defp prepare_next(record, index, context, policy, {:ok, attachments, failures}) do
-    case prepare_record(record, context) do
-      {:ok, attachment} ->
-        prepared =
-          if is_nil(policy), do: attachment, else: Map.put(attachment, :attachment_index, index)
-
-        {:cont, {:ok, [prepared | attachments], failures}}
-
-      {:error, reason} when policy == :continue ->
-        failure = %{
-          attachment_index: index,
-          stage: :preparation,
-          delivery: :not_sent,
-          reason: delivery_error(reason).message
-        }
-
-        {:cont, {:ok, attachments, [failure | failures]}}
-
-      {:error, _} = error ->
-        {:halt, error}
-    end
-  end
 
   defp prepare_record(%Record{id: id, kind: :file, attributes: attrs} = record, context)
        when is_binary(id) and id != "" and is_map(attrs) do

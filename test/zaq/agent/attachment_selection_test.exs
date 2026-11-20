@@ -434,10 +434,6 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
     refute Map.has_key?(outgoing.metadata, :attachments)
     refute_received {:email, _}
 
-    # Authoritative Storage permission checks still run at final redemption.
-    assert {:error, _} =
-             Attachments.prepare(outgoing.delivery.attachments, %{})
-
     smtp = smtp_config()
 
     outgoing = %{
@@ -446,6 +442,19 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
         channel_id: "recipient@example.test",
         routing_context: %{channel_config_id: smtp.id}
     }
+
+    connection = %{
+      smtp_config_id: smtp.id,
+      smtp_settings: Map.put(smtp.settings, "send_on_file_failure", false)
+    }
+
+    # Authoritative Storage permission checks still run at final redemption.
+    assert {:ok, planned} = Attachments.build_plan(outgoing, EmailBridge, connection)
+
+    assert {:error, %{reason: "Attachment preparation failed: :unauthorized"}} =
+             Attachments.prepare_execution(planned, EmailBridge, connection)
+
+    refute_received {:email, _}
 
     assert {:ok, _} =
              EmailBridge.send_reply(outgoing, %{trusted_context: %{skip_permissions: true}})
@@ -594,13 +603,32 @@ defmodule Zaq.Agent.AttachmentSelectionDeliveryTest do
     assert id == b.id
     assert Enum.map(outgoing.metadata.tool_calls, & &1["outcome"]) == ["succeeded", "failed"]
 
-    assert {:ok, [%{content: "B bytes"}]} =
-             Attachments.prepare(outgoing.delivery.attachments, %{actor: actor})
+    smtp = smtp_config()
+
+    connection = %{
+      smtp_config_id: smtp.id,
+      smtp_settings: Map.put(smtp.settings, "send_on_file_failure", false),
+      trusted_context: %{actor: actor}
+    }
+
+    outgoing = %{
+      outgoing
+      | provider: :"email:smtp",
+        channel_id: "recipient@example.test",
+        routing_context: %{channel_config_id: smtp.id}
+    }
+
+    assert {:ok, planned} = Attachments.build_plan(outgoing, EmailBridge, connection)
+
+    assert {:ok, %{attachments: %{0 => %{content: "B bytes"}}}} =
+             Attachments.prepare_execution(planned, EmailBridge, connection)
 
     assert :ok = Permissions.revoke(%StorageEntry{id: b.id}, grant)
 
-    assert {:error, _} =
-             Attachments.prepare(outgoing.delivery.attachments, %{actor: actor})
+    assert {:error, %{reason: "Attachment preparation failed: :unauthorized"}} =
+             Attachments.prepare_execution(planned, EmailBridge, connection)
+
+    refute_received {:email, _}
   end
 
   defp execution_event,

@@ -461,48 +461,93 @@ defmodule Zaq.Channels.AttachmentPolicyTest do
       file("last", "two")
     ]
 
-    assert {:ok, prepared, [failure]} =
-             Attachments.prepare(files, %{}, attachment_failure_policy: :continue)
+    connection = planning_connection(10, 1000)
 
-    assert Enum.map(prepared, &{&1.attachment_index, &1.content}) == [{0, "one"}, {2, "two"}]
+    assert {:ok, planned} =
+             Attachments.build_plan(
+               put_in(outgoing().delivery.attachments, files),
+               PlanningBridge,
+               connection
+             )
+
+    assert {:ok, %{attachments: prepared, preparation_failures: [failure]}} =
+             Attachments.prepare_execution(planned, PlanningBridge, connection)
+
+    assert Map.new(prepared, fn {index, file} -> {index, file.content} end) == %{
+             0 => "one",
+             2 => "two"
+           }
+
     assert failure.attachment_index == 1
     assert failure.stage == :preparation
     assert failure.delivery == :not_sent
     refute inspect(failure) =~ "%%%"
   end
 
-  test "invalid explicit preparation policy fails before acquiring files" do
-    assert {:error, {:invalid_attachment_failure_policy, :invalid}} =
-             Attachments.prepare([file("bad", nil)], %{}, attachment_failure_policy: :invalid)
+  test "continue publishes text with the original failure index after all preparations fail" do
+    connection = planning_connection(10, 1000)
+
+    assert {:ok, planned} =
+             Attachments.build_plan(
+               put_in(outgoing().delivery.attachments, [file("bad", nil)]),
+               PlanningBridge,
+               connection
+             )
+
+    assert {:ok,
+            %{
+              confirmation: :partial,
+              failed_attachments: [%{attachment_index: 0}],
+              messages: [receipt]
+            }} =
+             Executor.execute(planned, PlanningBridge, connection)
+
+    assert receipt.body == "Answer"
+    assert receipt.delivered_attachment_indices == []
+    assert_received {:operation, %{operation: :send}, %{attachments: []}}
+    refute_received {:operation, _, _}
   end
 
-  test "continue returns a known empty file selection after all preparations fail" do
-    assert {:ok, [], [%{attachment_index: 0}]} =
-             Attachments.prepare([file("bad", nil)], %{}, attachment_failure_policy: :continue)
-  end
-
-  test "abort preserves the original preparation error and absent policy remains compatible" do
+  test "abort preserves the original preparation error and publishes nothing" do
     records = [file("ok", "ready"), file("bad", "%%%", %{"encoding" => "base64"})]
+    connection = planning_connection(10, 1000, :abort)
 
-    assert {:error, :invalid_attachment_base64} =
-             Attachments.prepare(records, %{}, attachment_failure_policy: :abort)
+    assert {:ok, planned} =
+             Attachments.build_plan(
+               put_in(outgoing().delivery.attachments, records),
+               PlanningBridge,
+               connection
+             )
 
-    assert {:error, :invalid_attachment_base64} = Attachments.prepare(records, %{})
+    assert {:error, %{reason: :invalid_attachment_base64, stage: :preparation}} =
+             Executor.execute(planned, PlanningBridge, connection)
+
+    refute_received {:operation, _, _}
   end
 
   property "continue preserves every usable byte, order and original index around failed files" do
-    check all(bytes <- list_of(binary(max_length: 256), max_length: 10)) do
+    check all(bytes <- list_of(binary(max_length: 256), min_length: 1, max_length: 10)) do
       records =
         Enum.flat_map(Enum.with_index(bytes), fn {content, index} ->
           [file("#{index}", content), file("invalid-#{index}", nil)]
         end)
 
-      assert {:ok, prepared, failures} =
-               Attachments.prepare(records, %{}, attachment_failure_policy: :continue)
+      connection = planning_connection(100, 10_000)
 
-      assert Enum.map(prepared, & &1.content) == bytes
+      assert {:ok, planned} =
+               Attachments.build_plan(
+                 put_in(outgoing().delivery.attachments, records),
+                 PlanningBridge,
+                 connection
+               )
 
-      assert Enum.map(prepared, & &1.attachment_index) ==
+      assert {:ok, %{attachments: prepared, preparation_failures: failures}} =
+               Attachments.prepare_execution(planned, PlanningBridge, connection)
+
+      ordered = prepared |> Enum.sort_by(&elem(&1, 0)) |> Enum.map(&elem(&1, 1))
+      assert Enum.map(ordered, & &1.content) == bytes
+
+      assert Enum.map(ordered, & &1.attachment_index) ==
                Enum.map(Enum.with_index(bytes), fn {_, index} -> index * 2 end)
 
       assert length(failures) == length(bytes)

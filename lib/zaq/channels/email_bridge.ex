@@ -96,19 +96,7 @@ defmodule Zaq.Channels.EmailBridge do
              prepared.message,
              connection.smtp_settings
            ) do
-      receipt =
-        delivery_receipt(prepared.threading)
-        |> Map.put(:confirmation, :confirmed)
-        |> Map.put(:source_scope, "smtp:confirmed")
-        |> Map.put(
-          :conversation_id,
-          delivery_conversation_id(inputs.outgoing, prepared.threading)
-        )
-        |> Map.put(:audience, %Zaq.Engine.Messages.Incoming.Audience{
-          platform: "email",
-          sender: envelope.sender_address,
-          recipients: envelope.recipient_addresses
-        })
+      receipt = confirmed_email_receipt(inputs.outgoing, prepared.threading, envelope)
 
       email_attachment_receipt({:ok, receipt}, inputs.attachments)
     else
@@ -528,29 +516,27 @@ defmodule Zaq.Channels.EmailBridge do
         :ok ->
           {:ok, delivery_receipt(threading)}
 
-        {:ok, %{sender_address: sender, recipient_addresses: recipients}}
+        {:ok, %{sender_address: sender, recipient_addresses: recipients} = envelope}
         when is_binary(sender) and is_list(recipients) ->
-          receipt =
-            delivery_receipt(threading)
-            |> Map.put(:confirmation, :confirmed)
-            |> Map.put(:source_scope, "smtp:confirmed")
-            |> Map.put(
-              :conversation_id,
-              delivery_conversation_id(outgoing, threading)
-            )
-            |> Map.put(:audience, %Zaq.Engine.Messages.Incoming.Audience{
-              platform: "email",
-              sender: sender,
-              recipients: recipients
-            })
-
-          {:ok, receipt}
+          {:ok, confirmed_email_receipt(outgoing, threading, envelope)}
 
         error ->
           error
       end
 
     response
+  end
+
+  defp confirmed_email_receipt(outgoing, threading, envelope) do
+    delivery_receipt(threading)
+    |> Map.put(:confirmation, :confirmed)
+    |> Map.put(:source_scope, "smtp:confirmed")
+    |> Map.put(:conversation_id, delivery_conversation_id(outgoing, threading))
+    |> Map.put(:audience, %Incoming.Audience{
+      platform: "email",
+      sender: envelope.sender_address,
+      recipients: envelope.recipient_addresses
+    })
   end
 
   defp email_attachment_receipt({:ok, receipt}, prepared)
