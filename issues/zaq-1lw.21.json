@@ -37,11 +37,15 @@
     {
       "text": "Removed direct-adapter exact-document test completely, along with its unused DocumentTransport module and FileUpload alias, as explicitly requested. Actual bridge/executor fallback and abort regression remains. Remaining Telegram suite:6 PASS; mix q PASS; git diff --check PASS. Logs /tmp/zaq-telegram-test-removal-tests.log and /tmp/zaq-telegram-test-removal-quality.log. All other workspace edits preserved; no commit/push. Earlier direct-adapter byte-check validation is historical and must not be represented as current ZAQ executor-path coverage.",
       "timestamp": "2026-11-20T09:07:27Z"
+    },
+    {
+      "text": "Requested direct-adapter test removal and retained bridge fallback/abort regression published in 17eb5d84d on origin/feat/channel-files with user authorization. Installed Telegram attachment requirements limitation remains; no adapter/pin changes or full file executor support claimed.",
+      "timestamp": "2026-11-20T09:09:15Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-1lw.21] Reconcile Telegram attachment transport requirements",
   "type": "bug",
-  "updated_at": "2026-11-20T09:07:27Z"
+  "updated_at": "2026-11-20T09:09:15Z"
 }
