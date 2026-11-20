@@ -13,11 +13,15 @@
     {
       "text": "Implementation authorized by user request 2026-11-20; representation-only test migrations explicitly authorized. Workspace initially clean at a6405a766. Plan: audit fallback/producer/consumer contracts; remove duplicated policy and body, move prepared into existing operation inputs; retain publication refs if dependency/subset semantics require them; validate affected suites and mix q. Action reuse: local-only extension of Plan/Attachments/Executor and existing Jido/SMTP execute_delivery_step operations; same inputs/outputs, trusted identity, effects, no retries or new Actions/tools. Policy snapshot stays selected-connector-owned; prepared payload lifetime stays executor-owned. Reject malformed attachment plans before acquisition/transport. Preserve stop barriers, continue concurrency/root promotion, notices/canonical body and confirmations. Roll back any candidate that changes supported behavior or requires weakening tests. E2E unnecessary for this behavior-preserving refactor; final coverage/precommit remain .13.",
       "timestamp": "2026-11-20T08:37:50Z"
+    },
+    {
+      "text": "Implementation: removed Plan.failure_policy and copied group.body; Plan.failure_policy/1 derives from validated TransportRequirements or the exact single-send text fallback (no group/step refs, dependencies or message target, with failure evidence). Preparation and executor share it; invalid attachment-bearing plans fail before acquisition/effects. Removed Step.prepared; existing executor inputs.prepared carries runtime payloads to Jido upload and SMTP. Retained publication attachment_refs: executor unknown-text-only scenario deliberately uses empty step membership inside an attachment-bearing group; dependency/upload subsets and effective successful refs differ from group membership. Deriving these would change supported synthetic/dependency contracts or add branching. Kept canonical_body, notice?, placement, stable IDs, effective operation, message_ref, dependencies, failure evidence and upload subsets. Confirmation property migrated its private sentinel to opaque step identity while preserving Engine boundary stripping and immutability. Executor/history fixtures now provide resolved constraints. Focused executor/policy: 46 passed (7 properties), including new fallback, notice, runtime-payload and invalid-constraints coverage. Broader validation running. Context Mode transport is closed; logs redirected locally with bounded summaries; Serena Elixir navigation works.",
+      "timestamp": "2026-11-20T08:42:36Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-1lw.28] Simplify delivery Plan and Step data ownership",
   "type": "task",
-  "updated_at": "2026-11-20T08:37:50Z"
+  "updated_at": "2026-11-20T08:42:36Z"
 }
