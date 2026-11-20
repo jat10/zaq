@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-20T08:36:25Z",
+  "description": "PR #876 test-refactoring review requested by the user on 2026-11-20. Reuse the existing SMTP/IMAP fixtures without losing connection-resolution coverage.\n\nSources: test/zaq/channels/outbound_connection_test.exs, \"SMTP binding reuses the selected inbox while still validating the sender\" and \"email ingress lookup remains independent of its outbound SMTP binding\".\nDestination: test/zaq/channels/email_bridge_test.exs, \"an IMAP-bound reply uses its explicitly linked SMTP account\".\n\nReuse the destination's two SMTP connectors and linked IMAP connector. Add direct connection-resolution checks before sending: selected sender identity, sender-policy precedence (:abort even if ingress settings allow continuation), and QueryRecorder evidence that the SMTP row is read while the supplied IMAP row is not fetched again. Assert ingress lookup equivalence before and after disabling the bound SMTP connector; outbound resolution must then fail with delivery :not_sent.\n\nRetain the destination's sender, audience, Message-ID domain, missing-binding, default-account non-substitution, and disabled-account assertions. Retire only the two absorbed source tests once all assertions/scenarios are mapped. Keep the Jido lookup compatibility test separate; do not remove its module wholesale.\n\nAcceptance: preserve query-budget, policy, ingress/outbound independence, and selected-account contracts with fewer repeated fixture lines.\nValidation: mix q and outbound_connection_test.exs plus email_bridge_test.exs. Final validation remains owned by zaq-1lw.13.\n\nAction reuse assessment: not applicable to production operations; this is test-only consolidation using existing public contracts and fixtures. No production API or behavior changes.\nRead AGENTS.md, docs/WORKFLOW_AGENT.md, docs/testing-approach.md, docs/code-quality.md, and docs/conventions.md before implementation. This issue records the requested work; the user's request to create issues is not an implementation or broader test-behavior approval. Follow the existing-test-behavior gate for retiring tests; preserve assertions and map source coverage to its destination.",
+  "id": "zaq-1lw.30",
+  "labels": [],
+  "parent": "zaq-1lw",
+  "priority": 2,
+  "status": "open",
+  "title": "Consolidate SMTP binding checks into the existing linked-account test",
+  "type": "task",
+  "updated_at": "2026-11-20T08:36:25Z"
+}
