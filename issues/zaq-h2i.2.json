@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-21T12:35:24Z",
+  "description": "Handle the new channel file settings in BO through one shared, capability-driven approach. The old implementation in ../zaq-feat-channel-files gave Mattermost and SMTP separate settings paths; do not reproduce that split. Inspect the existing channel configuration and capability APIs before choosing the shared owner. Use a consistent settings model, validation, defaults, and BO rendering for equivalent capabilities; show applicable settings based on connector capabilities rather than provider-name checks. Preserve legitimate transport-specific constraints without duplicating the common settings flow. Reuse TransportRequirements from zaq-h2i.1 where appropriate. Review old implementation settings as reference, not as an approved design. Keep file acquisition, delivery planning, and execution outside this issue. Before implementation, document the exact settings, ownership, Action reuse assessment, and acceptance scenarios, and follow the required BO design and test-behavior approval policies. Use TDD with newly authored tests; do not copy old implementation tests. This issue records scope; implementation details remain to be refined.",
+  "id": "zaq-h2i.2",
+  "labels": [],
+  "parent": "zaq-h2i",
+  "priority": 2,
+  "status": "open",
+  "title": "Unify BO channel file settings across connectors",
+  "type": "task",
+  "updated_at": "2026-11-21T12:35:24Z"
+}
