@@ -31,11 +31,15 @@
     {
       "text": "Clean original-regression TDD red verified before implementing the correction: all 7 tests failed solely for booleans versus :native, IMAP media delivery claims, custom labels, or protocol-name modes; HTML parser harness issues resolved. Existing email test expectations are now updated within the explicit approved scope; production code is still unchanged at this checkpoint. Red log: /tmp/zaq-h2i-2-correction-red.log.",
       "timestamp": "2026-11-21T13:07:48Z"
+    },
+    {
+      "text": "Email-only correction complete within the user-approved scope. Design/reuse: retain the current delivery-focused Jido/Mattermost contract; EmailBridge returns {:ok, %{resolved: %{text: :native, threads: :native, mode: ingress}}}, ingress=none for SMTP and idle for IMAP. Existing IMAP-origin text/thread replies use SMTP; receipt of media does not imply outbound delivery. Unsupported delivery features are omitted, exactly as in Jido declarations, and Bridge normalization supplies unsupported detection and common labels. Removed every email-specific label override; existing BO wiring, endpoint and display remain unchanged. No shared receive-capability representation was introduced; the documented gap requires separate future approval if needed. Original TDD regressions: 7 clean expected failures before production correction, then 19 email checks passed (1 property/18 tests). New cross-provider tests compare actual Mattermost and email text/thread statuses and required names; shared-component rendering tests prove generic labels/statuses and mode presentation. Approved existing email tests updated without changing other expectations. mix q passed: formatting, hooks.verify, strict Credo (no issues), docs and compilation. Targeted regression run passed 408 checks (2 properties/406 tests), with 178 excluded by focused Jido line selectors and standard test tags. Includes existing email delivery/SMTP/threading tests, Bridge/Api, selected unchanged Jido capability tests, shared BO component tests, and both existing SMTP/IMAP LiveView suites. git diff --check passed. Confirmed no diffs to Jido/Mattermost, adapters, their tests, shared Bridge/Api or ChannelCapabilities; issue 1 source/test SHA-256 values remain af19ee7478d9b00faf8fbd4b1f8bff984db8eba87fbea736bcb86ff936ee16f3 and fef42b887f2b6293c6bef7bc9b9a12d87b2458b714711e7f81c359b47cbda913. No new settings, TransportRequirements resolution or delivery changes. Updated issue description and channel service documentation to the corrected contract. Validation logs: /tmp/zaq-h2i-2-correction-{red,green,q,regression}.log. No E2E authored: same component/journey and email UI behavior verified with LiveView/component regression tests. Browser inspection unavailable through connected tools. mix precommit not restarted per explicit user instruction; final gate remains unrun. No commit or push; leave issue in progress for review/landing.",
+      "timestamp": "2026-11-21T13:10:42Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T13:09:13Z"
+  "updated_at": "2026-11-21T13:10:42Z"
 }
