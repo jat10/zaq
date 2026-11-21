@@ -41,11 +41,15 @@
     {
       "text": "User requested reducing added test modules, LOC and setup. Consolidation plan: move the 5 raw declaration/property cases into existing EmailBridgeTest; move 8 endpoint/shared-provider contract cases into existing ApiTest; move 2 rendering regressions into existing ChannelCapabilitiesTest; move SMTP/IMAP modal cases into their existing LiveView suites and reuse their account/mock setup (3 SMTP cases including the zero-query handler check, 1 IMAP case). Remove the 3 standalone issue-2 test files after relocation. Preserve all 19 checks and assertions and all pre-existing test expectations; this is a mechanical organization change under the testing handbook, not a capability contract change. No application changes, no Jido/Mattermost test edits, and no issue-1 edits. Action reuse assessment: not applicable to executable business operations — test organization only; reuse existing test setup/imports instead of introducing helpers or modules. Run mix q and affected regression suites; keep precommit stopped.",
       "timestamp": "2026-11-21T13:18:00Z"
+    },
+    {
+      "text": "Test consolidation completed at user request. Removed all three standalone issue-2 test modules. Relocated 5 declaration/property checks into existing EmailBridgeTest, 8 endpoint/cross-provider checks into existing ApiTest, 2 rendering checks into existing ChannelCapabilitiesTest, and all 4 modal/handler checks into an email capability display describe block in existing NotificationSmtpLiveTest. Kept SMTP/IMAP modal cases parameterized together to avoid duplicating their assertions across files; reused existing login/mock setup and subscribed to endpoint events only within the relevant cases. Final organization differs from the initial split plan because splitting modal cases increased LOC. All 19 issue checks and their assertions are preserved. All pre-existing lines in the four destination test files remain unchanged (additions only); no existing assertion/scenario weakened. After mix q formatting, net reduction is 13 test lines plus removal of 3 modules and their duplicate setup. mix q passed and the same targeted regression set passed 408 checks (2 properties/406 tests), with 178 excluded by unchanged Jido selectors/standard tags. git diff --check passed. Issue-1 source/test hashes unchanged; no production, Jido/Mattermost, adapter or shared-contract changes. Logs: /tmp/zaq-h2i-2-consolidation-q.log and /tmp/zaq-h2i-2-consolidation-regression.log. Historical TDD results remain recorded above; this relocation preserves behavior. No precommit, commit or push.",
+      "timestamp": "2026-11-21T13:23:19Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T13:18:00Z"
+  "updated_at": "2026-11-21T13:23:19Z"
 }
