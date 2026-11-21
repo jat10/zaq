@@ -18,11 +18,15 @@
     {
       "text": "Related occurrence during zaq-1lw.20 validation: existing full browser command npm run test -- --max-failures=1 passed 190 cases, then journeys-webkit dashboard.spec.js:82 add-ons empty state timed out setting up context (browser.newContext: Test ended, navigation to localhost:4002 waiting for load), before test body. 393 unrun, 1 skipped. No delivery code on this path, retries/timeouts/assertions unchanged. Trace at test/e2e/test-results/dashboard-BO-Dashboard-add-ons-empty-state-journeys-webkit/trace.zip in channel-files worktree. No new feature E2E authored.",
       "timestamp": "2026-11-18T15:22:55Z"
+    },
+    {
+      "text": "Additional occurrence during zaq-h2i.3 validation, on feat/channel-file-settings stacked on 19e8e7525. Existing unchanged full journey suite ran with --max-failures=1: 192 passed, 1 skipped, WebKit Dashboard add-ons empty state failed, 398 not run, runner also reported one error outside a test. This is not a green full-suite result.\n\nSymptom/expected contract: loginToBackOffice at test/e2e/support/bo.js:112 calls page.goto(/bo/dashboard), which should reach load within the unchanged 30-second test budget. It timed out there before Dashboard assertions and before any file-settings route. Failure screenshot is blank. Flow: resetE2EState -\u003e shared login helper -\u003e page.goto -\u003e WebKit load wait -\u003e timeout. Dashboard spec and navigation helper have no diff.\n\nHypotheses: intermittent WebKit navigation/load stall is supported by this blank-page observation, the prior System Configuration occurrence recorded here and a successful unchanged isolated replay. A common root cause is not established. Server/network contention remains unproven; no fix is proposed without evidence. File-settings regression has no demonstrated execution path in this failed navigation; the new feature's pure/domain/BO suites pass.\n\nFocused unchanged replay passed 1 test in 10.5 seconds (case 1.1 seconds). No test assertions, timeouts, retries, skips or production code changed during diagnosis. Root cause remains unconfirmed and full existing browser validation remains incomplete. Preserve evidence at /tmp/zaq-h2i-3-webkit-dashboard-failure and logs /tmp/zaq-h2i-3-e2e.log and /tmp/zaq-h2i-3-e2e-focused.log. Follow-up: compare base/branch traces and browser/server navigation events under full-suite state; obtain a complete green run before release finalization rather than treating an isolated replay as a waiver.",
+      "timestamp": "2026-11-21T15:29:52Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-yx7.5] Investigate recurring WebKit System Configuration navigation timeout",
   "type": "task",
-  "updated_at": "2026-11-18T15:22:55Z"
+  "updated_at": "2026-11-21T15:29:52Z"
 }
