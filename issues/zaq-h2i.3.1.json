@@ -9,9 +9,15 @@
   "id": "zaq-h2i.3.1",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Additional discovered API prerequisite: selected disabled connections cannot use current config_id capability lookup because Bridge.fetch_scoped_capability_config/2 requires enabled:true. Propose an additive configuration-inspection scope on the existing :channel_capability_snapshot request, preserving default runtime lookup semantics and provider/kind/archive checks, or justify provider-scope static metadata where no selected-specific transport facts exist. Concrete consumer: editing a disabled selected BO/SMTP connection. No new endpoint or secret projection. Exact source and scope must be agreed with the metadata contract before implementation.",
+      "timestamp": "2026-11-21T14:06:27Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3] Approve and supply file capability metadata contract",
   "type": "task",
-  "updated_at": "2026-11-21T14:04:49Z"
+  "updated_at": "2026-11-21T14:06:27Z"
 }
