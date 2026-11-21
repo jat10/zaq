@@ -27,11 +27,15 @@
     {
       "text": "Human approval received in the current conversation: user selected Approve email-only correction and test updates. Approved scope: change only email capability expectations from booleans to :native text/threads, omit unsupported media/features, modes none (SMTP) and idle (IMAP), and use common labels without direction-bearing text. IMAP outbound text/threads refer to existing replies via SMTP binding. Approval covers test/zaq/channels/email_capabilities_test.exs and test/zaq_web/live/bo/communication/email_capabilities_live_test.exs. Jido/Mattermost, adapters, their tests, shared normalization/endpoint/display remain unchanged. Original new regression suite added; corrected its HTML parser to the installed LazyHTML dependency before confirming a clean missing-correction TDD baseline.",
       "timestamp": "2026-11-21T13:06:38Z"
+    },
+    {
+      "text": "Clean original-regression TDD red verified before implementing the correction: all 7 tests failed solely for booleans versus :native, IMAP media delivery claims, custom labels, or protocol-name modes; HTML parser harness issues resolved. Existing email test expectations are now updated within the explicit approved scope; production code is still unchanged at this checkpoint. Red log: /tmp/zaq-h2i-2-correction-red.log.",
+      "timestamp": "2026-11-21T13:07:48Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T13:06:38Z"
+  "updated_at": "2026-11-21T13:07:48Z"
 }
