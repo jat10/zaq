@@ -11,11 +11,15 @@
     {
       "text": "Plan: author original async ExUnit contract tests for the exact nine fields/defaults, minimal construction, explicit overrides, and compile-time/runtime required-key enforcement; record the missing-module red result before creating the module. Preserve the reference struct and types, with a scoped module doc and no validation or delivery dependencies. Action reuse assessment: not applicable — data declaration only, no executable operation or consumer integration. E2E is unnecessary for this isolated struct contract; the existing epic remains responsible for later integration. Property tests are unnecessary for this finite declaration contract, which has no normalization, state transitions, or input-processing logic. Run mix q, isolated tests, then final mix precommit; do not commit/push or close before landing. Preserve the pre-existing .serena/project.yml change.",
       "timestamp": "2026-11-21T12:34:41Z"
+    },
+    {
+      "text": "TDD red confirmed before implementation: mix test test/zaq/channels/transport_requirements_test.exs exited 1 with Zaq.Channels.TransportRequirements.__struct__/1 undefined / cannot expand struct at the minimal-construction test. Initial dependency compilation exceeded the first 120-second allowance; the rerun completed and produced the expected missing-module failure. Original tests were written without inspecting or copying reference tests. Red log: /tmp/zaq-h2i-1-red.log.",
+      "timestamp": "2026-11-21T12:38:25Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Create transport_requirements.ex with the existing struct",
   "type": "task",
-  "updated_at": "2026-11-21T12:34:41Z"
+  "updated_at": "2026-11-21T12:38:25Z"
 }
