@@ -49,11 +49,15 @@
     {
       "text": "User authorized commit and push after staging all files except TransportRequirements. Committed the 11 staged files as 19e8e7525 (feat(channels): add email capability snapshots; Refs: zaq-h2i.2), including the staged Serena configuration. Repository commit hooks passed qf and Conventional Commit validation; pre-push formatting passed. Pushed feat/file-requirements to origin and configured tracking. SSH authentication failed; push succeeded through existing gh HTTPS credentials using command-local Git configuration, without changing the remote URL or global credential settings. Both issue-1 TransportRequirements files remain untracked/uncommitted. mix precommit was not run. Keep issue open pending PR/review/merge.",
       "timestamp": "2026-11-21T13:27:11Z"
+    },
+    {
+      "text": "Created PR https://github.com/jat10/zaq/pull/14 using gh, targeting jat10/zaq main from feat/file-requirements. Title: feat(channels): expose email capabilities in back office. Body describes the final email delivery capability contract, shared endpoint/normalization/display reuse, original consolidated test coverage, 408 passing targeted checks, mix q and hook results, E2E rationale, excluded TransportRequirements/settings/delivery work, staged Serena refresh, and pending post-review coverage/final gate. Explicitly records that mix precommit was not restarted. GitHub comparison verified one commit and only the 11 intended files.",
+      "timestamp": "2026-11-21T13:28:43Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T13:27:11Z"
+  "updated_at": "2026-11-21T13:28:43Z"
 }
