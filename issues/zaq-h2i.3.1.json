@@ -21,11 +21,15 @@
     {
       "text": "Original TDD red confirmed: new capability projection/configuration-scope tests fail on missing file_delivery metadata and disabled-scope lookup; normalization/resolver tests fail for undefined new modules/APIs. Result: 2 properties and 7 tests failed, with 3 checks passed and 126 excluded by the focused API describe selector. Log /tmp/zaq-h2i-3-red.log. Dependency compilation and isolated test database preparation succeeded. New component/SMTP/persistence tests are written and will receive their own red run before wiring implementation. Existing tests remain untouched.",
       "timestamp": "2026-11-21T14:35:16Z"
+    },
+    {
+      "text": "Implementation and issue-level checks complete for this step: final mix q passes; combined original/new regression passes 522 checks (6 properties/516 tests). See parent zaq-h2i.3 for original TDD red/green logs, unchanged test evidence, unresolved adapter metadata follow-up, intermittent existing WebKit E2E failure and remaining UX/coverage/precommit/review gates. Keep in progress until review/landing; no code commit/push authorized.",
+      "timestamp": "2026-11-21T15:29:54Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Approve and supply file capability metadata contract",
   "type": "task",
-  "updated_at": "2026-11-21T15:18:02Z"
+  "updated_at": "2026-11-21T15:29:54Z"
 }
