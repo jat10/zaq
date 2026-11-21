@@ -11,11 +11,15 @@
     {
       "text": "Module-context evidence: EmailBridge owns IMAP ingress/lazy materialization and SMTP composition; SmtpSender.deliver_notification builds text/html/headers only, with no attachment path. ImapAdapter fetches selected body sections and lazy MIME attachment Records; Parser/threading helpers preserve RFC references. SMTP and IMAP both support text/threads; only IMAP supports receiving image/audio/video/file. Neither supports streaming, reactions, typing or edit_messages. Modes will identify smtp versus imap with send-only/receive-only labels. Capability declarations are static support, not enabled/configured readiness or SMTP reply-binding status. Contract owner: EmailBridge returns {:ok, %{resolved: ..., labels: ...}}; Bridge owns required/unsupported/default-label normalization; Api exposes existing :channel_capability_snapshot. BO requests provider scope via NodeRouter and renders ChannelCapabilities.icon_with_modal in existing page_tag slots. State: static snapshot/modal-open assigns per socket; connector settings remain Engine-owned. Invariants: no file sending claim, no connector lookup/credentials for provider scope, no sending/delivery/settings changes. Risks: ambiguous multi-connector lookup avoided by scope: :provider; unavailable Channels renders an empty snapshot. Existing tests prove composition/attachments/threading but lack email snapshots and modal wiring. Unknowns: no network/server capability probing is intended. Action reuse assessment: extend optional Bridge callback; reuse Bridge normalization, Api endpoint and BO display. No Action/tool exposure; BO dispatch helpers stay thin presentation glue. TDD: new async declaration/property tests, real endpoint integration tests, and LiveView modal/dispatch tests; preserve all existing test expectations. E2E authoring unnecessary: existing modal reused, no new journey or settings; LiveView tests cover the read-only display. Preserve zaq-h2i.1 files and .serena/project.yml. Previous stop of precommit will be honored; run mix q and targeted suites and record final precommit as not rerun per user direction.",
       "timestamp": "2026-11-21T12:49:36Z"
+    },
+    {
+      "text": "TDD red confirmed before production changes: new tests fail for missing EmailBridge.capability_snapshot/1, existing endpoint returning {:error, :unsupported}, and missing email BO capability query/trigger. New SMTP fixture URL/token required fields were corrected without altering any existing tests. Clean baseline: 1 property and 11 tests fail for the expected missing feature. Log: /tmp/zaq-h2i-2-red.log.",
+      "timestamp": "2026-11-21T12:53:14Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T12:49:36Z"
+  "updated_at": "2026-11-21T12:53:14Z"
 }
