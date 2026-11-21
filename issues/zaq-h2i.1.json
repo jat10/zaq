@@ -23,11 +23,15 @@
     {
       "text": "User requested stopping mix precommit; sent SIGTERM to its identified BEAM process and verified no mix precommit process remains. Final gate is interrupted and must not be reported as passed. Before stopping, formatting, strict Credo, and compilation completed; stale tests reported unrelated missing Python environment prerequisites: markitdown, opendataloader_pdf, and worktree .venv/bin/python3. No test expectations changed and no dependencies installed. The isolated struct suite remains green (7 passed), and mix q passed. Implementation remains uncommitted/unpushed; issue stays in progress pending review/landing.",
       "timestamp": "2026-11-21T12:41:19Z"
+    },
+    {
+      "text": "Moved the uncommitted TransportRequirements source and tests, byte-for-byte verified, into sibling worktree zaq-feat-channel-file-settings on feat/channel-file-settings. New branch starts at email capabilities commit 19e8e7525; original feat/email-capabilities checkout is clean. No commit or push. Local dev.secret.exs copied and confirmed ignored. Full worktree setup stopped before mix setup because source .claude/settings.local.json is missing; the worktree-setup skill requires this copy and stops on setup failure. Database/dependency setup remains unverified.",
+      "timestamp": "2026-11-21T13:40:33Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Create transport_requirements.ex with the existing struct",
   "type": "task",
-  "updated_at": "2026-11-21T12:41:19Z"
+  "updated_at": "2026-11-21T13:40:33Z"
 }
