@@ -13,11 +13,15 @@
     {
       "text": "Additional discovered API prerequisite: selected disabled connections cannot use current config_id capability lookup because Bridge.fetch_scoped_capability_config/2 requires enabled:true. Propose an additive configuration-inspection scope on the existing :channel_capability_snapshot request, preserving default runtime lookup semantics and provider/kind/archive checks, or justify provider-scope static metadata where no selected-specific transport facts exist. Concrete consumer: editing a disabled selected BO/SMTP connection. No new endpoint or secret projection. Exact source and scope must be agreed with the metadata contract before implementation.",
       "timestamp": "2026-11-21T14:06:27Z"
+    },
+    {
+      "text": "User instructed continue after the concrete contract proposal. Proceed with the additive metadata extension, shared configuration contract and pure resolver. Preserve current support statuses/raw snapshots, dependency pins, issue 1 and all existing test behavior. Locked adapters without the optional metadata callback remain unavailable/unresolved; no provider-specific inference or ignored dependency edits. Configuration validation may remain incomplete while file sending is unsupported, but required configuration is enforced for supported file delivery and by the resolver. This preserves existing SMTP saves while explicitly marking values required for future file delivery.",
+      "timestamp": "2026-11-21T14:30:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Approve and supply file capability metadata contract",
   "type": "task",
-  "updated_at": "2026-11-21T14:30:25Z"
+  "updated_at": "2026-11-21T14:30:27Z"
 }
