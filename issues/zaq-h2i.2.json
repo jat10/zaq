@@ -1,7 +1,9 @@
 {
   "assignee": "Jad",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-h2i.3"
+  ],
   "created": "2026-11-21T12:35:24Z",
   "description": "Implement EmailBridge.capability_snapshot/1 using the existing shared delivery-focused capability contract used by Jido/Mattermost. Report text and threaded replies as :native for SMTP and IMAP-origin replies through the existing SMTP binding; omit unsupported delivery capabilities so Bridge normalization computes unsupported fields. Do not advertise received IMAP attachments as outbound media support. Keep mode as the ingress mechanism (none for SMTP, idle for IMAP), with shared labels that carry no behavioral meaning. Reuse the existing :channel_capability_snapshot endpoint, normalization, NodeRouter boundary, and BO capability display. Shared-contract gap: it has no independent receive-capability dimension; reporting receiving capabilities would require a separately approved contract change. Latest user scope forbids changes to Jido/Mattermost capabilities, adapters, or their existing tests. Original email/shared-rendering regression tests must fail before the correction and pass after it. The user explicitly approved updating the two existing email capability test files in the current conversation; preserve all other existing test expectations. Action reuse assessment: extend the existing EmailBridge callback only, reuse Bridge.capability_snapshot/2 normalization and Channels.Api endpoint, retain BO Event/NodeRouter dispatch and ChannelCapabilities.icon_with_modal. No new Action, endpoint, schema, or tool exposure. Keep zaq-h2i.1 unchanged; exclude new settings, TransportRequirements resolution, file acquisition, and delivery changes. Do not restart mix precommit, commit, or push. See issue comments for review evidence, approval, TDD, and validation results.",
   "id": "zaq-h2i.2",
@@ -41,5 +43,5 @@
   "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T13:10:42Z"
+  "updated_at": "2026-11-21T13:14:53Z"
 }
