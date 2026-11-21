@@ -23,11 +23,15 @@
     {
       "text": "Scope correction from latest user instruction: do not change Jido/Mattermost capabilities, adapters or their existing tests, and do not extend the shared contract without first explaining its gap. Review findings: Jido.Chat.Capabilities.channel_capabilities/1 explicitly provides delivery-focused capabilities. JidoChatBridge resolves supported features to :native/:fallback (omitting unsupported entries), and resolved.mode describes ingress mechanism (websocket/gateway/polling/webhook), not provider identity or send/receive direction. Bridge supplies common labels and detects unsupported fields; Api forwards the existing endpoint request; BO renders the common labels/statuses without interpreting provider identity. Prior email implementation violates this by mixing booleans with Jido support statuses, claiming received IMAP media as outbound delivery, setting modes to protocol names, and encoding direction in labels. Shared-contract gap: no independent receive-capability dimension; IMAP attachment reception cannot be reported as file delivery. An email-only correction can preserve the contract by reporting outbound text/thread support (IMAP-origin replies use selected/sole SMTP), omitting unsupported media/streaming/reactions/typing/edit_messages, using ingress mode strings none for SMTP and idle for IMAP, and relying entirely on shared labels. These mode strings keep existing ingress-mechanism semantics; no enum is enforced by Bridge or BO. No shared-contract, adapter, endpoint, normalization or display-component change is proposed. Existing email test expectations assert the superseded booleans/receiving media/protocol mode/direction labels; approval is required before updating them under docs/testing-approach.md#existing-test-behavior-approval-gate. Preparing original regression tests for the defects before that approval; no production or existing test edits yet. Issue 1 SHA-256 values unchanged; mix precommit remains prohibited.",
       "timestamp": "2026-11-21T13:05:10Z"
+    },
+    {
+      "text": "Human approval received in the current conversation: user selected Approve email-only correction and test updates. Approved scope: change only email capability expectations from booleans to :native text/threads, omit unsupported media/features, modes none (SMTP) and idle (IMAP), and use common labels without direction-bearing text. IMAP outbound text/threads refer to existing replies via SMTP binding. Approval covers test/zaq/channels/email_capabilities_test.exs and test/zaq_web/live/bo/communication/email_capabilities_live_test.exs. Jido/Mattermost, adapters, their tests, shared normalization/endpoint/display remain unchanged. Original new regression suite added; corrected its HTML parser to the installed LazyHTML dependency before confirming a clean missing-correction TDD baseline.",
+      "timestamp": "2026-11-21T13:06:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T13:05:10Z"
+  "updated_at": "2026-11-21T13:06:38Z"
 }
