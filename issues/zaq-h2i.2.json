@@ -57,11 +57,15 @@
     {
       "text": "User requested branch name feat/email-capabilities. Renamed the remote branch through gh API and renamed the local branch, preserving commit 19e8e7525 and both untracked TransportRequirements files. Updated local tracking to origin/feat/email-capabilities. GitHub automatically closed PR #14 when its head branch was renamed; created replacement PR https://github.com/jat10/zaq/pull/15 with identical title/body and main base. No code changes, additional commits, tests or precommit run.",
       "timestamp": "2026-11-21T13:32:12Z"
+    },
+    {
+      "text": "At user request, created upstream PR https://github.com/www-zaq-ai/zaq/pull/956 using gh. Base: www-zaq-ai/zaq main; head: jat10:feat/email-capabilities. Reused the title/body from fork PR #15, which remains open. Verified upstream comparison contains only the single email capability commit and its 11 files. TransportRequirements files remain uncommitted; no code changes or precommit run.",
+      "timestamp": "2026-11-21T13:34:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T13:32:12Z"
+  "updated_at": "2026-11-21T13:34:18Z"
 }
