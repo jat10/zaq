@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-21T12:32:35Z",
@@ -8,8 +8,8 @@
   "labels": [],
   "parent": "zaq-h2i",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Create transport_requirements.ex with the existing struct",
   "type": "task",
-  "updated_at": "2026-11-21T12:32:35Z"
+  "updated_at": "2026-11-21T12:34:21Z"
 }
