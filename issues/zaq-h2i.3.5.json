@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-21T14:04:48Z",
+  "description": "Consolidated E2E issue; authoring blocked by human UX approval. Proposed journeys: edit applicable channel connection and SMTP connection through shared File delivery section; enter exact decimal MB/count/policy values, save/reload selected connection and retain unrelated settings; fixed values cannot be edited; required/malformed/over-ceiling values show local errors; blank optional override uses transport value; capability-unavailable state never implies unlimited; unsupported connections hide inapplicable section. Reuse existing channel/system_config E2E fixtures/specs where cohesive. Keep scenarios aligned with final approved metadata producers and UI; no sends, attachment acquisition or delivery planning. Smaller tests continue before approval. After explicit final UX approval author minimal browser coverage and validate. Record environment failures. Action reuse: reuse existing UI/public Engine operations; no new business operation. Do not run mix precommit or commit/push without authorization.",
+  "id": "zaq-h2i.3.5",
+  "labels": [],
+  "parent": "zaq-h2i.3",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-h2i.3] Validate consolidated file settings browser journey",
+  "type": "task",
+  "updated_at": "2026-11-21T14:04:48Z"
+}
