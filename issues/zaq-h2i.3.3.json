@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-21T14:04:46Z",
+  "description": "Depends on shared file normalization/resolver implementation. Functional scope: a single File delivery component under Advanced settings in generic channel forms and SMTP, driven only by approved capability metadata. Reuse DesignSystem.Input and Switch, existing modal layout, capability snapshot endpoint, Engine connection settings operations and changesets. Fixed read-only values, configurable inputs/ceilings, explicit required settings, optional blank defaults, unresolved/not-applicable distinctions, decimal MB display, field errors, hide when no controls/information. Save/reload through selected connection identity and preserve unrelated settings.\n\nAction reuse: extend Zaq.Engine.EmailConnectorSettings.save/2 and ChannelConfig changeset and existing generic grouped connection operation; reuse SaveEmailConnector validated Action and NodeRouter/Event boundary. SMTP persistence currently rebuilds settings; extend it to merge existing unrelated keys. Extend shared ConnectorConfig projections and embedded EmailConfig form as necessary; no duplicate conversion/default/validation logic in forms. Never BO-call Channels modules directly; consume existing scoped :channel_capability_snapshot with cached assigns during validate, no new preview endpoint. Preserve actor authorization, encryption and exact selection/archive/provider checks.\n\nTests before code: extend existing NotificationSmtpLiveTest, ChannelsLiveTest, EmailConnectorSettingsTest, ChannelConfig tests, SettingsTest and existing component suite where cohesive. Inspect/reuse fixtures/setup/helpers; create one component suite only if no cohesive owner exists. Add original capability-combination tests across forms, storage round trip, stale/unavailable capability cases, selected connector scope, field-local errors, unrelated settings preservation and no-DB validate behavior. Establish expected red failures before code; never change existing test behavior without separate approval. Property tests belong to normalization/ceiling owner, not repeated per form. No copied old-worktree tests.\n\nDocs: Channels and Engine configuration owners; Storybook for shared component if required by design. Apply design skill gates only where extraction/migration/replacement actually applies; no unrelated legacy restyling. Run mix q and targeted isolated tests; required existing E2E execution per workflow, new E2E authoring deferred to UX gate. Update results and remaining approval gates in parent. No precommit/commit/push.",
+  "id": "zaq-h2i.3.3",
+  "labels": [],
+  "parent": "zaq-h2i.3",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-h2i.3] Wire shared BO file settings and persistence",
+  "type": "task",
+  "updated_at": "2026-11-21T14:04:46Z"
+}
