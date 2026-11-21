@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-21T12:32:35Z",
+  "description": "Create lib/zaq/channels/transport_requirements.ex using the same TransportRequirements struct from ../zaq-feat-channel-files. Preserve the existing struct fields, defaults, and enforced keys. Scope is the struct only; bridge implementations and BO integration belong to separate issues. Do not copy any tests from the old implementation. Action reuse assessment: not applicable — this issue introduces a data contract only, with no executable operation or Action integration. Implementation and any newly authored validation coverage will be scoped when work starts.",
+  "id": "zaq-h2i.1",
+  "labels": [],
+  "parent": "zaq-h2i",
+  "priority": 2,
+  "status": "open",
+  "title": "Create transport_requirements.ex with the existing struct",
+  "type": "task",
+  "updated_at": "2026-11-21T12:32:35Z"
+}
