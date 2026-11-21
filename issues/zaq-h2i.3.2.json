@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-h2i.3.1"
+  ],
   "blocks": [],
   "created": "2026-11-21T14:04:45Z",
   "description": "Prerequisite: approved capability/API contract and adapter metadata source in zaq-h2i.3.1. Functional scope: one pure Channels resolver producing the unchanged TransportRequirements struct from a capability snapshot and actual selected outbound connection; one shared ConnectorConfig normalization/validation implementation. Persist integer bytes/count and configuration policy only. Do not acquire files, plan, send or wire delivery/history. For later IMAP replies caller must supply selected SMTP config. Resolve once per attempt in the later integration, not in this issue.\n\nAction reuse: local-only pure derived domain operation; reuse existing capability semantics and Settings projections; no Action, endpoint, tool exposure, Repo, runtime config, or bridge-specific requirements construction. Normalize/validate in shared pure config code that Engine and BO may use without crossing into Channels directly. Preserve struct file/test byte-for-byte. Public result/error and field definitions require prerequisite approval.\n\nTests before code: inspect existing SettingsTest and TransportRequirementsTest first. Extend the owning suites with new describe blocks, preserving issue 1 assertions and fixtures. A new resolver suite is justified only if responsibility cannot fit a cohesive existing suite; no duplicate setup or copied reference tests. Original example/property tests must fail for missing behavior before implementation. Cover all transport limit states, valid/malformed/blank inputs, exact MB/byte round trips, required vs optional constraints, fixed/configurable ceiling invariants, native/fallback/unsupported, transfer mode/count requirements, threads vs attachment edits, policy default/false, deterministic pure outcomes and zero send/acquisition effects. Control no global state. No mocks needed for pure inputs.\n\nDocs: focused public docs/types, Channels guide ownership and resolver lifecycle/errors; shared configuration units. Validate via mix q and isolated suites, review diff and Action reuse. Do not run precommit, commit or push.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-h2i.3] Implement shared file normalization and requirements resolver",
   "type": "task",
-  "updated_at": "2026-11-21T14:04:45Z"
+  "updated_at": "2026-11-21T14:04:49Z"
 }
