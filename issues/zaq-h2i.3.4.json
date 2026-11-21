@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-21T14:04:47Z",
+  "description": "Human gate after implementation and issue-level validation. Pending explicit approval of completed shared File delivery UX in channel Advanced settings and SMTP Advanced settings, including fixed/read-only/configurable/required controls, decimal MB help/errors, save/reload, optional blank overrides, unavailable metadata and send-on-file-failure policy. Design/prototype/component approval is not final feature UX approval. Keep open until approver, timestamp/source and approved final scope are recorded. No Action reuse: human review tracking only. Never close based on silence, tests or merged iteration. No precommit restart or Git publication authorized.",
+  "id": "zaq-h2i.3.4",
+  "labels": [],
+  "parent": "zaq-h2i.3",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-h2i.3] Human UX approval for file settings E2E",
+  "type": "task",
+  "updated_at": "2026-11-21T14:04:47Z"
+}
