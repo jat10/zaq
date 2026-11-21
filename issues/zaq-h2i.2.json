@@ -3,13 +3,13 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-21T12:35:24Z",
-  "description": "Handle the new channel file settings in BO through one shared, capability-driven approach. The old implementation in ../zaq-feat-channel-files gave Mattermost and SMTP separate settings paths; do not reproduce that split. Inspect the existing channel configuration and capability APIs before choosing the shared owner. Use a consistent settings model, validation, defaults, and BO rendering for equivalent capabilities; show applicable settings based on connector capabilities rather than provider-name checks. Preserve legitimate transport-specific constraints without duplicating the common settings flow. Reuse TransportRequirements from zaq-h2i.1 where appropriate. Review old implementation settings as reference, not as an approved design. Keep file acquisition, delivery planning, and execution outside this issue. Before implementation, document the exact settings, ownership, Action reuse assessment, and acceptance scenarios, and follow the required BO design and test-behavior approval policies. Use TDD with newly authored tests; do not copy old implementation tests. This issue records scope; implementation details remain to be refined.",
+  "description": "Implement EmailBridge.capability_snapshot/1 and expose accurate SMTP and IMAP capabilities through the existing :channel_capability_snapshot endpoint. Reuse Bridge capability normalization and the existing BO capability display, wiring email BO screens consistently with other channels. Distinguish sending and receiving capabilities based on supported behavior; inspect existing email paths before declaring support. Do not add another capability endpoint. Exclude new file settings, TransportRequirements resolution, file acquisition, delivery planning, and execution changes. Action reuse assessment: extend the existing EmailBridge capability callback contract and reuse Channels.API, Bridge.capability_snapshot/2, and BO NodeRouter dispatch; no new Action or agent-tool exposure is needed for this read-only capability query. Use TDD with original tests: establish failing tests for SMTP/IMAP snapshots, endpoint normalization, and BO integration, then implement and run required checks. Do not copy tests from the old channel-files implementation or change existing test behavior without explicit approval. Follow AGENTS.md, docs/WORKFLOW_AGENT.md, docs/agent-tools.md, docs/services/channels.md, DESIGN.md, docs/bo-components.md, and docs/testing-approach.md. Record exact capability decisions and validation results in this issue. This replaces the prematurely created unified-settings draft with the user-approved email capability foundation scope.",
   "id": "zaq-h2i.2",
   "labels": [],
   "parent": "zaq-h2i",
   "priority": 2,
   "status": "open",
-  "title": "Unify BO channel file settings across connectors",
+  "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T12:35:24Z"
+  "updated_at": "2026-11-21T12:40:16Z"
 }
