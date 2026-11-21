@@ -9,9 +9,15 @@
   "id": "zaq-h2i.3",
   "labels": [],
   "parent": "zaq-h2i",
+  "comments": [
+    {
+      "text": "Discovery started on requested feat/channel-file-settings at 19e8e7525, exactly the feat/email-capabilities base. Issue 3 has no existing comments. Issue 2 remains in_progress for review/landing, but its implementation is present; updated issue 3 to in_progress for stacked development without closing issue 2 or waiting for merge. Issue 1 source/test hashes match af19ee7478d9b00faf8fbd4b1f8bff984db8eba87fbea736bcb86ff936ee16f3 and fef42b887f2b6293c6bef7bc9b9a12d87b2458b714711e7f81c359b47cbda913. No production/test edits. Read AGENTS.md, issue scope, workflow/action reuse/testing/documentation/BO guidance. Serena pattern searches work, but initial symbol overviews/queries returned empty. Reactivation exposed Expert language-server initialization blocked on automatic dependency fetching; explicit duplicate mix deps.get stopped to avoid competing fetches. Context Mode execution works; diagnostics report missing Codex recall hooks, with no user-level configuration changes. dev.secret.exs remains ignored and does not override Repo/database; dev/test configs derive isolated branch database names. No precommit process present. Dependency/build/Python environment absent initially. Old worktree settings inspected only as reference via Serena; no tests read/copied from it, and its Jido dependency revisions differ from this lock. Preliminary gap: Bridge.normalize_capability_snapshot/2 retains only kind/required/resolved/unsupported/labels; no file-limit configuration schema or transport facts survive. SMTP declares text/threads only, correctly omitting outbound files. Must propose/approve additive capability metadata before changing shared contract/adapters; no provider workaround or sending claims authorized. Exact pinned dependency inspection, reusable operation assessment, TDD tests and implementation remain pending.",
+      "timestamp": "2026-11-21T13:57:46Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-21T13:54:02Z"
+  "updated_at": "2026-11-21T13:57:46Z"
 }
