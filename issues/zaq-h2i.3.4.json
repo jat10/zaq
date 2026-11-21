@@ -11,9 +11,15 @@
   "id": "zaq-h2i.3.4",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Implementation has a browser-inspected concrete UI and Storybook variations; screenshot /tmp/zaq-h2i-3-smtp-file-settings.png. Human approval remains pending. Do not infer approval from screenshots, automated checks, the user's earlier permission to implement, or the manifest update. Consolidated new feature E2E authoring stays blocked. Existing browser journeys are being executed separately as required.",
+      "timestamp": "2026-11-21T15:24:59Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3] Human UX approval for file settings E2E",
   "type": "task",
-  "updated_at": "2026-11-21T14:04:53Z"
+  "updated_at": "2026-11-21T15:24:59Z"
 }
