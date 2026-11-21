@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-21T12:35:24Z",
@@ -8,8 +8,8 @@
   "labels": [],
   "parent": "zaq-h2i",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T12:40:16Z"
+  "updated_at": "2026-11-21T12:49:34Z"
 }
