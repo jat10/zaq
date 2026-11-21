@@ -45,11 +45,15 @@
     {
       "text": "Test consolidation completed at user request. Removed all three standalone issue-2 test modules. Relocated 5 declaration/property checks into existing EmailBridgeTest, 8 endpoint/cross-provider checks into existing ApiTest, 2 rendering checks into existing ChannelCapabilitiesTest, and all 4 modal/handler checks into an email capability display describe block in existing NotificationSmtpLiveTest. Kept SMTP/IMAP modal cases parameterized together to avoid duplicating their assertions across files; reused existing login/mock setup and subscribed to endpoint events only within the relevant cases. Final organization differs from the initial split plan because splitting modal cases increased LOC. All 19 issue checks and their assertions are preserved. All pre-existing lines in the four destination test files remain unchanged (additions only); no existing assertion/scenario weakened. After mix q formatting, net reduction is 13 test lines plus removal of 3 modules and their duplicate setup. mix q passed and the same targeted regression set passed 408 checks (2 properties/406 tests), with 178 excluded by unchanged Jido selectors/standard tags. git diff --check passed. Issue-1 source/test hashes unchanged; no production, Jido/Mattermost, adapter or shared-contract changes. Logs: /tmp/zaq-h2i-2-consolidation-q.log and /tmp/zaq-h2i-2-consolidation-regression.log. Historical TDD results remain recorded above; this relocation preserves behavior. No precommit, commit or push.",
       "timestamp": "2026-11-21T13:23:19Z"
+    },
+    {
+      "text": "User authorized commit and push after staging all files except TransportRequirements. Committed the 11 staged files as 19e8e7525 (feat(channels): add email capability snapshots; Refs: zaq-h2i.2), including the staged Serena configuration. Repository commit hooks passed qf and Conventional Commit validation; pre-push formatting passed. Pushed feat/file-requirements to origin and configured tracking. SSH authentication failed; push succeeded through existing gh HTTPS credentials using command-local Git configuration, without changing the remote URL or global credential settings. Both issue-1 TransportRequirements files remain untracked/uncommitted. mix precommit was not run. Keep issue open pending PR/review/merge.",
+      "timestamp": "2026-11-21T13:27:11Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T13:23:19Z"
+  "updated_at": "2026-11-21T13:27:11Z"
 }
