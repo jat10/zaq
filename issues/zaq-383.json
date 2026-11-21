@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-21T12:18:26Z",
+  "description": "Read-only discovery requested by user before cautiously reusing feat/channel-files in separate PRs. Source HEAD 8d987fa5c; comparison base 712b538ab; current main 2e4b7f1d5. Scope: 29 branch commits, 133 changed files, 16444 insertions and 746 deletions. Existing history: zaq-ic9 and zaq-1lw; do not treat completed historical tasks as validation of new extractions. Findings: TransportRequirements mixes resolved capability limits with failure_policy and depends on Delivery.Error. Delivery.Attachments combines metadata packing, acquisition and preparation; Delivery.Executor adds orchestration and receipts. Provenance changes effective-principal signatures and documents reissuing older nested-principal signatures. mix.exs pins jat10/jido_chat and jat10/jido_chat_mattermost forks. Preliminary review slices, not executable implementation plan: requirements contract; isolated provenance correction; SMTP limits/settings; authorized attachment selection and outgoing state; planning/preparation; shared execution and confirmation/history; Jido adapter integration; SMTP delivery; additional notification/workflow consumers. First candidate: narrow requirements contract and validation with no delivery orchestration. Before each implementation, inspect current owning APIs, record full Action reuse assessment, define focused regression/property tests, and create dependent implementation issues. Action reuse: not applicable to this discovery task because no executable behavior changes; future implementation assessments remain required. No production code copied, no commits/PRs created, no tests run. Review is structural and targeted, not a completed correctness audit.",
+  "id": "zaq-383",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "[attachment-reuse] Review channel-files branch for incremental reuse",
+  "type": "task",
+  "updated_at": "2026-11-21T12:18:26Z"
+}
