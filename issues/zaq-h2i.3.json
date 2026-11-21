@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-h2i.2"
   ],
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-h2i",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-21T13:46:59Z"
+  "updated_at": "2026-11-21T13:54:02Z"
 }
