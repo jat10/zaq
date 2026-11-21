@@ -15,11 +15,15 @@
     {
       "text": "TDD red confirmed before implementation: mix test test/zaq/channels/transport_requirements_test.exs exited 1 with Zaq.Channels.TransportRequirements.__struct__/1 undefined / cannot expand struct at the minimal-construction test. Initial dependency compilation exceeded the first 120-second allowance; the rerun completed and produced the expected missing-module failure. Original tests were written without inspecting or copying reference tests. Red log: /tmp/zaq-h2i-1-red.log.",
       "timestamp": "2026-11-21T12:38:25Z"
+    },
+    {
+      "text": "TDD green: isolated contract suite passed all 7 tests (exit 0). Exact textual comparison confirms reference @enforce_keys and defstruct match, including field order and defaults. Added original async tests for full schema/defaults, minimal construction, explicit overrides, omission of either/both required keys through struct! and compiled literals, and presence-only enforcement. No validation functions, bridges, BO integration, or orchestration added. mix q passed: formatting, hooks.verify, strict Credo (no issues), docs, and compilation. Source docs describe only the struct contract. Numerical coverage handoff is not due for this single child issue before epic implementation/review completion. Final precommit pending.",
+      "timestamp": "2026-11-21T12:39:29Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Create transport_requirements.ex with the existing struct",
   "type": "task",
-  "updated_at": "2026-11-21T12:38:25Z"
+  "updated_at": "2026-11-21T12:39:29Z"
 }
