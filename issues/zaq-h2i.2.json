@@ -15,11 +15,15 @@
     {
       "text": "TDD red confirmed before production changes: new tests fail for missing EmailBridge.capability_snapshot/1, existing endpoint returning {:error, :unsupported}, and missing email BO capability query/trigger. New SMTP fixture URL/token required fields were corrected without altering any existing tests. Clean baseline: 1 property and 11 tests fail for the expected missing feature. Log: /tmp/zaq-h2i-2-red.log.",
       "timestamp": "2026-11-21T12:53:14Z"
+    },
+    {
+      "text": "Implementation and issue-level validation complete. Added EmailBridge.capability_snapshot/1 only; exact SMTP support: text/threads=true, image/audio/video/file/streaming/reactions/typing/edit_messages=false, mode=smtp with send-only label. IMAP: text/image/audio/video/file/threads=true, streaming/reactions/typing/edit_messages=false, mode=imap with receive-only mode/media labels. Both accept provider atoms/string keys; unknown providers return {:error, :unsupported}. Existing Api endpoint and Bridge normalization remain unchanged. Both email pages request scope: :provider through NodeRouter, store static socket snapshots, and reuse ChannelCapabilities.icon_with_modal; open/close handlers query nothing. No file settings, TransportRequirements resolution, acquisition, or delivery changes. Channel service docs updated. TDD green: 12 new checks (1 property/11 tests). New property generator corrected to a bounded fixed_map; new zero-query test isolates capability handlers from unrelated system_configs reads during shared page rendering. No existing tests changed. mix q passed including formatting, hooks, strict Credo, docs, compilation. Regression validation passed 381 checks (2 properties/379 tests), covering new suites and existing EmailBridge, HTML delivery, SMTP sender, threading, Bridge, Api, and both email LiveViews. git diff --check passed. No browser tool available for interactive inspection; shared component/Storybook contract preserved and rendered modal behavior proven by LiveView tests. No new E2E authored: this read-only use of the existing modal is covered by smaller tests. Numerical coverage handoff remains deferred until epic implementation/review completion. mix precommit was not restarted in accordance with the earlier user stop; final gate remains incomplete and no final approval requested. Logs: /tmp/zaq-h2i-2-{red,green,q,regression}.log. Pre-existing .serena/project.yml and zaq-h2i.1 struct/tests preserved. No commit or push; issue remains in progress pending review/landing.",
+      "timestamp": "2026-11-21T12:57:08Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.2] Add email capability snapshots and wire BO display",
   "type": "task",
-  "updated_at": "2026-11-21T12:53:14Z"
+  "updated_at": "2026-11-21T12:57:08Z"
 }
