@@ -17,11 +17,15 @@
     {
       "text": "User instructed continue after the concrete contract proposal. Proceed with the additive metadata extension, shared configuration contract and pure resolver. Preserve current support statuses/raw snapshots, dependency pins, issue 1 and all existing test behavior. Locked adapters without the optional metadata callback remain unavailable/unresolved; no provider-specific inference or ignored dependency edits. Configuration validation may remain incomplete while file sending is unsupported, but required configuration is enforced for supported file delivery and by the resolver. This preserves existing SMTP saves while explicitly marking values required for future file delivery.",
       "timestamp": "2026-11-21T14:30:27Z"
+    },
+    {
+      "text": "Original TDD red confirmed: new capability projection/configuration-scope tests fail on missing file_delivery metadata and disabled-scope lookup; normalization/resolver tests fail for undefined new modules/APIs. Result: 2 properties and 7 tests failed, with 3 checks passed and 126 excluded by the focused API describe selector. Log /tmp/zaq-h2i-3-red.log. Dependency compilation and isolated test database preparation succeeded. New component/SMTP/persistence tests are written and will receive their own red run before wiring implementation. Existing tests remain untouched.",
+      "timestamp": "2026-11-21T14:35:16Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Approve and supply file capability metadata contract",
   "type": "task",
-  "updated_at": "2026-11-21T14:30:27Z"
+  "updated_at": "2026-11-21T14:35:16Z"
 }
