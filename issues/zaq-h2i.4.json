@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-21T15:18:05Z",
+  "description": "Required before later attachment delivery integration, outside zaq-h2i.3 acquisition/planning/sending exclusions. Locked jido_chat 1.2.1 and current Mattermost/Telegram/Discord declarations lack the optional file_delivery_capabilities(settings) declaration. Supply adapter-owned transfer mode, fixed provider ceilings or explicit unresolved/not_applicable facts, configurable/required limit definitions, and explicit attachment-edit support. Reuse the optional JidoChatBridge callback and existing capability snapshot projection introduced in zaq-h2i.3. Do not infer limits/transfer mode from provider names or generic edit support, add consumer-specific cases, edit ignored deps, or change unrelated capability meanings. Propose and review the smallest upstream extension/published dependency revision before changing pins. Follow docs/action-reuse.md, docs/services/channels.md and approval/test gates. Test declarations with original tests before code, preserve current declarations/tests and feature semantics, verify shared BO/resolver consumers. Current UI safely leaves these facts unresolved and numeric overrides unavailable; this follow-up supplies real facts rather than changing that fail-closed behavior. No Action/endpoint/tool exposure needed: pure adapter declaration at an existing capability boundary.",
+  "id": "zaq-h2i.4",
+  "labels": [],
+  "parent": "zaq-h2i",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-h2i] Supply adapter file metadata before delivery integration",
+  "type": "task",
+  "updated_at": "2026-11-21T15:18:05Z"
+}
