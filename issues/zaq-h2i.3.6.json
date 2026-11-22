@@ -27,11 +27,15 @@
     {
       "text": "User steering: use existing DesignSystem.Toggle exactly like People, replace feature TabNav usage and remove feature-only additions, preserve composition/drafts/whole-form saves/error navigation; do not change unrelated TabNav behavior. Discovery confirms Toggle uses native type=button segments, string value/value_param and aria-pressed, with normal Tab/Shift-Tab and Enter/Space semantics; no custom arrow-key hook is needed. Plan: keep focused field presentation options and shared sections, move settings composition into a focused ConnectionSettings component using Toggle, restore TabNav/source story/tests and remove only its feature hook registration. Existing LiveView suites remain owners of persistence/draft journeys; a focused composition suite is needed because no existing module coherently owns the new container (Toggle owns selector primitives; streamed/file suites own fields). Existing selector assertions currently require tab roles/aria-selected/roving arrow/Home/End. Requested explicit approval to change those to Toggle button/aria-pressed/native keyboard expectations and transfer feature-only component cases, preserving every draft/save/error/database assertion. This approval request follows docs/testing-approach.md existing-test-behavior gate; do not infer approval from the implementation request. Earlier full npm test attempt did not reach browser tests: bootstrap failed :eaddrinuse because the owned inspection server occupied 4002. Stopped that owned server; rerun after selector change. This is distinct from the historical dashboard failure; no browser assertions or timeouts changed.",
       "timestamp": "2026-11-22T11:00:56Z"
+    },
+    {
+      "text": "Explicit test-contract approval received from Jad in the current conversation: “Approve the described test changes.” Approved scope: replace newly introduced tablist/tab, aria-selected and roving arrow/Home/End expectations with People-style Toggle native buttons, aria-pressed, Tab/Shift-Tab and Enter/Space behavior; transfer feature-only TabNav composition tests to the focused shared container suite. Preserve all drafts, whole-form save, error navigation and reloaded-database assertions. Existing unrelated TabNav tests/behavior will be restored unchanged. Source: reply to the specific existing-test-behavior approval request, 2026-11-22.",
+      "timestamp": "2026-11-22T11:01:57Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Unify connection editors with Main and Advanced settings tabs",
   "type": "task",
-  "updated_at": "2026-11-22T11:00:56Z"
+  "updated_at": "2026-11-22T11:01:57Z"
 }
