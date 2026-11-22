@@ -1,7 +1,6 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-h2i.3.3",
     "zaq-h2i.3.6"
   ],
   "blocks": [
@@ -22,5 +21,5 @@
   "status": "open",
   "title": "[zaq-h2i.3] Human UX approval for file settings E2E",
   "type": "task",
-  "updated_at": "2026-11-22T10:32:54Z"
+  "updated_at": "2026-11-22T10:32:55Z"
 }
