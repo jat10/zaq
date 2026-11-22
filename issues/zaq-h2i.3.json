@@ -29,11 +29,15 @@
     {
       "text": "User requested removing file-delivery ownership from generic Bridge and asked whether an existing function can be reused before making the change. Discovery confirms existing capability_snapshot/1 already supplies provider capability snapshots, aggregated by Bridge.capability_snapshot/2 and the existing endpoint. A separate file_delivery_capabilities/1 callback is not necessary: the missing part is structured metadata, which can be an optional file_delivery field in the existing snapshot. Proposed reuse decision supersedes the extra-callback design: extend capability_snapshot/1; CommunicationBridge owns communication-specific validation/projection, generic Bridge delegates by kind; reject data-source snapshots in file settings/resolution. Preserve endpoint, support statuses, policy ownership and issue 1. Raw SMTP snapshot shape would add metadata, requiring an explicit update to the pre-existing exact-snapshot assertion in EmailBridgeTest; IMAP and unrelated assertions should remain unchanged. No source/test edits made during this discovery; asking for that narrowly disclosed existing-test behavior approval under docs/testing-approach.md before implementing the reuse alternative. Precommit/commit/push remain unauthorized.",
       "timestamp": "2026-11-22T01:01:01Z"
+    },
+    {
+      "text": "Explicit human approval received: user said perfect so remove it from the bridge, jido_chat_bridge and email_bridge and reuse the function we already have. Approved scope includes the disclosed raw SMTP snapshot metadata addition and its existing exact-snapshot assertion update. Reuse capability_snapshot/1; remove extra callback/functions; CommunicationBridge owns file metadata projection/validation, generic Bridge delegates by capability kind; data-source snapshots/connections are excluded from file settings/resolution. Preserve support statuses, IMAP expectations, all unrelated Jido/Mattermost declarations/tests and issue 1. Author original failing scope/reuse tests before production changes. Existing worktree changes belong to this authorized task and are retained. No precommit, commit or push.",
+      "timestamp": "2026-11-22T01:04:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-22T01:01:01Z"
+  "updated_at": "2026-11-22T01:04:28Z"
 }
