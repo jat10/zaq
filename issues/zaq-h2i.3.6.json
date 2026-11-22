@@ -19,11 +19,15 @@
     {
       "text": "Original TDD red established before implementation: focused existing TabNav, streamed/file fields and Channels/SMTP LiveView suites now reproduce missing Main/Advanced navigation and accessibility, missing shared panel composition, unwanted embedded disclosures/headings, and draft/error/save journeys. Evidence /tmp/zaq-h2i-3-6-red.log. Production and existing assertions unchanged before this run.",
       "timestamp": "2026-11-22T10:44:01Z"
+    },
+    {
+      "text": "Implementation green: 15 new original tests in existing suites; focused run 139/139 passed (/tmp/zaq-h2i-3-6-focused.log). mix q passed after sharing the presentation-only tab event helper (/tmp/zaq-h2i-3-6-q.log). Wider regression passed 773 checks (6 properties, 767 tests), including reviewed persistence and capability/resolver suites (/tmp/zaq-h2i-3-6-regression.log). Manual Chromium inspection passed ARIA/keyboard ArrowRight/Home/End activation and focus, actual inactive-panel invisibility, native FormData inclusion of inactive limits and explicit false policy, invalid Advanced save revealing its field error, credential retention, and save/reload; no page errors. Screenshots /tmp/zaq-h2i-3-6-smtp-main.png and /tmp/zaq-h2i-3-6-smtp-advanced.png. Initial inspection used pointer clicking on an existing styled switch input intercepted by its track; keyboard Space operates the existing accessible switch correctly, with no switch changes. Full existing npm test is running; only the existing native streamed-update journey navigation/selector was repaired for tabs, preserving all assertions and intent. No new feature E2E authored and no mix precommit/Git publication.",
+      "timestamp": "2026-11-22T10:57:57Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Unify connection editors with Main and Advanced settings tabs",
   "type": "task",
-  "updated_at": "2026-11-22T10:44:01Z"
+  "updated_at": "2026-11-22T10:57:57Z"
 }
