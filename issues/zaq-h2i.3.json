@@ -45,11 +45,15 @@
     {
       "text": "Persistence follow-up plan: extend the existing synchronous ChannelConfig suite with original real Repo insert/update and grouped-save regressions; assert returned errors/results and reloaded database state. Reuse FileSettings normalization/validation and the existing LiveUpdateSettings grouped operation, extending only ChannelConfig preparation/preservation. No new Action/API, capability contract, adapter metadata, acquisition/planning/sending, or issue 1 changes. Preserve omitted file_delivery only, keep explicit field clearing and unsupported-send behavior. Establish red tests before implementation, then run targeted regressions and mix q. mix precommit, commit and push remain prohibited without authorization.",
       "timestamp": "2026-11-22T01:38:17Z"
+    },
+    {
+      "text": "RED evidence: /tmp/zaq-h2i-3-persistence-red.log, existing ChannelConfig suite 57/62 passed, five original failures before production edits. Independently reproduced explicit-empty insert, omitted-file insert, direct last-required clearing, grouped last-required clearing (details/policy committed), and grouped unrelated save dropping file_delivery. Passing new controls cover valid required inserts, optional clearing, explicit false failure policy, unsupported SMTP empty/clear. Tests use real Repo and LiveUpdateSettings transaction, static test-only capability declarations, existing fixture/setup ownership; no old-worktree tests copied or existing expectations changed.",
+      "timestamp": "2026-11-22T01:40:50Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-22T01:38:17Z"
+  "updated_at": "2026-11-22T01:40:50Z"
 }
