@@ -39,11 +39,15 @@
     {
       "text": "Existing native streamed-update E2E failure investigated from its trace/error-context: after an untouched file policy was serialized, Advanced acquired an error marker, so the exact selector could not find “Advanced settings”. Trace contains real “Must be a positive integer or a boolean policy” errors. Cause: browser-only _unused_send_on_file_failure (and other known file-control usage markers) reached strict domain normalization. Reuse search found streamed controls already strip their own known markers but no reusable generic helper. Added focused FileDeliverySettings.form_params/2 at the BO boundary, shared by generic/SMTP validate and save, removing only markers for rendered file inputs; omitted subtrees stay omitted and malformed/unknown real fields remain unchanged for strict validation. No domain FileSettings/adapter/capability/persistence contracts changed. Three original regressions first failed (/tmp/zaq-h2i-3-6-usage-red.log), then all 147 focused tests passed (/tmp/zaq-h2i-3-6-toggle-focused.log), including rejection leaving DB state unchanged and false-policy save after known-marker filtering. Storybook render verified HTTP 200 with Main-only/Main/Advanced/both-error variations, correct Toggle selection, hidden panels, no duplicate IDs and no page errors; /tmp/zaq-h2i-3-6-toggle-storybook.png. Existing full browser run still executing its original compiled code; final rerun needed for the fixed path. No existing assertions weakened or timeouts/retries increased.",
       "timestamp": "2026-11-22T11:16:55Z"
+    },
+    {
+      "text": "Full existing npm test finished against the pre-usage-fix browser build: 587 passed, 3 skipped, 3 failed (native streamed-update journey in Firefox/WebKit/Chromium), log /tmp/zaq-h2i-3-6-toggle-e2e.log. All three traces confirm the same diagnosed known-framework-marker error; preserved under /tmp/zaq-h2i-3-6-usage-failure-artifacts before the next run. No unrelated browser failure occurred. Final BO usage-marker fix is already red/green covered in existing component/LiveView suites. Rebuilding and rerunning the affected existing channels and streamed_updates specs across all three browsers against final code, /tmp/zaq-h2i-3-6-final-e2e.log. This repeat is justified by the production fix; no new feature E2E or relaxed expectations/retries/timeouts.",
+      "timestamp": "2026-11-22T11:20:39Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Unify connection editors with Main and Advanced settings tabs",
   "type": "task",
-  "updated_at": "2026-11-22T11:16:55Z"
+  "updated_at": "2026-11-22T11:20:39Z"
 }
