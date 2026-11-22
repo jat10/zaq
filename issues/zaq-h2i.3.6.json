@@ -11,9 +11,15 @@
   "id": "zaq-h2i.3.6",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Discovery and implementation plan: extend existing DesignSystem.TabNav (existing owning component tests/story), not a new tab implementation. Existing TabNav has click styling but no panel ARIA/keyboard contract; add opt-in identified tablists/panel relationships with a colocated hook and reuse the same navigation in a settings composition. This is new composition, not extraction or a styling migration; final UX gate remains zaq-h2i.3.4. Field inventory before editing: generic Main = name, instance URL, bot token, credential selector/creation/OAuth claim, bot username/user ID, enabled, provider/kind hidden routing. Generic Advanced = existing streamed updates only where the editor currently supports grouped policy saving (existing retrieval edit), plus File delivery iff established FileSettings capability visibility permits. SMTP Main = configuration name, relay, port, TLS, username/password, From name/email. SMTP Advanced = File delivery iff capability-visible, plus existing transport mode, TLS verification, CA certificate path and security warnings. Activate/test/capabilities/other forms stay outside scope. Container owns tab/panel/section presentation only; parents own capability reads, drafts, errors and save operations. Reuse existing NodeRouter/Event configuration boundaries: ChannelConfigPersistence, manage_live_update_settings grouped transaction, manage_email_connector_settings. No new Action or endpoint; no capability, adapter, resolver, issue 1 or reviewed persistence changes. Keep inactive controls mounted/enabled, change only active-tab presentation on switches, and prevent tab buttons submitting. Route rejection deterministically to Main if it has errors, otherwise Advanced; mark both when needed and retain submit drafts. Disable native form prevalidation only in these two whole-form editors so hidden invalid numeric/required controls cannot block the authoritative server changeset or prevent selecting its error tab; all existing server validations and atomic saves remain. Extend existing TabNav/field/LiveView suites using original TDD cases and fixtures, then update Storybook, run mix q, targeted regressions and required existing E2E. New feature E2E remains blocked by final UX approval. No existing test expectation changes planned; minimal existing browser navigation repairs must preserve assertions and intent. No mix precommit, commit, push or publish.",
+      "timestamp": "2026-11-22T10:41:06Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Unify connection editors with Main and Advanced settings tabs",
   "type": "task",
-  "updated_at": "2026-11-22T10:41:05Z"
+  "updated_at": "2026-11-22T10:41:06Z"
 }
