@@ -35,11 +35,15 @@
     {
       "text": "Approved Toggle follow-up implemented with a focused ConnectionSettings presentation component reusing DesignSystem.Toggle exactly like People: string value, value_param=tab, native type=button controls and aria-pressed. Shared sections/drafts/whole-form saves/error navigation remain. TabNav source, original tests and Storybook entry, Toggle implementation, and assets/js/app.js are now identical to HEAD; no custom hook or unrelated TabNav changes remain. Approved TDD red: 13 changed-contract tests failed before replacing production markup, /tmp/zaq-h2i-3-6-toggle-red.log. Green focused 144 tests; broader 778 checks (6 properties, 772 tests), /tmp/zaq-h2i-3-6-toggle-focused.log and /tmp/zaq-h2i-3-6-toggle-regression.log. mix q passed /tmp/zaq-h2i-3-6-toggle-q.log; diff --check passed. Native keyboard browser inspection passed Tab/Shift-Tab focus, Enter/Space activation, exact two buttons, aria-pressed and active styling, actual hidden-panel visibility, retained unsaved password/limit, and no save on switching; no browser page errors. Updated screenshots /tmp/zaq-h2i-3-6-toggle-smtp-main.png and /tmp/zaq-h2i-3-6-toggle-smtp-advanced.png. UX and consolidated E2E descriptions now reflect the approved Toggle contract; final feature UX approval remains pending. Full existing npm test still running after successful bootstrap; no new feature E2E authored. No mix precommit, commit or push.",
       "timestamp": "2026-11-22T11:09:13Z"
+    },
+    {
+      "text": "Existing native streamed-update E2E failure investigated from its trace/error-context: after an untouched file policy was serialized, Advanced acquired an error marker, so the exact selector could not find “Advanced settings”. Trace contains real “Must be a positive integer or a boolean policy” errors. Cause: browser-only _unused_send_on_file_failure (and other known file-control usage markers) reached strict domain normalization. Reuse search found streamed controls already strip their own known markers but no reusable generic helper. Added focused FileDeliverySettings.form_params/2 at the BO boundary, shared by generic/SMTP validate and save, removing only markers for rendered file inputs; omitted subtrees stay omitted and malformed/unknown real fields remain unchanged for strict validation. No domain FileSettings/adapter/capability/persistence contracts changed. Three original regressions first failed (/tmp/zaq-h2i-3-6-usage-red.log), then all 147 focused tests passed (/tmp/zaq-h2i-3-6-toggle-focused.log), including rejection leaving DB state unchanged and false-policy save after known-marker filtering. Storybook render verified HTTP 200 with Main-only/Main/Advanced/both-error variations, correct Toggle selection, hidden panels, no duplicate IDs and no page errors; /tmp/zaq-h2i-3-6-toggle-storybook.png. Existing full browser run still executing its original compiled code; final rerun needed for the fixed path. No existing assertions weakened or timeouts/retries increased.",
+      "timestamp": "2026-11-22T11:16:55Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Unify connection editors with Main and Advanced settings tabs",
   "type": "task",
-  "updated_at": "2026-11-22T11:09:13Z"
+  "updated_at": "2026-11-22T11:16:55Z"
 }
