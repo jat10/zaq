@@ -43,11 +43,15 @@
     {
       "text": "Full existing npm test finished against the pre-usage-fix browser build: 587 passed, 3 skipped, 3 failed (native streamed-update journey in Firefox/WebKit/Chromium), log /tmp/zaq-h2i-3-6-toggle-e2e.log. All three traces confirm the same diagnosed known-framework-marker error; preserved under /tmp/zaq-h2i-3-6-usage-failure-artifacts before the next run. No unrelated browser failure occurred. Final BO usage-marker fix is already red/green covered in existing component/LiveView suites. Rebuilding and rerunning the affected existing channels and streamed_updates specs across all three browsers against final code, /tmp/zaq-h2i-3-6-final-e2e.log. This repeat is justified by the production fix; no new feature E2E or relaxed expectations/retries/timeouts.",
       "timestamp": "2026-11-22T11:20:39Z"
+    },
+    {
+      "text": "Final validation: mix q passed (/tmp/zaq-h2i-3-6-toggle-q.log). All 781 issue regression checks passed (6 properties, 775 tests), /tmp/zaq-h2i-3-6-toggle-regression.log; 147 focused component/LiveView tests passed. After the browser-only marker defect was fixed, an existing broad streamed-control selector additionally matched child input IDs; repaired it precisely to the new div wrapper without changing assertions. Final existing channels + streamed_updates run passed all 15 tests across Firefox, WebKit and Chromium (/tmp/zaq-h2i-3-6-final-browser.log), including both native and unchanged widget journeys. Earlier full npm test results remain accurately recorded: 587 passed, 3 skipped, 3 same native-flow failures, all subsequently resolved in the affected cross-browser rerun; no new consolidated feature E2E authored. Final SMTP Chromium inspection passed native selector focus/activation, unsaved password/limits/false-policy preservation, valid whole-form save with inactive controls, reload, automatic Advanced error selection, and rejected invalid override leaving the stored value intact; no page errors. An initial inspection assumed the persisted policy was on; checking the actual selected connection showed it was already false, so the inspection set the desired state explicitly rather than blindly toggling. Final clean screenshots are /tmp/zaq-h2i-3-6-toggle-smtp-main.png and /tmp/zaq-h2i-3-6-toggle-smtp-advanced.png, captured after the existing Toggle transition; Storybook screenshot /tmp/zaq-h2i-3-6-toggle-storybook.png. Owned temporary 4002 inspection server stopped; existing same-worktree 4000 dev server left running. Feature-only TabNav/source/story/tests/hook changes removed; Toggle implementation unchanged. ChannelConfig persistence SHA256 a5eb62a16c8824a895e2df9426258e1f159b33f8c6b9dadf5ca99a27b7d7a1a1 unchanged during this issue; issue 1 source/test hashes unchanged. UX approval zaq-h2i.3.4 and consolidated feature E2E zaq-h2i.3.5 remain open with final Toggle scenarios. No mix precommit, staging, commit, push or publication.",
+      "timestamp": "2026-11-22T11:27:45Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Unify connection editors with Main and Advanced settings tabs",
   "type": "task",
-  "updated_at": "2026-11-22T11:20:39Z"
+  "updated_at": "2026-11-22T11:27:45Z"
 }
