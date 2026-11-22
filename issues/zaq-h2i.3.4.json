@@ -7,7 +7,7 @@
     "zaq-h2i.3.5"
   ],
   "created": "2026-11-21T14:04:47Z",
-  "description": "Human gate after implementation and issue-level validation. Pending explicit approval of completed shared File delivery UX in channel Advanced settings and SMTP Advanced settings, including fixed/read-only/configurable/required controls, decimal MB help/errors, save/reload, optional blank overrides, unavailable metadata and send-on-file-failure policy. Design/prototype/component approval is not final feature UX approval. Keep open until approver, timestamp/source and approved final scope are recorded. No Action reuse: human review tracking only. Never close based on silence, tests or merged iteration. No precommit restart or Git publication authorized.",
+  "description": "Human gate after zaq-h2i.3 implementation and issue-level validation, including the shared Main/Advanced settings composition in zaq-h2i.3.6. Review completed generic channel and SMTP editors: Main contains connection details, credentials and primary fields; Advanced groups applicable streamed-message updates, File delivery and existing SMTP transport/security controls. Confirm tab applicability, one whole-form Save, preserved unsaved credentials/limits/explicit false policies across repeated switches, inactive-panel submission, deterministic Main-first error selection and both-tab indicators, rejection retaining all drafts and leaving stored settings unchanged, keyboard/focus and ARIA behavior, and selected-connection save/reload. Retain review of fixed/read-only/configurable/required controls, decimal MB help/errors, optional blank overrides and missing metadata. Browser-inspected SMTP screenshots: /tmp/zaq-h2i-3-6-smtp-main.png and /tmp/zaq-h2i-3-6-smtp-advanced.png. Final human UX/UI approval remains pending; keep open until approver, timestamp/source and approved final scope are recorded. Design/prototype/component approval, implementation authorization, silence and automated checks do not satisfy this gate. Consolidated feature E2E authoring in zaq-h2i.3.5 stays blocked. Action reuse not applicable: human review tracking only. No mix precommit restart, commit, push or publication authorized.",
   "id": "zaq-h2i.3.4",
   "labels": [],
   "parent": "zaq-h2i.3",
@@ -25,5 +25,5 @@
   "status": "open",
   "title": "[zaq-h2i.3] Human UX approval for file settings E2E",
   "type": "task",
-  "updated_at": "2026-11-22T10:32:57Z"
+  "updated_at": "2026-11-22T10:58:48Z"
 }
