@@ -23,11 +23,15 @@
     {
       "text": "Implementation green: 15 new original tests in existing suites; focused run 139/139 passed (/tmp/zaq-h2i-3-6-focused.log). mix q passed after sharing the presentation-only tab event helper (/tmp/zaq-h2i-3-6-q.log). Wider regression passed 773 checks (6 properties, 767 tests), including reviewed persistence and capability/resolver suites (/tmp/zaq-h2i-3-6-regression.log). Manual Chromium inspection passed ARIA/keyboard ArrowRight/Home/End activation and focus, actual inactive-panel invisibility, native FormData inclusion of inactive limits and explicit false policy, invalid Advanced save revealing its field error, credential retention, and save/reload; no page errors. Screenshots /tmp/zaq-h2i-3-6-smtp-main.png and /tmp/zaq-h2i-3-6-smtp-advanced.png. Initial inspection used pointer clicking on an existing styled switch input intercepted by its track; keyboard Space operates the existing accessible switch correctly, with no switch changes. Full existing npm test is running; only the existing native streamed-update journey navigation/selector was repaired for tabs, preserving all assertions and intent. No new feature E2E authored and no mix precommit/Git publication.",
       "timestamp": "2026-11-22T10:57:57Z"
+    },
+    {
+      "text": "User steering: use existing DesignSystem.Toggle exactly like People, replace feature TabNav usage and remove feature-only additions, preserve composition/drafts/whole-form saves/error navigation; do not change unrelated TabNav behavior. Discovery confirms Toggle uses native type=button segments, string value/value_param and aria-pressed, with normal Tab/Shift-Tab and Enter/Space semantics; no custom arrow-key hook is needed. Plan: keep focused field presentation options and shared sections, move settings composition into a focused ConnectionSettings component using Toggle, restore TabNav/source story/tests and remove only its feature hook registration. Existing LiveView suites remain owners of persistence/draft journeys; a focused composition suite is needed because no existing module coherently owns the new container (Toggle owns selector primitives; streamed/file suites own fields). Existing selector assertions currently require tab roles/aria-selected/roving arrow/Home/End. Requested explicit approval to change those to Toggle button/aria-pressed/native keyboard expectations and transfer feature-only component cases, preserving every draft/save/error/database assertion. This approval request follows docs/testing-approach.md existing-test-behavior gate; do not infer approval from the implementation request. Earlier full npm test attempt did not reach browser tests: bootstrap failed :eaddrinuse because the owned inspection server occupied 4002. Stopped that owned server; rerun after selector change. This is distinct from the historical dashboard failure; no browser assertions or timeouts changed.",
+      "timestamp": "2026-11-22T11:00:56Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Unify connection editors with Main and Advanced settings tabs",
   "type": "task",
-  "updated_at": "2026-11-22T10:57:57Z"
+  "updated_at": "2026-11-22T11:00:56Z"
 }
