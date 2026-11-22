@@ -49,11 +49,15 @@
     {
       "text": "RED evidence: /tmp/zaq-h2i-3-persistence-red.log, existing ChannelConfig suite 57/62 passed, five original failures before production edits. Independently reproduced explicit-empty insert, omitted-file insert, direct last-required clearing, grouped last-required clearing (details/policy committed), and grouped unrelated save dropping file_delivery. Passing new controls cover valid required inserts, optional clearing, explicit false failure policy, unsupported SMTP empty/clear. Tests use real Repo and LiveUpdateSettings transaction, static test-only capability declarations, existing fixture/setup ownership; no old-worktree tests copied or existing expectations changed.",
       "timestamp": "2026-11-22T01:40:50Z"
+    },
+    {
+      "text": "Persistence fixes completed. ChannelConfig now validates empty/omitted file settings for new communication connections and validates clearing the final required override; only unchanged file settings on updates skip revalidation. Unrelated submitted settings retain exactly the omitted file_delivery subtree, while other omitted settings retain their existing replacement semantics. Explicit blank/nil fields still clear overrides. Unsupported file sending remains allowed to save empty/cleared settings. Compatibility evidence: checking newly empty connections initially exposed seven unchanged existing Slack tests (no configured adapter); added an original unsupported-capability regression before allowing empty settings only for explicit unsupported/no_bridge responses. Nonempty overrides and other capability failures still fail closed. No provider cases or adapter/shared-contract changes. Original TDD: five reproduced failures in /tmp/zaq-h2i-3-persistence-red.log; compatibility red /tmp/zaq-h2i-3-persistence-compatibility-red.log; all 63 owning-suite tests green in /tmp/zaq-h2i-3-persistence-green.log. Ten added tests cover real Repo insert/update and existing grouped transaction, returned results/errors and reloaded records: omitted/empty new connections, supplied required limit, final required clearing (blank/nil), valid optional clearing, explicit false failure policy, unrelated grouped saves and replacement semantics, rejected grouped saves rolling back details/policy, unsupported SMTP, unavailable-capability rejection without stored changes. mix q passed (/tmp/zaq-h2i-3-persistence-q.log); wider issue regression passed 751 checks (6 properties, 745 tests), /tmp/zaq-h2i-3-persistence-regression.log. git diff --check passed. Original owning-suite changes are additions only (271 added, zero deleted lines); no existing expectations changed. Issue 1 source/test SHA256 remain af19ee7478d9b00faf8fbd4b1f8bff984db8eba87fbea736bcb86ff936ee16f3 and fef42b887f2b6293c6bef7bc9b9a12d87b2458b714711e7f81c359b47cbda913. Existing UX/new-feature E2E gates and previously recorded browser failure remain separate pending prerequisites. No mix precommit, commit, push, or final approval request.",
+      "timestamp": "2026-11-22T01:45:22Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-22T01:40:50Z"
+  "updated_at": "2026-11-22T01:45:22Z"
 }
