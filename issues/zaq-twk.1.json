@@ -13,11 +13,15 @@
     {
       "text": "Shared changes implemented; mix q passes. Focused suite reports 5 ChannelCapabilities failures; investigating exact assertions before proceeding. No test expectations have been changed.",
       "timestamp": "2026-11-23T19:19:00Z"
+    },
+    {
+      "text": "User approved scoped test expectation updates in the session on 2026-11-23: replace capabilities legacy text-emerald-700/text-black/40 styling assertions/selectors with semantic success/tertiary styling. The 351-test run passed 342; all nine failures are this same selector dependency in ChannelCapabilities, SMTP and Web Widget consumers. Preserve all labels/order/provider contracts and adjust only the approved style selectors.",
+      "timestamp": "2026-11-23T19:23:42Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-twk.1] Restore shared channel component and icon theming",
   "type": "task",
-  "updated_at": "2026-11-23T19:19:00Z"
+  "updated_at": "2026-11-23T19:23:42Z"
 }
