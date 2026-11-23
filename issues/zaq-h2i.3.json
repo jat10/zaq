@@ -81,11 +81,15 @@
     {
       "text": "Rebase applied: feat/channel-file-settings HEAD now equals verified local/remote feat/email-capabilities at 8afb490dc711c7f180e2cf6a907c6780df7b6ac6. git rebase --autostash fast-forwarded the branch (there were no feature commits), preserving uncommitted work. Resolved its single autostash conflict in notification_smtp_live_test.exs by retaining every added file-settings test and adopting the approved base IMAP push_notification expectation. Restored the original empty index; all feature edits remain unstaged/untracked. Recovery snapshot /tmp/zaq-h2i-3-before-rebase-6djwjro2 includes all 34 feature files, binary diff and SHA256 manifest. Integrity audit: no missing files, 30 unchanged byte-for-byte; the only 4 modified files are the expected base overlaps. Conflict test file equals the original backup with exactly the base mode replacement. No unmerged entries and git diff --check passes. mix q passed /tmp/zaq-h2i-3-rebase-q.log; integrated capability/widget/feature/persistence regression run underway. No feature commit, push or mix precommit.",
       "timestamp": "2026-11-23T13:47:32Z"
+    },
+    {
+      "text": "Publication authorization from Jad: commit and push the feature branch and create a PR in jat10/zaq ONLY, stacked on feat/email-capabilities. Follow-up answers explicitly approve changing the two IMAP API expectations from idle to push_notification to match the rebased base, preserving all other assertions; explicitly deny restarting mix precommit (“no just create a PR on jat10”). Proceed with issue-level checks and a draft PR documenting deferred precommit, final UX approval and consolidated feature E2E. Do not write to upstream/www-zaq-ai, merge, or request reviewers. Two rebased API failures are the disclosed expected mode mismatch; prior integrated run otherwise passed 852/854 checks.",
+      "timestamp": "2026-11-23T13:51:00Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-23T13:47:32Z"
+  "updated_at": "2026-11-23T13:51:00Z"
 }
