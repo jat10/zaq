@@ -7,9 +7,15 @@
   "id": "zaq-h2i.3.9",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Action reuse assessment: extend the existing ChannelConfig.changeset/Repo persistence boundary and channel_capability_snapshot NodeRouter/Event operation. Bridge.capability_snapshot/2 already owns selection and shared CommunicationBridge normalization; FileSettings.validate/add_errors already own field validation. Add an explicit proposed-configuration input to that same read operation (no new Action/API or BO validation), preserve provider/kind identity and confidential config transport, and validate the effective changeset for creation/update/enablement after its other preparation. Remove unchanged-file shortcuts while preserving file omission/clearing semantics and empty unsupported transports. Plan: original failing tests in ChannelConfigTest through real Repo/grouped-save boundaries using a config-dependent adapter; contract tests in BridgeTest; implement; focused regression/mix q and evidence. Existing assertions and fixtures will remain unchanged; request approval first if any conflict is discovered. No source sending/acquisition/planning, precommit, commit, or push.",
+      "timestamp": "2026-11-23T19:42:50Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities before saving",
   "type": "bug",
-  "updated_at": "2026-11-23T19:42:48Z"
+  "updated_at": "2026-11-23T19:42:50Z"
 }
