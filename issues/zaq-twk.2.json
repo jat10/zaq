@@ -19,11 +19,15 @@
     {
       "text": "User separately approved category-header assertion update in this session on 2026-11-23: fixed #eff6ff/#fffbeb -\u003e semantic accent/warning surface tokens, retaining icon/section/fallback checks. Browser review also corrected danger-button composition to the documented tertiary+danger pattern and removed unintended card-padding changes from page panels; modal flush layout uses the existing BOModal modifier.",
       "timestamp": "2026-11-23T19:35:04Z"
+    },
+    {
+      "text": "Focused regression validation passes: 351 tests across shared components, channel hub/configuration, SMTP/IMAP, email navigation, delivery logs, data-source providers, Web Widget and channel history. Initial real-page inspection covered 12 routes x 2 themes plus configuration/capabilities dialogs (40 observations), no JavaScript errors. Final-build screenshots and full E2E/final precommit remain in zaq-twk.3. No domain handlers, routes, field names/values or phx event contracts changed.",
+      "timestamp": "2026-11-23T19:37:53Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-twk.2] Migrate scoped BO channel page colors to DS semantics",
   "type": "task",
-  "updated_at": "2026-11-23T19:35:04Z"
+  "updated_at": "2026-11-23T19:37:53Z"
 }
