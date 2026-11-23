@@ -15,11 +15,15 @@
     {
       "text": "TDD evidence: /tmp/zaq-h2i-3-9-red.log captured eight failing original example tests plus the proposed-ceiling property before implementation (110/119 passing). Both reproduced grouped saves incorrectly succeeded; omitted-file updates, creation, enablement and supplied-snapshot identity also failed. New persistence/property checks now pass after moving the shared guard last in preparation and extending the confidential snapshot event with proposed configuration input. Two pre-existing Bridge resolver tests intentionally seed missing required limits via the save changeset and now correctly fail setup; requested explicit approval under docs/testing-approach.md existing-test behavior gate to seed equivalent legacy invalid rows while preserving every assertion. No such existing fixture change has been made yet.",
       "timestamp": "2026-11-23T19:50:13Z"
+    },
+    {
+      "text": "Independent regressions pass: 466 checks (5 properties, 461 tests) across ChannelConfig, grouped LiveUpdateSettings/ConnectorLifecycle persistence, Engine SMTP/API, Channels API/shared normalization/requirements, and both BO LiveViews; /tmp/zaq-h2i-3-9-regressions.log. The configured adapter is exercised through real Jido -\u003e shared Bridge normalization and real NodeRouter/Event dispatch. Tests include retained/changed/omitted overrides, exact stored-row rollback, valid updates, creation, new enabled records, enablement and effective protected settings after preparation. Property checks compare acceptance with the proposed ceiling. mix q passed; existing Bridge fixture approval is still pending and those two tests remain unchanged.",
+      "timestamp": "2026-11-23T19:56:01Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities before saving",
   "type": "bug",
-  "updated_at": "2026-11-23T19:50:13Z"
+  "updated_at": "2026-11-23T19:56:01Z"
 }
