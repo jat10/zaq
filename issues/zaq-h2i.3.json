@@ -93,11 +93,15 @@
     {
       "text": "Jad requested rebasing the published branch again after the base fixed the two IMAP API tests. Verified origin and local feat/email-capabilities now point to 3410530536734f286ab1e502375cd0583bd283af; published feature still c8b3cb299dd7e3a4bea8f4f569c90c8f79be0a08. The new base commit contains exactly the same two previously approved idle -\u003e push_notification test changes already in the feature tree. Rebase the single feature commit onto this base, preserve identical final contents, run focused API regressions, then update the existing jat10/zaq PR #16 branch using an explicit force-with-lease bound to the verified old feature SHA. No upstream writes, new feature changes, test weakening, mix precommit or merge.",
       "timestamp": "2026-11-23T17:13:09Z"
+    },
+    {
+      "text": "Second requested rebase complete: feature commit rewritten from c8b3cb299 to 1a8c1ff5e on base 341053053 (test(channels): align API expectations with IMAP push mode). Rebase was conflict-free. Verified old/new tree objects are identical: the two approved mode changes are now inherited from the base instead of carried in this feature commit. Focused API/requirements/persistence/SMTP run passed 254 checks (1 property, 253 tests), /tmp/zaq-h2i-3-rebase-test-fix.log. No production code or assertions changed in this turn; prior mix q and 854-check evidence applies to the identical tree. Updated origin/feat/channel-file-settings using force-with-lease explicitly bound to old remote SHA c8b3cb299dd7e3a4bea8f4f569c90c8f79be0a08, protecting against concurrent remote updates. Existing jat10/zaq draft PR #16 updated; body base pin now 341053053. Local/remote feature heads verified equal and worktree clean. No upstream writes, merge or mix precommit; remaining UX/E2E/review gates unchanged.",
+      "timestamp": "2026-11-23T17:16:20Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-23T17:14:41Z"
+  "updated_at": "2026-11-23T17:16:20Z"
 }
