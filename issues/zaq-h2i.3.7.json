@@ -21,11 +21,15 @@
     {
       "text": "Final focused validation shared with zaq-h2i.3.8: 801 checks passed (6 properties, 795 tests), /tmp/zaq-h2i-3-7-8-regressions-final.log; mix q passed. New/existing blank-name saves retain every SMTP/File draft, expose the name error on Main, reject without database changes, and persist the original drafts after correction. Archived-selection rejection also retains submit-only drafts and stored values. Existing persistence file-error projection remains covered. No existing test assertions or scenarios were modified. Required existing E2E suite is running; new consolidated feature E2E remains behind zaq-h2i.3.4/zaq-h2i.3.5. No precommit, commit, or push.",
       "timestamp": "2026-11-23T18:20:52Z"
+    },
+    {
+      "text": "Browser validation evidence: the full npm test run completed with 543 passes, 3 skips and 47 failures. Forty-six failures were Storybook connection refusals before its required dev server was started; all 110 existing Storybook checks then passed with that environment corrected (/tmp/zaq-h2i-3-7-8-storybook.log). One additional Chromium RAG dark-theme mobile-overflow assertion failed in unchanged system_config.spec.js:315. It is being investigated in an isolated system-config rerun; no test assertion was changed. Original full-run log: /tmp/zaq-h2i-3-7-8-e2e.log.",
+      "timestamp": "2026-11-23T18:29:11Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Preserve SMTP form drafts on persistence validation errors",
   "type": "bug",
-  "updated_at": "2026-11-23T18:20:52Z"
+  "updated_at": "2026-11-23T18:29:11Z"
 }
