@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-twk.2"
   ],
+  "closed_at": "2026-11-23T19:26:16Z",
   "created": "2026-11-23T19:15:14Z",
   "description": "Action reuse assessment: not applicable; presentation-only color/typography changes, no executable operation, authorization, dispatch or persistence changes. Reuse current DS CSS/components and BOModal. Preserve IDs, events, field names, values, slots and conditions. No mocks or new feature E2E journeys needed; run existing tests and browser inspections. Existing test behavior remains unchanged. Documentation: no standards/domain behavior change; update Beadwork evidence and relevant Storybook previews. Functional scope: ChannelConnectorCard, ChannelCapabilities, ConnectCredentialForm, ChannelIcons; DS CSS only if needed. Tests before implementation: existing component regression suites; browser contrast checks at normal/preview sizes and enabled/disabled/selected states. New component tests only for actual gaps. Verify mix q and focused suites.",
   "id": "zaq-twk.1",
@@ -24,8 +25,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-twk.1] Restore shared channel component and icon theming",
   "type": "task",
-  "updated_at": "2026-11-23T19:26:14Z"
+  "updated_at": "2026-11-23T19:26:16Z"
 }
