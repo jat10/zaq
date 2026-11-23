@@ -18,11 +18,15 @@
     {
       "text": "Hover regression fixed and validated in the working tree.\n\nRoot cause: the decorative absolute hover layers became opaque accent surfaces and painted above unpositioned card titles/descriptions/footer content. Removed these layers from the hub/provider cards and equivalent email navigation cards; retain existing DS card hover borders/shadows and all routes, IDs, events and logos. No new production CSS or backend changes.\n\nRed/green regression: the new focused browser check failed in both themes before the fix. It now passes with the existing channel checks across Firefox, WebKit and Chromium (15/15). It checks hovered descriptions on the hub, retrieval providers, data-source providers and email navigation. No existing test assertions were changed; this is focused regression coverage, not new feature-journey authoring.\n\nValidation: mix q passed; 34 focused LiveView/CardShell checks passed; final mix precommit passed: Result: 10882 passed (17 doctests, 257 properties, 10608 tests), 1 skipped, 159 excluded\n\nBrowser inspection confirms exposed text in all eight hovered route/theme samples. Description contrast is 7.79:1 in light mode and 8.55:1 in dark mode. Before/after gallery: /tmp/zaq-twk-evidence/hover.html; measurements: /tmp/zaq-twk-evidence/hover-observations.json.\n\nAction reuse: not applicable, presentation-only correction. No remaining validation blockers. Changes remain uncommitted; nothing pushed. Parent zaq-twk remains in progress pending review/authorized landing.",
       "timestamp": "2026-11-23T20:31:59Z"
+    },
+    {
+      "text": "Spacing follow-up zaq-twk.5 complete: consistent 16px inset between provider icon row and titles in channels_index_live.html.heex. mix q and diff checks passed; no tests added/run as requested. Latest change remains uncommitted.",
+      "timestamp": "2026-11-23T20:35:33Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-twk] Restore design-system dark theme across BO channel pages and icons",
   "type": "bug",
-  "updated_at": "2026-11-23T20:31:59Z"
+  "updated_at": "2026-11-23T20:35:33Z"
 }
