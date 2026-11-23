@@ -244,7 +244,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsIndexLive do
             stroke="currentColor"
             stroke-width="1.8"
             viewBox="0 0 24 24"
-            style="color: #3b82f6;"
+            style="color: var(--zaq-icon-color-accent)"
           >
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
@@ -255,7 +255,7 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsIndexLive do
             stroke="currentColor"
             stroke-width="1.8"
             viewBox="0 0 24 24"
-            style="color: #f59e0b;"
+            style="color: var(--zaq-text-color-body-warning)"
           >
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
@@ -269,11 +269,14 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsIndexLive do
     """
   end
 
-  defp category_header_icon_style(:retrieval), do: "background-color: #eff6ff;"
-  defp category_header_icon_style(:data_source), do: "background-color: #fffbeb;"
+  defp category_header_icon_style(:retrieval),
+    do: "background-color: var(--zaq-surface-color-accent)"
+
+  defp category_header_icon_style(:data_source),
+    do: "background-color: var(--zaq-surface-color-warning)"
 
   defp category_header_icon_style(:notification),
-    do: "background-color: #16a34a14; border: 1px solid #16a34a33;"
+    do: "background-color: var(--zaq-surface-color-success)"
 
   defp category_header_icon_style(_), do: "background: var(--zaq-surface-color-base);"
 

@@ -472,11 +472,30 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
                  "Mode: #{unquote(mode)}"
                )
 
-        assert has_element?(view, "#capabilities-modal li.text-emerald-700", "Text")
-        assert has_element?(view, "#capabilities-modal li.text-emerald-700", "Threads")
-        refute has_element?(view, "#capabilities-modal li.text-emerald-700", "Streaming")
+        assert has_element?(
+                 view,
+                 "#capabilities-modal li[style*='--zaq-text-color-body-success']",
+                 "Text"
+               )
 
-        refute has_element?(view, "#capabilities-modal li.text-emerald-700", "File")
+        assert has_element?(
+                 view,
+                 "#capabilities-modal li[style*='--zaq-text-color-body-success']",
+                 "Threads"
+               )
+
+        refute has_element?(
+                 view,
+                 "#capabilities-modal li[style*='--zaq-text-color-body-success']",
+                 "Streaming"
+               )
+
+        refute has_element?(
+                 view,
+                 "#capabilities-modal li[style*='--zaq-text-color-body-success']",
+                 "File"
+               )
+
         assert has_element?(view, "#capabilities-modal li", "File")
         refute render(view) =~ "receive only"
         refute render(view) =~ "send only"

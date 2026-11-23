@@ -376,12 +376,25 @@ defmodule ZaqWeb.Live.BO.Communication.WebWidgetLiveTest do
       view |> element("[data-testid='channel-capabilities-trigger']") |> render_click()
 
       for label <- ["Mode: websocket", "Text", "Streaming", "Typing", "Edit messages"] do
-        assert has_element?(view, "#capabilities-modal li.text-emerald-700", label)
+        assert has_element?(
+                 view,
+                 "#capabilities-modal li[style*='--zaq-text-color-body-success']",
+                 label
+               )
       end
 
       for label <- ["Image", "Audio", "Video", "File", "Reactions", "Threads"] do
-        assert has_element?(view, "#capabilities-modal li[class~='text-black/40']", label)
-        refute has_element?(view, "#capabilities-modal li.text-emerald-700", label)
+        assert has_element?(
+                 view,
+                 "#capabilities-modal li[style*='--zaq-text-color-body-tertiary']",
+                 label
+               )
+
+        refute has_element?(
+                 view,
+                 "#capabilities-modal li[style*='--zaq-text-color-body-success']",
+                 label
+               )
       end
 
       refute has_element?(view, "#capabilities-modal li", "runtime")

@@ -31,24 +31,20 @@
         :for={card <- @cards}
         id={"connection-type-card-#{card.id}"}
         navigate={"/bo/channels/retrieval/email/#{card.id}"}
-        class="group relative bg-white rounded-2xl border border-black/10 p-6 flex flex-col gap-4 hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden"
+        class="group relative border p-6 flex flex-col gap-4 hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden rounded-2xl zaq-card-hover zaq-border-default zaq-focus-visible"
       >
-        <div
-          class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          style={"background: linear-gradient(to bottom right, #{card.color}08, transparent)"}
-        />
         <div class="flex items-start justify-between">
           <div
             class="w-12 h-12 rounded-xl grid place-items-center"
-            style={"background-color: #{card.color}14"}
+            style="background-color: var(--zaq-surface-color-elevated)"
           >
             <ZaqWeb.Components.ChannelIcons.icon provider={card.id} class="w-6 h-6" />
           </div>
           <span class={[
-            "font-mono text-[0.6rem] px-2 py-1 rounded-full uppercase tracking-wider",
+            "zaq-text-caption px-2 py-1 rounded-full uppercase tracking-wider",
             if((card.id == "smtp" && @smtp_active) || (card.id == "imap" && @imap_active),
-              do: "bg-emerald-100 text-emerald-700",
-              else: "bg-black/5 text-black/30"
+              do: "zaq-pill--success",
+              else: "zaq-pill--elevated"
             )
           ]}>
             {if (card.id == "smtp" && @smtp_active) || (card.id == "imap" && @imap_active),
@@ -57,12 +53,19 @@
           </span>
         </div>
         <div>
-          <h3 class="font-mono text-sm font-bold text-black mb-1">{card.label}</h3>
-          <p class="font-mono text-[0.7rem] text-black/40 leading-relaxed">{card.desc}</p>
+          <h3 class="zaq-text-h3 font-bold mb-1" style="color: var(--zaq-text-color-body-default)">
+            {card.label}
+          </h3>
+          <p
+            class="zaq-text-body-sm leading-relaxed"
+            style="color: var(--zaq-text-color-body-tertiary)"
+          >
+            {card.desc}
+          </p>
         </div>
         <div
-          class="flex items-center gap-1 font-mono text-[0.65rem] mt-auto group-hover:gap-2 transition-all"
-          style={"color: #{card.color}99"}
+          class="flex items-center gap-1 zaq-text-body-sm mt-auto group-hover:gap-2 transition-all"
+          style="color: var(--zaq-text-color-body-accent)"
         >
           <span>Configure</span>
           <svg

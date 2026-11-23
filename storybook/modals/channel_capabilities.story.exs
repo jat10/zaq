@@ -28,10 +28,9 @@ defmodule Storybook.Modals.ChannelCapabilities do
               title: "Mattermost",
               modal_open?: true,
               snapshot: %{
-                "can_send_messages" => true,
-                "can_receive_messages" => true,
-                "can_send_files" => false,
-                "supports_threads" => true
+                labels: %{text: "Text", threads: "Threads", file: "File"},
+                required: [:text, :threads, :file],
+                resolved: %{text: true, threads: true, file: false}
               }
             }
           }

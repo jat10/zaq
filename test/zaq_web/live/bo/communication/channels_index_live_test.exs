@@ -265,10 +265,10 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelsIndexLiveTest do
 
     test "category_header_icon/1 renders index-matching icons for each section" do
       assert render_component(&ChannelsIndexLive.category_header_icon/1, kind: :retrieval) =~
-               "#eff6ff"
+               "var(--zaq-surface-color-accent)"
 
       assert render_component(&ChannelsIndexLive.category_header_icon/1, kind: :data_source) =~
-               "#fffbeb"
+               "var(--zaq-surface-color-warning)"
 
       assert render_component(&ChannelsIndexLive.category_header_icon/1, kind: :notification) =~
                "w-10 h-10"

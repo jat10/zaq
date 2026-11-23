@@ -17,10 +17,11 @@ defmodule ZaqWeb.Components.ChannelCapabilities do
       type="button"
       phx-click={@open_event}
       data-testid="channel-capabilities-trigger"
-      class="w-6 h-6 rounded-md border border-black/10 grid place-items-center text-black/35 hover:text-[#03b6d4] hover:border-[#03b6d4]/30 transition-all"
+      class="zaq-btn zaq-btn-text_label-default zaq-btn-icon zaq-btn-tertiary"
+      aria-label="Show capabilities"
       title="Show capabilities"
     >
-      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <svg class="zaq-icon-sm" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M12 16v.01" />
         <path d="M12 8a2.5 2.5 0 0 1 2.5 2.5c0 1.5-1.5 2-2.5 2.75" />
         <circle cx="12" cy="12" r="9" />
@@ -35,17 +36,20 @@ defmodule ZaqWeb.Components.ChannelCapabilities do
       max_width_class="zaq-modal--width-lg"
     >
       <div class="space-y-3">
-        <p class="font-mono text-[0.75rem] text-black/65">{@title}</p>
+        <p class="zaq-text-body-sm" style="color: var(--zaq-text-color-body-secondary)">{@title}</p>
         <p :if={@error?} class="zaq-text-body text-[var(--zaq-text-color-body-secondary)]">
           Capabilities unavailable
         </p>
         <ul :if={!@error?} class="space-y-1 max-h-[55vh] overflow-auto pr-1">
           <li
             :for={capability <- capability_items(@snapshot)}
-            class={[
-              "font-mono text-[0.74rem]",
-              if(capability.supported?, do: "text-emerald-700", else: "text-black/40")
-            ]}
+            class="zaq-text-body-sm"
+            style={
+              if(capability.supported?,
+                do: "color: var(--zaq-text-color-body-success)",
+                else: "color: var(--zaq-text-color-body-tertiary)"
+              )
+            }
           >
             {capability.label}
           </li>
@@ -55,7 +59,7 @@ defmodule ZaqWeb.Components.ChannelCapabilities do
             type="button"
             phx-click={@close_event}
             data-testid="channel-capabilities-close"
-            class="font-mono text-[0.75rem] px-4 py-2 rounded-lg border border-black/10 text-black/50 hover:text-black"
+            class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
           >
             Close
           </button>

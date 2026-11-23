@@ -42,6 +42,47 @@ test.describe("Channels index & provider UI", () => {
     }
   })
 
+  for (const theme of ["light", "dark"]) {
+    test(`hover keeps card descriptions exposed in ${theme} mode`, async ({ page }) => {
+      const screens = [
+        { path: CHANNELS_INDEX, selector: "#category-card-retrieval, #category-card-data-source" },
+        { path: "/bo/channels/retrieval", selector: 'article[id^="channel-card-"]' },
+        { path: "/bo/channels/data_source", selector: 'article[id^="channel-card-"]' },
+        { path: "/bo/channels/retrieval/email", selector: '[id^="connection-type-card-"]' },
+      ]
+
+      for (const screen of screens) {
+        await gotoBackOfficeLive(page, screen.path)
+        await waitForLiveViewSettled(page)
+        await page.evaluate((mode) => {
+          document.documentElement.dataset.zaqTheme = mode
+          document.documentElement.dataset.theme = mode
+        }, theme)
+        await page.addStyleTag({ content: "*, *::before, *::after { transition-duration: 0ms !important; }" })
+
+        const cards = page.locator(screen.selector)
+        await expect(cards.first()).toBeVisible()
+
+        for (const card of await cards.all()) {
+          await card.hover()
+          const description = card.locator("p").first()
+          await expect(description).toBeVisible()
+
+          const exposed = await description.evaluate((element) => {
+            const bounds = element.getBoundingClientRect()
+            const topmost = document.elementFromPoint(
+              bounds.x + bounds.width / 2,
+              bounds.y + bounds.height / 2
+            )
+            return element === topmost || element.contains(topmost)
+          })
+
+          expect(exposed, `${screen.path}: ${await card.getAttribute("id")} description is covered`).toBe(true)
+        }
+      }
+    })
+  }
+
   test("provider page opens capabilities form_dialog and closes", async ({ page }) => {
     await gotoBackOfficeLive(page, GOOGLE_DRIVE_PROVIDER)
     await waitForLiveViewSettled(page)

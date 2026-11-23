@@ -25,23 +25,26 @@
   </:page_tag>
   <!-- Breadcrumb -->
   <div class="mb-6">
-    <div class="flex items-center gap-1.5 font-mono text-[0.7rem] text-black/40 mb-4">
-      <.link navigate={~p"/bo/channels"} class="hover:text-black transition-colors">
+    <div
+      class="flex items-center gap-1.5 zaq-text-body-sm mb-4"
+      style="color: var(--zaq-text-color-body-tertiary)"
+    >
+      <.link navigate={~p"/bo/channels"} class="zaq-link transition-colors">
         Channels
       </.link>
       <span>/</span>
-      <.link navigate={~p"/bo/channels/retrieval"} class="hover:text-black transition-colors">
+      <.link navigate={~p"/bo/channels/retrieval"} class="zaq-link transition-colors">
         Communication Channels
       </.link>
       <span>/</span>
       <.link
         navigate={~p"/bo/channels/retrieval/email"}
-        class="hover:text-black transition-colors"
+        class="zaq-link transition-colors"
       >
         Email
       </.link>
       <span>/</span>
-      <span class="text-black">SMTP</span>
+      <span class="" style="color: var(--zaq-text-color-body-default)">SMTP</span>
     </div>
     <div class="flex items-center justify-end">
       <ZaqWeb.Components.DesignSystem.Button.button
@@ -53,14 +56,7 @@
         :if={length(@configs) <= 1 or @selected_config_id}
         type="button"
         phx-click="activate"
-        class={[
-          "font-mono text-[0.82rem] font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm",
-          if(@email_enabled,
-            do:
-              "bg-white border border-black/10 text-black/60 hover:border-red-300 hover:text-red-600",
-            else: "bg-[#16a34a] text-white hover:bg-[#15803d] shadow-[#16a34a]/20"
-          )
-        ]}
+        class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
       >
         {if @email_enabled, do: "Deactivate", else: "Activate"}
       </button>
@@ -86,7 +82,7 @@
           phx-value-id={config.id}
           aria-pressed={to_string(config.notification_default)}
           disabled={!config.enabled}
-          class="zaq-btn zaq-btn-tertiary"
+          class="zaq-btn zaq-btn-text_label-default zaq-btn-tertiary"
         >
           {if config.notification_default, do: "Default sender", else: "Set as default"}
         </button>
@@ -100,20 +96,29 @@
 
   <div :if={length(@configs) <= 1 or @selected_config_id} class="max-w-2xl space-y-8">
     <!-- SMTP Configuration Form -->
-    <div class="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
-      <div class="px-8 py-5 border-b border-black/[0.06] bg-[#fafafa] flex items-center gap-3">
+    <div
+      class="border shadow-sm overflow-hidden rounded-2xl"
+      style="background-color: var(--zaq-surface-color-raised); border-color: var(--zaq-border-color-default)"
+    >
+      <div
+        class="px-8 py-5 border-b flex items-center gap-3"
+        style="border-color: var(--zaq-border-color-default); background-color: var(--zaq-surface-color-base)"
+      >
         <svg
-          class="w-5 h-5 text-black/30"
+          class="zaq-icon-md"
           fill="none"
           stroke="currentColor"
           stroke-width="1.8"
           viewBox="0 0 24 24"
+          style="color: var(--zaq-text-color-body-tertiary)"
         >
           <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
         </svg>
         <div>
-          <h2 class="font-mono text-[0.95rem] font-bold text-black">SMTP Settings</h2>
-          <p class="font-mono text-[0.75rem] text-black/40 mt-0.5">
+          <h2 class="zaq-text-h3 font-bold" style="color: var(--zaq-text-color-body-default)">
+            SMTP Settings
+          </h2>
+          <p class="zaq-text-body-sm mt-0.5" style="color: var(--zaq-text-color-body-tertiary)">
             Relay server, authentication, and security options.
           </p>
         </div>
@@ -156,7 +161,7 @@
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2 sm:col-span-1">
-                  <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+                  <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                     SMTP Relay
                   </label>
                   <input
@@ -165,18 +170,19 @@
                     value={@form[:relay].value}
                     phx-debounce="400"
                     placeholder="smtp.example.com"
-                    class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all"
+                    class="zaq-control-text w-full"
                   />
                   <p
                     :if={@form[:relay].errors != []}
-                    class="font-mono text-[0.72rem] text-red-500 mt-1.5"
+                    class="zaq-text-body-sm mt-1.5"
+                    style="color: var(--zaq-text-color-body-danger)"
                   >
                     {elem(hd(@form[:relay].errors), 0)}
                   </p>
                 </div>
 
                 <div>
-                  <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+                  <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                     Port
                   </label>
                   <input
@@ -185,11 +191,12 @@
                     value={@form[:port].value}
                     phx-debounce="400"
                     placeholder="587"
-                    class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all"
+                    class="zaq-control-text w-full"
                   />
                   <p
                     :if={@form[:port].errors != []}
-                    class="font-mono text-[0.72rem] text-red-500 mt-1.5"
+                    class="zaq-text-body-sm mt-1.5"
+                    style="color: var(--zaq-text-color-body-danger)"
                   >
                     {elem(hd(@form[:port].errors), 0)}
                   </p>
@@ -198,12 +205,12 @@
 
               <!-- TLS -->
               <div>
-                <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+                <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                   TLS
                 </label>
                 <select
                   name="email_config[tls]"
-                  class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all appearance-none"
+                  class="zaq-control-select zaq-control-select--native w-full"
                 >
                   <option value="enabled" selected={to_string(@form[:tls].value) == "enabled"}>
                     enabled (if available)
@@ -220,8 +227,12 @@
               <!-- Auth -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
-                    Username <span class="normal-case font-normal text-black/30">(optional)</span>
+                  <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
+                    Username
+                    <span
+                      class="normal-case font-normal"
+                      style="color: var(--zaq-text-color-body-tertiary)"
+                    >(optional)</span>
                   </label>
                   <input
                     type="text"
@@ -229,21 +240,24 @@
                     value={@form[:username].value}
                     phx-debounce="400"
                     placeholder="you@example.com"
-                    class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all"
+                    class="zaq-control-text w-full"
                   />
                 </div>
                 <div>
-                  <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
-                    Password <span class="normal-case font-normal text-black/30">(optional)</span>
+                  <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
+                    Password
+                    <span
+                      class="normal-case font-normal"
+                      style="color: var(--zaq-text-color-body-tertiary)"
+                    >(optional)</span>
                   </label>
-                  <.secret_input
+                  <ZaqWeb.Components.DesignSystem.SecretInput.secret_input
                     id="smtp-password"
                     name="email_config[password]"
                     value={@form[:password].value}
                     phx-debounce="400"
                     placeholder="••••••••"
-                    input_class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 pr-11 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all"
-                    button_class="absolute right-3 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 transition-colors focus:outline-none"
+                    class="w-full"
                   />
                 </div>
               </div>
@@ -251,7 +265,7 @@
               <!-- From -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+                  <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                     From Name
                   </label>
                   <input
@@ -260,11 +274,11 @@
                     value={@form[:from_name].value}
                     phx-debounce="400"
                     placeholder="ZAQ"
-                    class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all"
+                    class="zaq-control-text w-full"
                   />
                 </div>
                 <div>
-                  <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+                  <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                     From Email
                   </label>
                   <input
@@ -273,11 +287,12 @@
                     value={@form[:from_email].value}
                     phx-debounce="400"
                     placeholder="noreply@zaq.local"
-                    class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all"
+                    class="zaq-control-text w-full"
                   />
                   <p
                     :if={@form[:from_email].errors != []}
-                    class="font-mono text-[0.72rem] text-red-500 mt-1.5"
+                    class="zaq-text-body-sm mt-1.5"
+                    style="color: var(--zaq-text-color-body-danger)"
                   >
                     {elem(hd(@form[:from_email].errors), 0)}
                   </p>
@@ -305,13 +320,13 @@
             <:advanced id="smtp-advanced-section" label="SMTP transport">
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+                  <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                     Transport Mode
                   </label>
                   <select
                     id="smtp-transport-mode"
                     name="email_config[transport_mode]"
-                    class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-white focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all appearance-none"
+                    class="zaq-control-select zaq-control-select--native w-full"
                   >
                     <option
                       value="starttls"
@@ -329,13 +344,13 @@
                 </div>
 
                 <div>
-                  <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+                  <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                     TLS Verification
                   </label>
                   <select
                     id="smtp-tls-verify"
                     name="email_config[tls_verify]"
-                    class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-white focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all appearance-none"
+                    class="zaq-control-select zaq-control-select--native w-full"
                   >
                     <option
                       value="verify_peer"
@@ -354,9 +369,12 @@
               </div>
 
               <div>
-                <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+                <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                   CA Cert Path
-                  <span class="normal-case font-normal text-black/30">(optional)</span>
+                  <span
+                    class="normal-case font-normal"
+                    style="color: var(--zaq-text-color-body-tertiary)"
+                  >(optional)</span>
                 </label>
                 <input
                   id="smtp-ca-cert-path"
@@ -365,17 +383,22 @@
                   value={@form[:ca_cert_path].value}
                   phx-debounce="400"
                   placeholder="/etc/ssl/certs/custom-ca.pem"
-                  class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-white placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all"
+                  class="zaq-control-text w-full"
                 />
               </div>
 
               <div
                 :if={@smtp_warnings != []}
                 id="smtp-security-warnings"
-                class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 space-y-1"
+                class="rounded-lg border px-3 py-2 space-y-1"
+                style="border-color: var(--zaq-border-color-warning); background-color: var(--zaq-surface-color-warning)"
               >
                 <%= for warning <- @smtp_warnings do %>
-                  <p id={warning.id} class="font-mono text-[0.72rem] text-amber-800">
+                  <p
+                    id={warning.id}
+                    class="zaq-text-body-sm"
+                    style="color: var(--zaq-text-color-body-warning)"
+                  >
                     {warning.message}
                   </p>
                 <% end %>
@@ -387,7 +410,7 @@
             <button
               id="save-smtp-config"
               type="submit"
-              class="font-mono text-[0.82rem] font-bold px-6 py-3 rounded-xl bg-[#2c3a50] text-white hover:bg-[#2c3a50]/80 shadow-sm transition-all"
+              class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
             >
               Save Configuration
             </button>
@@ -395,7 +418,8 @@
             <div
               :if={@save_status == :ok}
               id="save-status-ok"
-              class="flex items-center gap-2 font-mono text-[0.75rem] text-emerald-600"
+              class="flex items-center gap-2 zaq-text-body-sm"
+              style="color: var(--zaq-text-color-body-success)"
             >
               <svg
                 class="w-4 h-4"
@@ -412,7 +436,8 @@
             <div
               :if={is_tuple(@save_status) and elem(@save_status, 0) == :error}
               id="save-status-error"
-              class="font-mono text-[0.75rem] text-red-500"
+              class="zaq-text-body-sm"
+              style="color: var(--zaq-text-color-body-danger)"
             >
               {elem(@save_status, 1)}
             </div>
@@ -422,10 +447,18 @@
     </div>
 
     <!-- Test Connection -->
-    <div class="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
-      <div class="px-8 py-5 border-b border-black/[0.06] bg-[#fafafa]">
-        <h2 class="font-mono text-[0.95rem] font-bold text-black">Test Email Delivery</h2>
-        <p class="font-mono text-[0.75rem] text-black/40 mt-0.5">
+    <div
+      class="border shadow-sm overflow-hidden rounded-2xl"
+      style="background-color: var(--zaq-surface-color-raised); border-color: var(--zaq-border-color-default)"
+    >
+      <div
+        class="px-8 py-5 border-b"
+        style="border-color: var(--zaq-border-color-default); background-color: var(--zaq-surface-color-base)"
+      >
+        <h2 class="zaq-text-h3 font-bold" style="color: var(--zaq-text-color-body-default)">
+          Test Email Delivery
+        </h2>
+        <p class="zaq-text-body-sm mt-0.5" style="color: var(--zaq-text-color-body-tertiary)">
           Send a test email using the saved configuration above.
         </p>
       </div>
@@ -433,7 +466,7 @@
         <.form for={%{}} id="test-email-form" phx-submit="test_connection">
           <div class="flex items-start gap-3">
             <div class="flex-1">
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+              <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                 Recipient
               </label>
               <input
@@ -442,14 +475,14 @@
                 placeholder="you@example.com"
                 value={@test_recipient}
                 name="recipient"
-                class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all"
+                class="zaq-control-text w-full"
               />
             </div>
             <div class="pt-[1.45rem]">
               <button
                 type="submit"
                 disabled={@test_status == :loading}
-                class="font-mono text-[0.82rem] font-bold px-5 py-3 rounded-xl bg-[#2c3a50] text-white hover:bg-[#2c3a50]/80 disabled:opacity-40 transition-all whitespace-nowrap h-11"
+                class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
               >
                 {if @test_status == :loading, do: "Sending…", else: "Send Test"}
               </button>
@@ -459,7 +492,8 @@
 
         <div
           :if={@test_status == :ok}
-          class="mt-4 flex items-center gap-2 font-mono text-[0.78rem] text-emerald-600"
+          class="mt-4 flex items-center gap-2 zaq-text-body-sm"
+          style="color: var(--zaq-text-color-body-success)"
         >
           <svg
             class="w-4 h-4"
@@ -474,7 +508,8 @@
         </div>
         <div
           :if={is_tuple(@test_status) and elem(@test_status, 0) == :error}
-          class="mt-4 font-mono text-[0.78rem] text-red-500"
+          class="mt-4 zaq-text-body-sm"
+          style="color: var(--zaq-text-color-body-danger)"
         >
           {elem(@test_status, 1)}
         </div>

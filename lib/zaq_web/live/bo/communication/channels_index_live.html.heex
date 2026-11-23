@@ -26,19 +26,22 @@
         <CardShell.card_shell
           id="category-card-retrieval"
           as={:article}
-          class="group relative gap-4 overflow-hidden bg-white p-6 rounded-2xl border border-black/10 cursor-pointer"
+          class="group relative gap-4 overflow-hidden cursor-pointer"
           primary_link={%{destination: ~p"/bo/channels/retrieval"}}
         >
           <:header>
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
             <div class="relative flex items-start justify-between">
-              <div class="w-12 h-12 rounded-xl bg-blue-50 grid place-items-center">
+              <div
+                class="w-12 h-12 rounded-xl grid place-items-center"
+                style="background-color: var(--zaq-surface-color-accent)"
+              >
                 <svg
-                  class="w-6 h-6 text-blue-500"
+                  class="zaq-icon-md"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="1.8"
                   viewBox="0 0 24 24"
+                  style="color: var(--zaq-text-color-body-accent)"
                 >
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
@@ -69,9 +72,10 @@
             >
               <div
                 :for={provider <- @retrieval_preview}
-                class="w-6 h-6 rounded-md bg-black/[0.03] grid place-items-center"
+                class="w-6 h-6 rounded-md grid place-items-center"
                 data-channel-preview={provider}
                 title={provider}
+                style="background-color: var(--zaq-surface-color-elevated)"
               >
                 <ZaqWeb.Components.ChannelIcons.icon provider={provider} class="w-3.5 h-3.5" />
               </div>
@@ -89,19 +93,22 @@
         <CardShell.card_shell
           id="category-card-data-source"
           as={:article}
-          class="group relative gap-4 overflow-hidden bg-white p-6 rounded-2xl border border-black/10 cursor-pointer"
+          class="group relative gap-4 overflow-hidden cursor-pointer"
           primary_link={%{destination: ~p"/bo/channels/data_source"}}
         >
           <:header>
-            <div class="absolute inset-0 bg-gradient-to-br from-amber-500/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
             <div class="relative flex items-start justify-between">
-              <div class="w-12 h-12 rounded-xl bg-amber-50 grid place-items-center">
+              <div
+                class="w-12 h-12 rounded-xl grid place-items-center"
+                style="background-color: var(--zaq-surface-color-warning)"
+              >
                 <svg
-                  class="w-6 h-6 text-amber-500"
+                  class="zaq-icon-md"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="1.8"
                   viewBox="0 0 24 24"
+                  style="color: var(--zaq-text-color-body-warning)"
                 >
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <polyline points="14 2 14 8 20 8" />
@@ -135,9 +142,10 @@
             >
               <div
                 :for={provider <- @data_source_preview}
-                class="w-6 h-6 rounded-md bg-black/[0.03] grid place-items-center"
+                class="w-6 h-6 rounded-md grid place-items-center"
                 data-channel-preview={provider}
                 title={provider}
+                style="background-color: var(--zaq-surface-color-elevated)"
               >
                 <ZaqWeb.Components.ChannelIcons.icon provider={provider} class="w-3.5 h-3.5" />
               </div>
@@ -195,7 +203,8 @@
         <div :if={@kind == :notification} class="flex justify-end">
           <.link
             navigate={~p"/bo/channels/notifications/logs"}
-            class="inline-flex items-center gap-2 font-mono text-[0.75rem] font-bold px-4 py-2 rounded-xl bg-[#03b6d4] text-white hover:bg-[#029ab3] shadow-sm shadow-[#03b6d4]/20 transition-all"
+            class="inline-flex items-center gap-2 zaq-text-body-sm font-bold px-4 py-2 rounded-xl zaq-link shadow-sm transition-all"
+            style="background-color: var(--zaq-surface-color-accent); color: var(--zaq-text-color-body-default)"
           >
             <svg
               class="w-3.5 h-3.5"
@@ -220,7 +229,7 @@
           :for={card <- @cards}
           id={"channel-card-#{card.id}"}
           as={:article}
-          class="group relative gap-4 overflow-hidden bg-white p-6 rounded-2xl border border-black/10 cursor-pointer"
+          class="group relative gap-4 overflow-hidden cursor-pointer"
           primary_link={
             %{
               destination:
@@ -239,14 +248,10 @@
           }
         >
           <:header>
-            <div
-              class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              style={"background: linear-gradient(to bottom right, #{card.color}08, transparent)"}
-            />
             <div class="relative flex items-start justify-between">
               <div
                 class="w-12 h-12 rounded-xl grid place-items-center"
-                style={"background-color: #{card.color}14"}
+                style="background-color: var(--zaq-surface-color-elevated)"
               >
                 <ZaqWeb.Components.ChannelIcons.icon provider={card.id} class="w-6 h-6" />
               </div>
@@ -254,7 +259,7 @@
               <.hub_config_count_badge count={count} />
             </div>
           </:header>
-          <div>
+          <div class="pt-4">
             <div class="flex items-center gap-2 mb-1">
               <h3 class="zaq-text-h4" style="color: var(--zaq-text-color-body-default)">
                 {card.label}
@@ -309,8 +314,13 @@
         title="Ingress Status"
         max_width_class="zaq-modal--width-lg"
       >
-        <div class="space-y-3 font-mono text-[0.75rem] text-black/70">
-          <p class="font-bold text-black">{String.capitalize(@ingress_status_modal.provider)}</p>
+        <div
+          class="space-y-3 zaq-text-body-sm"
+          style="color: var(--zaq-text-color-body-secondary)"
+        >
+          <p class="font-bold" style="color: var(--zaq-text-color-body-default)">
+            {String.capitalize(@ingress_status_modal.provider)}
+          </p>
           <p>
             {(@ingress_status_modal.status || %{})[:summary] || "No status details available"}
           </p>
@@ -333,7 +343,7 @@
             <button
               type="button"
               phx-click="close_ingress_status"
-              class="font-mono text-[0.75rem] px-4 py-2 rounded-lg border border-black/10 text-black/50 hover:text-black"
+              class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
             >
               Close
             </button>

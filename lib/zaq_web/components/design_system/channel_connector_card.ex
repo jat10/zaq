@@ -39,20 +39,25 @@ defmodule ZaqWeb.Components.DesignSystem.ChannelConnectorCard do
     ~H"""
     <div
       id={@id}
-      class={[
-        "bg-white rounded-xl border p-5 flex flex-wrap gap-4 items-center justify-between",
-        if(@selected, do: "border-[var(--zaq-border-color-accent)]", else: "border-black/10")
-      ]}
+      class="zaq-card-default zaq-card-hover zaq-border-default flex flex-wrap items-center justify-between"
+      style={if(@selected, do: "border-color: var(--zaq-border-color-accent)")}
     >
       <div class="flex items-center gap-4">
-        <div class={[
-          "w-10 h-10 rounded-xl grid place-items-center",
-          if(@enabled, do: "bg-[#0058CC]/10", else: "bg-black/5")
-        ]}>
+        <div
+          class="w-10 h-10 rounded-xl grid place-items-center"
+          style={
+            if(@enabled,
+              do:
+                "background-color: var(--zaq-surface-color-accent); color: var(--zaq-icon-color-accent)",
+              else:
+                "background-color: var(--zaq-surface-color-elevated); color: var(--zaq-icon-color-default)"
+            )
+          }
+        >
           <.icon :if={@icon} name={@icon} class="zaq-icon-md" />
           <svg
             :if={!@icon}
-            class={if(@enabled, do: "w-5 h-5 text-[#0058CC]", else: "w-5 h-5 text-black/30")}
+            class="zaq-icon-md"
             fill="none"
             stroke="currentColor"
             stroke-width="1.8"
@@ -70,26 +75,39 @@ defmodule ZaqWeb.Components.DesignSystem.ChannelConnectorCard do
               phx-click={@select_event}
               phx-value-id={@connector_id}
               aria-current={if(@selected, do: "true", else: nil)}
-              class="font-mono text-sm font-bold text-black zaq-focus-visible"
+              class="zaq-text-h4 zaq-focus-visible"
+              style="color: var(--zaq-text-color-body-default)"
             >
               {@name}
             </button>
-            <p :if={!@select_event} class="font-mono text-sm font-bold text-black">{@name}</p>
+            <p
+              :if={!@select_event}
+              class="zaq-text-h4"
+              style="color: var(--zaq-text-color-body-default)"
+            >
+              {@name}
+            </p>
             {render_slot(@status)}
             <span class={[
-              "font-mono text-[0.6rem] px-2 py-0.5 rounded-full uppercase tracking-wider",
+              "zaq-pill zaq-text-caption uppercase tracking-wider",
               if(@enabled and @enabled_label == "Active",
-                do: "bg-emerald-100 text-emerald-700",
-                else: "bg-black/5 text-black/30"
+                do: "zaq-pill--success",
+                else: "zaq-pill--elevated"
               )
             ]}>
               {if @enabled, do: @enabled_label, else: "Disabled"}
             </span>
           </div>
           <div class="flex items-center gap-3">
-            <p class="font-mono text-[0.7rem] text-black/40">{@provider}</p>
-            <span :if={@url} class="text-black/10">·</span>
-            <p :if={@url} class="font-mono text-[0.7rem] text-black/30 truncate max-w-[280px]">
+            <p class="zaq-text-body-sm" style="color: var(--zaq-text-color-body-tertiary)">
+              {@provider}
+            </p>
+            <span :if={@url} style="color: var(--zaq-text-color-body-tertiary)">·</span>
+            <p
+              :if={@url}
+              class="zaq-text-body-sm truncate max-w-[280px]"
+              style="color: var(--zaq-text-color-body-tertiary)"
+            >
               {@url}
             </p>
           </div>

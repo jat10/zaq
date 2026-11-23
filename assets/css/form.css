@@ -297,6 +297,24 @@
   display: none;
 }
 
+/* Native chevrons follow color-scheme; currentColor inside a background SVG
+   does not inherit the control's text color. */
+.zaq-control-select.zaq-control-select--native {
+  appearance: auto;
+  background-image: none;
+  color-scheme: light;
+}
+
+.zaq-control-select.zaq-control-select--native:is(:hover, :focus-visible) {
+  background:
+    linear-gradient(var(--zaq-surface-color-raised), var(--zaq-surface-color-raised)) padding-box,
+    var(--zaq-border-gradient-interactive) border-box;
+}
+
+[data-zaq-theme="dark"] .zaq-control-select--native {
+  color-scheme: dark;
+}
+
 /* Padded dropdown row — use with .zaq-dropdown-menu-item when menu sets its own inset
    (e.g. SearchableSelect options; BO nav menus keep custom Tailwind padding). */
 .zaq-dropdown-menu-item--padded {
