@@ -25,11 +25,15 @@
     {
       "text": "Additional TDD malformed-envelope check: declaring file native while simultaneously listing it unsupported exposed divergent consumer facts (/tmp/zaq-h2i-3-8-conflict-red.log). Shared normalization now rejects that contradiction as invalid_capability_snapshot, alongside conflicting status aliases, before endpoint/BO/resolver consumption. mix q passes. Final owning regressions and affected existing browser specs are being verified against this last guard; no existing test behavior changed.",
       "timestamp": "2026-11-23T18:42:46Z"
+    },
+    {
+      "text": "Final result: the complete Email/Jido/Web communication snapshot now follows Bridge -\u003e CommunicationBridge normalization, with FileSettings retaining domain validation/defaults. The optional generic selected-adapter source supplies explicit facts; installed Jido/Web sources remain absent pending zaq-h2i.4, without invented metadata, copied SMTP rules, provider consumer cases, dependency changes or new file-specific callbacks. Legacy Jido declarations, issue-1 requirements struct and persistence fixes are preserved. Original red/green/property evidence is recorded above, including contradictory facts rejection. Final mix q and 802 focused checks pass; final-source existing channel/streamed browser checks pass 15/15 across three browsers, and Storybook passes 110/110 after environment correction. Existing test assertions/scenarios are unchanged. Retaining in_progress because the required full browser gate still has the independently reproduced unchanged system-config dark/mobile overflow tracked in zaq-gyv; final UX/E2E gates remain open. No precommit, commit or push.",
+      "timestamp": "2026-11-23T18:46:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.8] Unify capability snapshot normalization across Email, Jido and Web bridges",
   "type": "task",
-  "updated_at": "2026-11-23T18:42:46Z"
+  "updated_at": "2026-11-23T18:46:27Z"
 }
