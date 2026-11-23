@@ -9,9 +9,15 @@
   "id": "zaq-h2i.3.8",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Discovery before contract changes: installed Jido.Chat.Adapter capabilities/0 and capability_matrix/1 are status-only (:native/:fallback/:unsupported); Jido.Chat.Capabilities has no structured file metadata API. Installed WebWidget.HostAdapter exposes runtime/status/installation callbacks only. Neither can currently supply file limits, transfer mode, or attachment-edit facts. Proposed smallest opt-in source prerequisite: an adapter may implement the existing generic capability_snapshot(config) envelope, returning only explicitly declared facts for the selected connection. Jido/Web bridges retain their existing transport declarations and supplement/override them with this optional source; absent sources add no file facts. The source is not a new bridge file callback and is not stuffed into the status matrix. Upstream implementations/releases stay in zaq-h2i.4; no dependency edits or pins. Reuse Bridge.capability_snapshot/2 -\u003e CommunicationBridge.normalize_capability_snapshot/2 for the entire communication snapshot, with FileSettings retaining domain limit validation/defaults and consumers unchanged. Extend existing Bridge/communication/API/component suites with original failing tests, including property invariants and exact selected-adapter/config isolation. Preserve data-source and legacy transport declarations.",
+      "timestamp": "2026-11-23T17:58:32Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.8] Unify capability snapshot normalization across Email, Jido and Web bridges",
   "type": "task",
-  "updated_at": "2026-11-23T17:58:12Z"
+  "updated_at": "2026-11-23T17:58:32Z"
 }
