@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-23T20:20:32Z",
+  "description": "Follow-up regression reported by user: opaque absolute accent hover layers cover channel card descriptions in light and dark themes. Scope: remove decorative full-card overlays from channel hub/provider cards and equivalent email navigation cards; preserve DS card hover borders, links, IDs and events. Action reuse: not applicable, presentation-only. Reproduce in real browser before applying; add a focused existing-channel UI regression check without changing existing assertions or authoring a new feature journey. Validate hover in both themes, focused LiveView/components and existing channel E2E, mix q and final mix precommit. Update screenshots and Beadwork. No commit/push.",
+  "id": "zaq-twk.4",
+  "labels": [],
+  "parent": "zaq-twk",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-twk] Fix card hover overlays obscuring text",
+  "type": "task",
+  "updated_at": "2026-11-23T20:20:32Z"
+}
