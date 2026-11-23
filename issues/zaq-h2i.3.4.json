@@ -21,11 +21,15 @@
     {
       "text": "Final UX approval must cover the shared Main/Advanced settings tab layout from zaq-h2i.3.6, including grouped streamed-update/file-delivery sections, draft preservation, inactive-tab errors and whole-form save behavior across channel and SMTP editors. Approval and consolidated E2E remain pending until this final composition is implemented and explicitly reviewed.",
       "timestamp": "2026-11-22T10:32:57Z"
+    },
+    {
+      "text": "Updated SMTP persistence-rejection UX is ready for the existing final review scope: local blank-name error selects Main, all submitted credentials/security/file drafts remain, native Toggle keyboard navigation works, and correcting only the name saves/reloads the drafts. Browser evidence: /tmp/zaq-h2i-3-7-smtp-name-error.png, /tmp/zaq-h2i-3-7-smtp-retained-advanced.png and /tmp/zaq-h2i-3-7-browser-inspection.json. Final human UX approval remains pending; no new feature E2E specs authored and no precommit run.",
+      "timestamp": "2026-11-23T18:39:36Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3] Human UX approval for file settings E2E",
   "type": "task",
-  "updated_at": "2026-11-23T17:38:59Z"
+  "updated_at": "2026-11-23T18:39:36Z"
 }
