@@ -69,11 +69,15 @@
     {
       "text": "Base-head audit requested by Jad: confirmed with git ls-remote that origin/feat/email-capabilities and the local base now point to 8afb490dc711c7f180e2cf6a907c6780df7b6ac6, one commit ahead of this worktree HEAD 19e8e7525a4bb523b56516765be2b1e8bb4ddb1d (0 feature commits / 1 base commit). New commit: feat(channels): expose web widget delivery capabilities. Eleven base files changed. Functional changes include web text/streaming/edit/typing capability reporting and widget capability UI, plus IMAP ingress mode normalized from idle to push_notification. Four files overlap current uncommitted feature changes: docs/services/channels.md, lib/zaq/channels/email_bridge.ex, test/zaq/channels/email_bridge_test.exs, test/zaq_web/live/bo/communication/notification_smtp_live_test.exs. No rebase, merge, index change, commit, push or precommit was performed; feature work remains based on the original HEAD until a requested stack update.",
       "timestamp": "2026-11-23T13:39:39Z"
+    },
+    {
+      "text": "Read-only three-way preview for the base audit: docs/services/channels.md, email_bridge.ex and email_bridge_test.exs merge cleanly. notification_smtp_live_test.exs has one textual conflict where the base updates the IMAP mode expectation adjacent to this feature’s added tests. Preview used temporary copies only; no source, index or branch modifications applied.",
+      "timestamp": "2026-11-23T13:40:07Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-23T13:39:39Z"
+  "updated_at": "2026-11-23T13:40:07Z"
 }
