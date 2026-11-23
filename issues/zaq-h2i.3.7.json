@@ -25,11 +25,15 @@
     {
       "text": "Browser validation evidence: the full npm test run completed with 543 passes, 3 skips and 47 failures. Forty-six failures were Storybook connection refusals before its required dev server was started; all 110 existing Storybook checks then passed with that environment corrected (/tmp/zaq-h2i-3-7-8-storybook.log). One additional Chromium RAG dark-theme mobile-overflow assertion failed in unchanged system_config.spec.js:315. It is being investigated in an isolated system-config rerun; no test assertion was changed. Original full-run log: /tmp/zaq-h2i-3-7-8-e2e.log.",
       "timestamp": "2026-11-23T18:29:11Z"
+    },
+    {
+      "text": "Manual browser inspection on the rebuilt source passed: blank-name rejection selects Main and exposes the local error while retaining relay, username/password, CA path, exact MB/count fields and explicit false policy. Correcting only the name saves the original drafts; browser reload retains the stored values. Native Tab/Shift-Tab focus and Space/Enter Toggle activation passed, with no page errors. Evidence: /tmp/zaq-h2i-3-7-browser-inspection.json, /tmp/zaq-h2i-3-7-smtp-name-error.png and /tmp/zaq-h2i-3-7-smtp-retained-advanced.png. Final focused checks pass 802 (6 properties, 796 tests); mix q passes. Full-browser validation still has the independently reproduced unchanged RAG/global Chromium mobile-overflow failure, tracked in existing zaq-gyv. No browser assertions were changed.",
+      "timestamp": "2026-11-23T18:39:34Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Preserve SMTP form drafts on persistence validation errors",
   "type": "bug",
-  "updated_at": "2026-11-23T18:29:11Z"
+  "updated_at": "2026-11-23T18:39:34Z"
 }
