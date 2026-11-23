@@ -19,11 +19,15 @@
     {
       "text": "Independent regressions pass: 466 checks (5 properties, 461 tests) across ChannelConfig, grouped LiveUpdateSettings/ConnectorLifecycle persistence, Engine SMTP/API, Channels API/shared normalization/requirements, and both BO LiveViews; /tmp/zaq-h2i-3-9-regressions.log. The configured adapter is exercised through real Jido -\u003e shared Bridge normalization and real NodeRouter/Event dispatch. Tests include retained/changed/omitted overrides, exact stored-row rollback, valid updates, creation, new enabled records, enablement and effective protected settings after preparation. Property checks compare acceptance with the proposed ceiling. mix q passed; existing Bridge fixture approval is still pending and those two tests remain unchanged.",
       "timestamp": "2026-11-23T19:56:01Z"
+    },
+    {
+      "text": "Final independent validation: mix q passed (/tmp/zaq-h2i-3-9-q.log); 466 focused persistence/API/LiveView checks passed, including 5 properties (/tmp/zaq-h2i-3-9-regressions.log); existing channel and streamed-update browser checks passed 15/15 across Firefox/WebKit/Chromium (/tmp/zaq-h2i-3-9-e2e.log). Initial browser bootstrap reported port 4002 eaddrinuse; a retry after verifying the port was free passed without code changes (initial log /tmp/zaq-h2i-3-9-e2e-port-failure.log). Final owning-suite run is 118/120 passing, including its property; exactly the two pre-existing Jido/Web resolver fixtures now fail creation because their missing required limits are correctly rejected (/tmp/zaq-h2i-3-9-owning.log). Their setup and all assertions remain unchanged pending explicit approval already requested. Proposed repair: create a valid neutral fixture, then seed the same historical invalid settings with a plain fixture changeset; preserve all snapshot/resolver/isolation assertions. No new feature E2E authored; final feature UX/E2E and known full-browser RAG gap remain in their existing owners. Implementation is complete, retaining in_progress for the required fixture-approval/verification gate. No precommit, commit or push.",
+      "timestamp": "2026-11-23T20:01:56Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities before saving",
   "type": "bug",
-  "updated_at": "2026-11-23T19:56:01Z"
+  "updated_at": "2026-11-23T20:01:56Z"
 }
