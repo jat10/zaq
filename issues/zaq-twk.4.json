@@ -7,9 +7,15 @@
   "id": "zaq-twk.4",
   "labels": [],
   "parent": "zaq-twk",
+  "comments": [
+    {
+      "text": "Reproduced before fixing: new focused Chromium regression fails in both light and dark modes because the hovered retrieval category description is covered. Root cause: I changed the original low-alpha decorative gradient into an opaque accent surface on an absolute full-card layer. Positioned header content remained visible, while the unpositioned description painted underneath. Removed those layers from the three hub/provider template positions and the equivalent email navigation card; preserve the existing DS card hover border/shadow and all links/events. No existing assertions changed.",
+      "timestamp": "2026-11-23T20:22:29Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-twk.4] Fix card hover overlays obscuring text",
   "type": "task",
-  "updated_at": "2026-11-23T20:21:46Z"
+  "updated_at": "2026-11-23T20:22:29Z"
 }
