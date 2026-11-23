@@ -9,7 +9,7 @@
   "parent": "zaq-twk",
   "priority": 2,
   "status": "open",
-  "title": "Migrate scoped BO channel page colors to DS semantics",
+  "title": "[zaq-twk.2] Migrate scoped BO channel page colors to DS semantics",
   "type": "task",
-  "updated_at": "2026-11-23T19:15:18Z"
+  "updated_at": "2026-11-23T19:15:19Z"
 }
