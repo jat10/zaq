@@ -22,11 +22,15 @@
     {
       "text": "Spacing follow-up zaq-twk.5 complete: consistent 16px inset between provider icon row and titles in channels_index_live.html.heex. mix q and diff checks passed; no tests added/run as requested. Latest change remains uncommitted.",
       "timestamp": "2026-11-23T20:35:33Z"
+    },
+    {
+      "text": "User explicitly authorized commit, push and PR creation on jat10/zaq. Fork main is four commits behind this checkout; user clarified that this must be a stacked PR with base feat/channel-file-settings. Preserve current fix/channel-dark-theme branch and publish only its theme/card correction diff against that parent. Final precommit gate is running on the completed spacing revision before commit/push.",
+      "timestamp": "2026-11-23T20:39:48Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-twk] Restore design-system dark theme across BO channel pages and icons",
   "type": "bug",
-  "updated_at": "2026-11-23T20:35:33Z"
+  "updated_at": "2026-11-23T20:39:48Z"
 }
