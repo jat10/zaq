@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [
     "zaq-twk.2"
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-twk",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-twk.1] Restore shared channel component and icon theming",
   "type": "task",
-  "updated_at": "2026-11-23T19:15:24Z"
+  "updated_at": "2026-11-23T19:15:27Z"
 }
