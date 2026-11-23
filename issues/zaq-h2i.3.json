@@ -73,11 +73,15 @@
     {
       "text": "Read-only three-way preview for the base audit: docs/services/channels.md, email_bridge.ex and email_bridge_test.exs merge cleanly. notification_smtp_live_test.exs has one textual conflict where the base updates the IMAP mode expectation adjacent to this feature’s added tests. Preview used temporary copies only; no source, index or branch modifications applied.",
       "timestamp": "2026-11-23T13:40:07Z"
+    },
+    {
+      "text": "Jad explicitly authorized rebasing feat/channel-file-settings onto the updated feat/email-capabilities head after the base audit, including the disclosed IMAP idle -\u003e push_notification expectation change and single SMTP test conflict. Plan: create an external recovery snapshot of all tracked/untracked feature edits and verify original index state, rebase with autostash onto verified 8afb490dc, preserve every feature addition while adopting the new base expectation, restore all feature edits as unstaged, then run mix q and relevant base/capability/persistence/BO regression suites. No feature commit, push, or precommit authorized. This is stack synchronization, not a new capability design or test weakening; preserve issue 1 declarations, consolidated resolver, Toggle UI, and reviewed persistence fixes.",
+      "timestamp": "2026-11-23T13:43:42Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-23T13:40:07Z"
+  "updated_at": "2026-11-23T13:43:42Z"
 }
