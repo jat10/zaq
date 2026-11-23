@@ -11,11 +11,15 @@
     {
       "text": "Scope clarification from Jad: PR 2 must include dynamic Jido adapter metadata projection into the existing capability snapshot. That implementation is tracked in zaq-h2i.3.8. This issue retains upstream adapter metadata declarations/published dependency work; its earlier wording must not defer the ZAQ bridge path beyond PR 2. Shared normalization remains in CommunicationBridge, without a second bridge callback or changes to the status-only capability matrix.",
       "timestamp": "2026-11-23T17:39:00Z"
+    },
+    {
+      "text": "zaq-h2i.3.8 discovery confirmed the installed Jido API is a status-only matrix, and installed WebWidget.HostAdapter has no structured capability source. ZAQ now supports the smallest generic opt-in source prerequisite: adapter capability_snapshot(selected_config) -\u003e {:ok, partial_snapshot} | {:error, reason}; optional resolved/file_delivery sections feed the existing shared communication normalization path. Contract-compatible test adapters prove dynamic facts and identity isolation. Existing installed adapters contribute no invented file metadata. This follow-up still owns review, implementation and publication of upstream sources plus any separately approved pin changes; no dependency or ignored adapter was changed in .3.8.",
+      "timestamp": "2026-11-23T18:21:51Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i] Supply adapter file metadata before delivery integration",
   "type": "task",
-  "updated_at": "2026-11-23T17:39:00Z"
+  "updated_at": "2026-11-23T18:21:51Z"
 }
