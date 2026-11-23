@@ -7,9 +7,15 @@
   "id": "zaq-twk.5",
   "labels": [],
   "parent": "zaq-twk",
+  "comments": [
+    {
+      "text": "Added pt-4 (16px) to the provider-card body, separating each title from its icon/header row, including Mattermost and all retrieval/data-source provider cards. Existing category-card layout and shared CardShell remain unchanged. mix q and git diff --check pass. No tests authored or run, and no test-running precommit rerun for this spacing-only correction, per the user instruction. No commit/push.",
+      "timestamp": "2026-11-23T20:35:30Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-twk.5] Add spacing between provider icons and titles",
   "type": "task",
-  "updated_at": "2026-11-23T20:34:43Z"
+  "updated_at": "2026-11-23T20:35:30Z"
 }
