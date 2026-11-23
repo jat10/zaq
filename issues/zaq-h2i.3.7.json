@@ -13,11 +13,15 @@
     {
       "text": "Discovery/reuse plan: real SMTP save flow is BO EmailConfig -\u003e existing confidential email_connector_settings Event/SaveEmailConnector -\u003e EmailConnectorSettings.persist -\u003e ChannelConfig Repo insert_or_update -\u003e smtp_persistence_result. Non-file persistence errors currently return ChannelConfig changesets; BO then renders the wrong schema. Extend the existing error projector to retain the submitted EmailConfig changeset, map name errors to connector_name, keep file-local error projection, and map otherwise unrenderable persistence errors to a form-level error. Phoenix.Ecto form data supports fields present in params/errors without adding a schema field, so preserve the embedded schema. BO should retain the submitted changeset before persistence so stale/archived/encryption failures also retain drafts, and render the name error in the existing field. No new Action/endpoint or authorization/encryption/atomicity changes. Original TDD in existing Engine and SMTP LiveView suites, reusing smtp_params/tabbed_smtp_params and connector fixtures: new/existing blank name, correct typed form and all drafts/errors, DB unchanged, corrected resubmission, and representative archived-selection rejection. Preserve all existing assertions and file-error cases. No commit/push/precommit.",
       "timestamp": "2026-11-23T17:47:33Z"
+    },
+    {
+      "text": "TDD evidence: /tmp/zaq-h2i-3-7-red.log captured five original failures at Engine/LiveView persistence boundaries. The implementation retains EmailConfig drafts for persistence errors, projects connection-name errors to connector_name, and retains submitted drafts on archived-selection rejection. /tmp/zaq-h2i-3-7-green.log: 67 passing checks (1 property, 66 tests), including database reload and correction/resubmit assertions. mix q passed (/tmp/zaq-h2i-3-7-q.log). Existing browser checks remain for final validation; no precommit, commit, or push run.",
+      "timestamp": "2026-11-23T17:58:10Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Preserve SMTP form drafts on persistence validation errors",
   "type": "bug",
-  "updated_at": "2026-11-23T17:47:33Z"
+  "updated_at": "2026-11-23T17:58:10Z"
 }
