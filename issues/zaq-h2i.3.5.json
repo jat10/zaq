@@ -9,9 +9,15 @@
   "id": "zaq-h2i.3.5",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Retain the existing finalization gate. Add SMTP persistence-rejection review to the consolidated journey: clear the configuration name with novalidate, keep relay/credentials/security/file drafts, show the name error on Main, navigate Advanced, then correct only the name and save/reload all original drafts. The zaq-h2i.3.8 normalization and optional adapter-source paths are covered now at existing integration/property/LiveView boundaries; installed metadata sources remain an upstream zaq-h2i.4 prerequisite. No new feature E2E specs were authored during these implementation issues; required existing E2E execution is running.",
+      "timestamp": "2026-11-23T18:21:50Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3] Validate consolidated file settings browser journey",
   "type": "task",
-  "updated_at": "2026-11-22T11:08:00Z"
+  "updated_at": "2026-11-23T18:21:50Z"
 }
