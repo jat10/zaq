@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-23T20:34:41Z",
@@ -8,8 +8,8 @@
   "labels": [],
   "parent": "zaq-twk",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-twk.5] Add spacing between provider icons and titles",
   "type": "task",
-  "updated_at": "2026-11-23T20:34:42Z"
+  "updated_at": "2026-11-23T20:34:43Z"
 }
