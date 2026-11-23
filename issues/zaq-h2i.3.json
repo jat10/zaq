@@ -77,11 +77,15 @@
     {
       "text": "Jad explicitly authorized rebasing feat/channel-file-settings onto the updated feat/email-capabilities head after the base audit, including the disclosed IMAP idle -\u003e push_notification expectation change and single SMTP test conflict. Plan: create an external recovery snapshot of all tracked/untracked feature edits and verify original index state, rebase with autostash onto verified 8afb490dc, preserve every feature addition while adopting the new base expectation, restore all feature edits as unstaged, then run mix q and relevant base/capability/persistence/BO regression suites. No feature commit, push, or precommit authorized. This is stack synchronization, not a new capability design or test weakening; preserve issue 1 declarations, consolidated resolver, Toggle UI, and reviewed persistence fixes.",
       "timestamp": "2026-11-23T13:43:42Z"
+    },
+    {
+      "text": "Rebase applied: feat/channel-file-settings HEAD now equals verified local/remote feat/email-capabilities at 8afb490dc711c7f180e2cf6a907c6780df7b6ac6. git rebase --autostash fast-forwarded the branch (there were no feature commits), preserving uncommitted work. Resolved its single autostash conflict in notification_smtp_live_test.exs by retaining every added file-settings test and adopting the approved base IMAP push_notification expectation. Restored the original empty index; all feature edits remain unstaged/untracked. Recovery snapshot /tmp/zaq-h2i-3-before-rebase-6djwjro2 includes all 34 feature files, binary diff and SHA256 manifest. Integrity audit: no missing files, 30 unchanged byte-for-byte; the only 4 modified files are the expected base overlaps. Conflict test file equals the original backup with exactly the base mode replacement. No unmerged entries and git diff --check passes. mix q passed /tmp/zaq-h2i-3-rebase-q.log; integrated capability/widget/feature/persistence regression run underway. No feature commit, push or mix precommit.",
+      "timestamp": "2026-11-23T13:47:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-23T13:47:30Z"
+  "updated_at": "2026-11-23T13:47:32Z"
 }
