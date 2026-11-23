@@ -21,11 +21,15 @@
     {
       "text": "Final visual review includes sent/failed/skipped notification detail dialogs, Clear Channel confirmation (cancelled), and Test Connection (opened and closed without sending). Added accessible label to the notification detail close control and corrected undefined zaq-control classes on SMTP/IMAP configuration-name inputs to the existing zaq-control-text primitive. Local fixture records only; no notifications sent. Full evidence gallery: /tmp/zaq-twk-evidence/index.html. First precommit is still running with only the five identified Python environment failures so far; linked environment contains all converter dependencies.",
       "timestamp": "2026-11-23T19:54:46Z"
+    },
+    {
+      "text": "Python prerequisite resolution verified: 174 converter plus final SMTP/IMAP/log tests pass, including all five former gate failures. Initial gate completed 12,355/12,360 passing, 1 existing skip and 167 exclusions; its only five failures were the absent local Python environment. Final mix precommit rerun is now in progress with 900000 ms process timeout and persisted status/log files; preview servers stopped to avoid unnecessary DB connections. Final code screenshots cover 50 page/dialog observations with no JS errors or audited custom-text contrast failures.",
+      "timestamp": "2026-11-23T19:59:11Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-twk.3] Verify channel themes, Storybook and final validation",
   "type": "task",
-  "updated_at": "2026-11-23T19:54:46Z"
+  "updated_at": "2026-11-23T19:59:11Z"
 }
