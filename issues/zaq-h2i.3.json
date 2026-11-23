@@ -65,11 +65,15 @@
     {
       "text": "Resolver consolidation completed per Jad’s explicit request to keep the logic in TransportRequirements. Canonical API is now Zaq.Channels.TransportRequirements.resolve(snapshot, selected_connection); separate resolver source/test modules removed, with all original resolver helpers/cases/ceiling property moved mechanically into the existing TransportRequirementsTest suite. No production callers existed; updated the service-guide reference and test receiver. Struct declaration/defaults/enforced keys/types are unchanged (verified exact declaration text excluding boundary padding); every original struct-test line is unchanged, and all moved resolver assertions/property/helpers match their prior text after receiver substitution. Added only pure resolve/derive/build functions and ownership documentation to the original module. Baseline 15 checks passed; moved tests established expected red (7 resolver tests + 1 property undefined on the requested owner while 7 struct tests stayed green), then all 15 passed after the move. Logs: /tmp/zaq-h2i-3-resolver-baseline.log, -red.log, -green.log. mix q passed /tmp/zaq-h2i-3-resolver-q.log. Relevant regression suite passed 412 checks (6 properties, 406 tests), /tmp/zaq-h2i-3-resolver-regression.log. git diff --check passed and no stale old-module references remain in lib/test/docs. No adapter, capability interpretation, persisted-state, BO/UI, authorization, lookup/planning/sending or dependency changes. Existing E2E not repeated for this pure module move; prior UI/browser evidence and final UX/new-feature E2E gates remain unchanged. No mix precommit, staging, commit or push.",
       "timestamp": "2026-11-23T08:28:39Z"
+    },
+    {
+      "text": "Base-head audit requested by Jad: confirmed with git ls-remote that origin/feat/email-capabilities and the local base now point to 8afb490dc711c7f180e2cf6a907c6780df7b6ac6, one commit ahead of this worktree HEAD 19e8e7525a4bb523b56516765be2b1e8bb4ddb1d (0 feature commits / 1 base commit). New commit: feat(channels): expose web widget delivery capabilities. Eleven base files changed. Functional changes include web text/streaming/edit/typing capability reporting and widget capability UI, plus IMAP ingress mode normalized from idle to push_notification. Four files overlap current uncommitted feature changes: docs/services/channels.md, lib/zaq/channels/email_bridge.ex, test/zaq/channels/email_bridge_test.exs, test/zaq_web/live/bo/communication/notification_smtp_live_test.exs. No rebase, merge, index change, commit, push or precommit was performed; feature work remains based on the original HEAD until a requested stack update.",
+      "timestamp": "2026-11-23T13:39:39Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-23T08:28:39Z"
+  "updated_at": "2026-11-23T13:39:39Z"
 }
