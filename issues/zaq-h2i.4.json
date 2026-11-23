@@ -7,9 +7,15 @@
   "id": "zaq-h2i.4",
   "labels": [],
   "parent": "zaq-h2i",
+  "comments": [
+    {
+      "text": "Scope clarification from Jad: PR 2 must include dynamic Jido adapter metadata projection into the existing capability snapshot. That implementation is tracked in zaq-h2i.3.8. This issue retains upstream adapter metadata declarations/published dependency work; its earlier wording must not defer the ZAQ bridge path beyond PR 2. Shared normalization remains in CommunicationBridge, without a second bridge callback or changes to the status-only capability matrix.",
+      "timestamp": "2026-11-23T17:39:00Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i] Supply adapter file metadata before delivery integration",
   "type": "task",
-  "updated_at": "2026-11-22T01:15:18Z"
+  "updated_at": "2026-11-23T17:39:00Z"
 }
