@@ -11,9 +11,15 @@
   "id": "zaq-twk.2",
   "labels": [],
   "parent": "zaq-twk",
+  "comments": [
+    {
+      "text": "Browser cascade audit found that CardShell caller inline default borders override the DS hover border; removed those overrides and reused the shell border contract. Also found the existing native select background SVG remains black in dark mode. Added an opt-in form.css native-chevron modifier, scoped to migrated native selects; this preserves the same native control, values, events and disabled options while allowing the browser to render a contrasting arrow via color-scheme. No global token or button CSS changes.",
+      "timestamp": "2026-11-23T19:32:28Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-twk.2] Migrate scoped BO channel page colors to DS semantics",
   "type": "task",
-  "updated_at": "2026-11-23T19:26:18Z"
+  "updated_at": "2026-11-23T19:32:28Z"
 }
