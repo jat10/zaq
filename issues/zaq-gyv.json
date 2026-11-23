@@ -6,9 +6,15 @@
   "description": "Observed during People permissions PR1 (zaq-6pa) browser validation at 390x844: existing shared BOLayout header controls overflow document width, including on People tab without matrix. Permissions matrix stays inside viewport and adds no overflow; collapsed sidebar leaves \u003e200px scroller. Follow-up should design/approve responsive shared header and test all BO routes, rather than a People-specific shell override. Screenshots under test/e2e/test-results/people-People-permissions--0202f-yboard-and-mobile-scrolling-journeys-chromium/. No implementation in PR1.",
   "id": "zaq-gyv",
   "labels": [],
+  "comments": [
+    {
+      "text": "Additional reproduction during zaq-h2i.3.7/.3.8 validation: full existing E2E suite and a separate Chromium system_config.spec.js run both fail the dark-theme 390px global-model layout assertion at line 315 (document overflow expected false, received true). The owning RAG UI, BO shell, styles and browser spec have no changes from the starting feature HEAD. Isolated suite: 56 passed, 1 failed, /tmp/zaq-h2i-3-7-8-system-config.log. Preserved screenshot, trace, video and error context: /tmp/zaq-h2i-rag-overflow-evidence/. No assertions, fixtures, or unrelated layout code changed. Keep responsive shared-shell investigation/approval in this existing owner.",
+      "timestamp": "2026-11-23T18:38:41Z"
+    }
+  ],
   "priority": 3,
   "status": "open",
   "title": "[zaq-gyv] Fix shared BO header mobile overflow",
   "type": "bug",
-  "updated_at": "2026-09-12T14:28:40Z"
+  "updated_at": "2026-11-23T18:38:41Z"
 }
