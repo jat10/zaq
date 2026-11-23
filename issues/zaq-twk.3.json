@@ -4,6 +4,7 @@
     "zaq-twk.2"
   ],
   "blocks": [],
+  "closed_at": "2026-11-23T20:05:42Z",
   "created": "2026-11-23T19:15:21Z",
   "description": "Action reuse assessment: not applicable; presentation-only color/typography changes, no executable operation, authorization, dispatch or persistence changes. Reuse current DS CSS/components and BOModal. Preserve IDs, events, field names, values, slots and conditions. No mocks or new feature E2E journeys needed; run existing tests and browser inspections. Existing test behavior remains unchanged. Documentation: no standards/domain behavior change; update Beadwork evidence and relevant Storybook previews. Functional scope: update existing Storybook previews for both themes and all icons/surfaces. Validation: screenshots for real routes and shared previews in light/dark, inspect computed cascade, focus/hover/disabled/selected/feedback, run existing channels E2E plus required suite where applicable, mix q, focused tests and final mix precommit. Record environmental blockers; no commit/push. Coverage handoff only after review approval; no new feature journeys are warranted by this presentation correction.",
   "id": "zaq-twk.3",
@@ -32,8 +33,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-twk.3] Verify channel themes, Storybook and final validation",
   "type": "task",
-  "updated_at": "2026-11-23T20:05:39Z"
+  "updated_at": "2026-11-23T20:05:42Z"
 }
