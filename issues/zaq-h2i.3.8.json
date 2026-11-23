@@ -21,11 +21,15 @@
     {
       "text": "Final review caught an unrelated-compatibility risk: opaque legacy Jido edit declarations were being marked unsupported by stricter common status detection. A new original real-Bridge regression failed first (/tmp/zaq-h2i-3-8-legacy-red.log); the shared normalizer now preserves that legacy resolved meaning while explicit unsupported/unresolved/not_applicable remain unavailable. FileSettings still requires native/fallback/boolean file support, so opaque statuses and metadata cannot enable sending. Final focused checks now pass 802 (6 properties, 796 tests), /tmp/zaq-h2i-3-7-8-regressions-final.log, and mix q passes. No old assertions or scenarios changed. Remaining full-browser gap: unchanged Chromium RAG/global mobile overflow reproduced separately (56 passes, 1 failure), tracked with preserved artifacts in existing zaq-gyv. Storybook environment corrected and all 110 smoke checks pass.",
       "timestamp": "2026-11-23T18:39:08Z"
+    },
+    {
+      "text": "Additional TDD malformed-envelope check: declaring file native while simultaneously listing it unsupported exposed divergent consumer facts (/tmp/zaq-h2i-3-8-conflict-red.log). Shared normalization now rejects that contradiction as invalid_capability_snapshot, alongside conflicting status aliases, before endpoint/BO/resolver consumption. mix q passes. Final owning regressions and affected existing browser specs are being verified against this last guard; no existing test behavior changed.",
+      "timestamp": "2026-11-23T18:42:46Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.8] Unify capability snapshot normalization across Email, Jido and Web bridges",
   "type": "task",
-  "updated_at": "2026-11-23T18:39:08Z"
+  "updated_at": "2026-11-23T18:42:46Z"
 }
