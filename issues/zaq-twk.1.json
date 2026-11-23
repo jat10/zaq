@@ -9,9 +9,15 @@
   "id": "zaq-twk.1",
   "labels": [],
   "parent": "zaq-twk",
+  "comments": [
+    {
+      "text": "Shared changes implemented; mix q passes. Focused suite reports 5 ChannelCapabilities failures; investigating exact assertions before proceeding. No test expectations have been changed.",
+      "timestamp": "2026-11-23T19:19:00Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-twk.1] Restore shared channel component and icon theming",
   "type": "task",
-  "updated_at": "2026-11-23T19:15:27Z"
+  "updated_at": "2026-11-23T19:19:00Z"
 }
