@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-23T19:41:50Z",
+  "description": "Fix the PR 2 channel-level save boundary: validate the effective proposed configuration against normalized adapter capabilities derived from that same proposed configuration, without unchanged-file shortcuts or stored-connection reloads. Include creation, updates and enablement; keep NodeRouter/Event, shared normalization/FileSettings validation, existing omission/clearing semantics and unsupported-transport behavior. Original TDD persistence regressions must reject 5 MB -\u003e 1 MB ceiling changes retaining a 4 MB override or changing it to 2 MB, with actionable field errors and unchanged database state. Cover valid updates, new connections and enablement requiring unresolved limits in existing suites. Preserve prior uncommitted work. Run focused regressions and mix q; no precommit, commit or push.",
+  "id": "zaq-h2i.3.9",
+  "labels": [],
+  "parent": "zaq-h2i.3",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-h2i.3] Validate proposed connection capabilities before saving",
+  "type": "bug",
+  "updated_at": "2026-11-23T19:41:50Z"
+}
