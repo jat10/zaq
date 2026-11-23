@@ -29,11 +29,15 @@
     {
       "text": "Manual browser inspection on the rebuilt source passed: blank-name rejection selects Main and exposes the local error while retaining relay, username/password, CA path, exact MB/count fields and explicit false policy. Correcting only the name saves the original drafts; browser reload retains the stored values. Native Tab/Shift-Tab focus and Space/Enter Toggle activation passed, with no page errors. Evidence: /tmp/zaq-h2i-3-7-browser-inspection.json, /tmp/zaq-h2i-3-7-smtp-name-error.png and /tmp/zaq-h2i-3-7-smtp-retained-advanced.png. Final focused checks pass 802 (6 properties, 796 tests); mix q passes. Full-browser validation still has the independently reproduced unchanged RAG/global Chromium mobile-overflow failure, tracked in existing zaq-gyv. No browser assertions were changed.",
       "timestamp": "2026-11-23T18:39:34Z"
+    },
+    {
+      "text": "Final result: SMTP draft-preservation implementation is complete. Original failure evidence, returned typed-form assertions, database reload/no-change assertions, correction/resubmit coverage and archived-selection rejection are recorded above. Final checks: mix q passed; 802 focused checks passed (6 properties, 796 tests), /tmp/zaq-h2i-3-7-8-regressions-final.log; 15 existing channel/streamed-update browser checks passed across Firefox/WebKit/Chromium, /tmp/zaq-h2i-3-7-8-channels-final.log; 110 Storybook checks passed after starting its required server. Final-source manual SMTP inspection and all native keyboard/draft/reload checks passed with no page errors, /tmp/zaq-h2i-3-7-browser-inspection.json. Required full E2E is not green: unchanged Chromium system-config dark/mobile overflow reproduced in its owning suite (56 pass, 1 failure), now recorded with artifacts in existing zaq-gyv. Retaining in_progress for that validation gap; final feature UX/E2E gates remain zaq-h2i.3.4/.3.5. No existing test behavior changed; no precommit, commit or push.",
+      "timestamp": "2026-11-23T18:46:25Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Preserve SMTP form drafts on persistence validation errors",
   "type": "bug",
-  "updated_at": "2026-11-23T18:39:34Z"
+  "updated_at": "2026-11-23T18:46:25Z"
 }
