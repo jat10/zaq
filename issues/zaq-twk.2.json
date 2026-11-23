@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-23T19:15:18Z",
+  "description": "Action reuse assessment: not applicable; presentation-only color/typography changes, no executable operation, authorization, dispatch or persistence changes. Reuse current DS CSS/components and BOModal. Preserve IDs, events, field names, values, slots and conditions. No mocks or new feature E2E journeys needed; run existing tests and browser inspections. Existing test behavior remains unchanged. Documentation: no standards/domain behavior change; update Beadwork evidence and relevant Storybook previews. Functional scope: channel hub/provider/configuration, data-source provider, email navigation, SMTP, IMAP and delivery logs templates. Preserve all LiveView handlers. Tests: existing affected LiveView suites covering lists, forms, dialogs, errors; browser light/dark render and LiveView patch checks. Verify mix q and focused suites.",
+  "id": "zaq-twk.2",
+  "labels": [],
+  "parent": "zaq-twk",
+  "priority": 2,
+  "status": "open",
+  "title": "Migrate scoped BO channel page colors to DS semantics",
+  "type": "task",
+  "updated_at": "2026-11-23T19:15:18Z"
+}
