@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-23T20:34:41Z",
+  "description": "User follow-up: provider titles such as Mattermost sit directly against the icon row. Add a consistent 16px top inset to the provider-card body in the channels index template; keep shared CardShell and behavior unchanged. Action reuse: not applicable, layout-only. User explicitly says no test is needed for this small spacing correction; do not add or run tests. Verify formatting/compilation via mix q and inspect the scoped diff. No commit/push.",
+  "id": "zaq-twk.5",
+  "labels": [],
+  "parent": "zaq-twk",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-twk] Add spacing between provider icons and titles",
+  "type": "task",
+  "updated_at": "2026-11-23T20:34:41Z"
+}
