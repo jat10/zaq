@@ -17,11 +17,15 @@
     {
       "text": "Full npm test reporter completed: 590 passed, 3 existing skips, no failures (15.4m); Context Mode RPC transport timed out before returning, but persisted reporter completion was verified. Final-build channel specs pass 9/9 across Firefox/WebKit/Chromium. Refreshed 40 page/theme/dialog observations report no low-contrast custom text findings (gradient-painted DS primary controls excluded from this scalar text audit) and no JS errors. Monochrome icon contrast: light 7.79:1 normal / 6.32:1 preview; dark 8.55:1 normal / 6.66:1 preview. First precommit currently has five missing-venv converter failures. Reused existing populated main-checkout Python environment via ignored worktree .venv symlink; no software installed or shared environment modified. Will validate failed cases and rerun final gate.",
       "timestamp": "2026-11-23T19:49:19Z"
+    },
+    {
+      "text": "Final visual review includes sent/failed/skipped notification detail dialogs, Clear Channel confirmation (cancelled), and Test Connection (opened and closed without sending). Added accessible label to the notification detail close control and corrected undefined zaq-control classes on SMTP/IMAP configuration-name inputs to the existing zaq-control-text primitive. Local fixture records only; no notifications sent. Full evidence gallery: /tmp/zaq-twk-evidence/index.html. First precommit is still running with only the five identified Python environment failures so far; linked environment contains all converter dependencies.",
+      "timestamp": "2026-11-23T19:54:46Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-twk.3] Verify channel themes, Storybook and final validation",
   "type": "task",
-  "updated_at": "2026-11-23T19:49:19Z"
+  "updated_at": "2026-11-23T19:54:46Z"
 }
