@@ -9,7 +9,7 @@
   "parent": "zaq-vfx",
   "priority": 3,
   "status": "open",
-  "title": "Reuse the widget settings capability snapshot during mount",
+  "title": "[zaq-vfx.3] [PR #956 point 3] Reuse the widget settings capability snapshot during mount",
   "type": "task",
-  "updated_at": "2026-11-24T18:41:29Z"
+  "updated_at": "2026-11-24T18:41:30Z"
 }
