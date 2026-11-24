@@ -13,11 +13,15 @@
     {
       "text": "Live source/callers verified: WidgetConnectorSettings.snapshot already queries Channels; adapter_available is the only other adapter_capabilities caller. ManageWidgetConnector authenticates BO actor and wraps the result transparently. Extend the existing allowlisted snapshot with capabilities: {:ok, normalized_snapshot} | {:error, reason}; derive unchanged adapter result from it. Widget consumes that result without a second mount query. Regression tests reproduced duplicate disconnected mount queries and dropped metadata. Lookup counts use existing Erlang tracing infrastructure because confidential widget events are intentionally excluded from PubSub; no internal stub or production hook added.",
       "timestamp": "2026-11-24T18:48:31Z"
+    },
+    {
+      "text": "Additional live finding: connected apply_snapshot launched refresh_health, which immediately reloaded settings and caused a second capability query. Reuse the initial snapshot in that health refresh; scheduled/manual refreshes still fetch current settings. Count regression now passes for disconnected/connected mounts and reload with zero/two connectors. Engine failure preserves the error while loading settings; availability map and enablement tests unchanged. Initial quality check caught nesting; extracted the existing settings read into a private helper. Final issue-level revalidation in progress.",
+      "timestamp": "2026-11-24T18:51:57Z"
     }
   ],
   "priority": 3,
   "status": "in_progress",
   "title": "[zaq-vfx.3] [PR #956 point 3] Reuse the widget settings capability snapshot during mount",
   "type": "task",
-  "updated_at": "2026-11-24T18:48:31Z"
+  "updated_at": "2026-11-24T18:51:57Z"
 }
