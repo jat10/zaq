@@ -7,9 +7,15 @@
   "id": "zaq-vfx.4",
   "labels": [],
   "parent": "zaq-vfx",
+  "comments": [
+    {
+      "text": "Verified live EmailBridge callback, existing email bridge tests (passed in 315-check run) and Channels guide: SMTP none, IMAP imap_idle. GitHub connector update was denied (403 Resource not accessible by integration); used authorized local gh pr edit with an exact body file. Replaced only the IMAP mode token push_notification with imap_idle in the latest body. Connector read-back exactly matches the expected single substitution; SMTP, unrelated content, validation caveats and head remain intact. No review replies or thread resolution. Action reuse not applicable: metadata only.",
+      "timestamp": "2026-11-24T19:00:19Z"
+    }
+  ],
   "priority": 3,
   "status": "in_progress",
   "title": "[zaq-vfx.4] [PR #956 point 4] Correct the IMAP capability mode in PR 956 description",
   "type": "task",
-  "updated_at": "2026-11-24T18:59:27Z"
+  "updated_at": "2026-11-24T19:00:19Z"
 }
