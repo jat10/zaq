@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-24T10:59:56Z",
+  "description": "Change EmailBridge.capability_snapshot/1 IMAP mode from push_notification to imap_idle and align bridge, API, component, LiveView assertions and service documentation. User explicitly requested the mode change and its tests in this session; that authorizes these expectation changes. Action reuse assessment: reuse the existing EmailBridge capability_snapshot/1 and Channels channel_capability_snapshot event; no new executable operation, Action or tool exposure. Existing inputs, unsupported errors, SMTP none mode, permissions and runtime lifecycle remain unchanged. Verification: mix q, four affected test files, final mix precommit. Property testing not applicable to a fixed mode literal; existing property tests remain intact. No feature E2E or numerical coverage phase needed for this focused contract correction.",
+  "id": "zaq-rf2",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Report imap_idle for email IMAP capabilities",
+  "type": "task",
+  "updated_at": "2026-11-24T10:59:56Z"
+}
