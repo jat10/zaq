@@ -21,11 +21,15 @@
     {
       "text": "Diff review: error flag is optional/backward-compatible; existing component callers and Storybook keep prior behavior; no authorization, adapter flags or delivery path changes. Engine/Channels guides updated. Smaller component/LiveView tests reproduce the full failure/recovery lifecycle; no new browser E2E authored. Existing E2E applicability check in progress because workflow lists SMTP settings under execution triggers.",
       "timestamp": "2026-11-24T18:57:58Z"
+    },
+    {
+      "text": "Final isolated cross-boundary regression run: 315 passed (3 properties, 312 tests) across ten bridge, Engine, component and LiveView files. mix q passed on final code; git diff --check clean. Existing system_config/channels Chromium E2E execution attempted through Context Mode but blocked before launch: test/e2e/node_modules/.bin/playwright is missing (exit 127). No dependencies installed or browser tests authored. Keep this issue in_progress for remaining validation; implementation is complete. mix precommit remains stopped by user instruction; coverage awaits review approval.",
+      "timestamp": "2026-11-24T18:59:25Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-vfx.2] [PR #956 point 2] Show capability lookup failures and retry when the modal reopens",
   "type": "bug",
-  "updated_at": "2026-11-24T18:57:58Z"
+  "updated_at": "2026-11-24T18:59:25Z"
 }
