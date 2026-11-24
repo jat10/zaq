@@ -2,6 +2,7 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-24T19:32:37Z",
   "created": "2026-11-24T19:25:41Z",
   "description": "User authorized adding the broader gap identified in zaq-vfx. Implement in ChannelsLive and channels_live.html.heex; cover Mattermost and other providers through their shared route.\nFunctional specification: retain explicit failure state at mount; error? drives existing ChannelCapabilities modal; open retries only after failure; successful snapshots including empty remain cached. Preserve request provider/config selection semantics and all unrelated socket state.\nTests before implementation: new synchronous ConnCase coverage for Mattermost, Discord and Telegram mount failure, repeated failure, recovery, cached reopening and draft preservation; add callback property coverage for successful snapshot caching without needing a provider lookup. Use existing ChannelCapabilityFixtures missing-bridge fixture and real Event/NodeRouter/Bridge boundary; no new production injection.\nBranches: failure/error/exception, recovery, successful cache. New tests only; existing assertions/scenarios remain unchanged.\nDocumentation: update docs/services/channels.md shared capability-modal contract after both page fixes.\nAction reuse assessment: reuse Channels.Api :channel_capability_snapshot, Bridge normalization and ChannelCapabilities.icon_with_modal; extend private LiveView loader/state. Existing backend query already owns provider contracts, so no new Action/tool. Read-only retries, existing provider argument and trusted service boundaries unchanged.\nModule context: ChannelsLive is BO provider configuration orchestration; socket owns ephemeral snapshot/error/modal state. Dispatch owns query execution; Bridge owns normalized data. Risk is retry accidentally refreshing entire forms or changing provider scope. No new public API or persisted state.\nValidation: mix q plus isolated new tests and existing ChannelsLive tests; subsequent combined suite. New browser specs unnecessary: LiveView regression exercises server event/render path. Existing E2E currently blocked by missing Playwright. mix precommit stays stopped per user instruction; final coverage gate remains on epic.",
   "id": "zaq-vfx.5",
@@ -18,8 +19,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-vfx.5] Extend capability recovery to generic communication channels",
   "type": "bug",
-  "updated_at": "2026-11-24T19:32:35Z"
+  "updated_at": "2026-11-24T19:32:37Z"
 }
