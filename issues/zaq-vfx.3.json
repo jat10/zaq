@@ -17,11 +17,15 @@
     {
       "text": "Additional live finding: connected apply_snapshot launched refresh_health, which immediately reloaded settings and caused a second capability query. Reuse the initial snapshot in that health refresh; scheduled/manual refreshes still fetch current settings. Count regression now passes for disconnected/connected mounts and reload with zero/two connectors. Engine failure preserves the error while loading settings; availability map and enablement tests unchanged. Initial quality check caught nesting; extracted the existing settings read into a private helper. Final issue-level revalidation in progress.",
       "timestamp": "2026-11-24T18:51:57Z"
+    },
+    {
+      "text": "Issue-level validation passed: mix q clean after local lint fixes; isolated Engine settings, unchanged coverage contracts and widget LiveView tests passed (latest run 52 checks including 1 property). Existing test assertions/scenarios were not edited. Snapshot, availability and display share a lookup, and initial async health refresh reuses it. Implementation prerequisite for zaq-vfx.2 is satisfied; epic retains pending final validation/coverage gates.",
+      "timestamp": "2026-11-24T18:53:44Z"
     }
   ],
   "priority": 3,
   "status": "in_progress",
   "title": "[zaq-vfx.3] [PR #956 point 3] Reuse the widget settings capability snapshot during mount",
   "type": "task",
-  "updated_at": "2026-11-24T18:51:57Z"
+  "updated_at": "2026-11-24T18:53:44Z"
 }
