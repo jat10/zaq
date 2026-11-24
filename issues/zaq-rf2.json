@@ -14,11 +14,15 @@
     {
       "text": "Final precommit cannot pass in this environment: genuine XLSX/PPTX/PDF/DOCX ingestion tests fail because markitdown dependencies are missing; ImageDedupCrawlerTest also requires the absent project .venv/bin/python3 (Runner falls back to python3). Database sandbox ownership errors also appeared in the broader run. These are outside the fixed IMAP capability contract. No dependency installation or unrelated assertion changes performed. Targeted 266 tests and mix q passed; working tree remains uncommitted.",
       "timestamp": "2026-11-24T11:06:59Z"
+    },
+    {
+      "text": "Context Mode final precommit call also hit its 300-second transport timeout despite the requested 900000 ms execution timeout. Terminated the remaining precommit process after recording the five missing-Python-environment failures. Final gate is blocked; do not claim it passed. Implementation and targeted validation are complete.",
+      "timestamp": "2026-11-24T11:07:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Report imap_idle for email IMAP capabilities",
   "type": "task",
-  "updated_at": "2026-11-24T11:06:59Z"
+  "updated_at": "2026-11-24T11:07:12Z"
 }
