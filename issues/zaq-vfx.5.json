@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-24T19:25:41Z",
@@ -8,8 +8,8 @@
   "labels": [],
   "parent": "zaq-vfx",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-vfx.5] Extend capability recovery to generic communication channels",
   "type": "bug",
-  "updated_at": "2026-11-24T19:25:43Z"
+  "updated_at": "2026-11-24T19:26:15Z"
 }
