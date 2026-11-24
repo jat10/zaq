@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-24T18:41:31Z",
+  "description": "Review point 4 (Low): https://github.com/www-zaq-ai/zaq/pull/956#pullrequestreview-6044879193\n\nFunctional specification: Correct the PR #956 description's IMAP ingress mode from push_notification to imap_idle. Preserve the SMTP none mode and unrelated description/validation content. This is a GitHub PR metadata correction, not a code change.\n\nEvidence: Serena verified lib/zaq/channels/email_bridge.ex capability_snapshot/1 returns mode \"imap_idle\" for email:imap. test/zaq/channels/email_bridge_test.exs asserts that exact value. docs/services/channels.md Email Bridge section agrees. The fetched PR description still says push_notification.\n\nTests to add before implementation: None; no application behavior changes. Before editing, fetch the latest PR body and verify code/tests/service guide still agree. After editing, read back the PR description to confirm the precise correction and preservation of other content. Reuse GitHub plugin update_pull_request or gh with a body file to preserve multiline text safely. Do not post comments, submit reviews, or resolve threads as part of this task.\n\nBranches/paths validated: stale description is corrected; an already-correct description is a verified no-op. Mocking: none. Documentation: read docs/documentation.md; no repository documentation edits are required because the service guide is already correct.\n\nAction reuse assessment: Not applicable — metadata correction only, no executable operation changes or new API/Action/tool.\n\nAcceptance: PR #956 describes SMTP none and IMAP imap_idle consistently with implementation and tests; unrelated claims and outstanding validation caveats remain intact.\n\nAgent instructions: Recheck GitHub access, current PR body and user authorization before publishing the edit. Follow AGENTS.md and docs/agent-tools.md. Record the read-back result in this issue. Do not alter code or test expectations.",
+  "id": "zaq-vfx.4",
+  "labels": [],
+  "parent": "zaq-vfx",
+  "priority": 3,
+  "status": "open",
+  "title": "Correct the IMAP capability mode in PR 956 description",
+  "type": "task",
+  "updated_at": "2026-11-24T18:41:31Z"
+}
