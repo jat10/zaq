@@ -10,11 +10,15 @@
     {
       "text": "Additional reproduction during zaq-h2i.3.7/.3.8 validation: full existing E2E suite and a separate Chromium system_config.spec.js run both fail the dark-theme 390px global-model layout assertion at line 315 (document overflow expected false, received true). The owning RAG UI, BO shell, styles and browser spec have no changes from the starting feature HEAD. Isolated suite: 56 passed, 1 failed, /tmp/zaq-h2i-3-7-8-system-config.log. Preserved screenshot, trace, video and error context: /tmp/zaq-h2i-rag-overflow-evidence/. No assertions, fixtures, or unrelated layout code changed. Keep responsive shared-shell investigation/approval in this existing owner.",
       "timestamp": "2026-11-23T18:38:41Z"
+    },
+    {
+      "text": "Required-file-limit validation regression work ran the existing Channels/System Config Chromium journeys. Result: 59/60 passed; system_config.spec.js dark-theme RAG desktop/mobile case failed at line 315 because document.scrollWidth \u003e innerWidth during the global-model row check. No UI/CSS/header production files were changed by this fix (only shared FileSettings.required_error). Evidence: .serena/cache/required-files-browser.log and test/e2e/test-results/system_config-System-Confi-bbcf1-t-desktop-and-mobile-widths-journeys-chromium/ screenshot/trace. Recorded here as a matching mobile-overflow symptom; exact cause was not re-investigated or changed in the file-settings task.",
+      "timestamp": "2026-11-24T11:51:14Z"
     }
   ],
   "priority": 3,
   "status": "open",
   "title": "[zaq-gyv] Fix shared BO header mobile overflow",
   "type": "bug",
-  "updated_at": "2026-11-23T18:38:41Z"
+  "updated_at": "2026-11-24T11:51:14Z"
 }
