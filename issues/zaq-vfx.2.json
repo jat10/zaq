@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-vfx",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-vfx.2] [PR #956 point 2] Show capability lookup failures and retry when the modal reopens",
   "type": "bug",
-  "updated_at": "2026-11-24T18:41:33Z"
+  "updated_at": "2026-11-24T18:53:47Z"
 }
