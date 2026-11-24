@@ -9,7 +9,7 @@
   "parent": "zaq-vfx",
   "priority": 3,
   "status": "open",
-  "title": "Correct the IMAP capability mode in PR 956 description",
+  "title": "[zaq-vfx.4] [PR #956 point 4] Correct the IMAP capability mode in PR 956 description",
   "type": "task",
-  "updated_at": "2026-11-24T18:41:31Z"
+  "updated_at": "2026-11-24T18:41:32Z"
 }
