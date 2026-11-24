@@ -30,11 +30,15 @@
     {
       "text": "Correction to preceding commit/push note: commit 92caba18f succeeded and commit hooks passed, but the SSH push failed with Permission denied (publickey); remote branch remained at b5ce36392. The push-success/formatting-hook statement was premature. Retrying with local gh-authenticated HTTPS, without changing remote configuration or bypassing hooks.",
       "timestamp": "2026-11-24T21:09:42Z"
+    },
+    {
+      "text": "HTTPS retry succeeded using local gh git-credential for this command only; no persistent remote/config changes. Push hook formatting check passed. Remote refs/heads/feat/email-capabilities verified at 92caba18f0a39361b6aeba21c91715c9862c7169, matching local HEAD; working tree clean. Pending E2E, coverage and final validation remain; mix precommit was not restarted.",
+      "timestamp": "2026-11-24T21:09:57Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-vfx] PR #956 review remediation",
   "type": "epic",
-  "updated_at": "2026-11-24T21:09:42Z"
+  "updated_at": "2026-11-24T21:09:57Z"
 }
