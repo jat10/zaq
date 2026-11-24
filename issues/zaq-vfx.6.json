@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-24T19:25:44Z",
@@ -8,8 +8,8 @@
   "labels": [],
   "parent": "zaq-vfx",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-vfx.6] Extend capability recovery to data-source provider pages",
   "type": "bug",
-  "updated_at": "2026-11-24T19:25:46Z"
+  "updated_at": "2026-11-24T19:29:10Z"
 }
