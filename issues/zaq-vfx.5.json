@@ -7,9 +7,15 @@
   "id": "zaq-vfx.5",
   "labels": [],
   "parent": "zaq-vfx",
+  "comments": [
+    {
+      "text": "Implemented shared ChannelsLive failure state and focused retry using the existing query and modal. New regressions first failed for Mattermost, Discord and Telegram; now 73 checks pass (1 property, 72 tests) with the unchanged ChannelsLive suite. mix q passed. Successful cached snapshots preserve draft state without lookup. No existing tests changed. Remaining common E2E/final gates stay tracked by the epic.",
+      "timestamp": "2026-11-24T19:29:08Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-vfx.5] Extend capability recovery to generic communication channels",
   "type": "bug",
-  "updated_at": "2026-11-24T19:26:15Z"
+  "updated_at": "2026-11-24T19:29:08Z"
 }
