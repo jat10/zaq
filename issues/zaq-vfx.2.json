@@ -13,11 +13,15 @@
     {
       "text": "Action reuse confirmed: use existing provider-scoped Channels event through NodeRouter; widget initialization consumes zaq-vfx.3 settings result. Retry changes only capability/error/modal assigns and does not invoke reload/apply_snapshot. Shared ChannelCapabilities gains an optional error flag, preserving existing callers and successful-empty semantics. New tests use real Engine/Channels boundaries; missing provider bridge deterministically fails the real lookup, restored on exit in existing synchronous modules. Erlang call-count observation verifies cache/query contracts without production hooks or internal stubs.",
       "timestamp": "2026-11-24T18:55:43Z"
+    },
+    {
+      "text": "Implemented explicit failure presentation in the existing shared component and narrow retries in SMTP/IMAP/widget open handlers. Successful empty snapshots remain cached. Red run reproduced missing failure messages and non-recovering widget retry; fixed the new failure-socket scaffold. Green: mix q passed; six isolated Engine/component/LiveView files passed 159 checks (1 property, 158 tests). Real-domain regressions cover initial/repeated failure, recovery, cached reopen, zero/two widgets, draft/selection preservation and focused installation/one-time-key state. Existing tests unchanged. Final diff review and applicable validation assessment remain in progress.",
+      "timestamp": "2026-11-24T18:57:42Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-vfx.2] [PR #956 point 2] Show capability lookup failures and retry when the modal reopens",
   "type": "bug",
-  "updated_at": "2026-11-24T18:55:43Z"
+  "updated_at": "2026-11-24T18:57:42Z"
 }
