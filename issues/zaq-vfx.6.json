@@ -9,7 +9,7 @@
   "parent": "zaq-vfx",
   "priority": 2,
   "status": "open",
-  "title": "Extend capability recovery to data-source provider pages",
+  "title": "[zaq-vfx.6] Extend capability recovery to data-source provider pages",
   "type": "bug",
-  "updated_at": "2026-11-24T19:25:44Z"
+  "updated_at": "2026-11-24T19:25:46Z"
 }
