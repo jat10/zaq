@@ -9,7 +9,7 @@
   "parent": "zaq-vfx",
   "priority": 2,
   "status": "open",
-  "title": "Restrict built-in web delivery capabilities to known providers",
+  "title": "[zaq-vfx.1] [PR #956 point 1] Restrict built-in web delivery capabilities to known providers",
   "type": "bug",
-  "updated_at": "2026-11-24T18:41:24Z"
+  "updated_at": "2026-11-24T18:41:25Z"
 }
