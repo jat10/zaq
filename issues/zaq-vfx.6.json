@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-24T19:25:44Z",
+  "description": "User authorized adding the broader gap identified in zaq-vfx. Implement in ProviderLive and provider_live.html.heex.\nFunctional specification: preserve distinct capability error at mount and both refresh_provider_page paths. Reuse existing component error? input. Retry capability query only on modal opening after failure; preserve cached success, config/form/grant/folder state, and provider request semantics. Existing full refresh operations must reset the error flag on success and set it on failure.\nTests before implementation: new synchronous ConnCase data-source regression tests using disk and available remote providers with no connector, plus direct real-boundary callback coverage of refresh-after-failure/recovery as appropriate. Cover repeated failure, recovery, no refetch after success, and unchanged draft/folder state. Add property test for cache/state preservation using valid snapshot maps. No existing tests are changed.\nMocking: existing isolated missing-bridge fixture and real NodeRouter/Channels/Bridge; no remote file calls are needed for unconfigured providers. Global registration change limited to synchronous tests with on_exit restoration.\nAction reuse assessment: reuse existing dispatch_channel_capability_snapshot/1, Channels.Api and Bridge normalization; extend local state loading around existing query and shared modal. Input/output provider contract unchanged, read-only retry, no new Action or agent exposure. This is UI lifecycle handling only.\nModule context: ProviderLive owns provider configuration UI and caches folder/grant state in socket; mount and two private refresh paths currently reduce errors to empty maps. Retry must not call whole-page refresh because it clears drafts/modals. Scope excludes underlying ingestion/storage operations.\nDocumentation: update shared contract in docs/services/channels.md following docs/documentation.md; retain one owner for common behavior.\nValidation: mix q, new LiveView tests and existing provider_live_test.exs; then combined modal suite. Existing tests remain intact. New browser authoring unnecessary for this bounded server event/render correction. E2E runtime unavailable (missing Playwright); no install authorized. Preserve explicit stop on mix precommit and record outstanding final gates on epic.",
+  "id": "zaq-vfx.6",
+  "labels": [],
+  "parent": "zaq-vfx",
+  "priority": 2,
+  "status": "open",
+  "title": "Extend capability recovery to data-source provider pages",
+  "type": "bug",
+  "updated_at": "2026-11-24T19:25:44Z"
+}
