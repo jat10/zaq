@@ -22,11 +22,15 @@
     {
       "text": "Completed the authorized expanded capability-modal recovery. All five shared component callers now pass error?. ChannelsLive covers generic communication providers; ProviderLive uses one private loader for mount, modal retries and both connector refresh paths. Retries preserve unrelated state and cache successful snapshots including empty results. New tests reproduced failures before fixes and now cover Mattermost, Discord, Telegram, Disk, Google Drive and SharePoint, a later outage after cached success, state-preservation properties, and both data-source refresh paths. The new save test needed a valid base-URL fixture to exercise its intended path; no existing test behavior was changed. Final mix q passed; combined 11-file suite passed 324 checks (3 properties, 321 tests); git diff --check clean. Shared behavior documented under Bridge Behaviour in docs/services/channels.md. No new Action, service contract, provider selection change, commit, push or GitHub comment. Browser E2E remains unavailable because Playwright is missing; coverage and explicitly stopped mix precommit remain epic-level final gates.",
       "timestamp": "2026-11-24T19:32:40Z"
+    },
+    {
+      "text": "User explicitly authorized commit and push. Committed all validated capability remediation, including authorized expanded generic communication/data-source recovery, as 92caba18f (fix(channels): scope delivery claims and recover capability lookups), and pushed normally to origin feat/email-capabilities for PR #956. Commit qf and Conventional Commit hooks passed; push formatting hook passed. No merge, review reply or thread resolution. Existing pending browser E2E, post-review coverage and final validation gates remain unchanged; mix precommit was not restarted.",
+      "timestamp": "2026-11-24T21:09:25Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-vfx] PR #956 review remediation",
   "type": "epic",
-  "updated_at": "2026-11-24T19:32:40Z"
+  "updated_at": "2026-11-24T21:09:25Z"
 }
