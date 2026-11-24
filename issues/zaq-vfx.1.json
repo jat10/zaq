@@ -7,9 +7,15 @@
   "id": "zaq-vfx.1",
   "labels": [],
   "parent": "zaq-vfx",
+  "comments": [
+    {
+      "text": "Live verification: checkout matches PR head b5ce36392; review remains CHANGES_REQUESTED. Reuse assessment confirmed WebBridge owns provider delivery declarations; Bridge normalization and existing Channels event remain unchanged. Added custom atom/string raw and normalized regression plus built-in missing-adapter coverage without modifying existing tests. Validation starting; precommit remains stopped.",
+      "timestamp": "2026-11-24T18:45:17Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-vfx.1] [PR #956 point 1] Restrict built-in web delivery capabilities to known providers",
   "type": "bug",
-  "updated_at": "2026-11-24T18:44:58Z"
+  "updated_at": "2026-11-24T18:45:17Z"
 }
