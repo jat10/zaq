@@ -7,9 +7,15 @@
   "id": "zaq-h2i.3.10",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Root cause established and original defect reproduced by a new property test: normalized empty required input validates :ok for unsupported sending. Removed the supported?(:file) prerequisite from required_error in shared FileSettings; all existing consumers reuse the corrected predicate. Jad explicitly approved required-limit enforcement regardless of unsupported sending and corresponding existing test changes. Updated contradictory SMTP persistence/clearing expectations and valid SMTP test setup values; added real LiveView regressions for new/existing saves, both required fields, draft retention, database non-mutation and successful correction. Focused validation passed 166 checks (6 properties, 160 tests). Consumer regression run in progress. Existing unrelated uncommitted work backed up before edits. Prior explicit no-precommit instruction remains in force.",
+      "timestamp": "2026-11-24T11:35:52Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Reject missing required file limits independently of send support",
   "type": "bug",
-  "updated_at": "2026-11-24T11:29:12Z"
+  "updated_at": "2026-11-24T11:35:52Z"
 }
