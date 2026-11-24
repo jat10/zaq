@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-24T18:41:22Z",
+  "description": "Address the four review points on https://github.com/www-zaq-ai/zaq/pull/956 from review https://github.com/www-zaq-ai/zaq/pull/956#pullrequestreview-6044879193. Related implementation: zaq-h2i.2; do not duplicate its feature scope.\n\nPlanning evidence: Serena inspected WebBridge.capability_snapshot/1, SMTP/IMAP/WebWidget capability_snapshot helpers and open_capabilities handlers, WebWidgetLive.mount/reload/apply_snapshot/settings, WidgetConnectorSettings.snapshot/adapter_capabilities, ChannelCapabilities.icon_with_modal, Bridge normalization, and EmailBridge.capability_snapshot/1. The four review points match current code at b5ce36392435f391fe94f7a1a71bcd679fc08c36. Existing issues were checked; no PR #956 review-remediation issues were found.\n\nCreate exactly four child issues, one per review point. Execute point 3 before point 2 because the latter must consume the consolidated widget snapshot contract. Points 1 and 4 are independent.\nDependency plan:\n```mermaid\ngraph LR\n  point3[\"3: Reuse widget lookup\"] --\u003e point2[\"2: Failure state and retry\"]\n  point1[\"1: Scope web profile\"]\n  point4[\"4: Correct PR description\"]\n```\n\nAction reuse: extend existing WebBridge callback, Bridge normalization, Channels API event and Engine WidgetConnectorSettings/ManageWidgetConnector path; preserve the shared ChannelCapabilities component. No new operation or agent-tool exposure is needed. Point 4 is metadata-only.\n\nAgent handoff: Read each child description, implement in dependency order, and update progress with evidence. This epic records work instructions; issue creation does not claim implementation or review approval. Follow repository policies and current user authorization. See docs/WORKFLOW_AGENT.md and docs/exec-plans/PLAN_STRATEGY.md for validation and post-review coverage-upper handoff. Keep epic open until children and applicable final validation/coverage are complete. New browser E2E is not planned for these bounded corrections: bridge, Engine, component and LiveView tests can reproduce them. Reassess if scope expands; do not bypass the UX approval gate.",
+  "id": "zaq-vfx",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "PR 956 review remediation",
+  "type": "epic",
+  "updated_at": "2026-11-24T18:41:22Z"
+}
