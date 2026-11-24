@@ -9,9 +9,15 @@
   "id": "zaq-vfx.2",
   "labels": [],
   "parent": "zaq-vfx",
+  "comments": [
+    {
+      "text": "Action reuse confirmed: use existing provider-scoped Channels event through NodeRouter; widget initialization consumes zaq-vfx.3 settings result. Retry changes only capability/error/modal assigns and does not invoke reload/apply_snapshot. Shared ChannelCapabilities gains an optional error flag, preserving existing callers and successful-empty semantics. New tests use real Engine/Channels boundaries; missing provider bridge deterministically fails the real lookup, restored on exit in existing synchronous modules. Erlang call-count observation verifies cache/query contracts without production hooks or internal stubs.",
+      "timestamp": "2026-11-24T18:55:43Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-vfx.2] [PR #956 point 2] Show capability lookup failures and retry when the modal reopens",
   "type": "bug",
-  "updated_at": "2026-11-24T18:53:47Z"
+  "updated_at": "2026-11-24T18:55:43Z"
 }
