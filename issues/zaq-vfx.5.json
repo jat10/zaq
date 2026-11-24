@@ -9,7 +9,7 @@
   "parent": "zaq-vfx",
   "priority": 2,
   "status": "open",
-  "title": "Extend capability recovery to generic communication channels",
+  "title": "[zaq-vfx.5] Extend capability recovery to generic communication channels",
   "type": "bug",
-  "updated_at": "2026-11-24T19:25:41Z"
+  "updated_at": "2026-11-24T19:25:43Z"
 }
