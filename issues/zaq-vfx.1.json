@@ -2,6 +2,8 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-24T18:53:45Z",
+  "close_reason": "Implementation and issue-level regression validation passed; final PR gates tracked by epic.",
   "created": "2026-11-24T18:41:24Z",
   "description": "Review point 1 (Medium): https://github.com/www-zaq-ai/zaq/pull/956#discussion_r4684534803\n\nFunctional specifications / files: In lib/zaq/channels/web_bridge.ex, capability_snapshot/1 currently merges text, streaming, edit_messages and websocket into every provider's resolved map. Restrict this built-in delivery profile to web and web_widget (their supported atom and string forms). Preserve runtime and installation flags derived from adapter callbacks for other providers. Keep widget typing support and BO web typing behavior intact; do not invent custom-provider delivery capabilities or alter delivery execution.\n\nTests to add before implementation: Add custom other_web coverage in test/zaq/channels/web/adapter_contract_test.exs using its existing registered OtherAdapter. Assert custom snapshots retain adapter flags but do not advertise built-in text/streaming/edit_messages/mode. Cover normalized Bridge.capability_snapshot results and unsupported detection. Retain built-in profile tests in that file and test/zaq/channels/web_bridge_test.exs; cover atom/string provider variants with table/property tests as appropriate.\n\nBranches/paths: built-in web, built-in widget, registered custom provider, missing adapter for built-ins, normalized unsupported capabilities. Mocking: reuse existing isolated adapter fixtures; do not introduce production mocks or global state leaks.\n\nDocumentation: Read docs/services/channels.md (Web Bridge), clarify that the delivery profile belongs to the built-in providers; follow docs/documentation.md for any prose edits.\n\nAction reuse assessment: Extend WebBridge.capability_snapshot/1, reuse Bridge.capability_snapshot/2 normalization and Channels.Api :channel_capability_snapshot. Existing callback owns delivery declarations; no Action is needed for a pure provider-profile correction. Input remains provider config; output remains {:ok, %{resolved: ...}}. No writes, actor changes or new tool/workflow consumer. BO callers retain Event/NodeRouter dispatch. Verify both raw and normalized results and adapter flags.\n\nAcceptance: Custom providers never inherit unsupported delivery claims; built-in profiles and adapter availability behavior remain stable.\n\nAgent instructions: Fix this issue on the PR #956 lineage after rechecking live code and review state. Read AGENTS.md, docs/agent-tools.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/code-quality.md, docs/conventions.md, docs/testing-approach.md and applicable service guides before implementation. Use Serena for code understanding and Context Mode for operational analysis. Read module docs before adding functions. Follow the existing-test-behavior approval gate: add regression tests without changing existing assertions/scenarios; if a change is necessary, disclose the old/new contract and obtain explicit approval first. Keep changes scoped; do not commit, push, merge, reply to reviews, or resolve threads without authorization. Record validation and blockers in this issue. Follow the workflow validation lifecycle; preserve the prior instruction recorded in PR #956 that mix precommit was stopped and not to restart it unless superseded by the user.",
   "id": "zaq-vfx.1",
@@ -18,8 +20,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-vfx.1] [PR #956 point 1] Restrict built-in web delivery capabilities to known providers",
   "type": "bug",
-  "updated_at": "2026-11-24T18:46:33Z"
+  "updated_at": "2026-11-24T18:53:45Z"
 }
