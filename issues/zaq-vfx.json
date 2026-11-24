@@ -18,11 +18,15 @@
     {
       "text": "Validation scope correction after user asked about Mattermost: Serena confirms ChannelsLive still converts failed capability lookups to %{}, open_capabilities only toggles visibility, and its template does not pass error?. Mattermost and other providers served by the generic retrieval route therefore retain the blank-modal/no-retry bug. DataSources.ProviderLive has the same fallback/open behavior and omitted error? input (other refresh operations may reload its snapshot). This predates the PR, but the remediation does not fix the invariant across all shared-modal consumers. Earlier validation applies only to SMTP, IMAP and Web Widget; broader capability-modal recovery remains incomplete. No production changes made.",
       "timestamp": "2026-11-24T19:23:08Z"
+    },
+    {
+      "text": "Completed the authorized expanded capability-modal recovery. All five shared component callers now pass error?. ChannelsLive covers generic communication providers; ProviderLive uses one private loader for mount, modal retries and both connector refresh paths. Retries preserve unrelated state and cache successful snapshots including empty results. New tests reproduced failures before fixes and now cover Mattermost, Discord, Telegram, Disk, Google Drive and SharePoint, a later outage after cached success, state-preservation properties, and both data-source refresh paths. The new save test needed a valid base-URL fixture to exercise its intended path; no existing test behavior was changed. Final mix q passed; combined 11-file suite passed 324 checks (3 properties, 321 tests); git diff --check clean. Shared behavior documented under Bridge Behaviour in docs/services/channels.md. No new Action, service contract, provider selection change, commit, push or GitHub comment. Browser E2E remains unavailable because Playwright is missing; coverage and explicitly stopped mix precommit remain epic-level final gates.",
+      "timestamp": "2026-11-24T19:32:40Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-vfx] PR #956 review remediation",
   "type": "epic",
-  "updated_at": "2026-11-24T19:23:08Z"
+  "updated_at": "2026-11-24T19:32:40Z"
 }
