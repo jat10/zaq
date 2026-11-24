@@ -8,13 +8,65 @@ defmodule Zaq.Channels.TelegramHistoryDeliveryTest do
   alias Zaq.Agent.ServerManager
   alias Zaq.Agent.Status
   alias Zaq.Channels.{Api, CommunicationBridge, JidoChatBridge}
+  alias Zaq.Channels.Delivery.Error
   alias Zaq.Channels.JidoChatBridge.DeliveryResult
+  alias Zaq.Contracts.Record
   alias Zaq.Engine.{ChannelConfig, Conversations, HistoryIngress}
   alias Zaq.Engine.Conversations.{Message, TranscriptMessage}
   alias Zaq.Engine.IncomingMessageRouting
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
   alias Zaq.TestSupport.OpenAIStub
+
+  test "missing adapter file requirements retain text fallback and stop policy", %{config: config} do
+    outgoing = %Outgoing{
+      provider: :telegram,
+      channel_id: "123",
+      body: "Image as a file",
+      delivery: %Outgoing.Delivery{
+        attachments: [
+          %Record{
+            id: "image",
+            kind: :file,
+            name: "image.png",
+            mime_type: "image/png",
+            content: <<255, 0, 128>>
+          }
+        ]
+      }
+    }
+
+    connection = %{url: config.url, token: config.token}
+
+    assert {:ok, report} = JidoChatBridge.send_reply(outgoing, connection)
+    assert report.confirmation == :partial
+    assert [%{body: "Image as a file", delivered_attachment_indices: []}] = report.messages
+
+    assert [%{attachment_index: 0, stage: :configuration, delivery: :not_sent}] =
+             report.failed_attachments
+
+    assert report.uploaded_attachments == []
+    assert report.uploaded_only == []
+    assert report.unattempted_steps == []
+
+    assert_receive {:openai_request, "POST", path, "", body}
+    assert String.ends_with?(path, "/sendMessage")
+    assert Jason.decode!(body)["text"] == outgoing.body
+    refute_received {:openai_request, _, _, _, _}
+
+    assert {:error,
+            %Error{
+              reason: :invalid_transport_requirements,
+              stage: :configuration,
+              delivery: :not_sent
+            }} =
+             JidoChatBridge.send_reply(
+               outgoing,
+               Map.put(connection, :settings, %{"send_on_file_failure" => false})
+             )
+
+    refute_received {:openai_request, _, _, _, _}
+  end
 
   setup context do
     previous = Application.get_env(:zaq, :channels)
@@ -291,7 +343,7 @@ defmodule Zaq.Channels.TelegramHistoryDeliveryTest do
           )
     }
 
-    assert {:error, %ExGram.Error{}} = deliver(outgoing)
+    assert {:error, %Zaq.Channels.Delivery.Error{reason: %ExGram.Error{}}} = deliver(outgoing)
     assert Repo.get!(Message, ctx.persisted.assistant_message_id)
     refute Repo.get_by(TranscriptMessage, message_id: ctx.persisted.assistant_message_id)
     assert Repo.aggregate(TranscriptMessage, :count) == 1

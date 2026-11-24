@@ -56,7 +56,11 @@ defmodule Zaq.Channels.EmailBridge.IncomingAttachmentMaterializationIntegrationT
          }}
       )
 
-    insert_config("email:smtp", %{url: "smtp://example.test", token: "smtp-token"})
+    insert_config("email:smtp", %{
+      url: "smtp://example.test",
+      token: "smtp-token",
+      settings: %{"max_encoded_message_bytes" => 10_000_000, "max_attachments_per_message" => 10}
+    })
 
     imap_config =
       insert_config("email:imap", %{

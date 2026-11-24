@@ -35,7 +35,7 @@ structs can execute on Channels before dispatch.
 | `History.Strategy`, `Direct`, `Shared`, `Replicated` | Select transcript association targets and strategy-specific policy. |
 | `Conversations`, `TranscriptHistory` | Persist canonical content and transcript placements with source/replay checks. |
 | `ChannelHistoryProjection` | Derive observed participants and presentation summaries from stored history. |
-| `DeliveryConfirmation` | Forward normalized transport receipts to Engine, preserving transport success. |
+| `Delivery.Confirmation` | Forward normalized transport receipts to Engine, preserving transport success. |
 | `History.Delivery` | Interpret confirmed receipts using Engine history policy. |
 | `HistoryDeliveryWorker` | Retry association by canonical message ID, without resending transport delivery. |
 | `ExecutionHistory`, `ExecutionLifecycle`, `ExecutionRecord` | Compose authorized canonical projections and persist private root/receipt outcomes. |
@@ -280,7 +280,7 @@ sequenceDiagram
     box Channels
         participant API as Channels.API
         participant B as Provider bridge
-        participant C as DeliveryConfirmation
+        participant C as Delivery.Confirmation
     end
     participant Provider
     participant NR as NodeRouter
@@ -326,7 +326,7 @@ is only guaranteed after the confirmation transaction commits. Conflicting
 confirmation evidence fails rather than replacing the recorded scope.
 
 Entry points:
-[DeliveryConfirmation](../../lib/zaq/channels/delivery_confirmation.ex),
+[Delivery.Confirmation](../../lib/zaq/channels/delivery/confirmation.ex),
 [History.Delivery](../../lib/zaq/engine/history/delivery.ex),
 [HistoryIngress](../../lib/zaq/engine/history_ingress.ex),
 [HistoryDeliveryWorker](../../lib/zaq/engine/history_delivery_worker.ex).

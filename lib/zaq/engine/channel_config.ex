@@ -16,7 +16,7 @@ defmodule Zaq.Engine.ChannelConfig do
   alias Zaq.Channels.AgentRouting
   alias Zaq.Channels.Bridge
   alias Zaq.Channels.RetrievalChannel
-  alias Zaq.ConnectorConfig.{LiveUpdates, Settings, WidgetSettings}
+  alias Zaq.ConnectorConfig.{LiveUpdates, Settings, SmtpSettings, WidgetSettings}
   alias Zaq.Engine.IncomingMessageRouting
   alias Zaq.Event
   alias Zaq.NodeRouter
@@ -57,6 +57,8 @@ defmodule Zaq.Engine.ChannelConfig do
     |> maybe_validate_imap_settings()
     |> maybe_validate_disk_settings()
     |> maybe_validate_widget_settings()
+    |> maybe_validate_transport_settings()
+    |> maybe_validate_max_file_size()
     |> maybe_validate_live_updates()
     |> preserve_live_update_policy()
     |> maybe_require_widget_base_url_on_persist()
@@ -64,6 +66,66 @@ defmodule Zaq.Engine.ChannelConfig do
     |> maybe_encrypt_token()
     |> reject_archived_reactivation()
   end
+
+  defp maybe_validate_transport_settings(changeset) do
+    settings =
+      case get_field(changeset, :settings) do
+        settings when is_map(settings) -> settings
+        _ -> %{}
+      end
+
+    changeset =
+      if get_field(changeset, :provider) == @smtp_provider do
+        Enum.reduce(
+          SmtpSettings.delivery_errors(
+            settings,
+            get_field(changeset, :enabled)
+          ),
+          changeset,
+          fn {key, message}, changeset -> add_error(changeset, :settings, "#{key} #{message}") end
+        )
+      else
+        changeset
+      end
+
+    case Map.get(settings, "send_on_file_failure", Map.get(settings, :send_on_file_failure)) do
+      value when value in [nil, true, false, "true", "false"] -> changeset
+      _ -> add_error(changeset, :settings, "send_on_file_failure must be true or false")
+    end
+  end
+
+  defp maybe_validate_max_file_size(changeset) do
+    settings = get_field(changeset, :settings)
+
+    if is_map(settings) and Map.has_key?(settings, "max_file_size"),
+      do: validate_max_file_size(changeset, settings),
+      else: changeset
+  end
+
+  defp validate_max_file_size(changeset, settings) do
+    case normalize_max_file_size(Map.get(settings, "max_file_size")) do
+      {:ok, nil} ->
+        put_change(changeset, :settings, Map.delete(settings, "max_file_size"))
+
+      {:ok, bytes} ->
+        put_change(changeset, :settings, Map.put(settings, "max_file_size", bytes))
+
+      :error ->
+        add_error(changeset, :settings, "max_file_size must be a positive integer in bytes")
+    end
+  end
+
+  defp normalize_max_file_size(size) when size in [nil, ""], do: {:ok, nil}
+  defp normalize_max_file_size(size) when is_integer(size) and size > 0, do: {:ok, size}
+
+  defp normalize_max_file_size(size) when is_binary(size) do
+    case Integer.parse(size) do
+      {bytes, ""} when bytes > 0 -> {:ok, bytes}
+      _ -> :error
+    end
+  end
+
+  defp normalize_max_file_size(_size), do: :error
 
   defp maybe_validate_live_updates(changeset) do
     case fetch_change(changeset, :settings) do

@@ -1791,8 +1791,12 @@ extension does not expose another agent tool.
 
 - Canonical struct for all outbound messages.
 - Enforce keys: `:body`, `:channel_id`, `:provider`.
-- `from_pipeline_result/2` — builds an `%Outgoing{}` from an `%Incoming{}` and a pipeline
-  result map; copies routing fields and stores result map in `metadata`.
+- `from_pipeline_result/2` copies routing fields and merges result metadata, excluding
+  delivery and legacy attachment keys. The typed `Outgoing.Delivery` carries
+  attachments, selection error and a Channel-local transient plan. Supplied
+  attachments are copied unchanged and omission defaults to `[]`; the builder
+  strips producer plans and does not validate attachment types. See the
+  [Channels outgoing contract](channels.md#zaqenginemessagesoutgoing).
 - When crossing nodes, this payload is typically returned in `%Zaq.Event.response`.
 
 ### Notifications Context (`Zaq.Engine.Notifications`)

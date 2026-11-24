@@ -12,6 +12,7 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
   import Ecto.Query
 
   alias Zaq.Engine.ChannelHistoryUpdates
+  alias Zaq.Engine.Messages.Outgoing.Delivery
 
   alias Zaq.Engine.Conversations.{
     AnswerOwnership,
@@ -22,7 +23,14 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
 
   alias Zaq.Repo
 
-  @reasons [:rejected, :missing_configuration, :unsupported_provider, :timeout, :unknown]
+  @reasons [
+    :rejected,
+    :missing_configuration,
+    :unsupported_provider,
+    :attachment_selection_failed,
+    :timeout,
+    :unknown
+  ]
 
   @doc "Records allowlisted transport evidence without altering content or confirmed delivery."
   def record(request, opts \\ [])
@@ -35,7 +43,12 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
          true <- valid_provider_code?(request[:provider_code]),
          true <-
            outcome != :failed or
-             reason in [:rejected, :missing_configuration, :unsupported_provider] do
+             reason in [
+               :rejected,
+               :missing_configuration,
+               :unsupported_provider,
+               :attachment_selection_failed
+             ] do
       result =
         Repo.transaction(fn -> record_for_origin(input_id, answer_id, id, request) end)
 
@@ -119,7 +132,7 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
 
     %{
       state: state,
-      reason: explanation(state, observation["reason_code"]),
+      reason: selection_explanation(state, observation),
       provider_code: if(state != :history_updating, do: observation["provider_code"]),
       observed_at: if(state != :history_updating, do: observation["observed_at"])
     }
@@ -150,12 +163,16 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
   defp record_locked(answer, %{outcome: outcome, reason: reason} = request) do
     previous = answer.metadata["delivery_observation"] || %{}
 
+    failures =
+      if reason == :attachment_selection_failed,
+        do: Delivery.selection_failures(%{failures: request[:attachment_failures]}),
+        else: []
+
     cond do
       is_map(answer.metadata["delivery_confirmation"]) ->
         :confirmed
 
-      previous["outcome"] == to_string(outcome) and previous["reason_code"] == to_string(reason) and
-          previous["provider_code"] == request[:provider_code] ->
+      same_observation?(previous, request, failures) ->
         :unchanged
 
       true ->
@@ -167,6 +184,11 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
           "observed_at" => DateTime.to_iso8601(DateTime.utc_now())
         }
 
+        observation =
+          if failures == [],
+            do: observation,
+            else: Map.put(observation, "attachment_failures", failures)
+
         answer
         |> Message.confirmation_changeset(
           Map.put(answer.metadata, "delivery_observation", observation)
@@ -177,8 +199,33 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
     end
   end
 
+  defp same_observation?(previous, request, failures) do
+    previous["outcome"] == to_string(request.outcome) and
+      previous["reason_code"] == to_string(request.reason) and
+      previous["provider_code"] == request[:provider_code] and
+      Delivery.selection_failures(%{failures: previous["attachment_failures"]}) == failures
+  end
+
   defp valid_provider_code?(nil), do: true
   defp valid_provider_code?(code), do: is_integer(code) and code >= 0 and code <= 999
+
+  defp selection_explanation(
+         :failed,
+         %{"reason_code" => "attachment_selection_failed"} = observation
+       ) do
+    case Delivery.selection_failures(%{failures: observation["attachment_failures"]}) do
+      [] ->
+        explanation(:failed, "attachment_selection_failed")
+
+      failures ->
+        Enum.map_join(failures, " ", fn failure ->
+          "#{failure.name} exceeds the attachment size limit (#{failure.size} bytes; limit #{failure.limit} bytes)."
+        end) <> " The stop-on-failure policy prevented delivery."
+    end
+  end
+
+  defp selection_explanation(state, observation),
+    do: explanation(state, observation["reason_code"])
 
   defp explanation(:history_updating, _),
     do: "Delivery was confirmed. Transcript history is updating."
@@ -190,6 +237,9 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
 
   defp explanation(:failed, "unsupported_provider"),
     do: "No supported delivery adapter was available."
+
+  defp explanation(:failed, "attachment_selection_failed"),
+    do: "Attachment selection failed. The stop-on-failure policy prevented delivery."
 
   defp explanation(:failed, _), do: "The delivery attempt failed."
 

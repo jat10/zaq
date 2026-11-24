@@ -371,7 +371,14 @@ defmodule Zaq.Engine.EmailConnectorSettingsTest do
       settings:
         if(provider == "email:imap",
           do: %{"imap" => %{"selected_mailboxes" => ["INBOX"], "smtp_config_id" => nil}},
-          else: %{}
+          else:
+            if(provider == "email:smtp",
+              do: %{
+                "max_encoded_message_bytes" => 10_000_000,
+                "max_attachments_per_message" => 10
+              },
+              else: %{}
+            )
         )
     })
     |> Repo.insert!()

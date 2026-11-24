@@ -173,6 +173,7 @@ defmodule Zaq.Engine.Notifications.NotificationTest do
       assert n.body == "World"
       assert n.sender == "system"
       assert length(n.recipient_channels) == 1
+      assert n.attachments == []
     end
 
     test "sender defaults to \"system\" when omitted" do
@@ -285,7 +286,11 @@ defmodule Zaq.Engine.Notifications.NotificationTest do
         kind: "retrieval",
         url: "smtp://localhost",
         token: "test-token",
-        enabled: true
+        enabled: true,
+        settings: %{
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
 
@@ -624,7 +629,11 @@ defmodule Zaq.Engine.Notifications.NotificationTest do
         kind: "retrieval",
         url: "smtp://localhost",
         token: "test-token",
-        enabled: true
+        enabled: true,
+        settings: %{
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
 

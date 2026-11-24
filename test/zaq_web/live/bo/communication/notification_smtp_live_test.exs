@@ -44,6 +44,113 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     assert has_element?(view, "button[phx-click='activate']", "Activate")
   end
 
+  test "explicit attachment limits save and reopen without changing the failure switch", %{
+    conn: conn
+  } do
+    config = insert_enabled_smtp_channel()
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+    assert has_element?(view, "#smtp-max-message-size-mb")
+    assert has_element?(view, "#smtp-max-attachments")
+
+    view
+    |> form("#smtp-config-form", %{
+      "email_config" => %{
+        "max_message_size_mb" => "1.234567",
+        "max_attachments_per_message" => "3"
+      }
+    })
+    |> render_submit()
+
+    settings = Repo.get!(ChannelConfig, config.id).settings
+    assert settings["max_encoded_message_bytes"] == 1_234_567
+    assert settings["max_attachments_per_message"] == 3
+    assert settings["send_on_file_failure"] == true
+    {:ok, reopened, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+    assert has_element?(reopened, "#smtp-max-message-size-mb[value='1.234567']")
+    assert has_element?(reopened, "#smtp-max-attachments[value='3']")
+  end
+
+  test "invalid attachment limits show field errors and do not save", %{conn: conn} do
+    config = insert_enabled_smtp_channel()
+
+    config =
+      config
+      |> Ecto.Changeset.change(
+        settings:
+          Map.drop(config.settings, ["max_encoded_message_bytes", "max_attachments_per_message"])
+      )
+      |> Repo.update!()
+
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+
+    html =
+      view
+      |> form("#smtp-config-form", %{
+        "email_config" => %{"max_message_size_mb" => "0", "max_attachments_per_message" => "-1"}
+      })
+      |> render_submit()
+
+    assert html =~ "must be greater than 0"
+    assert Repo.get!(ChannelConfig, config.id).settings["max_encoded_message_bytes"] == nil
+  end
+
+  test "selecting an SMTP connector uses the latest Engine form snapshot", %{conn: conn} do
+    insert_smtp_channel(%{
+      name: "First",
+      enabled: true,
+      settings: %{"relay" => "first.example.com"}
+    })
+
+    second =
+      insert_smtp_channel(%{
+        name: "Second",
+        enabled: true,
+        settings: %{"relay" => "old.example.com", "send_on_file_failure" => false}
+      })
+
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+
+    second
+    |> Ecto.Changeset.change(
+      settings:
+        Map.merge(second.settings, %{
+          "relay" => "fresh.example.com",
+          "send_on_file_failure" => true
+        })
+    )
+    |> Repo.update!()
+
+    view
+    |> element("#smtp-connector-#{second.id} [phx-click='select_connector']")
+    |> render_click()
+
+    assert has_element?(view, "input[name='email_config[relay]'][value='fresh.example.com']")
+    assert has_element?(view, "#smtp-send-on-file-failure[checked]")
+    refute has_element?(view, "input[name='email_config[relay]'][value='old.example.com']")
+  end
+
+  test "attachment failure switch defaults on and both values survive save and reopen", %{
+    conn: conn
+  } do
+    config = insert_enabled_smtp_channel()
+    {:ok, view, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+    assert has_element?(view, "#smtp-send-on-file-failure[checked]")
+
+    for {value, expected} <- [{"false", false}, {"true", true}] do
+      view
+      |> form("#smtp-config-form", %{"email_config" => %{"send_on_file_failure" => value}})
+      |> render_submit()
+
+      saved = Repo.get!(ChannelConfig, config.id)
+      assert saved.settings["send_on_file_failure"] == expected
+      assert saved.settings["relay"] == "smtp.example.com"
+      assert saved.enabled
+
+      {:ok, reopened, _} = live(conn, ~p"/bo/channels/retrieval/email/smtp")
+      assert has_element?(reopened, "#smtp-send-on-file-failure[checked]") == expected
+    end
+  end
+
   test "Add Config creates and selects a distinct named SMTP connector", %{conn: conn} do
     original =
       insert_smtp_channel(%{
@@ -124,7 +231,12 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
         enabled: true,
         url: "smtp://configured-in-settings",
         token: "smtp-unused",
-        settings: %{"relay" => "second.example.com", "from_email" => "second@example.com"}
+        settings: %{
+          "relay" => "second.example.com",
+          "from_email" => "second@example.com",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
 
@@ -523,7 +635,12 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
         enabled: true,
         url: "smtp://configured-in-settings",
         token: "smtp-unused",
-        settings: %{"relay" => "smtp.other.example", "from_email" => "selected@example.com"}
+        settings: %{
+          "relay" => "smtp.other.example",
+          "from_email" => "selected@example.com",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
 
@@ -924,7 +1041,17 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
     }
 
     {:ok, channel} =
-      ChannelConfig.upsert_by_provider("email:smtp", Map.merge(defaults, attrs))
+      ChannelConfig.upsert_by_provider(
+        "email:smtp",
+        Map.update!(
+          Map.merge(defaults, attrs),
+          :settings,
+          &Map.merge(
+            %{"max_encoded_message_bytes" => 10_000_000, "max_attachments_per_message" => 10},
+            &1
+          )
+        )
+      )
 
     channel
   end

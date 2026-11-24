@@ -17,7 +17,13 @@ defmodule Zaq.Agent.Tools.People.NotifyPersonEmailDeliveryTest do
         name: "Receipt regression",
         kind: "retrieval",
         enabled: true,
-        settings: %{"relay" => "", "from_email" => "noreply@example.test", "from_name" => "ZAQ"}
+        settings: %{
+          "relay" => "",
+          "from_email" => "noreply@example.test",
+          "from_name" => "ZAQ",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
 
     {:ok, person} =

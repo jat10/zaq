@@ -17,6 +17,34 @@ defmodule Zaq.Engine.EmailConnectorSettingsApiTest do
 
   setup :verify_on_exit!
 
+  test "SMTP attachment limits persist in bytes and reopen through the selected snapshot" do
+    admin = current_admin()
+
+    params =
+      Map.merge(smtp_params(), %{
+        "max_message_size_mb" => "1.234567",
+        "max_attachments_per_message" => "3"
+      })
+
+    event =
+      settings_event(
+        %{op: :save, provider: "email:smtp", selected_config_id: :new, params: params},
+        %{user_id: admin.id}
+      )
+
+    event = %{event | opts: Keyword.put(event.opts, :node_router, RuntimeRouter)}
+    expect(RuntimeRouter, :dispatch, fn runtime -> %{runtime | response: :ok} end)
+
+    assert %{response: {:ok, %{selected_config_id: id, snapshot: snapshot}}} =
+             Api.handle_event(event, :email_connector_settings, nil)
+
+    settings = Repo.get!(ChannelConfig, id).settings
+    assert settings["max_encoded_message_bytes"] == 1_234_567
+    assert settings["max_attachments_per_message"] == 3
+    assert Decimal.equal?(snapshot.form_config.max_message_size_mb, Decimal.new("1.234567"))
+    assert snapshot.form_config.max_attachments_per_message == 3
+  end
+
   test "Engine authorizes confidential snapshots and saves then sends exact runtime config" do
     admin = current_admin()
     actor = %{user_id: admin.id}
@@ -87,7 +115,11 @@ defmodule Zaq.Engine.EmailConnectorSettingsApiTest do
         enabled: true,
         url: "smtp://configured-in-settings",
         token: "__smtp_unused__",
-        settings: %{"relay" => "smtp.example.com"}
+        settings: %{
+          "relay" => "smtp.example.com",
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
 

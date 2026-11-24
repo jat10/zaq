@@ -1106,6 +1106,7 @@ defmodule Zaq.Engine.Conversations.ExecutionHistoryTest do
     %ChannelConfig{}
     |> ChannelConfig.changeset(%{
       name: "Mail delivery",
+      settings: %{"max_encoded_message_bytes" => 10_000_000, "max_attachments_per_message" => 10},
       provider: "email:smtp",
       kind: "retrieval",
       enabled: true,
@@ -2177,7 +2178,12 @@ defmodule Zaq.Engine.Conversations.ExecutionHistoryTest do
       enabled: true,
       url: "localhost",
       token: "test-token",
-      settings: %{"from_email" => "bot@example.com", "from_name" => "ZAQ"}
+      settings: %{
+        "from_email" => "bot@example.com",
+        "from_name" => "ZAQ",
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10
+      }
     })
     |> Repo.insert!()
 

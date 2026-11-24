@@ -5,7 +5,12 @@ defmodule Zaq.Engine.HistoryIngressTest do
 
   alias Jido.Chat.Telegram.Adapter, as: TelegramAdapter
   alias Zaq.Accounts.People
+
   alias Zaq.Channels.{CommunicationBridge, JidoChatBridge}
+  alias Zaq.Channels.Delivery.{Confirmation, Executor, Plan}
+
+  alias Zaq.Channels.Delivery.Error
+  alias Zaq.Channels.Delivery.Plan.Step
   alias Zaq.Channels.EmailBridge
   alias Zaq.Channels.EmailBridge.ImapAdapter.Parser
   alias Zaq.Contracts.Record
@@ -15,6 +20,7 @@ defmodule Zaq.Engine.HistoryIngressTest do
   alias Zaq.Engine.{Conversations, HistoryDeliveryWorker, HistoryIngress, IncomingMessageRouter}
   alias Zaq.Engine.Conversations.{Message, Transcript, TranscriptMessage}
   alias Zaq.Engine.History.CommunicationPolicy
+  alias Zaq.Engine.History.Delivery
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
@@ -23,6 +29,23 @@ defmodule Zaq.Engine.HistoryIngressTest do
 
   defmodule NoopRouter do
     def fire(event), do: event
+  end
+
+  defmodule PlannedTransport do
+    def execute_delivery_step(step, _inputs, connection) do
+      if connection.fail_first? and step.group_id == 0 do
+        {:error,
+         %Error{
+           reason: :timeout,
+           message: "Unconfirmed send.",
+           stage: :transport,
+           delivery: :unconfirmed
+         }, %{}}
+      else
+        {:ok,
+         %{confirmation: :confirmed, message_id: "planned-#{step.group_id}", action: :created}}
+      end
+    end
   end
 
   defmodule EmailIngressRouter do
@@ -36,6 +59,21 @@ defmodule Zaq.Engine.HistoryIngressTest do
         action -> Api.handle_event(event, action, nil)
       end
     end
+  end
+
+  defp finalize_answer(incoming, person, answer) do
+    assert {:ok, _} = HistoryIngress.capture(incoming)
+    assert {:ok, binding} = Conversations.admit_incoming(incoming)
+
+    assert {:ok, %{assistant_message_id: assistant_id}} =
+             Conversations.finalize_incoming(
+               binding.user_message_id,
+               binding.finalization_token,
+               %{answer: answer, error: false},
+               actor: %{person: %{id: person.id}}
+             )
+
+    {binding, assistant_id}
   end
 
   defp capture_delivered(delivery) do
@@ -110,6 +148,306 @@ defmodule Zaq.Engine.HistoryIngressTest do
     assert {:ok, ^assistant_id} = HistoryIngress.record_confirmation(delivery)
     assert {:ok, :ok} = HistoryIngress.associate_confirmation(assistant_id)
     assert Repo.get!(Message, assistant_id).external_message_id == "query-response"
+  end
+
+  test "delivery continuations have separate canonical history entries and replay is idempotent" do
+    config = connector("mattermost")
+    person = author("Split author", "mattermost", "split-author", config.id)
+
+    incoming =
+      Incoming.new(%{
+        content: "files please",
+        channel_id: "split-room",
+        author_id: "split-author",
+        message_id: "split-input",
+        provider: :mattermost,
+        person: person,
+        routing_context: %{channel_config_id: config.id, conversation_type: :room}
+      })
+
+    {binding, assistant_id} = finalize_answer(incoming, person, "Files")
+
+    first = %{
+      confirmation: :confirmed,
+      provider: "mattermost",
+      kind: :channel,
+      channel_config_id: config.id,
+      channel_id: "split-room",
+      message_id: "split-first",
+      content: "Files",
+      user_message_id: binding.user_message_id,
+      assistant_message_id: assistant_id,
+      delivery_part_index: 0
+    }
+
+    second = %{
+      first
+      | message_id: "split-second",
+        content: "Additional files (2/2).",
+        delivery_part_index: 1
+    }
+
+    assert {:ok, ^assistant_id} = HistoryIngress.record_confirmation(first)
+    assert {:ok, continuation_id} = HistoryIngress.record_confirmation(second)
+    assert continuation_id != assistant_id
+    assert {:ok, ^continuation_id} = HistoryIngress.record_confirmation(second)
+    assert {:ok, ^assistant_id} = HistoryIngress.record_confirmation(first)
+
+    for id <- [assistant_id, continuation_id] do
+      assert {:ok, :ok} = HistoryIngress.associate_confirmation(id)
+      assert {:ok, :ok} = HistoryIngress.associate_confirmation(id)
+      assert Repo.aggregate(from(p in TranscriptMessage, where: p.message_id == ^id), :count) == 1
+    end
+
+    continuation = Repo.get!(Message, continuation_id)
+    assert continuation.content == "Additional files (2/2)."
+    assert continuation.metadata["delivery_continuation_of"] == assistant_id
+    assert continuation.external_message_id == "split-second"
+    assert Repo.get!(Message, assistant_id).external_message_id == "split-first"
+
+    assert {:error, :invalid_execution_response} =
+             HistoryIngress.record_confirmation(%{
+               second
+               | assistant_message_id: Ecto.UUID.generate(),
+                 message_id: "unrelated"
+             })
+  end
+
+  for fail_first? <- [false, true] do
+    @fail_first fail_first?
+    test "shared executor receipts retain canonical root and continuation history with promotion #{fail_first?}" do
+      config = connector("mattermost")
+      person = author("Plan author", "mattermost", "plan-author", config.id)
+
+      incoming =
+        Incoming.new(%{
+          content: "files please",
+          channel_id: "plan-room",
+          author_id: "plan-author",
+          message_id: "plan-input",
+          provider: :mattermost,
+          person: person,
+          routing_context: %{channel_config_id: config.id, conversation_type: :room}
+        })
+
+      {binding, assistant_id} = finalize_answer(incoming, person, "Files")
+      count = if @fail_first, do: 3, else: 2
+
+      attachments =
+        Enum.map(
+          0..(count - 1),
+          &%Record{id: "file-#{&1}", kind: :file, content: "bytes", name: "file-#{&1}.txt"}
+        )
+
+      groups = Enum.map(0..(count - 1), &%{id: &1, attachment_refs: [&1]})
+
+      steps =
+        Enum.map(
+          groups,
+          &%Step{
+            id: {:send, &1.id},
+            operation: :send,
+            group_id: &1.id,
+            attachment_refs: &1.attachment_refs
+          }
+        )
+
+      plan = %Plan{
+        requirements: %Zaq.Channels.TransportRequirements{
+          transfer_mode: :send_with_attachments,
+          max_attachments_per_message: 1,
+          max_attachment_bytes: :not_applicable,
+          max_attachment_bytes_per_message: :not_applicable,
+          max_encoded_message_bytes: :not_applicable,
+          max_upload_request_bytes: :not_applicable,
+          supports_threads: true
+        },
+        placement: :threaded,
+        groups: groups,
+        steps: steps
+      }
+
+      outgoing = %Outgoing{
+        provider: :mattermost,
+        channel_id: "plan-room",
+        body: "Files",
+        routing_context: %{channel_config_id: config.id, conversation_type: :room},
+        metadata: %{user_message_id: binding.user_message_id, assistant_message_id: assistant_id},
+        delivery: %Outgoing.Delivery{attachments: attachments, plan: plan}
+      }
+
+      assert {:ok, report} =
+               Executor.execute(outgoing, PlannedTransport, %{fail_first?: @fail_first})
+
+      for _ <- 1..2 do
+        assert {:ok, %{messages: receipts}} =
+                 Confirmation.record({:ok, report}, outgoing,
+                   delivery_node_router: EmailIngressRouter
+                 )
+
+        assert Enum.all?(receipts, &(&1.history_capture == :stored))
+      end
+
+      root_id = if @fail_first, do: "planned-1", else: "planned-0"
+      reply_id = if @fail_first, do: "planned-2", else: "planned-1"
+      assert Repo.get!(Message, assistant_id).external_message_id == root_id
+      continuation = Repo.get_by!(Message, external_message_id: reply_id)
+      assert continuation.id != assistant_id
+      assert continuation.metadata["delivery_continuation_of"] == assistant_id
+      assert continuation.content == "Additional files (#{count}/#{count})."
+      assert Repo.aggregate(from(m in Message, where: m.role == "assistant"), :count) == 2
+    end
+  end
+
+  for original_thread <- [nil, "existing-root"] do
+    @original_thread original_thread
+    test "delivery continuation uses thread history with original thread #{inspect(original_thread)}" do
+      config = connector("mattermost")
+      person = author("Thread author", "mattermost", "thread-author", config.id)
+
+      incoming =
+        Incoming.new(%{
+          content: "send files",
+          channel_id: "thread-room",
+          author_id: "thread-author",
+          message_id: "thread-input",
+          thread_id: @original_thread,
+          provider: :mattermost,
+          person: person,
+          routing_context: %{channel_config_id: config.id, conversation_type: :room}
+        })
+
+      {binding, assistant_id} = finalize_answer(incoming, person, "Files")
+
+      outgoing = %Outgoing{
+        provider: :mattermost,
+        channel_id: "thread-room",
+        body: "Files",
+        thread_id: @original_thread,
+        routing_context: %{channel_config_id: config.id, conversation_type: :room},
+        metadata: %{user_message_id: binding.user_message_id, assistant_message_id: assistant_id}
+      }
+
+      first = %{
+        confirmation: :confirmed,
+        message_id: "thread-first",
+        thread_id: @original_thread,
+        delivery_part_index: 0
+      }
+
+      second = %{
+        confirmation: :confirmed,
+        message_id: "thread-second",
+        thread_id: @original_thread || "thread-first",
+        delivery_part_index: 1
+      }
+
+      for _ <- 1..2 do
+        assert {:ok, %{history_capture: :stored}} = Delivery.capture({:ok, first}, outgoing)
+
+        assert {:ok, %{history_capture: :stored}} =
+                 Delivery.capture({:ok, second}, %{
+                   outgoing
+                   | body: "Additional files (2/2).",
+                     thread_id: second.thread_id
+                 })
+      end
+
+      continuation = Repo.get_by!(Message, external_message_id: "thread-second")
+      [placement] = Repo.all(from p in TranscriptMessage, where: p.message_id == ^continuation.id)
+      thread = Repo.get!(Transcript, placement.transcript_id)
+      assert thread.external_thread_id == second.thread_id
+      assert thread.parent_id != nil
+      parent = Repo.get!(Transcript, thread.parent_id)
+      assert parent.external_thread_id == nil
+      assert parent.external_channel_id == "thread-room"
+      assert parent.channel_config_id == config.id
+      assert continuation.metadata["delivery_confirmation"]["thread_id"] == second.thread_id
+
+      [first_placement] =
+        Repo.all(from p in TranscriptMessage, where: p.message_id == ^assistant_id)
+
+      assert first_placement.transcript_id == if(@original_thread, do: thread.id, else: parent.id)
+
+      refute Repo.exists?(
+               from p in TranscriptMessage,
+                 where: p.message_id == ^continuation.id and p.transcript_id == ^parent.id
+             )
+    end
+  end
+
+  test "confirmed outgoing attachments bind to the existing answer without bytes or handles" do
+    config = connector("mattermost")
+    person = author("Attachment author", "mattermost", "attachment-author", config.id)
+
+    incoming =
+      Incoming.new(%{
+        content: "question",
+        channel_id: "attachment-room",
+        author_id: "attachment-author",
+        message_id: "attachment-input",
+        provider: :mattermost,
+        person: person,
+        routing_context: %{channel_config_id: config.id, conversation_type: :room}
+      })
+
+    {binding, assistant_id} = finalize_answer(incoming, person, "answer")
+
+    attachment = %Record{
+      id: "channel-file",
+      kind: :file,
+      name: "image.png",
+      mime_type: "image/png",
+      content: "private bytes",
+      materialization_handle: "private handle"
+    }
+
+    delivery = %{
+      confirmation: :confirmed,
+      provider: "mattermost",
+      kind: :channel,
+      channel_config_id: config.id,
+      channel_id: "attachment-room",
+      message_id: "attachment-response",
+      content: "answer",
+      user_message_id: binding.user_message_id,
+      assistant_message_id: assistant_id,
+      attachments: [attachment]
+    }
+
+    outgoing =
+      %Outgoing{
+        provider: :mattermost,
+        channel_id: "attachment-room",
+        body: "answer",
+        routing_context: %{channel_config_id: config.id, conversation_type: :room},
+        metadata: %{user_message_id: binding.user_message_id, assistant_message_id: assistant_id}
+      }
+
+    assert {:ok, %{history_capture: :stored}} =
+             Delivery.capture(
+               {:ok,
+                %{
+                  confirmation: :confirmed,
+                  message_id: "attachment-response",
+                  attachments: [attachment]
+                }},
+               outgoing
+             )
+
+    assert {:ok, ^assistant_id} = HistoryIngress.record_confirmation(delivery)
+    assert {:ok, ^assistant_id} = HistoryIngress.record_confirmation(delivery)
+    assert {:ok, :ok} = HistoryIngress.associate_confirmation(assistant_id)
+    message = Repo.get!(Message, assistant_id)
+    assert message.attachments == [Record.attachment_metadata(attachment)]
+    assert message.content == "answer"
+    refute Jason.encode!(message.attachments) =~ "private"
+
+    assert {:error, :conflicting_delivery_confirmation} =
+             HistoryIngress.record_confirmation(%{
+               delivery
+               | attachments: [%{attachment | id: "different-file"}]
+             })
   end
 
   test "unscoped admission retains its existing post-insert side-effect boundary" do
@@ -195,7 +533,13 @@ defmodule Zaq.Engine.HistoryIngressTest do
     smtp = Repo.get_by!(ChannelConfig, name: "History SMTP")
 
     smtp
-    |> ChannelConfig.changeset(%{settings: %{"from_email" => "bot@example.com"}})
+    |> ChannelConfig.changeset(%{
+      settings: %{
+        "from_email" => "bot@example.com",
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10
+      }
+    })
     |> Repo.update!()
 
     config =
@@ -234,7 +578,11 @@ defmodule Zaq.Engine.HistoryIngressTest do
       kind: "retrieval",
       url: "https://example.invalid",
       token: "fixture-token",
-      settings: %{"from_email" => "other@example.com"}
+      settings: %{
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10,
+        "from_email" => "other@example.com"
+      }
     })
     |> Repo.insert!()
 
@@ -447,7 +795,13 @@ defmodule Zaq.Engine.HistoryIngressTest do
     smtp = Repo.get_by!(ChannelConfig, name: "History SMTP")
 
     smtp
-    |> ChannelConfig.changeset(%{settings: %{"from_email" => "julien@eweev.com"}})
+    |> ChannelConfig.changeset(%{
+      settings: %{
+        "from_email" => "julien@eweev.com",
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10
+      }
+    })
     |> Repo.update!()
 
     config =
@@ -496,7 +850,13 @@ defmodule Zaq.Engine.HistoryIngressTest do
     smtp = Repo.get_by!(ChannelConfig, name: "History SMTP")
 
     smtp
-    |> ChannelConfig.changeset(%{settings: %{"from_email" => "bot@example.com"}})
+    |> ChannelConfig.changeset(%{
+      settings: %{
+        "from_email" => "bot@example.com",
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10
+      }
+    })
     |> Repo.update!()
 
     config =
@@ -519,7 +879,10 @@ defmodule Zaq.Engine.HistoryIngressTest do
       )
 
     outgoing = Outgoing.from_pipeline_result(incoming, %{answer: "Must not be sent"})
-    assert {:error, :no_reply_recipients} = EmailBridge.send_reply(outgoing, %{})
+
+    assert {:error, %Error{reason: :no_reply_recipients}} =
+             EmailBridge.send_reply(outgoing, %{})
+
     refute_received {:email, _}
   end
 
@@ -593,7 +956,11 @@ defmodule Zaq.Engine.HistoryIngressTest do
         provider: "email:smtp",
         kind: "retrieval",
         url: "https://example.invalid",
-        token: "test-token"
+        token: "test-token",
+        settings: %{
+          "max_encoded_message_bytes" => 10_000_000,
+          "max_attachments_per_message" => 10
+        }
       })
       |> Repo.insert!()
     end

@@ -8,7 +8,73 @@ defmodule Zaq.Channels.EmailBridge.SmtpSenderTest do
   alias Zaq.Channels.EmailBridge.SmtpSender
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Repo
+  alias Zaq.TestSupport.FileDeliverySmtpStub
   alias Zaq.Types.EncryptedString
+
+  test "planned SMTP submits the exact measured MIME bytes once" do
+    namespace = "prepared-#{Ecto.UUID.generate()}"
+    port = FileDeliverySmtpStub.start!(self(), namespace)
+
+    settings =
+      smtp_settings(%{"relay" => "127.0.0.1", "port" => to_string(port), "tls" => "never"})
+
+    payload =
+      Map.merge(payload(body: "Text with a dot\n.line"), %{
+        "html_body" => "<p>Text</p>",
+        "headers" => %{"Message-ID" => "<prepared@example.test>"},
+        "attachments" => [
+          %{
+            content: <<0, 255, 128>>,
+            name: "résumé.bin",
+            mime_type: "application/octet-stream",
+            size: 3
+          }
+        ]
+      })
+
+    assert {:ok, prepared} =
+             SmtpSender.prepare_notification("recipient@example.test", payload, %{}, settings)
+
+    refute inspect(prepared) =~ "Text with a dot"
+    refute_received {:delivery_boundary, _, _, _}
+    task = Task.async(fn -> SmtpSender.submit_prepared(prepared, settings) end)
+    assert_receive {:delivery_boundary, ^namespace, pid, capture}, 5000
+    assert capture.raw == prepared.body
+    assert byte_size(capture.raw) == prepared.encoded_bytes
+    assert capture.sender == "noreply@example.com"
+    assert capture.recipients == ["recipient@example.test"]
+    send(pid, :accept_delivery)
+
+    assert {:ok,
+            %{
+              sender_address: "noreply@example.com",
+              recipient_addresses: ["recipient@example.test"]
+            }} = Task.await(task)
+
+    refute_received {:delivery_boundary, _, _, _}
+  end
+
+  test "planned SMTP disables automatic retry after a temporary DATA rejection" do
+    namespace = "no-retry-#{Ecto.UUID.generate()}"
+
+    port =
+      FileDeliverySmtpStub.start!(self(), namespace,
+        connections: 2,
+        data_response: "450 Try later\r\n"
+      )
+
+    settings =
+      smtp_settings(%{"relay" => "127.0.0.1", "port" => to_string(port), "tls" => "never"})
+
+    assert {:ok, prepared} =
+             SmtpSender.prepare_notification("recipient@example.test", payload(), %{}, settings)
+
+    task = Task.async(fn -> SmtpSender.submit_prepared(prepared, settings) end)
+    assert_receive {:delivery_boundary, ^namespace, pid, _}, 5000
+    send(pid, :accept_delivery)
+    assert {:error, _} = Task.await(task)
+    refute_received {:delivery_boundary, _, _, _}
+  end
 
   # ---------------------------------------------------------------------------
   # Helpers
@@ -24,6 +90,8 @@ defmodule Zaq.Channels.EmailBridge.SmtpSenderTest do
   defp smtp_settings(overrides \\ %{}) do
     Map.merge(
       %{
+        "max_encoded_message_bytes" => 10_000_000,
+        "max_attachments_per_message" => 10,
         "relay" => "",
         "port" => "587",
         "transport_mode" => "starttls",
