@@ -23,11 +23,15 @@
     {
       "text": "Issue-level validation passed: mix q clean after local lint fixes; isolated Engine settings, unchanged coverage contracts and widget LiveView tests passed (latest run 52 checks including 1 property). Existing test assertions/scenarios were not edited. Snapshot, availability and display share a lookup, and initial async health refresh reuses it. Implementation prerequisite for zaq-vfx.2 is satisfied; epic retains pending final validation/coverage gates.",
       "timestamp": "2026-11-24T18:53:44Z"
+    },
+    {
+      "text": "Follow-up validation with issue 2 included all new mount regressions explicitly under --trace. Corrected the new settings-failure test socket to include the normal flash assign (test fixture only); it now passes. Latest combined Engine/component/LiveView run: 159 passed, including 1 property. mix q clean. One lookup per disconnected/connected mount remains proven; no original test contract changed.",
+      "timestamp": "2026-11-24T18:57:40Z"
     }
   ],
   "priority": 3,
   "status": "closed",
   "title": "[zaq-vfx.3] [PR #956 point 3] Reuse the widget settings capability snapshot during mount",
   "type": "task",
-  "updated_at": "2026-11-24T18:53:46Z"
+  "updated_at": "2026-11-24T18:57:40Z"
 }
