@@ -10,11 +10,15 @@
     {
       "text": "Implemented imap_idle mode in EmailBridge and aligned all four affected test files plus API/service documentation. mix q passed. Targeted tests passed: 266 (2 properties, 264 tests). Diff reviewed and git diff --check passed. Final mix precommit is running. Context Mode execution works; diagnostics note missing optional Codex capture hooks, so no automatic recall assumed.",
       "timestamp": "2026-11-24T11:02:34Z"
+    },
+    {
+      "text": "Final precommit cannot pass in this environment: genuine XLSX/PPTX/PDF/DOCX ingestion tests fail because markitdown dependencies are missing; ImageDedupCrawlerTest also requires the absent project .venv/bin/python3 (Runner falls back to python3). Database sandbox ownership errors also appeared in the broader run. These are outside the fixed IMAP capability contract. No dependency installation or unrelated assertion changes performed. Targeted 266 tests and mix q passed; working tree remains uncommitted.",
+      "timestamp": "2026-11-24T11:06:59Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Report imap_idle for email IMAP capabilities",
   "type": "task",
-  "updated_at": "2026-11-24T11:02:34Z"
+  "updated_at": "2026-11-24T11:06:59Z"
 }
