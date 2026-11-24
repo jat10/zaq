@@ -11,11 +11,15 @@
     {
       "text": "Root cause established and original defect reproduced by a new property test: normalized empty required input validates :ok for unsupported sending. Removed the supported?(:file) prerequisite from required_error in shared FileSettings; all existing consumers reuse the corrected predicate. Jad explicitly approved required-limit enforcement regardless of unsupported sending and corresponding existing test changes. Updated contradictory SMTP persistence/clearing expectations and valid SMTP test setup values; added real LiveView regressions for new/existing saves, both required fields, draft retention, database non-mutation and successful correction. Focused validation passed 166 checks (6 properties, 160 tests). Consumer regression run in progress. Existing unrelated uncommitted work backed up before edits. Prior explicit no-precommit instruction remains in force.",
       "timestamp": "2026-11-24T11:35:52Z"
+    },
+    {
+      "text": "Implementation validated. Shared required_error now rejects unresolved required limits independently of advertised file sending; known positive transport defaults and optional blank overrides retain their behavior. Reproducing property failed before the fix on support=:unsupported and blank=\"\". Coverage includes all five limit fields, whitespace/nil, transport defaults, both SMTP required controls, new/existing forms, unchanged database/drafts on rejection, correction success, and no runtime sync after failed saves. Approved old success/clearing assertions changed to explicit required errors. Existing SMTP consumer fixtures now provide required values via CommunicationFixtures.smtp_settings; PeopleAuthDeliveryMock implements both real bridge contracts and delegates snapshot facts to EmailBridge, preserving transport assertions. Final mix q passed. Final affected-consumer run passed 1504 checks (23 properties, 1481 tests), 27 excluded; log .serena/cache/required-files-final-regressions.log. Existing Channels/System Config Chromium journeys: 59/60 passed; dark-theme global-model mobile overflow assertion failed and evidence was added to existing zaq-gyv, outside this validation fix. No browser specs or UI/CSS changed. Original uncommitted work: 11 files preserved byte-for-byte; five intentionally extended. Final self-review and git diff --check passed. No precommit restart per earlier explicit instruction; no stage, commit, push, publication or final approval request. Feature UX/E2E/final-gate issues remain pending.",
+      "timestamp": "2026-11-24T11:51:42Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Reject missing required file limits independently of send support",
   "type": "bug",
-  "updated_at": "2026-11-24T11:35:52Z"
+  "updated_at": "2026-11-24T11:51:42Z"
 }
