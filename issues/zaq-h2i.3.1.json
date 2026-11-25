@@ -32,8 +32,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
-  "title": "[zaq-h2i.3] Approve and supply file capability metadata contract",
+  "status": "open",
+  "title": "[zaq-h2i.3.1] Confirm adapter declarations and normalized capability contract",
   "type": "task",
-  "updated_at": "2026-11-25T17:49:52Z"
+  "updated_at": "2026-11-25T17:56:56Z"
 }
