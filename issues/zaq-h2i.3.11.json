@@ -15,11 +15,15 @@
     {
       "text": "Reuse assessment: extend WidgetConnectorSettings existing request allowlist, put_setting, projection and persist_changeset error projection with file_delivery; ChannelConfig remains authoritative. Extend existing snapshot request to inspect exact selected config once (provider scope for new). Reuse ConnectionSettings and FileDeliverySettings only when declarations/recovery apply; retain existing Web stream layout when no file metadata applies. Widget validate delegates pure normalize_form/validate for feedback, never performs capability I/O. Focused private file-draft/error-tab helpers are necessary orchestration absent from existing widget routing/form helpers, and will call existing shared rules rather than define new validation. Add fixture using existing bridge capability_snapshot in owning synchronous LiveView suite; no external adapter callback/API. Existing async Engine suite will cover allowlist, blank/omitted settings and validation projection with real default unsupported Web.",
       "timestamp": "2026-11-25T18:50:39Z"
+    },
+    {
+      "text": "Widget integration complete within current pins. Existing allowlist/put_setting/projection/error mapping now carry file_delivery; Engine uses ChannelConfig guard and selected configuration capability inspection, one lookup. Conditional shared editor preserves current unsupported Web layout without metadata, and mounts declared Advanced controls with exact MB/false policy. New tests cover allowlist/empty/omission/error projection, declared save/reload/optional blank/false, invalid rollback, selected identity across two connections/recovery and zero capability lookups on validate. Red 2 tests; final focused green 52 checks (1 property), /tmp/zaq-h2i-widget-final.log; mix q passes /tmp/zaq-h2i-widget-q.log. Existing provider-modal recovery contract retained outside the active editor; selected editor recovery uses exact ID. No external adapters/pins/modules/callbacks added.",
+      "timestamp": "2026-11-25T18:57:07Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.11] Reuse shared Advanced file settings in Web Widget",
   "type": "task",
-  "updated_at": "2026-11-25T18:50:39Z"
+  "updated_at": "2026-11-25T18:57:07Z"
 }
