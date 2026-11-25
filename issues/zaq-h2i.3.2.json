@@ -19,11 +19,15 @@
     {
       "text": "Reuse audit: replace validate/2 stored-type loop and required_error/3 with an internal schemaless Ecto changeset, Ecto.Type.dump for strict persisted values, validate_required and validate_number for effective values and declared bounds. Existing normalize_form/merge_form remain exact form conversion; validate_limit retains only domain override restrictions/ceilings and delegates numeric/required checks. A private validation_changeset/2 is justified because conversion and metadata validators do not validate effective settings and exposing Ecto internals would create an unnecessary API. Existing validate_changeset/add_errors/errors and TransportRequirements.resolve share validate/2; no new resolver/schema module or Action.",
       "timestamp": "2026-11-25T18:22:13Z"
+    },
+    {
+      "text": "Internal Ecto replacement complete. validate/2 builds effective values with known schemaless types; strict stored types use Ecto.Type.dump, required values use validate_required only for usable file support, positivity/declared bounds use validate_number. Domain-only fixed/inapplicable/ceiling checks remain in existing validate_limit/override_error; obsolete required_error removed. Original public return/errors, exact conversion and resolver struct preserved. Red: 1 property and 2 tests proved ignored numeric rules; green: 90 checks (5 properties) including ChannelConfig existing error assertions. mix q passed (/tmp/zaq-h2i-validation-{red,green,q}.log). No external dependencies changed.",
+      "timestamp": "2026-11-25T18:24:16Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.2] Use Ecto within existing FileSettings validation and resolver",
   "type": "task",
-  "updated_at": "2026-11-25T18:22:13Z"
+  "updated_at": "2026-11-25T18:24:16Z"
 }
