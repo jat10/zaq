@@ -26,8 +26,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
-  "title": "[zaq-h2i.3.9] Validate proposed connection capabilities before saving",
+  "status": "open",
+  "title": "[zaq-h2i.3.9] Validate proposed connection capabilities at persistence",
   "type": "bug",
-  "updated_at": "2026-11-25T17:49:57Z"
+  "updated_at": "2026-11-25T17:57:01Z"
 }
