@@ -7,7 +7,7 @@
     "zaq-h2i.3.5"
   ],
   "created": "2026-11-21T14:04:47Z",
-  "description": "Human gate, not an implementation task. After zaq-h2i.3.12 review/validation, present current channel, SMTP and capability-applicable Web Widget Main/Advanced forms for explicit UX approval. Verify required/optional/fixed/unresolved/not-applicable states, unsupported sending, retry feedback, draft preservation, inactive-tab submission and relevant error-tab selection. Preserve existing capability modal and unrelated SMTP/widget/streamed settings. Prior design discussion is not approval of completed screens. Record the explicit response and reviewed revision. Only then unblock new consolidated E2E authoring in zaq-h2i.3.5. Reuse existing stories/browser/manual inspection; no new components or code in this issue.",
+  "description": "Human gate, not an implementation task. After zaq-h2i.3.12 review/validation, present current channel, SMTP and capability-applicable Web Widget Main/Advanced forms for explicit UX approval. Verify required/optional/fixed/unresolved/not-applicable states, unsupported sending, retry feedback, draft preservation, inactive-tab submission and relevant error-tab selection. Preserve existing capability modal and unrelated SMTP/widget/streamed settings. Prior design discussion is not approval of completed screens. Record the explicit response and reviewed revision. Only then unblock new consolidated E2E authoring in zaq-h2i.3.5. Reuse existing stories/browser/manual inspection; no new components or code in this issue.\n\nCurrent concrete review artifacts (2026-11-25): /tmp/zaq-h2i-smtp-main.png, /tmp/zaq-h2i-smtp-advanced.png, /tmp/zaq-h2i-channel-main.png, /tmp/zaq-h2i-channel-advanced.png, /tmp/zaq-h2i-widget-main.png, /tmp/zaq-h2i-declarations.png and live Storybook capture /tmp/zaq-h2i-declarations-storybook.png. Existing story source: storybook/components/forms/file_delivery_settings.story.exs. Current Web adapter has no file metadata and correctly shows no file controls; conditional declared widget behavior is proven through compatible existing-callback test producers in the owning LiveView suite. Shared rendered declarations show fixed/required/not-applicable/unsupported/unresolved/retry states. Exact unstaged diff artifact /tmp/zaq-h2i-implementation.patch has SHA256 140e2d5ca541f80080f32798f6f245986eb0578dd8a37880fd06b4406cf05af7; base HEAD 2107c75e5. No UX approval recorded yet; current user approvals cover only identified metadata expectations and unsupported-SMTP hint expectation. Do not treat automated checks or design-direction approval as this gate's completion.",
   "id": "zaq-h2i.3.4",
   "labels": [],
   "parent": "zaq-h2i.3",
@@ -29,5 +29,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.4] Obtain human UX approval for consolidated file settings",
   "type": "task",
-  "updated_at": "2026-11-25T17:57:29Z"
+  "updated_at": "2026-11-25T19:12:55Z"
 }
