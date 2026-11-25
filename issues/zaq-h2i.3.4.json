@@ -23,11 +23,15 @@
     {
       "text": "Updated SMTP persistence-rejection UX is ready for the existing final review scope: local blank-name error selects Main, all submitted credentials/security/file drafts remain, native Toggle keyboard navigation works, and correcting only the name saves/reloads the drafts. Browser evidence: /tmp/zaq-h2i-3-7-smtp-name-error.png, /tmp/zaq-h2i-3-7-smtp-retained-advanced.png and /tmp/zaq-h2i-3-7-browser-inspection.json. Final human UX approval remains pending; no new feature E2E specs authored and no precommit run.",
       "timestamp": "2026-11-23T18:39:36Z"
+    },
+    {
+      "text": "Ready for explicit human UX review. Review current artifacts and unstaged diff recorded in this description. Final automatic validation: 839 integrated checks plus targeted review checks; mix q passed; existing browser suite 590 passed/3 skipped. Approval has not been given for the completed screens; .3.5 and .3.13 remain gated. No code commit/push/merge/publication.",
+      "timestamp": "2026-11-25T19:14:17Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3.4] Obtain human UX approval for consolidated file settings",
   "type": "task",
-  "updated_at": "2026-11-25T19:12:55Z"
+  "updated_at": "2026-11-25T19:14:17Z"
 }
