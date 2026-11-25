@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-h2i.3.4"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-h2i.3.13"
+  ],
   "created": "2026-11-21T14:04:48Z",
   "description": "Read parent zaq-h2i.3 current handoff. Consolidated feature E2E authoring requires explicit UX approval recorded in zaq-h2i.3.4, after integration review zaq-h2i.3.12. Extend existing browser fixtures/specs; no copied test suite. Cover channels/SMTP plus Web Widget when declared file metadata applies. Required blanks fail only for usable file support; preserve unsupported SMTP acceptance. Include capability recovery, saved selected-connection identity, all drafts, exact MB/false values and hidden-tab error behavior. No runtime attachment delivery scope.\n\nConsolidated new feature E2E issue for zaq-h2i.3; authoring blocked by explicit final human UX/UI approval zaq-h2i.3.4 after shared Main/Advanced tabs zaq-h2i.3.6. Reuse existing channel/system_config/streamed_updates browser fixtures and suites where cohesive. Planned final journeys: generic and SMTP editors start on Main; applicable Advanced sections group streamed updates, File delivery and SMTP transport controls; Advanced is absent only when no section applies. Repeated pointer/keyboard switches retain all unsaved values, credentials and false policies and cause no persistence/runtime updates. One existing whole-form Save includes inactive controls and persists exact decimal MB/count/policy values to the selected connection; reload retains them and unrelated settings. Cover Main-only, Advanced-only and simultaneous errors: mark affected tabs, select Main first if both invalid, retain every draft and leave persisted configuration unchanged. Cover fixed/read-only limits, required/malformed/over-ceiling errors, optional blank overrides, unavailable metadata never meaning unlimited, and capability-driven visibility including unsupported connections. Include People-style DesignSystem.Toggle native Tab/Shift-Tab focus, Enter/Space activation, aria-pressed selection and labelled section visibility. Preserve the reviewed empty-required-limit and omitted-file-settings persistence fixes. No sending, attachment acquisition or delivery planning. Existing feature tests may receive minimal selector/navigation repairs preserving assertions and intent; new feature journeys wait for final UX approval. Smaller tests and manual browser inspection continue beforehand. After approval implement consolidated browser coverage and record validation/environment failures. Reuse existing public UI and Engine save operations; no new business Action or endpoint. Do not run mix precommit or commit/push/publish without authorization.",
   "id": "zaq-h2i.3.5",
@@ -19,5 +21,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.5] Validate approved consolidated file settings browser journeys",
   "type": "task",
-  "updated_at": "2026-11-25T17:57:15Z"
+  "updated_at": "2026-11-25T17:57:32Z"
 }
