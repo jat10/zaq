@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-h2i.3.11"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-h2i.3",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-h2i.3.12] Validate shared capability contracts and BO integration",
   "type": "task",
-  "updated_at": "2026-11-25T17:57:29Z"
+  "updated_at": "2026-11-25T18:57:10Z"
 }
