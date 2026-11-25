@@ -11,9 +11,15 @@
   "id": "zaq-h2i.3.11",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Reuse assessment: extend WidgetConnectorSettings existing request allowlist, put_setting, projection and persist_changeset error projection with file_delivery; ChannelConfig remains authoritative. Extend existing snapshot request to inspect exact selected config once (provider scope for new). Reuse ConnectionSettings and FileDeliverySettings only when declarations/recovery apply; retain existing Web stream layout when no file metadata applies. Widget validate delegates pure normalize_form/validate for feedback, never performs capability I/O. Focused private file-draft/error-tab helpers are necessary orchestration absent from existing widget routing/form helpers, and will call existing shared rules rather than define new validation. Add fixture using existing bridge capability_snapshot in owning synchronous LiveView suite; no external adapter callback/API. Existing async Engine suite will cover allowlist, blank/omitted settings and validation projection with real default unsupported Web.",
+      "timestamp": "2026-11-25T18:50:39Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.11] Reuse shared Advanced file settings in Web Widget",
   "type": "task",
-  "updated_at": "2026-11-25T18:50:38Z"
+  "updated_at": "2026-11-25T18:50:39Z"
 }
