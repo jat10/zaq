@@ -45,11 +45,15 @@
     {
       "text": "Preparation audit: Ecto.Changeset.prepare_changes prepends callbacks and Ecto.Repo.Schema.run_prepare reverses them, executing registration order. ChannelConfig registers file validation before preserve_current_policy; the latter alone changes settings in preparation (under FOR UPDATE). Widget-base-URL and IMAP SMTP dependency prepares add errors only. Grouped channel save and WidgetConnectorSettings persist ordinary fields first, then LiveUpdateSettings.persist writes policy with Ecto.Changeset.change, bypassing final capability validation. This can independently make the final record invalid. Smallest coherent plan: register existing file validation last in ChannelConfig; extend existing changeset with a compatible internal option allowing the existing authorized policy owner to preserve its submitted policy while retaining all schema validation/preparation. Default callers still restore locked current policy. LiveUpdateSettings.persist reuses that full changeset; grouped channel and widget failures reuse their existing field-error projections (extract private result-mapping from existing functions only if necessary). Concrete missing contract: the dedicated policy owner currently has no way to use the shared changeset without restoration undoing its owned write. No new validator, save operation, module or snapshot API. Preserve existing grouped sequence/revision results and rollback; do not refactor into a new save transaction. New original tests will prove direct restoration, grouped policy tightening, standalone policy validation and widget tightening plus valid lower overrides/self-validation. Fixed sequencing regression examples are appropriate; existing numeric properties remain unchanged.",
       "timestamp": "2026-11-25T19:29:20Z"
+    },
+    {
+      "text": "Four original regressions fail before production change because invalid direct, grouped channel, policy-only and widget saves are accepted (/tmp/zaq-h2i-preparation-red.log). Source fix registers file preparation last, reuses ChannelConfig.changeset with preserve_live_update_policy:false solely in the existing row-locked policy owner, and shares existing channel/widget result/error projections. First green attempt revealed an existing token-byte-preservation test: full changesets force token encryption. Policy persist now retains only its owned :settings change via existing Ecto.delete_change, preserving every unrelated field/ciphertext while retaining validation/prepares. New tests compare loaded records against loaded snapshots (EncryptedString load decrypts; inserted structs carry ciphertext); existing token assertion is untouched. No unknown failure root cause or test weakening.",
+      "timestamp": "2026-11-25T19:31:57Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities at persistence",
   "type": "bug",
-  "updated_at": "2026-11-25T19:29:20Z"
+  "updated_at": "2026-11-25T19:31:57Z"
 }
