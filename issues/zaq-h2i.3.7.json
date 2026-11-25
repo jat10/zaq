@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-h2i.3.9"
+  ],
   "blocks": [
     "zaq-h2i.3.3"
   ],
@@ -39,5 +41,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.7] Preserve SMTP drafts and map persistence errors",
   "type": "bug",
-  "updated_at": "2026-11-25T17:57:34Z"
+  "updated_at": "2026-11-25T17:57:36Z"
 }

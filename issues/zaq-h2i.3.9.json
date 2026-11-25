@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-h2i.3.2"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-h2i.3.7"
+  ],
   "created": "2026-11-23T19:41:50Z",
   "description": "Planning only; implementation requires an explicit user instruction. The current handoff in parent zaq-h2i.3 is authoritative for this task and supersedes older proposed shapes and historical implementation comments. Verify live source/Git before acting; historical green logs do not validate this checkout. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/agent-tools.md, docs/action-reuse.md, docs/code-quality.md and applicable service guides. Read DESIGN.md and docs/bo-components.md before UI work. Follow docs/testing-approach.md; existing test behavior changes require explicit approval.\n\nCorrect the existing ChannelConfig.changeset/2 persistence guard; do not introduce another save/validation service. Validate the effective proposed connection (including omitted unchanged file settings when other capability inputs change) against capabilities for that same proposal. Reuse Bridge.capability_snapshot/2 through existing channel_capability_snapshot NodeRouter/Event, CommunicationBridge normalization and FileSettings.validate/add_errors. Establish safe proposed-config request semantics through that existing operation; preserve confidential settings, actor context, provider/kind/archive checks and selected identity. No new preview endpoint.\n\nReuse EmailConnectorSettings.save/2, LiveUpdateSettings grouped save and WidgetConnectorSettings.execute/2 with their existing authorized Actions, revision checks and rollback. Remove the unchanged-file bypass without imposing requirements on unsupported file sending or changing unrelated flows. Keep form/operation error shapes compatible via existing FileSettings error projection. Tests in existing ChannelConfig/Engine suites cover 5 MB -\u003e 1 MB declared-ceiling changes retaining a 4 MB override, changed override, creation, enablement, omission, valid updates and atomic grouped rollback. Read parent reuse rules before adding any function. No BO capability request on each validation event.",
   "id": "zaq-h2i.3.9",
@@ -31,5 +33,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities at persistence",
   "type": "bug",
-  "updated_at": "2026-11-25T17:57:30Z"
+  "updated_at": "2026-11-25T17:57:36Z"
 }
