@@ -37,11 +37,15 @@
     {
       "text": "Implemented confidential proposal scope on existing snapshot endpoint. Bridge checks selected provider/kind/archive identity, including built new configs with preassigned IDs, and supplies proposed settings to producers. ChannelConfig prepares all retrieval saves and removed unchanged-file bypass; data-source file payloads remain rejected. New original tests prove creation, 5MB-\u003e1MB ceiling change retaining 4MB, corrected override/false policy, enablement without settings payload, grouped rollback and API confidentiality/identity. Initial red demonstrated stale acceptance (plus corrected new-test helper invocation). Green save regression 149 checks; additional 67 ChannelConfig checks and 11 focused API checks pass. mix q final passes. Logs /tmp/zaq-h2i-proposal-{red,green,final,api,q}.log. Existing preassigned-ID regression exposed and corrected without test changes. No dependency/external edits.",
       "timestamp": "2026-11-25T18:39:21Z"
+    },
+    {
+      "text": "Follow-up started for confirmed preparation-order review finding. Read current policies, bw prime, current Git and source. Existing 29 modified paths preserved with manifest/patch backup at /var/folders/hj/209gt2z12d1c2cf48t_2dc080000gn/T/zaq-h2i-preparation-before-uw9dbgwj. Review probes/logs are evidence only; original regressions will be added to existing suite. No change to existing test assertions or broader UX gates.",
+      "timestamp": "2026-11-25T19:25:19Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities at persistence",
   "type": "bug",
-  "updated_at": "2026-11-25T19:25:18Z"
+  "updated_at": "2026-11-25T19:25:19Z"
 }
