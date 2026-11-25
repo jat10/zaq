@@ -41,11 +41,15 @@
     {
       "text": "Follow-up started for confirmed preparation-order review finding. Read current policies, bw prime, current Git and source. Existing 29 modified paths preserved with manifest/patch backup at /var/folders/hj/209gt2z12d1c2cf48t_2dc080000gn/T/zaq-h2i-preparation-before-uw9dbgwj. Review probes/logs are evidence only; original regressions will be added to existing suite. No change to existing test assertions or broader UX gates.",
       "timestamp": "2026-11-25T19:25:19Z"
+    },
+    {
+      "text": "Preparation audit: Ecto.Changeset.prepare_changes prepends callbacks and Ecto.Repo.Schema.run_prepare reverses them, executing registration order. ChannelConfig registers file validation before preserve_current_policy; the latter alone changes settings in preparation (under FOR UPDATE). Widget-base-URL and IMAP SMTP dependency prepares add errors only. Grouped channel save and WidgetConnectorSettings persist ordinary fields first, then LiveUpdateSettings.persist writes policy with Ecto.Changeset.change, bypassing final capability validation. This can independently make the final record invalid. Smallest coherent plan: register existing file validation last in ChannelConfig; extend existing changeset with a compatible internal option allowing the existing authorized policy owner to preserve its submitted policy while retaining all schema validation/preparation. Default callers still restore locked current policy. LiveUpdateSettings.persist reuses that full changeset; grouped channel and widget failures reuse their existing field-error projections (extract private result-mapping from existing functions only if necessary). Concrete missing contract: the dedicated policy owner currently has no way to use the shared changeset without restoration undoing its owned write. No new validator, save operation, module or snapshot API. Preserve existing grouped sequence/revision results and rollback; do not refactor into a new save transaction. New original tests will prove direct restoration, grouped policy tightening, standalone policy validation and widget tightening plus valid lower overrides/self-validation. Fixed sequencing regression examples are appropriate; existing numeric properties remain unchanged.",
+      "timestamp": "2026-11-25T19:29:20Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities at persistence",
   "type": "bug",
-  "updated_at": "2026-11-25T19:25:19Z"
+  "updated_at": "2026-11-25T19:29:20Z"
 }
