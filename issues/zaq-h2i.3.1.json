@@ -42,11 +42,15 @@
     {
       "text": "Scope correction applied before coding. Removed zaq-h2i.4 -\u003e zaq-h2i.3.8; added zaq-h2i.3.1 -\u003e zaq-h2i.3.8. All downstream normalization -\u003e validation -\u003e persistence -\u003e SMTP error projection -\u003e BO -\u003e widget -\u003e review -\u003e UX -\u003e E2E -\u003e final checks dependencies are preserved. External adapter implementation/release remains zaq-h2i.4 follow-up, referencing the contract here. Prior proposed new source callbacks/local dependency integration are withdrawn. Contract: known file_delivery limits retain value/configurable/required and optionally type=:integer, unit=:bytes|:count, validation allowlisted numeric rules (greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to). Legacy declarations retain compatible positive integer semantics; metadata never grants file support. Unknown metadata types/rules fail closed; no executable validators or dynamic atoms. SMTP adds explicit integer/unit/positive rules using its existing declaration. Jido/Web preserve existing behavior without metadata; compatible bridge test adapters exercise shared integration. No external code or dependency mutations.",
       "timestamp": "2026-11-25T18:16:52Z"
+    },
+    {
+      "text": "Contract prerequisite complete within corrected scope: preserve current real Jido/Web snapshots without metadata; use existing capability_snapshot bridge callback and contract-compatible test bridge producers to exercise normalized declarations. Do not probe nonexistent adapter APIs or put structured data in status-only matrices. SMTP extends its existing EmailBridge declaration as explicitly requested. Downstream .3.8 can proceed; .4 remains external follow-up. Action reuse is extension of the existing snapshot/FileSettings seam, no new executable operation/Action/API. No code changes or test results required for this static contract audit.",
+      "timestamp": "2026-11-25T18:17:21Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.1] Confirm adapter declarations and normalized capability contract",
   "type": "task",
-  "updated_at": "2026-11-25T18:16:52Z"
+  "updated_at": "2026-11-25T18:17:21Z"
 }
