@@ -47,11 +47,15 @@
     {
       "text": "Additional explicit approval from current conversation: add integer type, bytes unit and positive validation metadata to normalized SMTP exact expectation in api_test.exs; equivalent additive metadata expectations approved. No removing assertions or changing statuses/applicability/defaults/other behavior. Focused red proved three failures; green 168 checks including 5 properties. mix q first found two new-test aliases, fixed; final q pending.",
       "timestamp": "2026-11-25T18:20:03Z"
+    },
+    {
+      "text": "Implementation verified: optional type/unit/allowlisted validation metadata retained by existing FileSettings metadata helpers and limit/2; SMTP existing declaration enriched without support/status changes. Red: 3 new/approved tests failed as expected. Green: 168 checks. Wider live dependency regression: 359 checks (6 properties, 353 tests), log /tmp/zaq-h2i-normalization-regression.log. mix q passed after two new-test alias fixes (/tmp/zaq-h2i-normalization-q.log). Existing pins and external repos unchanged. Jido/Web original producer tests pass with absent metadata. Implementation complete; parent remains open for integration/UX/review/landing.",
+      "timestamp": "2026-11-25T18:22:09Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.8] Extend shared communication capability normalization",
   "type": "task",
-  "updated_at": "2026-11-25T18:20:03Z"
+  "updated_at": "2026-11-25T18:22:09Z"
 }
