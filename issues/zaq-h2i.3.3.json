@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-h2i.3.11"
   ],
+  "closed_at": "2026-11-25T18:50:37Z",
+  "close_reason": "Shared adaptive controls and channel/SMTP regression/quality checks pass.",
   "created": "2026-11-21T14:04:46Z",
   "description": "Planning only; implementation requires an explicit user instruction. The current handoff in parent zaq-h2i.3 is authoritative for this task and supersedes older proposed shapes and historical implementation comments. Verify live source/Git before acting; historical green logs do not validate this checkout. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/agent-tools.md, docs/action-reuse.md, docs/code-quality.md and applicable service guides. Read DESIGN.md and docs/bo-components.md before UI work. Follow docs/testing-approach.md; existing test behavior changes require explicit approval.\n\nFinish existing BO wiring; do not recreate components. Reuse ConnectionSettings.editor/tab_for_errors/switch_settings_tab, FileDeliverySettings.section/form_params/errors, LiveUpdateSettings.fields embedded mode, ChannelCapabilities.icon_with_modal, DesignSystem.Input/Switch and existing modal shells. Existing channel and SMTP forms already use shared Advanced settings. Extend their current handlers only as needed; no duplicate file labels/units/conversion/required logic in LiveViews.\n\nWebWidget has no file editor and its existing allowlist/projections omit file_delivery: extend WidgetConnectorSettings and current widget form/draft/error projections together, then reuse the same editor/section only when declarations apply. Keep unrelated widget identity/routing/key and lifecycle behavior. Do not claim widget integration is component-only.\n\nRead-only fixed limits; configurable inputs; exact decimal MB; conditional required indicators/help; unknown versus not applicable; ZAQ failure policy switch; retained hidden-tab values and error-tab selection. Avoid hidden browser-invalid controls blocking server validation. Preserve existing core unresolved displays unless a separate UX change is approved.\nUse existing capability recovery and feedback components; successful unsupported is different from lookup failure. Preserve drafts on retry. Validate events use assigns only, not DB or network. Final Save validates proposed configuration at Engine; stale cached facts cannot be the final authority.\nReuse current authorized save operations and selected connection boundaries. Tests extend current components/LiveViews and engine suites, using existing fixtures. Update existing stories. New feature browser authoring waits for UX approval under parent plan.\n\nTask boundary: implement channel/SMTP behavior here; shared component changes needed by both belong here. Widget-specific request/projection/persistence and call-site wiring is separately owned by zaq-h2i.3.11 after this task; do not implement it twice.",
   "id": "zaq-h2i.3.3",
@@ -30,8 +32,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-h2i.3.3] Finish existing channel and SMTP Advanced settings",
   "type": "task",
-  "updated_at": "2026-11-25T18:50:35Z"
+  "updated_at": "2026-11-25T18:50:37Z"
 }
