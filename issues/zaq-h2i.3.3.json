@@ -19,11 +19,15 @@
     {
       "text": "Reuse assessment: extend existing FileDeliverySettings.section and private hint/ceiling helpers for effective required help, declared numeric bounds and recovery feedback using FeedbackBanner/Button. Required input feedback is obtained from FileSettings.validate(empty, normalized snapshot), so UI has no separate required algorithm. HTML min/max project the allowlisted integer bounds to display units; shared validation remains authoritative. Extend existing load_capabilities/recovery helpers to retain failed lookup state and retry through open_capabilities without losing drafts. Remove cached file-validation veto from final save paths, retaining cached assign-only validate feedback and Engine authoritative checks. Existing components/tabs/form layout remain; no new module/API/event planned. Widget call-site and allowlist remain next task.",
       "timestamp": "2026-11-25T18:42:25Z"
+    },
+    {
+      "text": "Explicit approval received in current conversation for the single unsupported SMTP help-text expectation at notification_smtp_live_test.exs:282: replace unconditional Required text with Optional override and attachment-unavailable assertions. All save/reload, exact bytes, policy and support assertions retained. Metadata-only approval remains separate. New shared control tests cover declared bounds/effective requirements/recovery; channel regressions prove stale restrictive feedback cannot veto a server-valid save and failed selected lookup retry preserves drafts. New compatible SMTP bridge fixture changes only numeric declarations and preserves unsupported status, proving adaptive controls and authoritative save/reload through existing operation.",
+      "timestamp": "2026-11-25T18:48:36Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.3] Finish existing channel and SMTP Advanced settings",
   "type": "task",
-  "updated_at": "2026-11-25T18:42:25Z"
+  "updated_at": "2026-11-25T18:48:36Z"
 }
