@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-h2i.3.3"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-h2i.3.4"
   ],
@@ -55,5 +53,5 @@
   "status": "closed",
   "title": "[zaq-h2i.3] Unify connection editors with Main and Advanced settings tabs",
   "type": "task",
-  "updated_at": "2026-11-22T11:28:28Z"
+  "updated_at": "2026-11-25T17:57:21Z"
 }
