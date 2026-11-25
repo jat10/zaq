@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-h2i.3.2"
+  ],
   "created": "2026-11-23T17:38:48Z",
   "description": "Planning only; implementation requires an explicit user instruction. The current handoff in parent zaq-h2i.3 is authoritative for this task and supersedes older proposed shapes and historical implementation comments. Verify live source/Git before acting; historical green logs do not validate this checkout. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/agent-tools.md, docs/action-reuse.md, docs/code-quality.md and applicable service guides. Read DESIGN.md and docs/bo-components.md before UI work. Follow docs/testing-approach.md; existing test behavior changes require explicit approval.\n\nExtend the existing bridge snapshot path, not a new capabilities subsystem. Producers: JidoChatBridge.capability_snapshot/1, EmailBridge.capability_snapshot/1, WebBridge.capability_snapshot/1. Each reads selected adapter facts and translates vocabulary; no per-bridge defaulting/validation or requirements construction. Bridge.capability_snapshot/2 retains identity/scope selection and kind dispatch. CommunicationBridge.normalize_capability_snapshot/2 owns common communication normalization, delegating file-specific rules to existing FileSettings.metadata/1 and its metadata helpers. Preserve data-source normalization.\n\nKeep required/resolved/unsupported/labels and existing capability keys/statuses compatible for BO. Normalize file_delivery limits including new type/unit/validation fields, retaining conservative flags and unresolved/not_applicable. Preserve configuration/policy separation. No renamed features/capabilities output key, generic registry, provider-name cases in shared consumers, duplicate normalization helper/module, or separate file callback. Use existing error contracts where they fit; justify additive errors. Adapter API/dependency requirements come from zaq-h2i.3.1/zaq-h2i.4, not speculative fallback probing. Extend real producer/Bridge/API tests with selected-adapter isolation and malformed declarations; reuse existing fixtures/suites. Action reuse: extend existing snapshot endpoint and domain normalization.",
   "id": "zaq-h2i.3.8",
@@ -41,5 +43,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.8] Extend shared communication capability normalization",
   "type": "task",
-  "updated_at": "2026-11-25T17:57:25Z"
+  "updated_at": "2026-11-25T17:57:35Z"
 }
