@@ -15,11 +15,15 @@
     {
       "text": "Retain the existing finalization gate. Add SMTP persistence-rejection review to the consolidated journey: clear the configuration name with novalidate, keep relay/credentials/security/file drafts, show the name error on Main, navigate Advanced, then correct only the name and save/reload all original drafts. The zaq-h2i.3.8 normalization and optional adapter-source paths are covered now at existing integration/property/LiveView boundaries; installed metadata sources remain an upstream zaq-h2i.4 prerequisite. No new feature E2E specs were authored during these implementation issues; required existing E2E execution is running.",
       "timestamp": "2026-11-23T18:21:50Z"
+    },
+    {
+      "text": "Keep consolidated new-feature E2E blocked on .3.4 UX approval. Implementation now covers typed numeric declarations, effective required help, unchanged-file proposed validation, adaptive unsupported SMTP, draft-preserving selected retry, stale cached feedback, widget allowlist/projection and conditional tabs. Add final journeys for partial widget drafts and streamed-only Advanced errors after approval. Existing full npm test may run pre-approval; no new feature browser tests have been authored.",
+      "timestamp": "2026-11-25T19:04:05Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3.5] Validate approved consolidated file settings browser journeys",
   "type": "task",
-  "updated_at": "2026-11-25T17:57:32Z"
+  "updated_at": "2026-11-25T19:04:05Z"
 }
