@@ -39,11 +39,15 @@
     {
       "text": "Reuse assessment: extend smtp_persistence_result/2 to project persistence errors onto the existing EmailConfig form for all failures, retaining raw submitted params/drafts. Reuse FileSettings.errors/add_errors for file-local errors; map ChannelConfig name to existing connector_name input and preserve other form-compatible errors. No new mapper/module/save path. Existing template name control can use DesignSystem.Input to render projected field errors. Tests added to existing Engine and SMTP LiveView suites; no existing test behavior changes.",
       "timestamp": "2026-11-25T18:39:26Z"
+    },
+    {
+      "text": "SMTP draft/error projection completed. New Engine test covers new/existing selection, form schema, raw password/name and normalized false/file drafts; new LiveView regression proves blank name retains every draft, Main error navigation, unchanged stored data and successful correction. Red 2 tests; green 66 checks (1 property), /tmp/zaq-h2i-smtp-errors-{red,green}.log. mix q passes after flattening the projection and ordering an alias, /tmp/zaq-h2i-smtp-errors-q.log. Existing file error helpers and save operation reused; no new mapper API.",
+      "timestamp": "2026-11-25T18:42:21Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.7] Preserve SMTP drafts and map persistence errors",
   "type": "bug",
-  "updated_at": "2026-11-25T18:39:26Z"
+  "updated_at": "2026-11-25T18:42:21Z"
 }
