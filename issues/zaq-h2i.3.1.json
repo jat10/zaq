@@ -1,9 +1,7 @@
 {
   "assignee": "Jad",
   "blocked_by": [],
-  "blocks": [
-    "zaq-h2i.3.2"
-  ],
+  "blocks": [],
   "created": "2026-11-21T14:03:33Z",
   "description": "Planning only; implementation requires an explicit user instruction. The current handoff in parent zaq-h2i.3 is authoritative for this task and supersedes older proposed shapes and historical implementation comments. Verify live source/Git before acting; historical green logs do not validate this checkout. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/agent-tools.md, docs/action-reuse.md, docs/code-quality.md and applicable service guides. Read DESIGN.md and docs/bo-components.md before UI work. Follow docs/testing-approach.md; existing test behavior changes require explicit approval.\n\nContract prerequisite: maintain the approved envelope and file_delivery.limits extension specified in the parent. Reuse the existing capability_snapshot/1 callback and CommunicationBridge.normalize_capability_snapshot/2. No file_delivery_capabilities callback or parallel source API without proven adapter contract necessity. Inspect actual Mattermost/Jido/Web APIs and compatible versions; resolve configured-value versus provider-ceiling ambiguity explicitly. Bridge translation supplies only declared facts; shared normalization and FileSettings retain their established ownership. Required applies only for usable file support. No support-status changes invented to show settings. Preserve data-source isolation, selected identity and disabled-configuration inspection. Source-contract gaps are owned with zaq-h2i.4; the exact adapter extension must be agreed before dependent implementation. Historical completion/approval notes refer to prior revisions, not blanket approval for new test behavior or coding.",
   "id": "zaq-h2i.3.1",
@@ -35,5 +33,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.1] Confirm adapter declarations and normalized capability contract",
   "type": "task",
-  "updated_at": "2026-11-25T17:56:56Z"
+  "updated_at": "2026-11-25T17:57:19Z"
 }
