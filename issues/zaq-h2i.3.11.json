@@ -9,7 +9,7 @@
   "parent": "zaq-h2i.3",
   "priority": 2,
   "status": "open",
-  "title": "Use Ecto for capability-driven file configuration validation",
+  "title": "[zaq-h2i.3.11] Use Ecto for capability-driven file configuration validation",
   "type": "task",
-  "updated_at": "2026-11-25T17:23:20Z"
+  "updated_at": "2026-11-25T17:23:34Z"
 }
