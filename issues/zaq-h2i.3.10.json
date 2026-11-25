@@ -3,7 +3,7 @@
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-24T11:29:00Z",
-  "description": "Symptom: required SMTP limits accept blank input and save successfully. Evidence: FileSettings.normalize_form drops blanks; required_error/3 gates required validation on supported?(snapshot, :file), while SMTP metadata declares required encoded size and attachment count with unsupported sending. Owner/invariant: shared FileSettings validation must reject unresolved required effective limits regardless of delivery support; persistence must remain atomic with field-local form errors. Jad explicitly approved changing the existing unsupported-SMTP success expectations in the current conversation. Action reuse assessment: extend existing FileSettings.validate/2 and reuse ChannelConfig prepare_changes, EmailConfig cached validation, and EmailConnectorSettings/SaveEmailConnector persistence; no new Action, endpoint, tool, or validation copy. Contract: blank required unresolved limits fail; positive supplied values or known transport defaults pass; optional blanks and unsupported transports with no required metadata retain their behavior. Plan: add focused failing unit/property and persistence/form regressions; fix shared predicate; update approved contradictory tests/fixtures and owner documentation; run affected suites and mix q. No new feature E2E needed for validation-only regression with LiveView coverage. Preserve prior uncommitted changes. No precommit restart, commit, push, or publication.",
+  "description": "SUPERSEDED by the user's explicit 2026-11-25 decision: enforce required configuration only when the associated feature is usable. Do not implement the former unconditional required-limit behavior or change unsupported SMTP success expectations. Shared Ecto validation is owned by zaq-h2i.3.2 under the current parent handoff. Historical comments describe an earlier direction and are not current authorization.",
   "id": "zaq-h2i.3.10",
   "labels": [],
   "parent": "zaq-h2i.3",
@@ -21,5 +21,5 @@
   "status": "in_progress",
   "title": "[zaq-h2i.3] Reject missing required file limits independently of send support",
   "type": "bug",
-  "updated_at": "2026-11-24T11:51:42Z"
+  "updated_at": "2026-11-25T17:57:17Z"
 }
