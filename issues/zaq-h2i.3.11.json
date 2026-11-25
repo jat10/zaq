@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-25T17:55:59Z",
+  "description": "Read parent zaq-h2i.3 current coding-agent handoff and its mandatory reuse map first; it supersedes historical comments. Follow AGENTS.md and referenced workflow, tool, reuse, code-quality, service and testing policies; DESIGN.md/BO guide for UI. Planning only: wait for explicit implementation authorization. New existing-test behavior changes need approval. Keep per-issue steps/evidence here. Action reuse: extend existing authorized domain operations and components; no new Action/endpoint/tool.\n\nExtend existing WebWidgetLive, WidgetConnectorSettings.execute/2 and its current request allowlist, selected projection, settings persistence and error mapping. Reuse ConnectionSettings.editor, FileDeliverySettings.section/form_params/errors, LiveUpdateSettings.fields and existing DesignSystem controls/modal. Show file controls only for applicable normalized declarations; current unsupported Web adapters gain no invented file support. Preserve existing identity/routing/key operations, lifecycle revisions and grouped rollback. Validate with FileSettings through existing ChannelConfig guard; do not introduce a widget-specific validator. Snapshot inspection must retain selected connection identity. Add original tests to existing widget Engine/LiveView suites proving declared metadata visibility, omitted/blank/false settings, save/reload, blocked invalid saves, error-tab selection and unchanged unrelated settings. Reuse existing fixtures; no production dependency changes solely for fixtures. No new module/component/API is planned.",
+  "id": "zaq-h2i.3.11",
+  "labels": [],
+  "parent": "zaq-h2i.3",
+  "priority": 2,
+  "status": "open",
+  "title": "Reuse shared Advanced file settings in Web Widget",
+  "type": "task",
+  "updated_at": "2026-11-25T17:55:59Z"
+}
