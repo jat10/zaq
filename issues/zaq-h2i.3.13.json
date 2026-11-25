@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-25T17:56:04Z",
+  "description": "Read parent zaq-h2i.3 current coding-agent handoff and its mandatory reuse map first; it supersedes historical comments. Follow AGENTS.md and referenced workflow, tool, reuse, code-quality, service and testing policies; DESIGN.md/BO guide for UI. Planning only: wait for explicit implementation authorization. New existing-test behavior changes need approval. Keep per-issue steps/evidence here. Action reuse: extend existing authorized domain operations and components; no new Action/endpoint/tool.\n\nAfter integration review, explicit human UX approval and consolidated E2E, follow docs/WORKFLOW_AGENT.md phase 6 for post-review coverage and final mix precommit. Preserve existing tests; fixes repeat appropriate isolated checks and review gates. Record failures/blockers accurately, never reuse old successful logs as current validation. Final human completion approval only after required checks pass. This issue authorizes no commit, push, merge, publication or unrelated changes. No implementation is authorized by this planning request.",
+  "id": "zaq-h2i.3.13",
+  "labels": [],
+  "parent": "zaq-h2i.3",
+  "priority": 2,
+  "status": "open",
+  "title": "Complete post-review coverage and final validation gates",
+  "type": "task",
+  "updated_at": "2026-11-25T17:56:04Z"
+}
