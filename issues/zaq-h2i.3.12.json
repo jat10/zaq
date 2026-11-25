@@ -19,11 +19,15 @@
     {
       "text": "Integrated regression passed 839 checks (9 properties, 830 tests), including full Jido/Email/Web/Bridge/API, FileSettings/resolver, persistence/authorized saves and all three BO consumers; /tmp/zaq-h2i-integrated.log. Review added adversarial widget partial-draft and streamed-only Advanced error tests: red reproduced both losses separately, fixes pass 52 widget checks (/tmp/zaq-h2i-widget-review-{red,red2,green}.log). Final integration mix q passed after owner docs and existing story updates (/tmp/zaq-h2i-integration-q.log). Existing-test diff audit shows only explicitly approved additive metadata maps and the approved SMTP help expectation; all other existing assertion lines retained. mix.exs/mix.lock unchanged; external repos untouched. Full existing npm test running (593 cases); no new feature E2E authored. Current form screenshots being captured for UX gate; no precommit/coverage/commit/push/publication.",
       "timestamp": "2026-11-25T19:04:04Z"
+    },
+    {
+      "text": "Visual inspection: live SMTP Main/Advanced, channel Main/Advanced and current unsupported widget captured at /tmp/zaq-h2i-{smtp,channel}-{main,advanced}.png and /tmp/zaq-h2i-widget-main.png. Actual current widget has zero file controls; Jido displays unresolved limits. Native required file inputs count is zero. Live existing Storybook loads typed/fixed/required/not-applicable/unsupported/retry states; screenshots /tmp/zaq-h2i-declarations{,-storybook}.png and temporary static HTML /tmp/zaq-h2i-declarations-preview.html. Review corrected the shared file-error color to the documented existing body-danger semantic token (prior alias was undefined, causing black errors). No new design pattern or CSS token. Browser full suite includes Storybook, so started its local BO-only preview on 4000; 4002 remains the isolated E2E app. Existing external repo statuses match initial state.",
+      "timestamp": "2026-11-25T19:10:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.12] Validate shared capability contracts and BO integration",
   "type": "task",
-  "updated_at": "2026-11-25T19:04:04Z"
+  "updated_at": "2026-11-25T19:10:38Z"
 }
