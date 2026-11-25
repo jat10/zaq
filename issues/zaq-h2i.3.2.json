@@ -1,9 +1,7 @@
 {
   "assignee": "Jad",
   "blocked_by": [],
-  "blocks": [
-    "zaq-h2i.3.3"
-  ],
+  "blocks": [],
   "created": "2026-11-21T14:04:45Z",
   "description": "Planning only; implementation requires an explicit user instruction. The current handoff in parent zaq-h2i.3 is authoritative for this task and supersedes older proposed shapes and historical implementation comments. Verify live source/Git before acting; historical green logs do not validate this checkout. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/agent-tools.md, docs/action-reuse.md, docs/code-quality.md and applicable service guides. Read DESIGN.md and docs/bo-components.md before UI work. Follow docs/testing-approach.md; existing test behavior changes require explicit approval.\n\nExtend existing FileSettings and TransportRequirements.resolve/2; both are already implemented. Do not create a resolver module, validation module or new schema framework. Reuse FileSettings.normalize_form/1, merge_form/2, form_values/1 for exact conversion/partial forms; metadata/1, supported?/2, limit/2 for declaration semantics; validate/2, validate_changeset/3 and effective_limits/2 for shared Ecto-backed checks; add_errors/3 and errors/1 for existing error shape. Ecto handles known types, required fields and numeric/boolean validation. Fixed/inapplicable override rules remain in the same domain owner. Preserve public behavior, struct shape, unsupported SMTP saves, false/default policy, optional blank clearing, omitted values and exact MB. No second hand-written validation pipeline alongside Ecto. Remove replaced private checks when safe. Extend SettingsTest and TransportRequirementsTest; no separate resolver suite. Pure operations perform no I/O, runtime lookup, persistence or delivery. Action reuse: extend existing pure local domain operations; no Action or tool.",
   "id": "zaq-h2i.3.2",
@@ -19,5 +17,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.2] Use Ecto within existing FileSettings validation and resolver",
   "type": "task",
-  "updated_at": "2026-11-25T17:57:19Z"
+  "updated_at": "2026-11-25T17:57:20Z"
 }

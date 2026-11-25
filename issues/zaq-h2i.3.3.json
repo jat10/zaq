@@ -1,8 +1,6 @@
 {
   "assignee": "Jad",
-  "blocked_by": [
-    "zaq-h2i.3.2"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-h2i.3.6"
   ],
@@ -21,5 +19,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.3] Finish existing channel and SMTP Advanced settings",
   "type": "task",
-  "updated_at": "2026-11-25T17:57:13Z"
+  "updated_at": "2026-11-25T17:57:20Z"
 }
