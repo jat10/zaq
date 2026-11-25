@@ -1,7 +1,6 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-h2i.3.6",
     "zaq-h2i.3.7",
     "zaq-h2i.3.8"
   ],
@@ -31,5 +30,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.4] Obtain human UX approval for consolidated file settings",
   "type": "task",
-  "updated_at": "2026-11-25T17:57:14Z"
+  "updated_at": "2026-11-25T17:57:23Z"
 }

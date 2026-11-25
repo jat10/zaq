@@ -1,9 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [
-    "zaq-h2i.3.4"
-  ],
+  "blocks": [],
   "closed_at": "2026-11-22T11:28:28Z",
   "close_reason": "Implemented shared Main/Advanced settings using DesignSystem.Toggle per user steering; approved test-contract changes recorded. mix q, 781 issue regression checks and all 15 affected existing browser journeys across three browsers pass. Storybook and native keyboard/save/rejection inspection verified. Capability and persistence contracts preserved. Final feature UX approval and consolidated E2E remain separately tracked in zaq-h2i.3.4 and zaq-h2i.3.5; no precommit or Git publication authorized.",
   "created": "2026-11-22T10:32:39Z",
@@ -53,5 +51,5 @@
   "status": "closed",
   "title": "[zaq-h2i.3] Unify connection editors with Main and Advanced settings tabs",
   "type": "task",
-  "updated_at": "2026-11-25T17:57:21Z"
+  "updated_at": "2026-11-25T17:57:23Z"
 }
