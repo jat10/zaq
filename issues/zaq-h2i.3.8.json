@@ -40,8 +40,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
-  "title": "[zaq-h2i.3.8] Unify capability snapshot normalization across Email, Jido and Web bridges",
+  "status": "open",
+  "title": "[zaq-h2i.3.8] Extend shared communication capability normalization",
   "type": "task",
-  "updated_at": "2026-11-25T17:49:56Z"
+  "updated_at": "2026-11-25T17:56:59Z"
 }
