@@ -27,11 +27,15 @@
     {
       "text": "Final independent validation: mix q passed (/tmp/zaq-h2i-3-9-q.log); 466 focused persistence/API/LiveView checks passed, including 5 properties (/tmp/zaq-h2i-3-9-regressions.log); existing channel and streamed-update browser checks passed 15/15 across Firefox/WebKit/Chromium (/tmp/zaq-h2i-3-9-e2e.log). Initial browser bootstrap reported port 4002 eaddrinuse; a retry after verifying the port was free passed without code changes (initial log /tmp/zaq-h2i-3-9-e2e-port-failure.log). Final owning-suite run is 118/120 passing, including its property; exactly the two pre-existing Jido/Web resolver fixtures now fail creation because their missing required limits are correctly rejected (/tmp/zaq-h2i-3-9-owning.log). Their setup and all assertions remain unchanged pending explicit approval already requested. Proposed repair: create a valid neutral fixture, then seed the same historical invalid settings with a plain fixture changeset; preserve all snapshot/resolver/isolation assertions. No new feature E2E authored; final feature UX/E2E and known full-browser RAG gap remain in their existing owners. Implementation is complete, retaining in_progress for the required fixture-approval/verification gate. No precommit, commit or push.",
       "timestamp": "2026-11-23T20:01:56Z"
+    },
+    {
+      "text": "Reuse audit: extend existing Bridge.fetch_capability_config/2 with a proposal scope on the same capability_snapshot/2 operation. Request carries the effective ChannelConfig struct; selected existing id/provider/kind/archive identity is verified against storage, while settings/url/enabled facts come from the proposal. Existing API requires confidential events for proposals; schema prepare hook dispatches confidentially. Existing runtime/configuration/provider scopes unchanged. Extend existing maybe_validate_new_file_settings helper to prepare every retrieval update and remove unchanged-file shortcut; no new save service or Action. This additive request contract is the missing proposal semantics already explicitly planned here. Tests use a new compatible bridge fixture in the owning ChannelConfigTest, plus API confidential/identity regressions; no external adapter API is required.",
+      "timestamp": "2026-11-25T18:34:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities at persistence",
   "type": "bug",
-  "updated_at": "2026-11-25T18:24:19Z"
+  "updated_at": "2026-11-25T18:34:18Z"
 }
