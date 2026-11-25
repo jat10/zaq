@@ -23,11 +23,15 @@
     {
       "text": "Explicit approval received in current conversation for the single unsupported SMTP help-text expectation at notification_smtp_live_test.exs:282: replace unconditional Required text with Optional override and attachment-unavailable assertions. All save/reload, exact bytes, policy and support assertions retained. Metadata-only approval remains separate. New shared control tests cover declared bounds/effective requirements/recovery; channel regressions prove stale restrictive feedback cannot veto a server-valid save and failed selected lookup retry preserves drafts. New compatible SMTP bridge fixture changes only numeric declarations and preserves unsupported status, proving adaptive controls and authoritative save/reload through existing operation.",
       "timestamp": "2026-11-25T18:48:36Z"
+    },
+    {
+      "text": "Channel/SMTP and shared Advanced implementation validated: 143 focused component/LiveView checks pass (/tmp/zaq-h2i-controls-final.log), final mix q passes (/tmp/zaq-h2i-controls-q.log). Typed min/max and exact MB use normalized declarations; required help derives from shared validation and no native required is attached to hidden file inputs. Successful unsupported/empty snapshots differ from failed lookups; existing modal recovery reused, draft/false values retained. Final saves delegate file authority to Engine while validate remains cached/assign-only. New tests cover actual adaptive SMTP declaration through rejected save/corrected save/reload without support changes. Widget remains separately owned by .3.11. Existing test change limited to explicitly approved help text.",
+      "timestamp": "2026-11-25T18:50:35Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.3] Finish existing channel and SMTP Advanced settings",
   "type": "task",
-  "updated_at": "2026-11-25T18:48:36Z"
+  "updated_at": "2026-11-25T18:50:35Z"
 }
