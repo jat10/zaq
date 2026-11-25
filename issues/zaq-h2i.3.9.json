@@ -49,11 +49,15 @@
     {
       "text": "Four original regressions fail before production change because invalid direct, grouped channel, policy-only and widget saves are accepted (/tmp/zaq-h2i-preparation-red.log). Source fix registers file preparation last, reuses ChannelConfig.changeset with preserve_live_update_policy:false solely in the existing row-locked policy owner, and shares existing channel/widget result/error projections. First green attempt revealed an existing token-byte-preservation test: full changesets force token encryption. Policy persist now retains only its owned :settings change via existing Ecto.delete_change, preserving every unrelated field/ciphertext while retaining validation/prepares. New tests compare loaded records against loaded snapshots (EncryptedString load decrypts; inserted structs carry ciphertext); existing token assertion is untouched. No unknown failure root cause or test weakening.",
       "timestamp": "2026-11-25T19:31:57Z"
+    },
+    {
+      "text": "Additional final-state variant exposed an intermediate-write veto after the ordering fix: a grouped change loosening the ceiling from 1MB to 5MB with a final-valid 4MB override was rejected against the old policy (new regression /tmp/zaq-h2i-preparation-final-policy-red.log). Plan amendment within this fix: existing grouped transaction owners may defer only the first write\\x27s capability preparation when their normalized policy actually changes; the existing final policy write always runs full shared validation before commit. Unchanged-policy saves retain ordinary validation. Extend the same internal changeset opts with defer_file_validation, default false; no bypass reachable from form attrs. Keep form conversion, row/revision locks, original operation sequence/results and final rollback. Widget uses its existing pure normalize_live_updates helper to determine whether a final policy write is guaranteed, and keeps existing error projection. This avoids both invalid acceptance and final-valid false rejection without another validator/save path.",
+      "timestamp": "2026-11-25T19:38:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities at persistence",
   "type": "bug",
-  "updated_at": "2026-11-25T19:31:57Z"
+  "updated_at": "2026-11-25T19:38:18Z"
 }
