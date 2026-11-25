@@ -36,8 +36,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
-  "title": "[zaq-h2i.3] Preserve SMTP form drafts on persistence validation errors",
+  "status": "open",
+  "title": "[zaq-h2i.3.7] Preserve SMTP drafts and map persistence errors",
   "type": "bug",
-  "updated_at": "2026-11-23T18:46:25Z"
+  "updated_at": "2026-11-25T17:57:02Z"
 }
