@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-h2i.3.3"
+  ],
   "created": "2026-11-23T17:38:47Z",
   "description": "Read parent zaq-h2i.3 current handoff; planning only, explicit coding authorization still required. Reuse EmailConnectorSettings.save/2 and smtp_persistence_result/2, FileSettings.errors/add_errors, NotificationSmtpLive configuration_save/error projection and ConnectionSettings.tab_for_errors. Do not introduce an error mapper module or second persistence path.\n\nProblem\nClearing the SMTP configuration name and saving is now reachable through the form's novalidate behavior. EmailConnectorSettings.smtp_persistence_result/2 returns a ChannelConfig changeset for non-file errors, but NotificationSmtpLive renders an EmailConfig form. A review regression test proved the entered relay value disappears after rejection. The page does not crash.\n\nScope and acceptance\n- Preserve the EmailConfig form schema, submitted SMTP credentials, connection-name draft and Advanced/file settings for persistence-level errors.\n- Project actionable persistence errors into the correct form fields, select Main for a name error, and keep tab navigation usable.\n- A rejected save must leave persisted configuration unchanged. Correcting the name and saving must persist the original drafts.\n- Cover blank name and representative persistence errors in the existing EmailConnectorSettings and SMTP LiveView suites; include both new and existing connections where applicable.\n- Keep the existing file-error projection and cross-service boundary intact.\nAction reuse: extend the existing EmailConnectorSettings save operation and error projection. Reuse the existing NodeRouter/Event route; no new Action, endpoint or tool.\nRead docs/services/engine.md, DESIGN.md and docs/bo-components.md before affected work.\n\nImplementation prompt\nWork on PR 2 in ../zaq-feat-channel-file-settings, branch feat/channel-file-settings (PR jat10/zaq#16, stacked on feat/email-capabilities). Verify current Git state and preserve other work. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/agent-tools.md, docs/testing-approach.md, docs/code-quality.md and applicable service guides. Use Serena for source navigation. Implement with TDD: demonstrate the failure first, make the smallest coherent fix, then run focused regressions and mix q. Reuse existing test modules, fixtures and setup; create a test module only when no suitable owner exists, explaining why. Write original tests; do not copy tests from the old worktree or weaken existing assertions. Follow existing-test approval rules. Do not run mix precommit, commit, push or merge without fresh authorization.\n",
   "id": "zaq-h2i.3.7",
@@ -37,5 +39,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.7] Preserve SMTP drafts and map persistence errors",
   "type": "bug",
-  "updated_at": "2026-11-25T17:57:24Z"
+  "updated_at": "2026-11-25T17:57:34Z"
 }
