@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-25T17:23:20Z",
+  "description": "Current user request: establish a common ZAQ communication capability contract across Jido, Email and Web; use Ecto for typed values, required fields and numeric constraints. User confirmed required fields apply only when the feature is usable. Reuse FileSettings as pure domain owner, existing Bridge snapshot endpoint and CommunicationBridge normalization; no new Action or tool. Preserve exact decimal MB conversion, stored map shape, optional blanks, explicit false, fixed ceilings and existing unsupported SMTP behavior. Add focused original regression/property tests and run isolated tests plus mix q. Depends on shared normalization in zaq-h2i.3.8; persistence validation of proposed configuration is zaq-h2i.3.9.",
+  "id": "zaq-h2i.3.11",
+  "labels": [],
+  "parent": "zaq-h2i.3",
+  "priority": 2,
+  "status": "open",
+  "title": "Use Ecto for capability-driven file configuration validation",
+  "type": "task",
+  "updated_at": "2026-11-25T17:23:20Z"
+}
