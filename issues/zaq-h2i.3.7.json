@@ -35,11 +35,15 @@
     {
       "text": "Final result: SMTP draft-preservation implementation is complete. Original failure evidence, returned typed-form assertions, database reload/no-change assertions, correction/resubmit coverage and archived-selection rejection are recorded above. Final checks: mix q passed; 802 focused checks passed (6 properties, 796 tests), /tmp/zaq-h2i-3-7-8-regressions-final.log; 15 existing channel/streamed-update browser checks passed across Firefox/WebKit/Chromium, /tmp/zaq-h2i-3-7-8-channels-final.log; 110 Storybook checks passed after starting its required server. Final-source manual SMTP inspection and all native keyboard/draft/reload checks passed with no page errors, /tmp/zaq-h2i-3-7-browser-inspection.json. Required full E2E is not green: unchanged Chromium system-config dark/mobile overflow reproduced in its owning suite (56 pass, 1 failure), now recorded with artifacts in existing zaq-gyv. Retaining in_progress for that validation gap; final feature UX/E2E gates remain zaq-h2i.3.4/.3.5. No existing test behavior changed; no precommit, commit or push.",
       "timestamp": "2026-11-23T18:46:25Z"
+    },
+    {
+      "text": "Reuse assessment: extend smtp_persistence_result/2 to project persistence errors onto the existing EmailConfig form for all failures, retaining raw submitted params/drafts. Reuse FileSettings.errors/add_errors for file-local errors; map ChannelConfig name to existing connector_name input and preserve other form-compatible errors. No new mapper/module/save path. Existing template name control can use DesignSystem.Input to render projected field errors. Tests added to existing Engine and SMTP LiveView suites; no existing test behavior changes.",
+      "timestamp": "2026-11-25T18:39:26Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.7] Preserve SMTP drafts and map persistence errors",
   "type": "bug",
-  "updated_at": "2026-11-25T18:39:24Z"
+  "updated_at": "2026-11-25T18:39:26Z"
 }
