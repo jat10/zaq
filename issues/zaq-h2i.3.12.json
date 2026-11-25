@@ -23,11 +23,15 @@
     {
       "text": "Visual inspection: live SMTP Main/Advanced, channel Main/Advanced and current unsupported widget captured at /tmp/zaq-h2i-{smtp,channel}-{main,advanced}.png and /tmp/zaq-h2i-widget-main.png. Actual current widget has zero file controls; Jido displays unresolved limits. Native required file inputs count is zero. Live existing Storybook loads typed/fixed/required/not-applicable/unsupported/retry states; screenshots /tmp/zaq-h2i-declarations{,-storybook}.png and temporary static HTML /tmp/zaq-h2i-declarations-preview.html. Review corrected the shared file-error color to the documented existing body-danger semantic token (prior alias was undefined, causing black errors). No new design pattern or CSS token. Browser full suite includes Storybook, so started its local BO-only preview on 4000; 4002 remains the isolated E2E app. Existing external repo statuses match initial state.",
       "timestamp": "2026-11-25T19:10:38Z"
+    },
+    {
+      "text": "Final source mix q passes (/tmp/zaq-h2i-final-q.log); additional component check after error-color correction passes 6 checks (/tmp/zaq-h2i-visual-check.log). Existing Storybook variations compile/render successfully; raw temporary renderer stays outside repo. git diff --check passes, no production modules or callbacks added. Final current code has 29 changed tracked paths: existing owners/tests/docs/story only; mix.exs/mix.lock unchanged. Full existing browser run has completed Firefox/WebKit/Chromium journeys and is checking Storybook; final result pending. No UX approval or final completion is inferred from automatic checks.",
+      "timestamp": "2026-11-25T19:12:10Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.12] Validate shared capability contracts and BO integration",
   "type": "task",
-  "updated_at": "2026-11-25T19:10:38Z"
+  "updated_at": "2026-11-25T19:12:10Z"
 }
