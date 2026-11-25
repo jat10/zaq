@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-h2i.3.11"
+  ],
   "blocks": [],
   "created": "2026-11-25T17:56:01Z",
   "description": "Read parent zaq-h2i.3 current coding-agent handoff and its mandatory reuse map first; it supersedes historical comments. Follow AGENTS.md and referenced workflow, tool, reuse, code-quality, service and testing policies; DESIGN.md/BO guide for UI. Planning only: wait for explicit implementation authorization. New existing-test behavior changes need approval. Keep per-issue steps/evidence here. Action reuse: extend existing authorized domain operations and components; no new Action/endpoint/tool.\n\nAfter channel/SMTP/widget implementation, inspect whole final diff for drift against parent reuse map. Prove the same selected adapter declarations flow through existing Bridge/CommunicationBridge normalization into BO, FileSettings validation and TransportRequirements.resolve; provider branches, duplicate normalization, validation and requirement builders are unacceptable. Extend existing contract/unit/property/Engine/LiveView suites for all three bridges, exact MB/ceilings, blank/whitespace/false, unsupported SMTP, proposed-config updates, failed lookups/recovery, hidden tabs and atomic rollback. Run focused isolated tests and mix q under docs/WORKFLOW_AGENT.md; record actual evidence, not old logs. Update existing Channels/Engine owner docs and existing component Storybook stories; no parallel spec docs. Complete code review and present concrete screens for UX approval; do not author new feature browser journeys before that gate. This is integration validation/review, not numerical coverage/final precommit.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.12] Validate shared capability contracts and BO integration",
   "type": "task",
-  "updated_at": "2026-11-25T17:57:06Z"
+  "updated_at": "2026-11-25T17:57:27Z"
 }
