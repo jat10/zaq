@@ -15,11 +15,15 @@
     {
       "text": "Implementation and issue-level checks complete for this step: final mix q passes; combined original/new regression passes 522 checks (6 properties/516 tests). See parent zaq-h2i.3 for original TDD red/green logs, unchanged test evidence, unresolved adapter metadata follow-up, intermittent existing WebKit E2E failure and remaining UX/coverage/precommit/review gates. Keep in progress until review/landing; no code commit/push authorized.",
       "timestamp": "2026-11-21T15:29:56Z"
+    },
+    {
+      "text": "Reuse assessment: extend existing FileDeliverySettings.section and private hint/ceiling helpers for effective required help, declared numeric bounds and recovery feedback using FeedbackBanner/Button. Required input feedback is obtained from FileSettings.validate(empty, normalized snapshot), so UI has no separate required algorithm. HTML min/max project the allowlisted integer bounds to display units; shared validation remains authoritative. Extend existing load_capabilities/recovery helpers to retain failed lookup state and retry through open_capabilities without losing drafts. Remove cached file-validation veto from final save paths, retaining cached assign-only validate feedback and Engine authoritative checks. Existing components/tabs/form layout remain; no new module/API/event planned. Widget call-site and allowlist remain next task.",
+      "timestamp": "2026-11-25T18:42:25Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.3] Finish existing channel and SMTP Advanced settings",
   "type": "task",
-  "updated_at": "2026-11-25T18:42:23Z"
+  "updated_at": "2026-11-25T18:42:25Z"
 }
