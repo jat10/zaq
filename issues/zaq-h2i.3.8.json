@@ -43,11 +43,15 @@
     {
       "text": "Reuse audit: extend FileSettings.valid_metadata?/1, normalize_metadata/1 and limit/2 for optional integer type, matching bytes/count unit and allowlisted Ecto numeric rule data. No new normalization module or schema framework. A private metadata-definition/rules check in FileSettings is necessary to keep the existing metadata validator readable and reject malformed declarations once; existing normalize_value is form conversion, not declaration validation. Existing Bridge callback and CommunicationBridge remain sole snapshot route. Existing unsupported SMTP flags/statuses retained. New tests in SettingsTest/CommunicationBridgeTest plus approved exact raw SMTP assertion; API exact addition pending scoped approval.",
       "timestamp": "2026-11-25T18:18:08Z"
+    },
+    {
+      "text": "Additional explicit approval from current conversation: add integer type, bytes unit and positive validation metadata to normalized SMTP exact expectation in api_test.exs; equivalent additive metadata expectations approved. No removing assertions or changing statuses/applicability/defaults/other behavior. Focused red proved three failures; green 168 checks including 5 properties. mix q first found two new-test aliases, fixed; final q pending.",
+      "timestamp": "2026-11-25T18:20:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.8] Extend shared communication capability normalization",
   "type": "task",
-  "updated_at": "2026-11-25T18:18:08Z"
+  "updated_at": "2026-11-25T18:20:03Z"
 }
