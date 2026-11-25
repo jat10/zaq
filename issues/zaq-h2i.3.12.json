@@ -15,11 +15,15 @@
     {
       "text": "Integration review found a new widget partial-draft loss: Map.merge at the form root replaces file_delivery when a single nested control validates. New owning-suite regression proves the size draft disappears after a policy-only event. Existing FileSettings.merge_form normalizes into stored values and cannot retain invalid raw drafts; existing FileDeliverySettings.form_params strips markers only. Add a focused private merge_draft_params/2 in WebWidgetLive for raw form orchestration, used by existing validate/save display paths; no new public API or domain rule. Also verify streamed-only errors select Advanced when file metadata creates shared tabs, retaining Main behavior without file metadata. New tests only; no existing assertions weakened.",
       "timestamp": "2026-11-25T19:01:06Z"
+    },
+    {
+      "text": "Integrated regression passed 839 checks (9 properties, 830 tests), including full Jido/Email/Web/Bridge/API, FileSettings/resolver, persistence/authorized saves and all three BO consumers; /tmp/zaq-h2i-integrated.log. Review added adversarial widget partial-draft and streamed-only Advanced error tests: red reproduced both losses separately, fixes pass 52 widget checks (/tmp/zaq-h2i-widget-review-{red,red2,green}.log). Final integration mix q passed after owner docs and existing story updates (/tmp/zaq-h2i-integration-q.log). Existing-test diff audit shows only explicitly approved additive metadata maps and the approved SMTP help expectation; all other existing assertion lines retained. mix.exs/mix.lock unchanged; external repos untouched. Full existing npm test running (593 cases); no new feature E2E authored. Current form screenshots being captured for UX gate; no precommit/coverage/commit/push/publication.",
+      "timestamp": "2026-11-25T19:04:04Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.12] Validate shared capability contracts and BO integration",
   "type": "task",
-  "updated_at": "2026-11-25T19:01:06Z"
+  "updated_at": "2026-11-25T19:04:04Z"
 }
