@@ -39,11 +39,15 @@
     {
       "text": "Correction to my 2026-11-25 comment: the user is planning only and did not authorize implementation. I prematurely added a test adapter and test in bridge_test.exs; both edits have been reverted. The new zaq-h2i.3.11 issue and its dependency links have been deleted. No production code was changed. Await explicit implementation instructions; retain the agreed planning requirement that required fields apply only when the feature is usable.",
       "timestamp": "2026-11-25T17:24:41Z"
+    },
+    {
+      "text": "Reuse audit: extend FileSettings.valid_metadata?/1, normalize_metadata/1 and limit/2 for optional integer type, matching bytes/count unit and allowlisted Ecto numeric rule data. No new normalization module or schema framework. A private metadata-definition/rules check in FileSettings is necessary to keep the existing metadata validator readable and reject malformed declarations once; existing normalize_value is form conversion, not declaration validation. Existing Bridge callback and CommunicationBridge remain sole snapshot route. Existing unsupported SMTP flags/statuses retained. New tests in SettingsTest/CommunicationBridgeTest plus approved exact raw SMTP assertion; API exact addition pending scoped approval.",
+      "timestamp": "2026-11-25T18:18:08Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.8] Extend shared communication capability normalization",
   "type": "task",
-  "updated_at": "2026-11-25T18:18:07Z"
+  "updated_at": "2026-11-25T18:18:08Z"
 }
