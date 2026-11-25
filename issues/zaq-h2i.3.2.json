@@ -18,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
-  "title": "[zaq-h2i.3] Implement shared file normalization and requirements resolver",
+  "status": "open",
+  "title": "[zaq-h2i.3.2] Use Ecto within existing FileSettings validation and resolver",
   "type": "task",
-  "updated_at": "2026-11-25T17:49:54Z"
+  "updated_at": "2026-11-25T17:57:00Z"
 }
