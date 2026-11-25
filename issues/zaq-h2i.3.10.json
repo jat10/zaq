@@ -2,6 +2,8 @@
   "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-11-25T17:57:18Z",
+  "close_reason": "Superseded: user explicitly chose required validation only when feature is usable; covered by zaq-h2i.3.2.",
   "created": "2026-11-24T11:29:00Z",
   "description": "SUPERSEDED by the user's explicit 2026-11-25 decision: enforce required configuration only when the associated feature is usable. Do not implement the former unconditional required-limit behavior or change unsupported SMTP success expectations. Shared Ecto validation is owned by zaq-h2i.3.2 under the current parent handoff. Historical comments describe an earlier direction and are not current authorization.",
   "id": "zaq-h2i.3.10",
@@ -18,8 +20,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-h2i.3] Reject missing required file limits independently of send support",
   "type": "bug",
-  "updated_at": "2026-11-25T17:57:17Z"
+  "updated_at": "2026-11-25T17:57:18Z"
 }
