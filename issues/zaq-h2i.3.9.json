@@ -6,8 +6,8 @@
   "blocks": [
     "zaq-h2i.3.7"
   ],
-  "closed_at": "2026-11-25T18:39:23Z",
-  "close_reason": "Proposed-config persistence and boundary regressions pass; integration remains in parent.",
+  "closed_at": "2026-11-25T19:43:21Z",
+  "close_reason": "Review follow-up implemented; final preparation and grouped policy regressions plus quality checks pass. Larger feature gates remain pending.",
   "created": "2026-11-23T19:41:50Z",
   "description": "CURRENT AUTHORIZED FOLLOW-UP: Fix review finding that proposed capability validation precedes later settings preservation. Inspect Ecto preparation order and all settings-finalization callbacks. Reuse existing preparation/snapshot/FileSettings/error paths; retain locking, identity, confidentiality and rollback. Add original tests in ChannelConfig suite for invalid restored-policy limits, unchanged persisted state, valid override, and final saved self-validation. Check grouped channel and widget policy save sequencing. Existing work must remain intact; no commits/pushes/dependency changes or unrelated refactors. Current task is specifically authorized by the user; supersedes planning-only wording below.\n\nPlanning only; implementation requires an explicit user instruction. The current handoff in parent zaq-h2i.3 is authoritative for this task and supersedes older proposed shapes and historical implementation comments. Verify live source/Git before acting; historical green logs do not validate this checkout. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/agent-tools.md, docs/action-reuse.md, docs/code-quality.md and applicable service guides. Read DESIGN.md and docs/bo-components.md before UI work. Follow docs/testing-approach.md; existing test behavior changes require explicit approval.\n\nCorrect the existing ChannelConfig.changeset/2 persistence guard; do not introduce another save/validation service. Validate the effective proposed connection (including omitted unchanged file settings when other capability inputs change) against capabilities for that same proposal. Reuse Bridge.capability_snapshot/2 through existing channel_capability_snapshot NodeRouter/Event, CommunicationBridge normalization and FileSettings.validate/add_errors. Establish safe proposed-config request semantics through that existing operation; preserve confidential settings, actor context, provider/kind/archive checks and selected identity. No new preview endpoint.\n\nReuse EmailConnectorSettings.save/2, LiveUpdateSettings grouped save and WidgetConnectorSettings.execute/2 with their existing authorized Actions, revision checks and rollback. Remove the unchanged-file bypass without imposing requirements on unsupported file sending or changing unrelated flows. Keep form/operation error shapes compatible via existing FileSettings error projection. Tests in existing ChannelConfig/Engine suites cover 5 MB -\u003e 1 MB declared-ceiling changes retaining a 4 MB override, changed override, creation, enablement, omission, valid updates and atomic grouped rollback. Read parent reuse rules before adding any function. No BO capability request on each validation event.",
   "id": "zaq-h2i.3.9",
@@ -60,8 +60,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities at persistence",
   "type": "bug",
-  "updated_at": "2026-11-25T19:43:19Z"
+  "updated_at": "2026-11-25T19:43:21Z"
 }
