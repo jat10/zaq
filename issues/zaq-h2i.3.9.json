@@ -31,11 +31,15 @@
     {
       "text": "Reuse audit: extend existing Bridge.fetch_capability_config/2 with a proposal scope on the same capability_snapshot/2 operation. Request carries the effective ChannelConfig struct; selected existing id/provider/kind/archive identity is verified against storage, while settings/url/enabled facts come from the proposal. Existing API requires confidential events for proposals; schema prepare hook dispatches confidentially. Existing runtime/configuration/provider scopes unchanged. Extend existing maybe_validate_new_file_settings helper to prepare every retrieval update and remove unchanged-file shortcut; no new save service or Action. This additive request contract is the missing proposal semantics already explicitly planned here. Tests use a new compatible bridge fixture in the owning ChannelConfigTest, plus API confidential/identity regressions; no external adapter API is required.",
       "timestamp": "2026-11-25T18:34:18Z"
+    },
+    {
+      "text": "Implemented confidential proposal scope on existing snapshot endpoint. Bridge checks selected provider/kind/archive identity, including built new configs with preassigned IDs, and supplies proposed settings to producers. ChannelConfig prepares all retrieval saves and removed unchanged-file bypass; data-source file payloads remain rejected. New original tests prove creation, 5MB-\u003e1MB ceiling change retaining 4MB, corrected override/false policy, enablement without settings payload, grouped rollback and API confidentiality/identity. Initial red demonstrated stale acceptance (plus corrected new-test helper invocation). Green save regression 149 checks; additional 67 ChannelConfig checks and 11 focused API checks pass. mix q final passes. Logs /tmp/zaq-h2i-proposal-{red,green,final,api,q}.log. Existing preassigned-ID regression exposed and corrected without test changes. No dependency/external edits.",
+      "timestamp": "2026-11-25T18:39:21Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.9] Validate proposed connection capabilities at persistence",
   "type": "bug",
-  "updated_at": "2026-11-25T18:34:18Z"
+  "updated_at": "2026-11-25T18:39:21Z"
 }
