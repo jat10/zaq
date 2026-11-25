@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-h2i.4"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-h2i.3.2"
   ],
@@ -45,5 +43,5 @@
   "status": "open",
   "title": "[zaq-h2i.3.8] Extend shared communication capability normalization",
   "type": "task",
-  "updated_at": "2026-11-25T18:16:48Z"
+  "updated_at": "2026-11-25T18:16:49Z"
 }
