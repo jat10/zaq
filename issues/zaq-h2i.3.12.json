@@ -11,9 +11,15 @@
   "id": "zaq-h2i.3.12",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Integration review found a new widget partial-draft loss: Map.merge at the form root replaces file_delivery when a single nested control validates. New owning-suite regression proves the size draft disappears after a policy-only event. Existing FileSettings.merge_form normalizes into stored values and cannot retain invalid raw drafts; existing FileDeliverySettings.form_params strips markers only. Add a focused private merge_draft_params/2 in WebWidgetLive for raw form orchestration, used by existing validate/save display paths; no new public API or domain rule. Also verify streamed-only errors select Advanced when file metadata creates shared tabs, retaining Main behavior without file metadata. New tests only; no existing assertions weakened.",
+      "timestamp": "2026-11-25T19:01:06Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3.12] Validate shared capability contracts and BO integration",
   "type": "task",
-  "updated_at": "2026-11-25T18:57:10Z"
+  "updated_at": "2026-11-25T19:01:06Z"
 }
