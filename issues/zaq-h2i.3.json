@@ -133,11 +133,15 @@
     {
       "text": "User authorized pushing the rebased dark-theme branch. Pushed fix/channel-dark-theme at 6d94a281325e8fc640fbf6f52596b7635491df2b to origin using an explicit force-with-lease against verified prior tip 43012548436533e2177e2ba370d92adb7cb9487a. Pre-push formatting hook passed. Remote tip verified equal to local HEAD; worktree clean. PR #17 is now restacked on feat/channel-file-settings; approval gates unchanged.",
       "timestamp": "2026-11-26T11:10:40Z"
+    },
+    {
+      "text": "User requested restacking ../zaq-feat-delivery_plan onto updated dark-theme. Verified feat/delivery_plan was clean and exactly at old dark-theme tip 430125484, with zero unique commits. Created backup/delivery-plan-before-dark-theme-rebase-20261126 and rebased onto fix/channel-dark-theme at 6d94a281325e8fc640fbf6f52596b7635491df2b. No conflicts or code changes; resulting HEAD and tree equal the already validated dark-theme branch (mix q and 207 focused tests previously passed). git diff --check passed; worktree clean. Action reuse not applicable: branch restack only. No push performed.",
+      "timestamp": "2026-11-26T11:14:26Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-26T11:10:40Z"
+  "updated_at": "2026-11-26T11:14:26Z"
 }
