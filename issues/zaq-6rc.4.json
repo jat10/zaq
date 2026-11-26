@@ -15,11 +15,15 @@
     {
       "text": "Implementation plan: Preparation.acquire(record, requirements, trusted_context \\\\ %{}) lazily redeems signed handles via Zaq.Materialization and validates resulting file metadata/content plus actual byte size. Shared metadata/size validators remain in Delivery.Attachments; decoding reuses validated DecodeBase64 Action with standard alphabet only. TrustedContext projection preserves explicit actor/skip_permissions only plus local router/config dependencies; nil actor is never bypass. Return transient content map, leave source/plan unchanged. validate_group checks actual fixed-group count/byte lower bounds without regrouping; no request encoding, orchestration or provider operations. Tests before code: direct binary/base64, malformed metadata/encoding/content/handles, actual size drift, authorized CommunicationMedia redemption with real handle verification and Mox only at routed external I/O, nil actor and canonical read denial, original indices/fixed grouping. Document channels.md and module contracts; no existing assertion changes.",
       "timestamp": "2026-11-26T12:50:32Z"
+    },
+    {
+      "text": "Implemented Preparation.acquire/3 using real Materialization, TrustedContext and DecodeBase64 Action. Actual bytes rechecked against known limits; fixed-group validator rejects aggregate growth without regrouping. Signed communication handle tests cover actor projection, nil/nonliteral-bypass denial, canonical read denial even under bypass, post-materialization validation and bounded exceptions. Initial new canonical fixture lacked required durable provenance; corrected only new test fixture. Isolated preparation/planning/current materializer suites: 68 PASS (6 properties); final mix q PASS. No existing test changes, provider operations, encoded requests or executor orchestration.",
+      "timestamp": "2026-11-26T13:04:10Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.4] PR4 lazy acquisition and attachment validation primitives",
   "type": "task",
-  "updated_at": "2026-11-26T12:59:56Z"
+  "updated_at": "2026-11-26T13:04:10Z"
 }
