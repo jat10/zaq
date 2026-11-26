@@ -15,11 +15,15 @@
     {
       "text": "PR4 scope: planner returns a separate Channel-local plan; requirements are supplied from the PR2 resolver. Do not enable a production delivery route that cannot yet execute attachments. Runtime integration belongs to PR5; metadata planning performs no acquisition.",
       "timestamp": "2026-11-26T12:23:20Z"
+    },
+    {
+      "text": "Reconciled PR4 contract before implementation: build_plan(outgoing, resolved_requirements, existing_message_id \\\\ nil) returns {:ok, plan} separately, {:ok, nil} for empty attachments, or {:error, reason}. Supplied resolver {:error, reason} is propagated unchanged. No Api/bridge route changes, policy execution, omission/fallback notices, or per-plan runtime state. Invalid metadata reports original index and rejects plan; groups/steps retain ordered original indices even for repeated Record IDs. Optional unknown sizes/limits remain unknown and require actual-content/provider validation; known raw lower bounds constrain packing, exact encoded requests remain PR5. Edits require explicit supports_attachment_edits and supplied existing ID. Tests before code: metadata errors/indexing, nil/known sizes, positive/NA/unresolved limits, grouping/count/upload bounds, ordering properties, explicit edits and pure lazy records with invalid handles; resolver integration failure cases. Action reuse remains local-only using supplied PR2 results; pure constraints/metadata helpers are shared with acquisition. Owning docs channels.md; mocks unnecessary for pure planner.",
+      "timestamp": "2026-11-26T12:50:30Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc.3] Build Channel-local metadata delivery plans",
   "type": "task",
-  "updated_at": "2026-11-26T12:23:20Z"
+  "updated_at": "2026-11-26T12:50:30Z"
 }
