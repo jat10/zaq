@@ -22,11 +22,15 @@
     {
       "text": "PR4 implementation complete in requested order .1 -\u003e .2 -\u003e .3 -\u003e .4 -\u003e .9 -\u003e .11; all six tasks closed with evidence. Outgoing carries only attachments; pure Channel-local plans and lazy secure acquisition/actual-content validators are implemented, with owning Channels docs and new focused tests. Existing text/API/confirmation behavior retained, no production attachment executor enabled. mix q PASS; fresh full coverage12448 PASS and97.2% overall, executable PR4 files100%; final mix precommit12448 PASS. No remaining implementation or validation blockers. Epic remains in_progress awaiting explicit final human approval required by docs/WORKFLOW_AGENT.md Phase6 and eventual authorized landing. User has prohibited commit/push/merge; HEAD stays6d94a2813. PR5/6/7 work remains excluded.",
       "timestamp": "2026-11-26T13:35:23Z"
+    },
+    {
+      "text": "PR-review skill review of uncommitted PR4 at HEAD 6d94a2813 against fix/channel-dark-theme: request changes, two reproduced medium-severity inline findings. (1) lib/zaq/channels/delivery/preparation.ex:98 rejects encoding utf-8, although JidoConnectBridge.extract_downloaded_content/build_downloaded_record emit that for downloaded text and the existing list_files inline-content test preserves it. Preparation.acquire on a valid text Record with content hello/encoding utf-8 returns invalid_attachment_encoding. Accept established raw-text encoding and add producer-to-acquisition coverage. (2) lib/zaq/channels/delivery/attachments.ex:107 treats all Record.size values as raw lower bounds. EmailBridge.Attachment.to_record sets size from MIME encoded_size. Real to_record metadata for base64 aGVsbG8= has size 8; planner rejects at max_attachment_bytes 5 even though acquire with those content bytes returns size 5 successfully. Preserve size semantics; treat encoded-only source size as unknown raw size or use a justified lower bound, then check actual bytes after acquisition. Add real email Record planning coverage. Fresh review validation: all four new PR4 suites 38 PASS (3 properties), six existing builder/requirements/confirmation/materialization suites 75 PASS (4 properties), total 113. Inspected all 10 changed/untracked PR4 files, related Record/JidoConnect/email producers and materialization boundaries. No production/test edits, Git publication or posted PR comments. No GitHub PR exists for feat/delivery_plan yet.",
+      "timestamp": "2026-11-26T14:05:26Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc] PR4 Outgoing attachments and Channel-local delivery plans",
   "type": "epic",
-  "updated_at": "2026-11-26T13:35:23Z"
+  "updated_at": "2026-11-26T14:05:26Z"
 }
