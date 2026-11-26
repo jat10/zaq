@@ -11,11 +11,15 @@
     {
       "text": "Live audit: working in requested existing feat/channel-file-settings at bfb3e677c; worktree clean. PR_STACK.md is absent from all four relevant worktree roots, so verified live ancestry directly (capabilities → settings → dark-theme → delivery_plan). No branch/history edits planned. Action reuse assessment: extend existing WebBridge.capability_snapshot/1 built-in native-Web declaration, reuse Bridge.capability_snapshot normalization/event, CommunicationBridge.normalize_capability_snapshot/2, FileSettings, resolver and authorized persistence owners unchanged. Web.Delivery is a validated delivery-descriptor owner (bo/1, events/new/reference), not a configuration declaration API; Response and final_payload/send_reply confirm no attachment sending. Keep metadata beside the existing native profile rather than add an unnecessary public accessor or file-specific callback. Native file limits will be fixed/not_applicable, typed bytes/count, required false; transfer mode unresolved and attachment edits false. Current WebWidget.HostAdapter at locked 42b7ef71 exposes only infrastructure/runtime/ingress/installation APIs, with no capabilities or file declarations; preserve its unresolved metadata and current support meanings. No new API/module/Action/UI/validator/dependency changes. Add original tests only for producer purity, native vs widget semantics, shared controls and persistence rejection/rollback; usable-file required/positive/bounds cases remain covered by existing foundation tests and cannot be claimed as native-Web support.",
       "timestamp": "2026-11-26T11:22:36Z"
+    },
+    {
+      "text": "Additional boundary evidence: ChannelConfig @valid_providers excludes native web; BO ChatLive supplies a configless Delivery.bo/1 descriptor. Native Web has no persisted connector/Advanced form to wire. Do not add one for metadata. Native declarations will be proven through the real Bridge normalization and existing shared component/validator/resolver. Existing configured widget persistence will be regression-tested using production WebBridge, remaining unsupported/unresolved until external declarations exist. No valid native file override or usable-file required-field path exists to test truthfully. This subset is an explicit external-source limitation, not permission to invent support.",
+      "timestamp": "2026-11-26T11:23:16Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Expose Web file capability declarations to shared Advanced settings",
   "type": "task",
-  "updated_at": "2026-11-26T11:22:36Z"
+  "updated_at": "2026-11-26T11:23:16Z"
 }
