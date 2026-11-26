@@ -6,6 +6,7 @@
   "blocks": [
     "zaq-h2i.4.1.4"
   ],
+  "closed_at": "2026-11-26T14:24:13Z",
   "created": "2026-11-26T11:54:20Z",
   "description": "PROPOSED, awaiting agreement and native declaration contract. Extend existing Zaq.System and System.Config storage for singleton JSON key, existing Engine.Api system-config family with confidential identified BO management authorization, and separately justified runtime read contract. Reuse FileSettings conversion/merge/Ecto/errors, existing transaction/upsert machinery, and final native proposal snapshot validation; no new module/Action/parallel validator/ChannelConfig row. Keep actor scope, unknown limits, conditional requirements and failure policy intact. Tests first in existing System/Engine suites: exact bytes, optional whitespace clearing, supported numeric/required rules, rollback and final proposed values, unauthorized/nil actor, singleton/concurrent behavior, widget isolation. Follow parent reuse evidence, docs and validation lifecycle.",
   "id": "zaq-h2i.4.1.3",
@@ -18,8 +19,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-h2i.4.1] Persist native BO-chat settings in existing System owners",
   "type": "task",
-  "updated_at": "2026-11-26T14:24:12Z"
+  "updated_at": "2026-11-26T14:24:13Z"
 }
