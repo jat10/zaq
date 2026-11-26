@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-6rc.9"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-9j8"
+  ],
   "created": "2026-11-26T12:09:29Z",
   "description": "Functional specification: after implementation and review in zaq-6rc.9, invoke dedicated coverage-upper handoff per docs/WORKFLOW_AGENT.md Phase 6, review any resulting changes, then final mix precommit before final human approval. Files: focused existing tests and owning docs only as evidence requires. Tests/branches: all migrated contract, policy, permission, lifecycle and actual adapter paths from parent issues; record unsupported adapters and failures honestly. Mock external edges only, preserve isolated config. Action reuse: not applicable to validation; audit no duplicated operations. Documentation: record results and exceptions in Beadwork. Existing assertion changes need explicit approval. No commit/push/merge authorized.",
   "id": "zaq-6rc.11",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-6rc.11] Complete post-review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-26T12:09:35Z"
+  "updated_at": "2026-11-26T12:23:15Z"
 }
