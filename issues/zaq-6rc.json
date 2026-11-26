@@ -6,9 +6,15 @@
   "description": "User-agreed boundaries: Outgoing adds only attachments list; no delivery wrapper, plan or selection errors. Selection failures stay in tool feedback. Channel owns transient plan/runtime; existing DeliveryConfirmation and Engine confirmation event remain authoritative. Preserve current capability-snapshot + FileSettings + TransportRequirements.resolve contract and shared UI. Source ../zaq-feat-channel-files at 8d987fa5c is reference, not a wholesale cherry-pick. Current branch has different SDK/provider dependencies and no AttachDocuments. Existing adapter declaration work zaq-h2i.4 and Telegram limitation zaq-1lw.21 must be reused. No production edits or external publication authorized by this planning task. Existing old epic zaq-1lw is historical source and is not closed or overwritten. Preserve old grouping/execution semantics as proposed baseline pending review. No new BO UI in scope; backend integration journeys are appropriate, reassess browser E2E if scope expands.\n\nExecution order is deliberately linear to keep shared module changes sequenced; no diamonds. External adapter compatibility is verified in the first task, reusing zaq-h2i.4 without modifying its scope.\n\ngraph LR\n  zaq_6rc_1 --\u003e zaq_6rc_2\n  zaq_6rc_2 --\u003e zaq_6rc_3\n  zaq_6rc_3 --\u003e zaq_6rc_4\n  zaq_6rc_4 --\u003e zaq_6rc_5\n  zaq_6rc_5 --\u003e zaq_6rc_6\n  zaq_6rc_6 --\u003e zaq_6rc_7\n  zaq_6rc_7 --\u003e zaq_6rc_8\n  zaq_6rc_8 --\u003e zaq_6rc_9",
   "id": "zaq-6rc",
   "labels": [],
+  "comments": [
+    {
+      "text": "Refined final execution order: .1 -\u003e .2 -\u003e .3 -\u003e .4 -\u003e .5 -\u003e .6 -\u003e .7 -\u003e .8 (selection Action) -\u003e zaq-6rc.10 (producers) -\u003e .9 (integration review/docs) -\u003e zaq-6rc.11 (post-review coverage/final validation). This supersedes the earlier shorter graph; still one linear DAG.",
+      "timestamp": "2026-11-26T12:09:38Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc] Port Channel-local delivery plans onto current requirements",
   "type": "epic",
-  "updated_at": "2026-11-26T12:08:47Z"
+  "updated_at": "2026-11-26T12:09:38Z"
 }
