@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-26T12:08:20Z",
+  "description": "Functional specifications covered / files: lib/zaq/channels/delivery/plan.ex, plan/step.ex, attachments.ex; channels/api.ex\nAdapt old metadata packing and steps as internal Channel modules. Planner accepts outgoing and once-resolved requirements, returns a separate plan. Resolve selected outbound configuration and normalized snapshot through existing boundary; use TransportRequirements.resolve(snapshot, selected_connection), never bridge-owned requirements derivation. Support positive, not_applicable and optional unresolved ceilings distinctly. Enforce known limits, retain unknown facts and downstream provider checks; never claim unknown is unlimited. No selection-error fallback notices.\n\nTests to add before implementation: Ordering/count/size packing properties; stable indices; no materialization in planner; explicit edit capability; unsupported/unavailable/invalid/required-unresolved failure paths; empty attachments bypass all planning.\n\nBranches/paths validated: Ordering/count/size packing properties; stable indices; no materialization in planner; explicit edit capability; unsupported/unavailable/invalid/required-unresolved failure paths; empty attachments bypass all planning.\n\nAction reuse assessment: Local-only orchestration using existing requirements resolver and FileSettings, not a tool/Action. Pure planner has no actor or IO effects. Concrete policy for failed resolution must be documented before implementation.\n\nConsumers/execution: preserve existing Agent/Engine/Channel service boundaries; plan and prepared content never cross to Engine. Tool selection has no delivery side effect. Transport failures are reported without automatic retries.\n\nPlanning only in feat/delivery_plan; do not implement until the proposed migration is reviewed. Policies: AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/exec-plans/PLAN_STRATEGY.md, docs/testing-approach.md, docs/documentation.md; relevant service guides before affected work. Existing test behavior changes require specific approval; none granted by this plan. Mocking plan: keep internal boundaries real; isolate external transport/LLM APIs and inject runtime config without global mutations. Documentation: update module contracts and relevant owning service guide with implemented behavior, not duplicate policies. Validation follows authoritative workflow timing.",
+  "id": "zaq-6rc.3",
+  "labels": [],
+  "parent": "zaq-6rc",
+  "priority": 2,
+  "status": "open",
+  "title": "Build Channel-local metadata delivery plans",
+  "type": "task",
+  "updated_at": "2026-11-26T12:08:20Z"
+}
