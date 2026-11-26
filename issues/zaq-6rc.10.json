@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-6rc.8"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-6rc.9"
+  ],
   "created": "2026-11-26T12:09:24Z",
   "description": "Functional specifications/files: Agent StreamEvents/Executor and opaque aliases, Outgoing.from_pipeline_result, RunAgent, NotifyPerson, Engine Notifications. Consume the AttachDocuments Action from zaq-6rc.8; request-local successful Record selection only. Preserve tool errors as tool feedback, never outgoing state. No delivery wrapper/plan/error; failed or cancelled requests cannot leak selection. Tests before implementation/paths: add/remove/replace accumulation, partial failure, retry, concurrent requests, cancellation, workflow and notification round trips, empty list text bypass, no automatic incoming echo. Mock external LLM/provider edges only; keep internal lifecycle real. Action reuse: extend existing validated RunAgent/NotifyPerson/Notifications execution and canonical builder; no new parallel send/action. Trusted actor/routing context preserved, nil identity never elevates. Docs: relevant Agent/Engine/workflows contracts. Follow repository workflow and testing policies; disclose and obtain approval before existing assertion changes. Planning only.",
   "id": "zaq-6rc.10",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-6rc.10] Wire successful attachment selections through existing producers",
   "type": "task",
-  "updated_at": "2026-11-26T12:09:33Z"
+  "updated_at": "2026-11-26T12:09:34Z"
 }
