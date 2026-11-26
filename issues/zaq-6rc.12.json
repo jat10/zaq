@@ -9,9 +9,15 @@
   "id": "zaq-6rc.12",
   "labels": [],
   "parent": "zaq-6rc",
+  "comments": [
+    {
+      "text": "Reproduced2 failing regressions before fix: real JidoConnectBridge.download_document export returns utf-8 raw content and acquisition rejects; Unicode/base64-looking text also rejects. Added utf-8 to existing raw encoding allowlist only, retained DecodeBase64 and unsupported-encoding errors. Real producer test reuses existing serial suite external-operation stub and DB grants; no existing test/assertion/setup behavior changed. mix q PASS after new-test alias correction; full producer+acquisition suites180 PASS (1 property). Owning Channels docs updated. No change to source producer, permissions or delivery orchestration.",
+      "timestamp": "2026-11-26T14:11:47Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.12] Accept established UTF-8 attachment Records",
   "type": "bug",
-  "updated_at": "2026-11-26T14:09:02Z"
+  "updated_at": "2026-11-26T14:11:47Z"
 }
