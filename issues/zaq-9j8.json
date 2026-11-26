@@ -8,9 +8,15 @@
   "description": "User-defined PR5: plan execution through Jido and email adapters, exact SMTP MIME sizing, failure policies, partial outcomes, confirmation and history. Depends on PR4 contracts/planning. Reuse DeliveryConfirmation and existing Engine event. No AttachDocuments (PR6), workflow/notification integration (PR7), or replacement of PR2 FileSettings/resolver. Detailed executor and PR5 finalization tasks must be added before implementation; existing transport tasks are carried here. Reuse zaq-h2i.4 for real adapter prerequisites. Planning only.",
   "id": "zaq-9j8",
   "labels": [],
+  "comments": [
+    {
+      "text": "PR5 setup authorized only; no implementation. Created feat/delivery-execution at ../zaq-feat-delivery-execution from feat/delivery_plan (PR4 zaq-6rc), exact captured parent SHA 6d94a281325e8fc640fbf6f52596b7635491df2b. Parent has uncommitted PR4 implementation changes, which are not inherited. Restack PR5 after subsequent PR4 commits using this captured previous parent boundary. Preserve all parent/planning changes. Action reuse assessment: not applicable; environment setup and stack documentation only, no executable application operation changes. Environment verification pending.",
+      "timestamp": "2026-11-26T13:19:48Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-9j8] PR5 delivery execution and outcomes",
   "type": "epic",
-  "updated_at": "2026-11-26T12:23:15Z"
+  "updated_at": "2026-11-26T13:19:48Z"
 }
