@@ -8,7 +8,7 @@
     "zaq-h2i.5"
   ],
   "created": "2026-11-26T11:54:21Z",
-  "description": "PROPOSED, awaiting agreement and persistence contract. Extend existing SystemConfigLive and GlobalTab with BO chat section using existing ConnectionSettings.editor/FileDeliverySettings, existing Engine read/save boundaries and cached-only local validate. No new component/LiveView/module. Tests first: original existing-suite coverage for load/save/reload, exact MB, Advanced errors, draft retention, failed capability recovery, Cancel no-write, unauthorized management and independent widget state. Consult DESIGN.md, BO policy and existing Storybook before implementation; extend existing stories. Update existing zaq-h2i.3.4/.3.5 UX/E2E scenario ownership and preserve their approval gates; no new feature E2E before explicit UX approval. Required regressions/mix q; no unrelated committed test changes without approval.",
+  "description": "APPROVED by user on 2026-11-26; persistence contract implemented. Extend existing SystemConfigLive and GlobalTab with BO chat section using existing ConnectionSettings.editor/FileDeliverySettings, existing Engine read/save boundaries and cached-only local validate. No new component/LiveView/module. Tests first: original existing-suite coverage for load/save/reload, exact MB, Advanced errors, draft retention, failed capability recovery, Cancel no-write, unauthorized management and independent widget state. Consult DESIGN.md, BO policy and existing Storybook before implementation; extend existing stories. Update existing zaq-h2i.3.4/.3.5 UX/E2E scenario ownership and preserve their approval gates; no new feature E2E before explicit UX approval. Required regressions/mix q; no unrelated committed test changes without approval.",
   "id": "zaq-h2i.4.1.4",
   "labels": [],
   "parent": "zaq-h2i.4.1",
@@ -22,5 +22,5 @@
   "status": "in_progress",
   "title": "[zaq-h2i.4.1] Wire shared Advanced controls for global BO-chat settings",
   "type": "task",
-  "updated_at": "2026-11-26T14:38:56Z"
+  "updated_at": "2026-11-26T14:41:08Z"
 }
