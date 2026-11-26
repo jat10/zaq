@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-11-26T11:20:10Z",
@@ -8,8 +8,8 @@
   "labels": [],
   "parent": "zaq-h2i.4",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Expose Web file capability declarations to shared Advanced settings",
   "type": "task",
-  "updated_at": "2026-11-26T11:20:10Z"
+  "updated_at": "2026-11-26T11:22:34Z"
 }
