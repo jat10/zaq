@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-6rc.10"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-6rc.11"
   ],
@@ -21,5 +19,5 @@
   "status": "open",
   "title": "[zaq-6rc.9] Validate migration and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-26T12:09:36Z"
+  "updated_at": "2026-11-26T12:21:29Z"
 }
