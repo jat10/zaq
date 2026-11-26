@@ -30,11 +30,15 @@
     {
       "text": "Remediation authorized in existing dirty worktree; preserve all uncommitted PR4. New dependency order .12 -\u003e .13 -\u003e .14. Previous .9/.11 validation predates review findings and does not validate these fixes. No existing test expectation changes planned: add producer-backed regressions only. No E2E/UI scope. Source-size projection will recognize durable communication_media/email:imap metadata, including hydrated Records, without decoding content or changing Record.size; other base64 producers keep known raw sizes.",
       "timestamp": "2026-11-26T14:09:04Z"
+    },
+    {
+      "text": "Review remediation complete: .12 accepts established raw utf-8 bytes unchanged; .13 preserves MIME encoded Record.size and treats durable IMAP-source raw size as unknown during planning, while retaining known raw-size behavior for other producers. Regression-first evidence recorded in each issue. .14 reviewed alternatives, completed fresh coverage12458 passing and final precommit202 passing; all changed PR4 executable production lines100% covered. No executor activation, sending, permission changes, dependency changes or existing test expectation changes. Existing uncommitted PR4 preserved; no commit/push/merge. Epic remains open for final human approval. Unknown raw sizes still require actual-byte validation by future executor, as designed.",
+      "timestamp": "2026-11-26T14:26:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc] PR4 Outgoing attachments and Channel-local delivery plans",
   "type": "epic",
-  "updated_at": "2026-11-26T14:09:04Z"
+  "updated_at": "2026-11-26T14:26:28Z"
 }
