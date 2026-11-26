@@ -125,11 +125,15 @@
     {
       "text": "User requested restacking PR #17 onto this branch. Created backup/dark-theme-before-settings-rebase-20261126 at 430125484. Rebased only its dark-theme commit (excluding obsolete settings commit 1a8c1ff5) onto bfb3e677c. Two conflicts resolved by preserving current capability-error rendering and shared SMTP Input field validation while retaining dark-theme styling. Action reuse assessment: not applicable; history restack with template conflict resolution, no operation/save/API changes. New local tip 6d94a2813; validation underway. No remote rewrite performed.",
       "timestamp": "2026-11-26T11:03:52Z"
+    },
+    {
+      "text": "Dark-theme restack validation complete: local fix/channel-dark-theme tip 6d94a2813 is exactly one commit above bfb3e677c (feat/channel-file-settings). git range-diff confirms only the two necessary conflict adaptations versus original dark-theme patch: retain current capability error state and SMTP shared Input validation. mix q passed (/tmp/zaq-dark-theme-rebase-q.log); focused ChannelCapabilities, ChannelsIndex, Channels, SMTP and Widget LiveView suites: 207 passed (/tmp/zaq-dark-theme-rebase-tests.log). git diff --check passed; worktree clean. Full browser suite not rerun for this restack. Backup ref retained; remote branch has not been rewritten. Existing UX/E2E/final validation gates remain unchanged.",
+      "timestamp": "2026-11-26T11:05:08Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-26T11:03:52Z"
+  "updated_at": "2026-11-26T11:05:08Z"
 }
