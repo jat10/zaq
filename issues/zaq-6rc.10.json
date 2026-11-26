@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-6rc.8"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-6rc.9"
   ],
@@ -15,5 +13,5 @@
   "status": "open",
   "title": "[zaq-6rc.10] Wire successful attachment selections through existing producers",
   "type": "task",
-  "updated_at": "2026-11-26T12:09:34Z"
+  "updated_at": "2026-11-26T12:21:28Z"
 }
