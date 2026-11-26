@@ -12,9 +12,15 @@
   "id": "zaq-6rc.11",
   "labels": [],
   "parent": "zaq-6rc",
+  "comments": [
+    {
+      "text": "Scope narrowed to PR4 only: Outgoing attachment contract, lazy materialization/validation primitives, grouping and internal plan. Execution, transport effects, SMTP MIME sizing, partial outcomes, confirmation/history extensions are PR5. Agent Action/stream propagation PR6; workflow/notification integration PR7. Validate current text/confirmation behavior remains unchanged.",
+      "timestamp": "2026-11-26T12:23:22Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc.11] Complete post-review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-26T12:23:16Z"
+  "updated_at": "2026-11-26T12:23:22Z"
 }
