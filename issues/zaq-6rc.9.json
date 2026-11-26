@@ -11,9 +11,15 @@
   "id": "zaq-6rc.9",
   "labels": [],
   "parent": "zaq-6rc",
+  "comments": [
+    {
+      "text": "Dedicated post-review coverage and final approval gate moved to zaq-6rc.11; this issue owns integration review and owning documentation. Producer integration prerequisite: zaq-6rc.10.",
+      "timestamp": "2026-11-26T12:09:36Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc.9] Validate migration and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-26T12:09:35Z"
+  "updated_at": "2026-11-26T12:09:36Z"
 }
