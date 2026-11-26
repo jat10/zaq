@@ -8,7 +8,7 @@
   ],
   "closed_at": "2026-11-26T14:18:50Z",
   "created": "2026-11-26T11:54:18Z",
-  "description": "PROPOSED, awaiting agreement gate. Follow parent scope and policy/reuse assessment. Replace incomplete all-not_applicable patch only after agreement. Extend existing Web.Delivery native declaration ownership and WebBridge.capability_snapshot/1; reuse CommunicationBridge and FileSettings metadata. Proposed editable fields: optional unresolved per-file bytes and unresolved count required only when file support usable, typed positive integers with correct units. No new module/callback framework, invented ceilings, setting-derived transport facts or support-status changes. Extend existing proposal snapshot boundary narrowly for Engine-prepared singleton native configuration without connector identity. Tests first: pure declarations, type/unit/envelope preservation, unresolved facts, hostile/invalid native proposal scopes and unchanged connector identity validation. Preserve existing tests; update owner docs; run issue-focused checks/mix q.",
+  "description": "APPROVED by user on 2026-11-26. Follow parent scope and policy/reuse assessment. Replace incomplete all-not_applicable patch only after agreement. Extend existing Web.Delivery native declaration ownership and WebBridge.capability_snapshot/1; reuse CommunicationBridge and FileSettings metadata. Proposed editable fields: optional unresolved per-file bytes and unresolved count required only when file support usable, typed positive integers with correct units. No new module/callback framework, invented ceilings, setting-derived transport facts or support-status changes. Extend existing proposal snapshot boundary narrowly for Engine-prepared singleton native configuration without connector identity. Tests first: pure declarations, type/unit/envelope preservation, unresolved facts, hostile/invalid native proposal scopes and unchanged connector identity validation. Preserve existing tests; update owner docs; run issue-focused checks/mix q.",
   "id": "zaq-h2i.4.1.2",
   "labels": [],
   "parent": "zaq-h2i.4.1",
@@ -22,5 +22,5 @@
   "status": "closed",
   "title": "[zaq-h2i.4.1] Declare native Web configuration through shared snapshots",
   "type": "task",
-  "updated_at": "2026-11-26T14:18:50Z"
+  "updated_at": "2026-11-26T14:41:05Z"
 }
