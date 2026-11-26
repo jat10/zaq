@@ -15,8 +15,12 @@ defmodule Zaq.Engine.Messages.Outgoing do
   interpreted only by the provider bridge; bridges that do not thread ignore it.
 
   For cross-node routing, this struct is typically carried in `%Zaq.Event.response`.
+
+  `attachments` contains explicitly supplied attachment Records. Channel owns
+  metadata planning and content acquisition; plans never travel in this payload.
   """
 
+  alias Zaq.Contracts.Record
   alias Zaq.Engine.Messages.Incoming
   alias Zaq.Engine.Messages.Incoming.RoutingContext
 
@@ -31,6 +35,7 @@ defmodule Zaq.Engine.Messages.Outgoing do
     :provider,
     :in_reply_to,
     :thread_anchor,
+    attachments: [],
     routing_context: %RoutingContext{},
     metadata: %{}
   ]
@@ -44,6 +49,7 @@ defmodule Zaq.Engine.Messages.Outgoing do
           provider: atom() | String.t(),
           in_reply_to: String.t() | integer() | nil,
           thread_anchor: map() | nil,
+          attachments: [Record.t()],
           routing_context: RoutingContext.t() | nil,
           metadata: map()
         }
@@ -52,8 +58,10 @@ defmodule Zaq.Engine.Messages.Outgoing do
   Builds an `%Outgoing{}` from an `%Incoming{}` and the pipeline result map.
 
   Copies routing fields (channel_id, thread_id, author_id, author_name, provider) from
-  the incoming message, sets `body` from `result.answer`, and stores the full result map
-  in `metadata` (answer, confidence_score, latency_ms, tokens, error).
+  the incoming message and sets `body` from `result.answer`. Only attachments
+  explicitly supplied in the result are propagated; incoming files are never echoed.
+  Metadata retains ordinary result fields (answer, confidence_score, latency_ms,
+  tokens, error), excluding attachments and Channel-local delivery state.
   """
   @spec from_pipeline_result(Incoming.t(), map()) :: t()
   def from_pipeline_result(%Incoming{} = incoming, result) when is_map(result) do
@@ -66,9 +74,20 @@ defmodule Zaq.Engine.Messages.Outgoing do
       provider: incoming.provider,
       in_reply_to: incoming.message_id,
       routing_context: incoming.routing_context,
+      attachments: Map.get(result, :attachments, []),
       metadata:
         incoming.metadata
         |> Map.merge(result)
+        |> Map.drop([
+          :attachments,
+          "attachments",
+          :delivery,
+          "delivery",
+          :plan,
+          "plan",
+          :delivery_error,
+          "delivery_error"
+        ])
         |> put_person(incoming.person)
     }
   end
