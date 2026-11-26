@@ -16,11 +16,15 @@
     {
       "text": "Scope narrowed to PR4 only: Outgoing attachment contract, lazy materialization/validation primitives, grouping and internal plan. Execution, transport effects, SMTP MIME sizing, partial outcomes, confirmation/history extensions are PR5. Agent Action/stream propagation PR6; workflow/notification integration PR7. Validate current text/confirmation behavior remains unchanged.",
       "timestamp": "2026-11-26T12:23:22Z"
+    },
+    {
+      "text": "Dedicated PR4 read-only coverage handoff: fresh mix coveralls.json invoked through Context Mode with timeout600000; tool RPC timed out after300s and owned subprocess was terminated. Saved /tmp/pr4-coveralls.log shows suite completed299.9s with9872/9877 passed and5 existing ingestion environment failures. Isolated mix test on image_dedup_crawler_test.exs, offline_conversion_contract_test.exs, record_source_test.exs reproduces exactly5 failures in4.1s (56/61 passed,1 property; exit2): missing worktree .venv/bin/python3, opendataloader_pdf and markitdown docx/xlsx/pptx. No mix coverup or numerical coverage claims from this failed run. All five PR4 production files, including four untracked Channel modules, still require successful fresh coverage. No source/test/dependency changes made. Action reuse: not applicable to read-only validation. Parent investigating existing environment reuse before authorized detached fresh retry.",
+      "timestamp": "2026-11-26T13:18:08Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.11] Complete post-review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-26T13:10:38Z"
+  "updated_at": "2026-11-26T13:18:08Z"
 }
