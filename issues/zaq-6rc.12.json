@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-26T14:08:24Z",
+  "description": "Related .4 and review 2026-11-26T14:05:26Z finding1. Extend existing Preparation.decode_content raw encoding allowlist to utf-8 without changing bytes. Tests first: real JidoConnectBridge.download_document producer -\u003e acquire, Unicode/base64-looking raw text, atom/string encoding keys; retain base64 and invalid-encoding regressions. Reuse current Materialization/DecodeBase64; local-only validation, no Action or transport changes. Files preparation.ex, new focused producer regression tests, owning Channels docs. Run focused checks and mix q. Preserve every existing test expectation; no mocks except external Jido operation. No commit/push/merge.",
+  "id": "zaq-6rc.12",
+  "labels": [],
+  "parent": "zaq-6rc",
+  "priority": 2,
+  "status": "open",
+  "title": "Accept established UTF-8 attachment Records",
+  "type": "bug",
+  "updated_at": "2026-11-26T14:08:24Z"
+}
