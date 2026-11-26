@@ -27,11 +27,15 @@
     {
       "text": "Initial integrated regressions: mix q PASS; 293 tests PASS (9 properties), including canonical messages, planner/acquisition, resolver, Channels API, text Jido/email/web delivery and DeliveryConfirmation. Shared FileSettings tests live in connector_config/settings_test.exs (not a dedicated file_settings_test); include that actual owner in final focused run. Documentation updated only in owning channels service; unchanged Agent/workflow/Engine operations need no duplicate documentation. Review identified a missing fixed upload-batch raw-size validator for acquired size drift; add a shared validator used by metadata upload packing and a focused growth test before review completion. No executor or encoded request preparation added.",
       "timestamp": "2026-11-26T13:06:29Z"
+    },
+    {
+      "text": "Adversarial review finding before handoff: validate_group currently applies max_encoded_message_bytes to raw attachment totals in upload_then_publish mode, but published requests contain references, not raw file bytes. Concrete path: 10-byte file, upload cap 20, encoded message cap 5 currently rejects despite no established raw-byte lower bound for publication. This new PR4 helper has no base-branch equivalent. Correct encoded lower-bound checks to send_with_attachments only; upload encoded requests remain PR5 validation. Preserve all baseline tests; adjust only new PR4 specifications that assumed uploaded bytes appeared in published messages and add explicit mode-interaction regression. No transport/MIME sizing implementation.",
+      "timestamp": "2026-11-26T13:09:00Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.9] Validate migration and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-26T13:06:29Z"
+  "updated_at": "2026-11-26T13:09:00Z"
 }
