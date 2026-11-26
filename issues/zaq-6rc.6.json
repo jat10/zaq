@@ -11,9 +11,15 @@
   "id": "zaq-6rc.6",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Moved to PR5 per Jad seven-PR split. Not part of feat/delivery_plan PR4. Existing functional/test/reuse specification retained. Executor prerequisite and PR5 review/coverage finalization must be planned before implementation.",
+      "timestamp": "2026-11-26T12:23:11Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc.6] Integrate SMTP preparation and delivery",
   "type": "task",
-  "updated_at": "2026-11-26T12:23:10Z"
+  "updated_at": "2026-11-26T12:23:11Z"
 }
