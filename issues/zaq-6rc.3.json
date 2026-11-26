@@ -11,9 +11,15 @@
   "id": "zaq-6rc.3",
   "labels": [],
   "parent": "zaq-6rc",
+  "comments": [
+    {
+      "text": "PR4 scope: planner returns a separate Channel-local plan; requirements are supplied from the PR2 resolver. Do not enable a production delivery route that cannot yet execute attachments. Runtime integration belongs to PR5; metadata planning performs no acquisition.",
+      "timestamp": "2026-11-26T12:23:20Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc.3] Build Channel-local metadata delivery plans",
   "type": "task",
-  "updated_at": "2026-11-26T12:08:40Z"
+  "updated_at": "2026-11-26T12:23:20Z"
 }
