@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-26T12:08:22Z",
+  "description": "Functional specifications covered / files: lib/zaq/channels/delivery/executor.ex, attachments.ex, error.ex; Zaq.Materialization\nPass plan separately to executor. Reuse old group acquisition, preparation, upload phase then publication, root election, stop/continue, timeouts, bounded concurrency and release logic, subject to review. Direct-send prepares all groups first. Fixed groups/no automatic retry. Runtime owns bytes/results, never Outgoing or plan. Keep selected connection and requirements stable per attempt.\n\nTests to add before implementation: Group ordering for 15/5 files; failure stage/policy matrix; actual size drift; unknown optional ceilings; acquisition reuse; timeout/unconfirmed effects; uploads-only; no hidden retry; content lifetime; immutable inputs.\n\nBranches/paths validated: Group ordering for 15/5 files; failure stage/policy matrix; actual size drift; unknown optional ceilings; acquisition reuse; timeout/unconfirmed effects; uploads-only; no hidden retry; content lifetime; immutable inputs.\n\nAction reuse assessment: Reuse Zaq.Materialization and current signed Record authorization/provenance contracts. No duplicated download Action or raw source retrieval. Channel-private execution, injected runtime dependencies via existing opts. Nil identity never grants privileges.\n\nConsumers/execution: preserve existing Agent/Engine/Channel service boundaries; plan and prepared content never cross to Engine. Tool selection has no delivery side effect. Transport failures are reported without automatic retries.\n\nPlanning only in feat/delivery_plan; do not implement until the proposed migration is reviewed. Policies: AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/exec-plans/PLAN_STRATEGY.md, docs/testing-approach.md, docs/documentation.md; relevant service guides before affected work. Existing test behavior changes require specific approval; none granted by this plan. Mocking plan: keep internal boundaries real; isolate external transport/LLM APIs and inject runtime config without global mutations. Documentation: update module contracts and relevant owning service guide with implemented behavior, not duplicate policies. Validation follows authoritative workflow timing.",
+  "id": "zaq-6rc.4",
+  "labels": [],
+  "parent": "zaq-6rc",
+  "priority": 2,
+  "status": "open",
+  "title": "Adapt executor and attachment preparation",
+  "type": "task",
+  "updated_at": "2026-11-26T12:08:22Z"
+}
