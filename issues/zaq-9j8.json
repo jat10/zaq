@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-26T12:23:01Z",
+  "description": "User-defined PR5: plan execution through Jido and email adapters, exact SMTP MIME sizing, failure policies, partial outcomes, confirmation and history. Depends on PR4 contracts/planning. Reuse DeliveryConfirmation and existing Engine event. No AttachDocuments (PR6), workflow/notification integration (PR7), or replacement of PR2 FileSettings/resolver. Detailed executor and PR5 finalization tasks must be added before implementation; existing transport tasks are carried here. Reuse zaq-h2i.4 for real adapter prerequisites. Planning only.",
+  "id": "zaq-9j8",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "PR5 delivery execution and outcomes",
+  "type": "epic",
+  "updated_at": "2026-11-26T12:23:01Z"
+}
