@@ -9,9 +9,15 @@
   "id": "zaq-6rc.14",
   "labels": [],
   "parent": "zaq-6rc",
+  "comments": [
+    {
+      "text": "Remediation review approved for coverage handoff. Invariants: raw UTF-8 preserved byte-for-byte; metadata never acquires/decodes; MIME encoded sizes never masquerade as raw bounds; source size and stable indices preserved; actual content owns enforcement. Traced real Jido download producer to acquire; EmailBridge.Attachment to durable Record metadata JSON/hydration to planner; lazy communication materialization to actual validation. Original reproductions now pass plus Unicode/base64-looking UTF-8 variants, persisted IMAP provenance, mixed raw/unknown group packing, and fixed-group actual overflow. Both prior findings fully resolved within PR4 primitives. No source contract, permission bypass, Action duplication, runtime route or existing assertion change. Local raw-size projection reuses durable source metadata. No new correctness finding; executor integration and exact provider sizing remain PR5 exclusions. No state writes/post-commit observers introduced. Review hygiene: fresh coverage and final precommit pending.",
+      "timestamp": "2026-11-26T14:15:40Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.14] Review and validate PR4 encoding and size remediations",
   "type": "task",
-  "updated_at": "2026-11-26T14:15:12Z"
+  "updated_at": "2026-11-26T14:15:40Z"
 }
