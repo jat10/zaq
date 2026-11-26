@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-6rc.7"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-6rc.9"
+  ],
   "created": "2026-11-26T12:08:32Z",
   "description": "Functional specifications covered / files: lib/zaq/agent/tools/data_source/attach_documents.ex, tools/registry.ex, stream_events.ex, executor.ex, opaque_aliases.ex; tools/workflow/run_agent.ex, tools/people/notify_person.ex; engine/notifications.ex\nPort AttachDocuments as the missing explicit selection Action; reuse GetDocument/Record authorization and add/remove/replace reducer. Return failures in tool feedback/logging only; accumulate successful selection request-locally. Rewrite old tool instructions claiming selection failures block Channel sends. Carry only attachment Records through pipeline, RunAgent and NotifyPerson/Notifications. Empty selected list is normal text. Preserve failed/cancelled request cleanup and existing workflow lifecycle.\n\nTests to add before implementation: Selection ordering/dedup properties; add/remove/replace; partial selection failure and successful retry do not poison outgoing; unauthorized/stale Records; request isolation/cancellation; Agent-to-Channel, workflow and notification journeys.\n\nBranches/paths validated: Selection ordering/dedup properties; add/remove/replace; partial selection failure and successful retry do not poison outgoing; unauthorized/stale Records; request isolation/cancellation; Agent-to-Channel, workflow and notification journeys.\n\nAction reuse assessment: New-to-this-branch Action port of existing AttachDocuments, not duplicate DownloadDocument (materializes rather than selects). Reuse GetDocument, Record Authorization/Provenance, validated Jido/StepRunner execution; trusted event context and existing APIs. Action introduction and consumers are sequenced inside this task; split further if implementation requires independent changes.\n\nConsumers/execution: preserve existing Agent/Engine/Channel service boundaries; plan and prepared content never cross to Engine. Tool selection has no delivery side effect. Transport failures are reported without automatic retries.\n\nPlanning only in feat/delivery_plan; do not implement until the proposed migration is reviewed. Policies: AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/exec-plans/PLAN_STRATEGY.md, docs/testing-approach.md, docs/documentation.md; relevant service guides before affected work. Existing test behavior changes require specific approval; none granted by this plan. Mocking plan: keep internal boundaries real; isolate external transport/LLM APIs and inject runtime config without global mutations. Documentation: update module contracts and relevant owning service guide with implemented behavior, not duplicate policies. Validation follows authoritative workflow timing.",
   "id": "zaq-6rc.8",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-6rc.8] Port attachment Action and producer propagation",
   "type": "task",
-  "updated_at": "2026-11-26T12:08:45Z"
+  "updated_at": "2026-11-26T12:08:46Z"
 }
