@@ -20,11 +20,15 @@
     {
       "text": "Final helper reuse audit also inspected existing ZaqWeb.Live.BO.EngineDispatch.dispatch/2: like the legacy SystemConfigLive dispatch_engine/2, it cannot carry trusted actor, confidential opts or the socket/session-selected router. The new private dispatch_native_web_settings helper is intentionally local to this editor and reuses direct Event/NodeRouter boundaries; extending a shared legacy public helper would broaden unrelated call sites for no native benefit. Mobile native panel checked with existing sidebar collapsed: no horizontal overflow; screenshot /tmp/zaq-native-web-mobile-collapsed.png. Expanded sidebar already leaves the existing Global card only 86px wide at a 390px viewport; no shared sidebar/layout changes made.",
       "timestamp": "2026-11-26T14:48:02Z"
+    },
+    {
+      "text": "First full browser run completed: 586 passed, 3 skipped, 4 failed in existing Firefox/Chromium light/dark Global/RAG layout assertions (globalLayout.overflow expected false). Reproduced existing 4 checks without editing assertions. Browser isolation at the sidebar intermediate width showed document width 444 at viewport 390 with new native panel, 390 after removing only that panel (baseline DOM), and 390 with native overflow contained. Fixed only the native container by adding existing overflow-x-auto utility, keeping the shared Toggle and controls accessible in a local scroller. The first post-edit test reused an old compiled preview server; restarted it and all 4 unchanged checks passed against fresh code (/tmp/zaq-native-readability-fixed.log). Full final browser rerun and issue checks now required; earlier 586 pass result is not claimed as a green full run.",
+      "timestamp": "2026-11-26T14:59:19Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.1] Wire shared Advanced controls for global BO-chat settings",
   "type": "task",
-  "updated_at": "2026-11-26T14:48:02Z"
+  "updated_at": "2026-11-26T14:59:19Z"
 }
