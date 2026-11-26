@@ -31,11 +31,15 @@
     {
       "text": "Module-context phase complete: System owns global DB key/value state; System.Config owns Ecto row validation/unique key. Engine.Api owns authorized event orchestration; BO GlobalTab/SystemConfigLive owns presentation/drafts only. Flow: BO Event → Engine authenticated boundary → System transaction → exact proposed capability Event → Bridge/Web.Delivery declaration → CommunicationBridge/FileSettings Ecto validation → Config row. Runtime defaults cannot come from form/cached facts. Existing System.set_config provides final upsert; existing helpers writing several scalar fields do not fit one JSON value and ignore result errors, so native save needs a small transaction/row-lock composition with explicit result handling. New helper candidates/necessity: native declaration projection in existing Delivery; decode one JSON setting shared by get/save; shared proposal snapshot acquisition used by management read/save. No new production modules. Downstream transport is tracked in zaq-h2i.5.",
       "timestamp": "2026-11-26T14:16:20Z"
+    },
+    {
+      "text": "Cleared only the staging left by our interrupted partial commit, preserving all current working-tree files. The abandoned blanket-not_applicable versions are no longer staged; backup of the starting patch is /tmp/zaq-h2i-native-before.patch. No commit was created; HEAD remains bfb3e677c.",
+      "timestamp": "2026-11-26T14:41:11Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.1] Configure native BO-chat file limits",
   "type": "task",
-  "updated_at": "2026-11-26T14:41:03Z"
+  "updated_at": "2026-11-26T14:41:11Z"
 }
