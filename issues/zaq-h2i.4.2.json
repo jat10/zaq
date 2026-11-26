@@ -7,9 +7,15 @@
   "id": "zaq-h2i.4.2",
   "labels": [],
   "parent": "zaq-h2i.4",
+  "comments": [
+    {
+      "text": "Native BO-chat configuration is independent and remains in zaq-h2i.4.1 pending ownership/contract agreement. Removed the .4.2 blocker on native configuration. This issue still owns the external WebWidget declaration prerequisite and its true transport gap: ZAQ widget response projection and pinned package encoding/history/rendering have no attachment contract. A declaration-only external API cannot establish file sending; actual widget transport support and release/integration require separately authorized work.",
+      "timestamp": "2026-11-26T11:53:38Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "Supply WebWidget selected-configuration file declarations",
   "type": "task",
-  "updated_at": "2026-11-26T11:53:37Z"
+  "updated_at": "2026-11-26T11:53:38Z"
 }
