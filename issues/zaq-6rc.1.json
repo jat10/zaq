@@ -9,9 +9,15 @@
   "id": "zaq-6rc.1",
   "labels": [],
   "parent": "zaq-6rc",
+  "comments": [
+    {
+      "text": "PR4 scope: verify current PR1/PR2 contracts and record provider compatibility gaps for PR5. Do not require external transport releases or change dependency pins merely to land PR4 planning primitives.",
+      "timestamp": "2026-11-26T12:23:18Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc.1] Verify adapter contracts and migration prerequisites",
   "type": "task",
-  "updated_at": "2026-11-26T12:08:37Z"
+  "updated_at": "2026-11-26T12:23:18Z"
 }
