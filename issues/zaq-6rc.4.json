@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-6rc.9"
   ],
+  "closed_at": "2026-11-26T13:04:11Z",
+  "close_reason": "Lazy acquisition/actual validation primitives and security regression tests complete.",
   "created": "2026-11-26T12:08:22Z",
   "description": "Functional specification/files: Channel-local attachment preparation module plus existing Zaq.Materialization and Record contracts. Supply lazy acquisition/materialization and file validation primitives that future executor can invoke; do not acquire content while constructing metadata plans. Reuse current signed handle and provenance/authorization contracts, never raw source retrieval. Validate actual content and known size/metadata limits at acquisition, preserve optional unresolved facts. No executor orchestration, provider upload/send/edit, exact SMTP MIME encoding, failure-policy execution or outcomes in PR4. Those belong to PR5. Tests before implementation/paths: metadata planning causes no IO; explicit acquisition redeems authorized handles through existing boundary; invalid handles/content/name/MIME and actual-size drift; preserve nil-identity security; no provider sends. Mock only external IO, keep internal materialization real and runtime configuration isolated. Action reuse: reuse Zaq.Materialization and Record contracts, local-only preparation helpers; no new tool or Action. Consumers: PR5 Channel executor; records/plan remain immutable and bytes transient. Docs: Channel service and module contracts. Follow workflow/testing policies, with explicit approval for existing test behavior changes. Planning only.",
   "id": "zaq-6rc.4",
@@ -22,8 +24,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6rc.4] PR4 lazy acquisition and attachment validation primitives",
   "type": "task",
-  "updated_at": "2026-11-26T13:04:10Z"
+  "updated_at": "2026-11-26T13:04:11Z"
 }
