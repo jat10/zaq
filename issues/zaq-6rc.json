@@ -26,11 +26,15 @@
     {
       "text": "PR-review skill review of uncommitted PR4 at HEAD 6d94a2813 against fix/channel-dark-theme: request changes, two reproduced medium-severity inline findings. (1) lib/zaq/channels/delivery/preparation.ex:98 rejects encoding utf-8, although JidoConnectBridge.extract_downloaded_content/build_downloaded_record emit that for downloaded text and the existing list_files inline-content test preserves it. Preparation.acquire on a valid text Record with content hello/encoding utf-8 returns invalid_attachment_encoding. Accept established raw-text encoding and add producer-to-acquisition coverage. (2) lib/zaq/channels/delivery/attachments.ex:107 treats all Record.size values as raw lower bounds. EmailBridge.Attachment.to_record sets size from MIME encoded_size. Real to_record metadata for base64 aGVsbG8= has size 8; planner rejects at max_attachment_bytes 5 even though acquire with those content bytes returns size 5 successfully. Preserve size semantics; treat encoded-only source size as unknown raw size or use a justified lower bound, then check actual bytes after acquisition. Add real email Record planning coverage. Fresh review validation: all four new PR4 suites 38 PASS (3 properties), six existing builder/requirements/confirmation/materialization suites 75 PASS (4 properties), total 113. Inspected all 10 changed/untracked PR4 files, related Record/JidoConnect/email producers and materialization boundaries. No production/test edits, Git publication or posted PR comments. No GitHub PR exists for feat/delivery_plan yet.",
       "timestamp": "2026-11-26T14:05:26Z"
+    },
+    {
+      "text": "Remediation authorized in existing dirty worktree; preserve all uncommitted PR4. New dependency order .12 -\u003e .13 -\u003e .14. Previous .9/.11 validation predates review findings and does not validate these fixes. No existing test expectation changes planned: add producer-backed regressions only. No E2E/UI scope. Source-size projection will recognize durable communication_media/email:imap metadata, including hydrated Records, without decoding content or changing Record.size; other base64 producers keep known raw sizes.",
+      "timestamp": "2026-11-26T14:09:04Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc] PR4 Outgoing attachments and Channel-local delivery plans",
   "type": "epic",
-  "updated_at": "2026-11-26T14:05:26Z"
+  "updated_at": "2026-11-26T14:09:04Z"
 }
