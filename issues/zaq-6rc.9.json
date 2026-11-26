@@ -19,11 +19,15 @@
     {
       "text": "Scope correction: no AttachDocuments or tool-driven producer implementation/tests in this PR. Validate supplied Outgoing.attachments through existing Channel entrypoint, canonical builder, planner/executor and confirmation. Dependency is .7 directly; .8/.10 removed from scope. Preserve existing Agent/workflow/notification behavior.",
       "timestamp": "2026-11-26T12:21:35Z"
+    },
+    {
+      "text": "Scope narrowed to PR4 only: Outgoing attachment contract, lazy materialization/validation primitives, grouping and internal plan. Execution, transport effects, SMTP MIME sizing, partial outcomes, confirmation/history extensions are PR5. Agent Action/stream propagation PR6; workflow/notification integration PR7. Validate current text/confirmation behavior remains unchanged.",
+      "timestamp": "2026-11-26T12:23:21Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc.9] Validate migration and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-26T12:23:06Z"
+  "updated_at": "2026-11-26T12:23:21Z"
 }
