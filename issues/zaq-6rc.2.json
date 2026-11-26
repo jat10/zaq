@@ -11,9 +11,15 @@
   "id": "zaq-6rc.2",
   "labels": [],
   "parent": "zaq-6rc",
+  "comments": [
+    {
+      "text": "Before code: extend only canonical struct/builder, no new Action; preserve supplied Records and original order without silently filtering invalid selections (planner validates them). Metadata drops attachment payload and Channel-only delivery/plan keys in atom/string forms. No automatic incoming attachment echo. Tests add defaults, selected typed Records after verified JSON Record round trip, routing and metadata exclusion, immutable incoming, cross-node term round trip; existing tests unchanged. Owning docs are module contract and channels service. No IO/mocks needed.",
+      "timestamp": "2026-11-26T12:53:29Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.2] Add attachments-only Outgoing contract",
   "type": "task",
-  "updated_at": "2026-11-26T12:53:27Z"
+  "updated_at": "2026-11-26T12:53:29Z"
 }
