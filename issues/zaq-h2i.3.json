@@ -117,11 +117,15 @@
     {
       "text": "Publication hook caught a formatting-only Changeset.add_error call in FileSettings. No commit was created by that attempt. mix q rerun passed but its cached formatter left the layout unchanged; applied the exact whitespace-only layout requested by the commit hook and restaged that file. No assertions or behavior changed. Retrying normal hooks; no verification bypass.",
       "timestamp": "2026-11-26T08:18:31Z"
+    },
+    {
+      "text": "Publication authorized by the user: committed as bfb3e677cd83196087c24ec94d6bdce409eb1fec (feat(channels): validate capability-driven connection settings) and pushed normally to origin/feat/channel-file-settings. Commit and push hooks passed; remote SHA matches local HEAD and worktree is clean. Human UX approval, new feature E2E, coverage and final precommit gates remain pending in their existing issues; publication does not approve or close those gates.",
+      "timestamp": "2026-11-26T08:20:47Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-26T08:18:31Z"
+  "updated_at": "2026-11-26T08:20:47Z"
 }
