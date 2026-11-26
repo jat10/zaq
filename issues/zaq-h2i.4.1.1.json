@@ -9,9 +9,15 @@
   "id": "zaq-h2i.4.1.1",
   "labels": [],
   "parent": "zaq-h2i.4.1",
+  "comments": [
+    {
+      "text": "User explicitly agreed in the current conversation to System ownership, Global/BO chat UI placement, and Engine/proposal boundary extensions. Implementation authorized for native-Web configuration only. Attachment transport/authenticated file serving/live-history rendering deferred to separate downstream delivery work. WebWidget separate. No commits or publication authorized.",
+      "timestamp": "2026-11-26T14:16:13Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.4.1] Agree native BO-chat configuration and delivery contract",
   "type": "task",
-  "updated_at": "2026-11-26T11:54:22Z"
+  "updated_at": "2026-11-26T14:16:13Z"
 }
