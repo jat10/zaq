@@ -28,11 +28,15 @@
     {
       "text": "Ready for explicit human UX review. Review current artifacts and unstaged diff recorded in this description. Final automatic validation: 839 integrated checks plus targeted review checks; mix q passed; existing browser suite 590 passed/3 skipped. Approval has not been given for the completed screens; .3.5 and .3.13 remain gated. No code commit/push/merge/publication.",
       "timestamp": "2026-11-25T19:14:17Z"
+    },
+    {
+      "text": "UX scope extended by agreed native-Web configuration: System configuration → Global → BO chat, using existing Main/Advanced editor and shared file controls. Review Main description, unsupported-attachment notice, editable unresolved per-file MB/count, fixed unresolved encoded limit, optional help while unusable, failure-policy toggle, Save/Cancel, field errors and capability retry/draft recovery. Existing implementation agreement is not final UX approval. Keep this gate open pending actual UI review. Storybook screenshot /tmp/zaq-native-web-storybook.png; actual Global-tab screenshots to follow.",
+      "timestamp": "2026-11-26T14:38:52Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3.4] Obtain human UX approval for consolidated file settings",
   "type": "task",
-  "updated_at": "2026-11-26T14:16:19Z"
+  "updated_at": "2026-11-26T14:38:52Z"
 }
