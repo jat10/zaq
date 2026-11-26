@@ -7,6 +7,8 @@
     "zaq-6rc.5",
     "zaq-9j8"
   ],
+  "closed_at": "2026-11-26T13:35:22Z",
+  "close_reason": "Dedicated post-review coverage and final mix precommit passed; ready for final human review, no Git landing authorized.",
   "created": "2026-11-26T12:09:29Z",
   "description": "Functional specification: after implementation and review in zaq-6rc.9, invoke dedicated coverage-upper handoff per docs/WORKFLOW_AGENT.md Phase 6, review any resulting changes, then final mix precommit before final human approval. Files: focused existing tests and owning docs only as evidence requires. Tests/branches: all migrated contract, policy, permission, lifecycle and actual adapter paths from parent issues; record unsupported adapters and failures honestly. Mock external edges only, preserve isolated config. Action reuse: not applicable to validation; audit no duplicated operations. Documentation: record results and exceptions in Beadwork. Existing assertion changes need explicit approval. No commit/push/merge authorized.",
   "id": "zaq-6rc.11",
@@ -31,8 +33,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6rc.11] Complete post-review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-26T13:35:21Z"
+  "updated_at": "2026-11-26T13:35:22Z"
 }
