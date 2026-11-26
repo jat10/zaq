@@ -31,11 +31,15 @@
     {
       "text": "Adversarial review finding before handoff: validate_group currently applies max_encoded_message_bytes to raw attachment totals in upload_then_publish mode, but published requests contain references, not raw file bytes. Concrete path: 10-byte file, upload cap 20, encoded message cap 5 currently rejects despite no established raw-byte lower bound for publication. This new PR4 helper has no base-branch equivalent. Correct encoded lower-bound checks to send_with_attachments only; upload encoded requests remain PR5 validation. Preserve all baseline tests; adjust only new PR4 specifications that assumed uploaded bytes appeared in published messages and add explicit mode-interaction regression. No transport/MIME sizing implementation.",
       "timestamp": "2026-11-26T13:09:00Z"
+    },
+    {
+      "text": "Review A/invariants: attachments-only Outgoing; original order/indices; pure separate plans; unknown/NA/positive limits remain distinct; lazy acquisition preserves signed Record authorization. B/traces: canonical builder -\u003e unchanged Channels.Api -\u003e formatter -\u003e native WebBridge -\u003e PubSub; pure resolver -\u003e planner; explicit acquisition -\u003e handle verifier -\u003e materializer -\u003e trusted role event -\u003e actual content validation. No new persistence/state machine/post-commit operations. C/findings: corrected uploaded-file raw bytes being mistaken for encoded publication size; failing regression reproduced before fix, passing after. Alternate paths validate acquired size drift and direct-send encoded lower bounds. D/pre-existing defects: none attributed to PR4. E/disproved: nil identity bypass, canonical denial fallback, index shifts from duplicate IDs, automatic incoming echo, premature attachment route. F/gaps: executor/provider requests/SMTP MIME and external adapter declarations deliberately deferred to zaq-9j8; no provider acceptance claimed. G/previous findings: fixed upload-batch actual-size validation and encoded-mode interaction fully resolved by focused tests. H/hygiene: only owning channels docs changed; no baseline test edits, dependency pins, source-reference edits or unrelated files. Quality domain grade unchanged. I/verdict: approve PR4 implementation for dedicated coverage handoff; no known reproducible in-scope correctness blocker. Latest mix q PASS; final focused suites 49 PASS (7 properties), prior compatibility suites 293 PASS and materialization suites 68 PASS. No browser E2E applies to backend-only primitives.",
+      "timestamp": "2026-11-26T13:10:36Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.9] Validate migration and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-26T13:09:00Z"
+  "updated_at": "2026-11-26T13:10:36Z"
 }
