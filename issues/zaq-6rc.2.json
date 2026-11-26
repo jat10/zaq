@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-6rc.3"
   ],
+  "closed_at": "2026-11-26T12:56:12Z",
+  "close_reason": "Attachments-only payload/builder implemented and focused checks passed; uncommitted per user request.",
   "created": "2026-11-26T12:08:18Z",
   "description": "Functional specifications covered / files: lib/zaq/engine/messages/outgoing.ex; test/zaq/engine/messages/\nAdd attachments: [] of Records and adapt from_pipeline_result. Exclude attachment transport payloads from metadata. No Outgoing.Delivery, delivery error or plan. Preserve routing_context and existing builders. No automatic echo of incoming files.\n\nTests to add before implementation: Default empty selection, typed/serialized Record round trips, metadata exclusion, no producer plan/error propagation, existing text/routing assertions.\n\nBranches/paths validated: Default empty selection, typed/serialized Record round trips, metadata exclusion, no producer plan/error propagation, existing text/routing assertions.\n\nAction reuse assessment: Extend Outgoing.from_pipeline_result; canonical cross-service contract only. No Action for a payload builder; preserve trusted routing.\n\nConsumers/execution: preserve existing Agent/Engine/Channel service boundaries; plan and prepared content never cross to Engine. Tool selection has no delivery side effect. Transport failures are reported without automatic retries.\n\nPlanning only in feat/delivery_plan; do not implement until the proposed migration is reviewed. Policies: AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/exec-plans/PLAN_STRATEGY.md, docs/testing-approach.md, docs/documentation.md; relevant service guides before affected work. Existing test behavior changes require specific approval; none granted by this plan. Mocking plan: keep internal boundaries real; isolate external transport/LLM APIs and inject runtime config without global mutations. Documentation: update module contracts and relevant owning service guide with implemented behavior, not duplicate policies. Validation follows authoritative workflow timing.",
   "id": "zaq-6rc.2",
@@ -22,8 +24,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6rc.2] Add attachments-only Outgoing contract",
   "type": "task",
-  "updated_at": "2026-11-26T12:56:10Z"
+  "updated_at": "2026-11-26T12:56:12Z"
 }
