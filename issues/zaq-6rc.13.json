@@ -11,9 +11,15 @@
   "id": "zaq-6rc.13",
   "labels": [],
   "parent": "zaq-6rc",
+  "comments": [
+    {
+      "text": "Regression-first evidence: all 8 new email-size checks failed against previous planner, including real encoded8/raw5 Record, hydrated source, known-raw control, grouping and property ordering cases. Fix projects durable communication_media/email:imap source size to unknown raw size without changing Record.size or reading content; other producers retain raw size semantics regardless of base64. Existing actual-content validators enforce file, aggregate and upload limits. mix q passed; isolated delivery and email attachment suites passed 48 checks (5 properties, 43 tests). No existing expectations changed; documentation updated.",
+      "timestamp": "2026-11-26T14:15:09Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.13] Preserve IMAP encoded-size semantics during metadata planning",
   "type": "bug",
-  "updated_at": "2026-11-26T14:11:50Z"
+  "updated_at": "2026-11-26T14:15:09Z"
 }
