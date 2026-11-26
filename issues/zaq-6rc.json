@@ -10,11 +10,15 @@
     {
       "text": "Refined final execution order: .1 -\u003e .2 -\u003e .3 -\u003e .4 -\u003e .5 -\u003e .6 -\u003e .7 -\u003e .8 (selection Action) -\u003e zaq-6rc.10 (producers) -\u003e .9 (integration review/docs) -\u003e zaq-6rc.11 (post-review coverage/final validation). This supersedes the earlier shorter graph; still one linear DAG.",
       "timestamp": "2026-11-26T12:09:38Z"
+    },
+    {
+      "text": "Execution authorized by current user request in feat/delivery_plan; planning-only wording and older PR5/6/7 sequencing are superseded. Baseline clean at 6d94a2813. Required order .1 -\u003e .2 -\u003e .3 -\u003e .4 -\u003e .9 -\u003e .11; no commits, pushes, merges or dependency changes. Backend unit/integration/property scope; no browser E2E required. Existing test expectations will be retained.",
+      "timestamp": "2026-11-26T12:48:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc] PR4 Outgoing attachments and Channel-local delivery plans",
   "type": "epic",
-  "updated_at": "2026-11-26T12:48:00Z"
+  "updated_at": "2026-11-26T12:48:03Z"
 }
