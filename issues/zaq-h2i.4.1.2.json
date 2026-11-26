@@ -11,9 +11,15 @@
   "id": "zaq-h2i.4.1.2",
   "labels": [],
   "parent": "zaq-h2i.4.1",
+  "comments": [
+    {
+      "text": "Replaced staged all-not_applicable implementation with the approved source contract: existing Web.Delivery.capability_snapshot/0 owns two configurable typed unresolved limits; count is declared required but applies only when usable. WebBridge merges its declaration without changing support. Existing Bridge proposal scope accepts only provider web/kind retrieval/exact file_delivery map without connector ID or extra settings; normal connector checks unchanged. Tests first failed (4 new cases) then 22 passed (1 property), /tmp/zaq-native-declarations.log; mix q passed /tmp/zaq-native-declarations-q.log. No new production modules or callbacks. Source accessor is necessary because existing Delivery had no native declaration seam; no parallel normalizer. User explicitly authorized replacing the incomplete uncommitted tests/patch; committed assertions remain unchanged.",
+      "timestamp": "2026-11-26T14:18:49Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.1] Declare native Web configuration through shared snapshots",
   "type": "task",
-  "updated_at": "2026-11-26T14:16:16Z"
+  "updated_at": "2026-11-26T14:18:49Z"
 }
