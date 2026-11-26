@@ -109,11 +109,15 @@
     {
       "text": "Final integration review complete for corrected in-PR scope. Existing npm test finished: 590 passed, 3 skipped (14.3m), /tmp/zaq-h2i-existing-e2e.log; Firefox/WebKit/Chromium journeys and Storybook all completed. The Context Mode MCP client returned a 300s await timeout while its independently running shell continued; verified the full final log summary and E2E server shutdown rather than treating that launcher timeout as a test outcome. No rerun or assertion changes used to hide failures. Integrated 839 checks (9 properties), subsequent widget review 52 checks and final component 6 checks pass; final mix q and git diff --check pass. Docs/Storybook updated at their existing owners. Production additions are private helpers/clauses within existing owners; no new modules, public source callbacks, Actions, endpoints or frameworks. Dependency pins and external repos unchanged. New feature E2E not authored; post-review coverage/final mix precommit not run because their recorded UX/E2E/review prerequisites remain. No code commit/push/merge/publication. Close implementation/integration step only; parent remains in progress and human UX gate .3.4 is ready with concrete screenshots and exact unstaged diff hash in its description.",
       "timestamp": "2026-11-25T19:14:15Z"
+    },
+    {
+      "text": "User explicitly authorized commit and push of the current implementation and preparation-order fix on 2026-11-26. Verified branch feat/channel-file-settings, origin git@github.com:jat10/zaq.git and remote tip 2107c75e5 equals local HEAD. All 30 paths match prior validated work, including exact follow-up patch; no new source changes. Prior issue checks remain valid: final mix q and 351 focused checks pass, earlier feature integrated/browser evidence recorded. Proceed with normal Git hooks and a regular push to the existing feature branch; pending UX/E2E/coverage/final-precommit gates remain pending and this publication is not merge approval.",
+      "timestamp": "2026-11-26T08:16:58Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-25T19:14:15Z"
+  "updated_at": "2026-11-26T08:16:58Z"
 }
