@@ -121,11 +121,15 @@
     {
       "text": "Publication authorized by the user: committed as bfb3e677cd83196087c24ec94d6bdce409eb1fec (feat(channels): validate capability-driven connection settings) and pushed normally to origin/feat/channel-file-settings. Commit and push hooks passed; remote SHA matches local HEAD and worktree is clean. Human UX approval, new feature E2E, coverage and final precommit gates remain pending in their existing issues; publication does not approve or close those gates.",
       "timestamp": "2026-11-26T08:20:47Z"
+    },
+    {
+      "text": "User requested restacking PR #17 onto this branch. Created backup/dark-theme-before-settings-rebase-20261126 at 430125484. Rebased only its dark-theme commit (excluding obsolete settings commit 1a8c1ff5) onto bfb3e677c. Two conflicts resolved by preserving current capability-error rendering and shared SMTP Input field validation while retaining dark-theme styling. Action reuse assessment: not applicable; history restack with template conflict resolution, no operation/save/API changes. New local tip 6d94a2813; validation underway. No remote rewrite performed.",
+      "timestamp": "2026-11-26T11:03:52Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-26T08:20:47Z"
+  "updated_at": "2026-11-26T11:03:52Z"
 }
