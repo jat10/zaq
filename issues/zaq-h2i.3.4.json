@@ -36,11 +36,15 @@
     {
       "text": "Actual native BO-chat Global UI inspected with no JavaScript errors or horizontal overflow. Main screenshot: /tmp/zaq-native-web-main.png; Advanced screenshot: /tmp/zaq-native-web-advanced.png. Existing shared controls show optional hints while file support is unavailable, unresolved encoded limit and configured failure policy. This is evidence for human review, not approval.",
       "timestamp": "2026-11-26T14:41:09Z"
+    },
+    {
+      "text": "Native configuration review patch: /tmp/zaq-native-configuration.patch, SHA256 1761faeb1d727873e1d7cbd78fa3c9f7a4a6e252e17cc8ea81c3c20f03e01cfe. Added mobile inspection with the existing sidebar collapsed: /tmp/zaq-native-web-mobile-collapsed.png, no horizontal overflow. Desktop Main/Advanced screenshots remain /tmp/zaq-native-web-main.png and /tmp/zaq-native-web-advanced.png. Human UX approval is still pending; current configuration agreement does not close this gate.",
+      "timestamp": "2026-11-26T14:48:04Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3.4] Obtain human UX approval for consolidated file settings",
   "type": "task",
-  "updated_at": "2026-11-26T14:41:09Z"
+  "updated_at": "2026-11-26T14:48:04Z"
 }
