@@ -11,9 +11,15 @@
   "id": "zaq-h2i.4.1.3",
   "labels": [],
   "parent": "zaq-h2i.4.1",
+  "comments": [
+    {
+      "text": "System singleton storage and guarded Engine operations implemented. Native read/save retain exactly one System.Config JSON key, normalize through FileSettings, snapshot the final merged proposal and validate through existing Ecto-backed FileSettings immediately before existing System.set_config upsert. Transaction inserts a missing row with ON CONFLICT DO NOTHING and locks it before reading/merging, so partial writers serialize; rejected first saves roll back even the seed row. Corrupt storage and capability failures return bounded errors. Original System/Engine tests (135 checks, 2 properties) passed /tmp/zaq-native-persistence.log, mix q passed /tmp/zaq-native-persistence-q.log. Read/save Engine handlers explicitly require confidential current BO actor; no connector IDs/store keys accepted as configuration fields. No new validator/module/Action or transport implementation.",
+      "timestamp": "2026-11-26T14:24:12Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.1] Persist native BO-chat settings in existing System owners",
   "type": "task",
-  "updated_at": "2026-11-26T14:18:52Z"
+  "updated_at": "2026-11-26T14:24:12Z"
 }
