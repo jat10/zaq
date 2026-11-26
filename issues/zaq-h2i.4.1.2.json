@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-h2i.4.1.1"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-h2i.4.1",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-h2i.4.1] Declare native Web configuration through shared snapshots",
   "type": "task",
-  "updated_at": "2026-11-26T11:54:24Z"
+  "updated_at": "2026-11-26T14:16:16Z"
 }
