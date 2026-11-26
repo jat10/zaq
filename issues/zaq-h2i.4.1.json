@@ -35,11 +35,15 @@
     {
       "text": "Cleared only the staging left by our interrupted partial commit, preserving all current working-tree files. The abandoned blanket-not_applicable versions are no longer staged; backup of the starting patch is /tmp/zaq-h2i-native-before.patch. No commit was created; HEAD remains bfb3e677c.",
       "timestamp": "2026-11-26T14:41:11Z"
+    },
+    {
+      "text": "Native configuration implementation and issue-level validation complete; overall issue remains open for existing UX/E2E/finalization gates. Final full browser rerun: 590 passed, 3 pre-existing skips, exit 0, 13.6m; /tmp/zaq-native-existing-e2e-final.log and /tmp/zaq-native-existing-e2e-final.exit. This includes all unchanged Firefox/WebKit/Chromium journeys and 105 Storybook smoke pages. The earlier 4 overflow failures are fixed by containing only the new native panel; no test assertions/specs were changed or authored. Four unchanged focused overflow checks passed, then final UI suite 247 passed (1 property), /tmp/zaq-native-ui-final.log; mix q passed after correction, /tmp/zaq-native-final-q.log. Earlier integrated owner/Bridge/SMTP/widget/System regression: 1098 passed (18 properties), /tmp/zaq-native-integrated.log; backend code unchanged by the final one-class responsive correction. git diff --check clean. No dependency changes/new modules; no committed test assertions removed/changed. No source commit/push/publication: HEAD still bfb3e677c, changes unstaged. Owned Storybook/preview servers stopped; runner stopped its E2E server. Current review patch /tmp/zaq-native-configuration.patch SHA256 4d30ef5e1a0a7d6c6a7659ffceec33b497b79807647e3c35e8a3c8976ef10216. Desktop Main/Advanced and mobile-collapsed screenshots are in prior notes. Existing UX gate zaq-h2i.3.4 stays open, feature E2E .3.5 and coverage/final gate .3.13 remain pending. Do not claim final UX approval or issue completion. Transport/authenticated file serving/live-history remain downstream zaq-h2i.5, required to read the same System setting and use TransportRequirements.resolve/2 once per attempt. WebWidget remains separate .4.2.",
+      "timestamp": "2026-11-26T15:15:40Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.1] Configure native BO-chat file limits",
   "type": "task",
-  "updated_at": "2026-11-26T14:41:11Z"
+  "updated_at": "2026-11-26T15:15:40Z"
 }
