@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-6rc.4"
   ],
@@ -26,8 +26,8 @@
     }
   ],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-6rc.9] Validate migration and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-26T12:23:21Z"
+  "updated_at": "2026-11-26T13:04:12Z"
 }
