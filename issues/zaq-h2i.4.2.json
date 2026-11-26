@@ -1,9 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [
-    "zaq-h2i.4.1"
-  ],
+  "blocks": [],
   "created": "2026-11-26T11:23:15Z",
   "description": "Prerequisite for the WebWidget subset of zaq-h2i.4.1. Installed web_widget at pinned 42b7ef71fd43bb62562c05e9f29581e8152a89cb exposes WebWidget.HostAdapter infrastructure_child_specs/1, build_runtime_specs/2, ingress_status/2 and installation/3 only; no pure capability or file-limit source exists. ZAQ must not infer configuration facts from status/readiness or override settings. Establish an additive declaration contract in the owning external adapter, preserving status-only meanings and existing runtime consumers. It must accept the selected proposed configuration without I/O and declare truthful file support plus structured file_delivery fields per docs/services/channels.md#file-configuration-and-transport-requirements (typed bytes/count limits, required/configurable, allowlisted numeric rules, unresolved/not_applicable, separate configured values and independent ceilings). Verify actual attachment transport before claiming support. External implementation, contract/API agreement, release/publication and any dependency pin integration require separately authorized later work; none is authorized by zaq-h2i.4.1. Keep current ZAQ unsupported-widget behavior until compatible source is available.",
   "id": "zaq-h2i.4.2",
@@ -13,5 +11,5 @@
   "status": "open",
   "title": "Supply WebWidget selected-configuration file declarations",
   "type": "task",
-  "updated_at": "2026-11-26T11:28:15Z"
+  "updated_at": "2026-11-26T11:53:37Z"
 }
