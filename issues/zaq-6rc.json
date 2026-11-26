@@ -34,11 +34,15 @@
     {
       "text": "Review remediation complete: .12 accepts established raw utf-8 bytes unchanged; .13 preserves MIME encoded Record.size and treats durable IMAP-source raw size as unknown during planning, while retaining known raw-size behavior for other producers. Regression-first evidence recorded in each issue. .14 reviewed alternatives, completed fresh coverage12458 passing and final precommit202 passing; all changed PR4 executable production lines100% covered. No executor activation, sending, permission changes, dependency changes or existing test expectation changes. Existing uncommitted PR4 preserved; no commit/push/merge. Epic remains open for final human approval. Unknown raw sizes still require actual-byte validation by future executor, as designed.",
       "timestamp": "2026-11-26T14:26:28Z"
+    },
+    {
+      "text": "PR-review skill re-review: APPROVE scoped PR4 implementation, no new findings. Inspected current uncommitted changes against fix/channel-dark-theme/HEAD 6d94a2813, all 12 PR4 changed/new files and remediation issues .12/.13/.14. Previous findings resolved: utf-8 raw content accepted unchanged with real JidoConnect producer regression; IMAP MIME encoded sizes projected to unknown raw planning sizes using durable source metadata, including persisted/hydrated Records, while non-IMAP known raw sizes and post-acquisition limits remain enforced. Reviewed shared requirements/reuse, identity/materialization boundaries, grouping/index preservation, fixed upload groups, test isolation, docs, and PR5/6/7 exclusions. Fresh combined run: 290 PASS (9 properties, 281 tests), covering new delivery/contract/builder tests, full JidoConnect suite, existing Outgoing/DeliveryConfirmation/TransportRequirements/Materialization and communication/data-source/email attachment tests. git diff --check PASS. No inline or general findings (0 high/medium/low). Full coverage and precommit were not rerun in this read-only review; latest successful implementation validation remains recorded in .14. No source/test changes, commit/push/merge, or public review posting. This is technical review approval, not final human approval or authorization to publish.",
+      "timestamp": "2026-11-26T14:29:47Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc] PR4 Outgoing attachments and Channel-local delivery plans",
   "type": "epic",
-  "updated_at": "2026-11-26T14:26:28Z"
+  "updated_at": "2026-11-26T14:29:47Z"
 }
