@@ -11,9 +11,15 @@
   "id": "zaq-6rc.8",
   "labels": [],
   "parent": "zaq-6rc",
+  "comments": [
+    {
+      "text": "Scope refinement: this issue introduces and tests the AttachDocuments Action, registry/alias schema integration and pure selection reducer only. Producer accumulation and propagation are owned by zaq-6rc.10. Existing producer references in the description are downstream acceptance context, not implementation in this issue. Preserve authorization and tool feedback; remove instructions about selection errors poisoning Channel delivery.",
+      "timestamp": "2026-11-26T12:09:28Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc.8] Port AttachDocuments selection Action",
   "type": "task",
-  "updated_at": "2026-11-26T12:09:27Z"
+  "updated_at": "2026-11-26T12:09:28Z"
 }
