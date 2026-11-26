@@ -18,11 +18,15 @@
     {
       "text": "Module-context evidence: A/mental model: Outgoing is the cross-role payload; Channels owns metadata decisions and transient content. B/responsibilities: builder propagates explicit Records/routing; Attachments validates/packs; Preparation acquires; existing Api/bridges deliver text; Materialization owns redemption security. C/dependencies: pure supplied requirements; DecodeBase64 via Jido.Exec; Materialization/TrustedContext; injected local router/config. D/contracts: supplied pipeline result -\u003e Outgoing; Outgoing + resolved requirements -\u003e separate plan/error; explicit Record + trusted context -\u003e transient bytes/error. E/state: no new process, database, cache, temporary-file or global state; immutable source/plan, caller-owned acquisition lifetime. F/traces: result -\u003e builder -\u003e existing dispatch/formatter/bridge/confirmation; resolver -\u003e planner; explicit acquire -\u003e signed handle verification -\u003e registered materializer -\u003e role event -\u003e content validation. G/invariants: stable ordered indices, no incoming echo, no metadata acquisition, no nil-identity elevation, distinct known/NA/unknown limits. H/risks: size drift/encoded payload overhead and adapter declarations remain executor responsibilities; raw uploaded bytes cannot estimate publication encoding. I/tests: focused builder/grouping/property/real-handle security plus existing delivery/resolver/confirmation regressions. J/unknowns: exact provider request sizing and external file declaration releases intentionally belong to PR5. No ownership changes or new Actions.",
       "timestamp": "2026-11-26T13:14:28Z"
+    },
+    {
+      "text": "PR4 implementation complete in requested order .1 -\u003e .2 -\u003e .3 -\u003e .4 -\u003e .9 -\u003e .11; all six tasks closed with evidence. Outgoing carries only attachments; pure Channel-local plans and lazy secure acquisition/actual-content validators are implemented, with owning Channels docs and new focused tests. Existing text/API/confirmation behavior retained, no production attachment executor enabled. mix q PASS; fresh full coverage12448 PASS and97.2% overall, executable PR4 files100%; final mix precommit12448 PASS. No remaining implementation or validation blockers. Epic remains in_progress awaiting explicit final human approval required by docs/WORKFLOW_AGENT.md Phase6 and eventual authorized landing. User has prohibited commit/push/merge; HEAD stays6d94a2813. PR5/6/7 work remains excluded.",
+      "timestamp": "2026-11-26T13:35:23Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc] PR4 Outgoing attachments and Channel-local delivery plans",
   "type": "epic",
-  "updated_at": "2026-11-26T13:14:28Z"
+  "updated_at": "2026-11-26T13:35:23Z"
 }
