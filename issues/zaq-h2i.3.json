@@ -113,11 +113,15 @@
     {
       "text": "User explicitly authorized commit and push of the current implementation and preparation-order fix on 2026-11-26. Verified branch feat/channel-file-settings, origin git@github.com:jat10/zaq.git and remote tip 2107c75e5 equals local HEAD. All 30 paths match prior validated work, including exact follow-up patch; no new source changes. Prior issue checks remain valid: final mix q and 351 focused checks pass, earlier feature integrated/browser evidence recorded. Proceed with normal Git hooks and a regular push to the existing feature branch; pending UX/E2E/coverage/final-precommit gates remain pending and this publication is not merge approval.",
       "timestamp": "2026-11-26T08:16:58Z"
+    },
+    {
+      "text": "Publication hook caught a formatting-only Changeset.add_error call in FileSettings. No commit was created by that attempt. mix q rerun passed but its cached formatter left the layout unchanged; applied the exact whitespace-only layout requested by the commit hook and restaged that file. No assertions or behavior changed. Retrying normal hooks; no verification bypass.",
+      "timestamp": "2026-11-26T08:18:31Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-26T08:16:58Z"
+  "updated_at": "2026-11-26T08:18:31Z"
 }
