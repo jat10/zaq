@@ -11,9 +11,15 @@
   "id": "zaq-h2i.4.1.4",
   "labels": [],
   "parent": "zaq-h2i.4.1",
+  "comments": [
+    {
+      "text": "Native Global-tab UI uses existing GlobalTab/SystemConfigLive, ConnectionSettings.editor, FileDeliverySettings, GlobalEvents presentation state and direct confidential Engine Events. Lazy Global load preserves other tab/mock contracts. Save always calls authoritative Engine even when cached validation reports errors; callbacks validate only cached state. Added original no-query handler, save/reload/exact-byte/Cancel, stale-capability, retry draft and corrupt-load recovery cases; committed assertions unchanged. Shared BOLayout separately reads ui.update_badge_enabled on render; zero-query regression targets the new validation handler directly without refactoring that unrelated owner. Concurrent native first-save test uses separate unboxed SQL connections plus explicit Mox ownership; both partial updates survive. DB-trigger failure test proves final-write rollback. Integrated result: 1098 passed (18 properties, 1080 tests), /tmp/zaq-native-integrated.log. mix q passed /tmp/zaq-native-final-q.log; existing full browser suite running, no new E2E authored. Storybook native declaration variation inspected with no browser errors, screenshot /tmp/zaq-native-web-storybook.png.",
+      "timestamp": "2026-11-26T14:38:49Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.1] Wire shared Advanced controls for global BO-chat settings",
   "type": "task",
-  "updated_at": "2026-11-26T14:24:14Z"
+  "updated_at": "2026-11-26T14:38:49Z"
 }
