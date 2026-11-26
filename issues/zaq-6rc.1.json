@@ -9,7 +9,7 @@
   "parent": "zaq-6rc",
   "priority": 2,
   "status": "open",
-  "title": "Verify adapter contracts and migration prerequisites",
+  "title": "[zaq-6rc.1] Verify adapter contracts and migration prerequisites",
   "type": "task",
-  "updated_at": "2026-11-26T12:08:15Z"
+  "updated_at": "2026-11-26T12:08:16Z"
 }
