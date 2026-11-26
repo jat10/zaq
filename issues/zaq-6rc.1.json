@@ -4,6 +4,8 @@
   "blocks": [
     "zaq-6rc.2"
   ],
+  "closed_at": "2026-11-26T12:53:26Z",
+  "close_reason": "Adapter/current resolver contract audit and focused validation complete; PR5 gaps recorded, no external releases required for PR4.",
   "created": "2026-11-26T12:08:15Z",
   "description": "Functional specifications covered / files: mix.exs, mix.lock; existing zaq-h2i.4 adapter declaration work and zaq-1lw.21 Telegram limitation\nAudit selected SDK/provider operations against old f1767933/98cd98c8 pins and current Hex Jido 1.2.1/Mattermost 93025d5. Record exact available declaration/preparation/upload/send/edit contracts and compatible revisions. Reuse existing adapter follow-up rather than duplicate it. Do not copy old pins or invent support. Settle error-to-policy mapping when resolution fails; optional unresolved byte ceilings remain unknown, not unlimited facts.\n\nTests to add before implementation: Contract tests for real selected adapters, absent metadata, unsupported files, exact selected configuration and no-I/O declarations; retain current requirements tests.\n\nBranches/paths validated: Contract tests for real selected adapters, absent metadata, unsupported files, exact selected configuration and no-I/O declarations; retain current requirements tests.\n\nAction reuse assessment: Extend existing adapter contracts only if needed; existing capability_snapshot, FileSettings and TransportRequirements.resolve own declarations, normalization and derivation. External releases/pins remain explicit prerequisites; no publication authorized.\n\nConsumers/execution: preserve existing Agent/Engine/Channel service boundaries; plan and prepared content never cross to Engine. Tool selection has no delivery side effect. Transport failures are reported without automatic retries.\n\nPlanning only in feat/delivery_plan; do not implement until the proposed migration is reviewed. Policies: AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/exec-plans/PLAN_STRATEGY.md, docs/testing-approach.md, docs/documentation.md; relevant service guides before affected work. Existing test behavior changes require specific approval; none granted by this plan. Mocking plan: keep internal boundaries real; isolate external transport/LLM APIs and inject runtime config without global mutations. Documentation: update module contracts and relevant owning service guide with implemented behavior, not duplicate policies. Validation follows authoritative workflow timing.",
   "id": "zaq-6rc.1",
@@ -24,8 +26,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6rc.1] Verify adapter contracts and migration prerequisites",
   "type": "task",
-  "updated_at": "2026-11-26T12:53:25Z"
+  "updated_at": "2026-11-26T12:53:26Z"
 }
