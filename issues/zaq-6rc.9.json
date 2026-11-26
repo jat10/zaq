@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-6rc.11"
   ],
+  "closed_at": "2026-11-26T13:10:37Z",
+  "close_reason": "Owning docs, execution-path regressions and adversarial contract review complete; approved for dedicated coverage handoff.",
   "created": "2026-11-26T12:08:35Z",
   "description": "Functional specifications covered / files: docs/services/channels.md, agent.md, engine.md, workflows.md and architecture.md only for changed contracts; focused test suites\nReconcile every port against this branch, remove obsolete imported assumptions, verify no plans/errors in cross-service payloads and no old settings paths. Source branch remains untouched. Record adapter availability and any unsupported providers honestly. Review then dedicated post-review coverage-upper handoff, final precommit per workflow. No commit/push authorized.\n\nTests to add before implementation: Retain current resolver/FileSettings/confirmation/text regressions; add integration and property tests above. Inventory any existing assertion changes and request explicit approval before changing them. Backend delivery journeys use integration tests; no new BO UI/browser scope planned, so new feature browser E2E not required unless scope expands.\n\nBranches/paths validated: Retain current resolver/FileSettings/confirmation/text regressions; add integration and property tests above. Inventory any existing assertion changes and request explicit approval before changing them. Backend delivery journeys use integration tests; no new BO UI/browser scope planned, so new feature browser E2E not required unless scope expands.\n\nAction reuse assessment: Not applicable to documentation/review itself; audit prior operation reuse assessments and ensure shared owners remain authoritative.\n\nConsumers/execution: preserve existing Agent/Engine/Channel service boundaries; plan and prepared content never cross to Engine. Tool selection has no delivery side effect. Transport failures are reported without automatic retries.\n\nPlanning only in feat/delivery_plan; do not implement until the proposed migration is reviewed. Policies: AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/exec-plans/PLAN_STRATEGY.md, docs/testing-approach.md, docs/documentation.md; relevant service guides before affected work. Existing test behavior changes require specific approval; none granted by this plan. Mocking plan: keep internal boundaries real; isolate external transport/LLM APIs and inject runtime config without global mutations. Documentation: update module contracts and relevant owning service guide with implemented behavior, not duplicate policies. Validation follows authoritative workflow timing.",
   "id": "zaq-6rc.9",
@@ -38,8 +40,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6rc.9] Validate migration and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-26T13:10:36Z"
+  "updated_at": "2026-11-26T13:10:37Z"
 }
