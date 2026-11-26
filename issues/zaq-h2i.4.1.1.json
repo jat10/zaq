@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-26T11:54:16Z",
+  "description": "Agreement gate for the proposed plan in parent zaq-h2i.4.1. Obtain explicit user agreement on Zaq.System singleton JSON key system.communication.web.file_delivery, existing GlobalTab/BO chat placement, native declaration ownership in existing Web.Delivery/WebBridge, guarded Engine system-config read/save clauses and native proposal-snapshot extension. Confirm downstream shared delivery integration uses the same runtime settings and authorized attachment references; do not assume native file support is already implemented. No implementation before agreement; external WebWidget work remains separate.",
+  "id": "zaq-h2i.4.1.1",
+  "labels": [],
+  "parent": "zaq-h2i.4.1",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-h2i.4.1] Agree native BO-chat configuration and delivery contract",
+  "type": "task",
+  "updated_at": "2026-11-26T11:54:16Z"
+}
