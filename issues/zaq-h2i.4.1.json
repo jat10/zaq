@@ -21,11 +21,15 @@
     {
       "text": "Implementation evidence: five native-Web limits now explicitly fixed/not_applicable with integer bytes/count metadata; transfer mode unresolved and attachment edits false. All existing support statuses remain intact. Added producer/envelope, shared component, no-settings-derived-ceilings property and production WidgetConnectorSettings atomic rollback/selected-config/blank-save regressions; no existing test lines removed or behavioral assertions changed. TDD: producer + component tests failed before implementation (18/21 passed) in /tmp/zaq-h2i-4-1-red.log; focused post-fix 21 passed (1 property) plus widget suite 20 passed (1 property). mix q initially reported two new-test alias suggestions; code-quality skill applied local aliases only and rerun passed (/tmp/zaq-h2i-4-1-q.log). Broader regressions running. Added dependency .4.2 → .4.1 for remaining WebWidget integration; do not close this issue as fully complete.",
       "timestamp": "2026-11-26T11:28:17Z"
+    },
+    {
+      "text": "Final issue-level validation: 678 passed (17 properties, 661 tests), /tmp/zaq-h2i-4-1-regression.log. Includes production Web delivery/adapter suites, Channels API/shared normalization/SMTP, resolver, FileSettings, ChannelConfig final-preparation rollback, grouped policy/widget/email persistence, shared controls and widget/SMTP LiveViews. mix q passed; git diff --check passed. Existing assertions preserved; no new production module/helper/API/UI/save path or dependency changes. No browser suite rerun: no rendered route or UI implementation changed (native Web has no persisted settings route); existing component/LiveView suites passed, and existing feature UX/new-E2E/coverage/final precommit gates remain in their owners. Native subset is ready for review; remaining WebWidget subset genuinely depends on external source .4.2, so .4.1 remains in progress with that blocker. No commits, pushes or publication performed.",
+      "timestamp": "2026-11-26T11:28:41Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Expose Web file capability declarations to shared Advanced settings",
   "type": "task",
-  "updated_at": "2026-11-26T11:28:17Z"
+  "updated_at": "2026-11-26T11:28:41Z"
 }
