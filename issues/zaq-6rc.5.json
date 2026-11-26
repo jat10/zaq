@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-6rc.4"
+  ],
   "blocks": [],
   "created": "2026-11-26T12:08:25Z",
   "description": "Functional specifications covered / files: lib/zaq/channels/jido_chat_bridge.ex and existing adapter options/result modules\nUse compatible verified provider upload/prepare/send/edit operations; preserve ordinary text, formatting, existing-message selection and provider receipts. No provider-specific planner or bridge requirements resolver. Preserve callback cardinality. Unsupported adapters remain unsupported rather than using fabricated capabilities.\n\nTests to add before implementation: Actual adapter-boundary integration where available; upload batches; message edits; real provider IDs; partial failures; existing thread identity; ordinary text parity; Telegram absent-metadata behavior.\n\nBranches/paths validated: Actual adapter-boundary integration where available; upload batches; message edits; real provider IDs; partial failures; existing thread identity; ordinary text parity; Telegram absent-metadata behavior.\n\nAction reuse assessment: Extend JidoChatBridge existing transport functions and AdapterOptions/DeliveryResult; adapter owns HTTP/provider details. No new Action and no parallel send path.\n\nConsumers/execution: preserve existing Agent/Engine/Channel service boundaries; plan and prepared content never cross to Engine. Tool selection has no delivery side effect. Transport failures are reported without automatic retries.\n\nPlanning only in feat/delivery_plan; do not implement until the proposed migration is reviewed. Policies: AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/exec-plans/PLAN_STRATEGY.md, docs/testing-approach.md, docs/documentation.md; relevant service guides before affected work. Existing test behavior changes require specific approval; none granted by this plan. Mocking plan: keep internal boundaries real; isolate external transport/LLM APIs and inject runtime config without global mutations. Documentation: update module contracts and relevant owning service guide with implemented behavior, not duplicate policies. Validation follows authoritative workflow timing.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-6rc.5] Integrate chat delivery operations",
   "type": "task",
-  "updated_at": "2026-11-26T12:08:26Z"
+  "updated_at": "2026-11-26T12:08:41Z"
 }
