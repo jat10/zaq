@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-6rc.12"
+  ],
   "blocks": [],
   "created": "2026-11-26T14:08:25Z",
   "description": "Related .3/.4 and review finding2. Audit real EmailBridge.Attachment.to_record and hydration source contracts; keep Record.size unchanged and project encoded-only MIME size to unknown raw planning size, without acquisition/decoding. Do not infer size basis from base64 alone. Tests first: encoded8/raw5 real email records, hydrated records, known raw/base64 producer control, aggregate/upload/direct-message packing and actual post-acquisition limits. Reuse Attachments metadata projection and existing source provenance; local-only helper, no new Action or source format changes. New focused tests and owning Channels docs; mix q plus isolated suites, preserve all existing expectations.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-6rc.13] Preserve IMAP encoded-size semantics during metadata planning",
   "type": "bug",
-  "updated_at": "2026-11-26T14:08:57Z"
+  "updated_at": "2026-11-26T14:09:00Z"
 }
