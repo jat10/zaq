@@ -23,11 +23,15 @@
     {
       "text": "Scope narrowed to PR4 only: Outgoing attachment contract, lazy materialization/validation primitives, grouping and internal plan. Execution, transport effects, SMTP MIME sizing, partial outcomes, confirmation/history extensions are PR5. Agent Action/stream propagation PR6; workflow/notification integration PR7. Validate current text/confirmation behavior remains unchanged.",
       "timestamp": "2026-11-26T12:23:21Z"
+    },
+    {
+      "text": "Initial integrated regressions: mix q PASS; 293 tests PASS (9 properties), including canonical messages, planner/acquisition, resolver, Channels API, text Jido/email/web delivery and DeliveryConfirmation. Shared FileSettings tests live in connector_config/settings_test.exs (not a dedicated file_settings_test); include that actual owner in final focused run. Documentation updated only in owning channels service; unchanged Agent/workflow/Engine operations need no duplicate documentation. Review identified a missing fixed upload-batch raw-size validator for acquired size drift; add a shared validator used by metadata upload packing and a focused growth test before review completion. No executor or encoded request preparation added.",
+      "timestamp": "2026-11-26T13:06:29Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.9] Validate migration and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-26T13:04:12Z"
+  "updated_at": "2026-11-26T13:06:29Z"
 }
