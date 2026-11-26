@@ -16,11 +16,15 @@
     {
       "text": "Native Global-tab UI uses existing GlobalTab/SystemConfigLive, ConnectionSettings.editor, FileDeliverySettings, GlobalEvents presentation state and direct confidential Engine Events. Lazy Global load preserves other tab/mock contracts. Save always calls authoritative Engine even when cached validation reports errors; callbacks validate only cached state. Added original no-query handler, save/reload/exact-byte/Cancel, stale-capability, retry draft and corrupt-load recovery cases; committed assertions unchanged. Shared BOLayout separately reads ui.update_badge_enabled on render; zero-query regression targets the new validation handler directly without refactoring that unrelated owner. Concurrent native first-save test uses separate unboxed SQL connections plus explicit Mox ownership; both partial updates survive. DB-trigger failure test proves final-write rollback. Integrated result: 1098 passed (18 properties, 1080 tests), /tmp/zaq-native-integrated.log. mix q passed /tmp/zaq-native-final-q.log; existing full browser suite running, no new E2E authored. Storybook native declaration variation inspected with no browser errors, screenshot /tmp/zaq-native-web-storybook.png.",
       "timestamp": "2026-11-26T14:38:49Z"
+    },
+    {
+      "text": "Final helper reuse audit also inspected existing ZaqWeb.Live.BO.EngineDispatch.dispatch/2: like the legacy SystemConfigLive dispatch_engine/2, it cannot carry trusted actor, confidential opts or the socket/session-selected router. The new private dispatch_native_web_settings helper is intentionally local to this editor and reuses direct Event/NodeRouter boundaries; extending a shared legacy public helper would broaden unrelated call sites for no native benefit. Mobile native panel checked with existing sidebar collapsed: no horizontal overflow; screenshot /tmp/zaq-native-web-mobile-collapsed.png. Expanded sidebar already leaves the existing Global card only 86px wide at a 390px viewport; no shared sidebar/layout changes made.",
+      "timestamp": "2026-11-26T14:48:02Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.1] Wire shared Advanced controls for global BO-chat settings",
   "type": "task",
-  "updated_at": "2026-11-26T14:41:08Z"
+  "updated_at": "2026-11-26T14:48:02Z"
 }
