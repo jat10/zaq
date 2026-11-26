@@ -13,11 +13,15 @@
     {
       "text": "PR4 scope: verify current PR1/PR2 contracts and record provider compatibility gaps for PR5. Do not require external transport releases or change dependency pins merely to land PR4 planning primitives.",
       "timestamp": "2026-11-26T12:23:18Z"
+    },
+    {
+      "text": "Audit: canonical builder Outgoing.from_pipeline_result/2; pure shared TransportRequirements.resolve/2 + ConnectorConfig.FileSettings; signed Materialization.materialize/4 and TrustedContext are authoritative. Selected deps are Jido.Chat Hex 1.2.1, Mattermost 93025d5, Telegram 1e69e21, Discord 1.1.0. Jido exposes send_file/3 and text edit_message/4, no structured file_delivery declarations/preparation callbacks; Mattermost upload_file transport is not a shared planner contract. Email SMTP exposes file settings but no file support/mode; web snapshots expose no file support. These are PR5/provider prerequisites, not PR4 blockers; no pins change. Add no-I/O selected snapshot regression tests and retain resolver failure/optional-limit tests. Resolution failures will return unchanged to caller; planner will never execute continue/abort policy or create fallback notices. Text-only returns no plan without inspecting requirements. Local-only planner/acquisition compose existing domain contracts; no new Action/tool. DecodeBase64 Action reuse via Jido.Exec.run is selected for declared base64 decoding. No module ownership changes.",
+      "timestamp": "2026-11-26T12:48:36Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.1] Verify adapter contracts and migration prerequisites",
   "type": "task",
-  "updated_at": "2026-11-26T12:48:02Z"
+  "updated_at": "2026-11-26T12:48:36Z"
 }
