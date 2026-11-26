@@ -23,11 +23,15 @@
     {
       "text": "Final issue-level validation: 678 passed (17 properties, 661 tests), /tmp/zaq-h2i-4-1-regression.log. Includes production Web delivery/adapter suites, Channels API/shared normalization/SMTP, resolver, FileSettings, ChannelConfig final-preparation rollback, grouped policy/widget/email persistence, shared controls and widget/SMTP LiveViews. mix q passed; git diff --check passed. Existing assertions preserved; no new production module/helper/API/UI/save path or dependency changes. No browser suite rerun: no rendered route or UI implementation changed (native Web has no persisted settings route); existing component/LiveView suites passed, and existing feature UX/new-E2E/coverage/final precommit gates remain in their owners. Native subset is ready for review; remaining WebWidget subset genuinely depends on external source .4.2, so .4.1 remains in progress with that blocker. No commits, pushes or publication performed.",
       "timestamp": "2026-11-26T11:28:41Z"
+    },
+    {
+      "text": "Proposed plan materialized as sequential children: zaq-h2i.4.1.1 → zaq-h2i.4.1.2 → zaq-h2i.4.1.3 → zaq-h2i.4.1.4. The first child is the explicit user-agreement gate; no implementation continuation this turn. Reuse assessment and concrete missing Engine/native-proposal contracts are in the updated current description. Native configuration is independent of WebWidget .4.2. Graph: agreement → native declarations/proposal contract → System persistence → shared BO Advanced. Tests are included in each owner step, followed by existing feature UX/new-E2E/coverage/final gates.",
+      "timestamp": "2026-11-26T11:54:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.1] Configure native BO-chat file limits",
   "type": "task",
-  "updated_at": "2026-11-26T11:53:37Z"
+  "updated_at": "2026-11-26T11:54:27Z"
 }
