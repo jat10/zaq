@@ -32,11 +32,15 @@
     {
       "text": "UX scope extended by agreed native-Web configuration: System configuration → Global → BO chat, using existing Main/Advanced editor and shared file controls. Review Main description, unsupported-attachment notice, editable unresolved per-file MB/count, fixed unresolved encoded limit, optional help while unusable, failure-policy toggle, Save/Cancel, field errors and capability retry/draft recovery. Existing implementation agreement is not final UX approval. Keep this gate open pending actual UI review. Storybook screenshot /tmp/zaq-native-web-storybook.png; actual Global-tab screenshots to follow.",
       "timestamp": "2026-11-26T14:38:52Z"
+    },
+    {
+      "text": "Actual native BO-chat Global UI inspected with no JavaScript errors or horizontal overflow. Main screenshot: /tmp/zaq-native-web-main.png; Advanced screenshot: /tmp/zaq-native-web-advanced.png. Existing shared controls show optional hints while file support is unavailable, unresolved encoded limit and configured failure policy. This is evidence for human review, not approval.",
+      "timestamp": "2026-11-26T14:41:09Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3.4] Obtain human UX approval for consolidated file settings",
   "type": "task",
-  "updated_at": "2026-11-26T14:38:52Z"
+  "updated_at": "2026-11-26T14:41:09Z"
 }
