@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-h2i.4.1.4"
+  ],
   "blocks": [],
   "created": "2026-11-26T14:16:17Z",
   "description": "DOWNSTREAM ONLY; no implementation authorized in current configuration issue. Implement native-Web attachment transport, authenticated file serving and live/history rendering through existing owners. Read native settings from the single System-owned system.communication.web.file_delivery value introduced by zaq-h2i.4.1; pass the selected native settings projection and normalized snapshot to existing TransportRequirements.resolve/2 once per delivery attempt. No second store/resolver/validator and no WebWidget coupling. Reuse existing shared delivery planning/execution where contract-compatible, Web.Delivery/WebBridge/Web.Response/ChatLive and authorized file-serving/materialization owners; verify source compatibility rather than copy PR6 stack/pins. Preserve scope/actor/grants, byte/count enforcement and failure policy; do not declare support until end-to-end native delivery is implemented and tested. Required limits apply only when usable; no inferred unlimited ceilings. Plan immediate regressions and existing UX/new-E2E/coverage gates before implementation.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-h2i] Deliver native BO-chat attachments using shared settings",
   "type": "task",
-  "updated_at": "2026-11-26T14:16:17Z"
+  "updated_at": "2026-11-26T14:38:56Z"
 }
