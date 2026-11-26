@@ -11,9 +11,15 @@
   "id": "zaq-6rc.4",
   "labels": [],
   "parent": "zaq-6rc",
+  "comments": [
+    {
+      "text": "Implementation plan: Preparation.acquire(record, requirements, trusted_context \\\\ %{}) lazily redeems signed handles via Zaq.Materialization and validates resulting file metadata/content plus actual byte size. Shared metadata/size validators remain in Delivery.Attachments; decoding reuses validated DecodeBase64 Action with standard alphabet only. TrustedContext projection preserves explicit actor/skip_permissions only plus local router/config dependencies; nil actor is never bypass. Return transient content map, leave source/plan unchanged. validate_group checks actual fixed-group count/byte lower bounds without regrouping; no request encoding, orchestration or provider operations. Tests before code: direct binary/base64, malformed metadata/encoding/content/handles, actual size drift, authorized CommunicationMedia redemption with real handle verification and Mox only at routed external I/O, nil actor and canonical read denial, original indices/fixed grouping. Document channels.md and module contracts; no existing assertion changes.",
+      "timestamp": "2026-11-26T12:50:32Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc.4] PR4 lazy acquisition and attachment validation primitives",
   "type": "task",
-  "updated_at": "2026-11-26T12:23:17Z"
+  "updated_at": "2026-11-26T12:50:32Z"
 }
