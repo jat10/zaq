@@ -4,6 +4,7 @@
     "zaq-6rc.13"
   ],
   "blocks": [],
+  "closed_at": "2026-11-26T14:26:29Z",
   "created": "2026-11-26T14:08:27Z",
   "description": "After both focused fixes, review producer-to-planner/acquisition contracts and alternatives, run required dedicated fresh coverage handoff and final mix precommit per WORKFLOW_AGENT Phase6. Preserve uncommitted PR4, baseline tests and all scope exclusions. Record reproduction, risks, review, coverage and final result in epic and related .9/.11. No browser E2E needed for pure backend fixes. No commit/push/merge.",
   "id": "zaq-6rc.14",
@@ -28,8 +29,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6rc.14] Review and validate PR4 encoding and size remediations",
   "type": "task",
-  "updated_at": "2026-11-26T14:26:25Z"
+  "updated_at": "2026-11-26T14:26:29Z"
 }
