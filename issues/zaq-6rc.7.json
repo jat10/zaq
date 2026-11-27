@@ -6,6 +6,8 @@
   "blocks": [
     "zaq-9j8.6"
   ],
+  "closed_at": "2026-11-27T22:24:01Z",
+  "close_reason": "Confirmed-part and grouped-failure reporting validated; 16 reporter tests and mix q pass",
   "created": "2026-11-26T12:08:30Z",
   "description": "Functional specifications / files: lib/zaq/channels/delivery_confirmation.ex and existing normalized outcome/observation producers; coordinate Engine persistence in zaq-9j8.6. Keep DeliveryConfirmation name and existing :record_delivery_confirmation / :record_delivery_observation events via NodeRouter. Forward confirmed provider messages with their canonical body/thread and confirmed attachment evidence. Aggregate failed/unconfirmed parts for one persisted-answer message association; do not create failed transcript rows or emit a provider failure notice. Successful provider messages retain normal transcript behavior.\nPreserve uploaded-only versus delivered distinction, actual provider locators, edit identity and safe bounded errors. Source materialization handles never become provider locators. Reporting payloads contain no bytes, private plan, credentials or raw provider error. Existing persisted answer/connector scope comes from trusted outgoing metadata. Never downgrade transport success or resend because Engine is unavailable; partial successes remain successful facts.\nTests before implementation: multiple confirmed receipts with one grouped failure observation, only confirmed attachments, content-free copies, canonical versus formatted body, edit without duplicate history, uncertain versus rejected outcomes, missing persisted answer, spoofed scope cannot be supplied by report extras, Engine failure/exit isolated, callback cardinality and no send repeats. Integrate real Engine path after zaq-9j8.6; immediate Channel boundary tests may assert exact dispatched safe events.\nBranches: full/partial/no confirmations, legacy single receipt, no files, invalid evidence, recording unavailable. Reuse existing DeliveryConfirmation tests.\nMocking: external transport/failure injection; Engine/NodeRouter real for integrated tests. No parallel persistence path.\nDocumentation: reporter contracts and Channels/Engine owning guides.\nAction reuse: extend existing DeliveryConfirmation and Engine events; Engine remains history/persistence owner. No new Action/reporter lifecycle. This supersedes blanket reference per-part failure transcript projection; only failures group inside the existing details modal. Exact approved behavior is in zaq-9j8.\n\nImplementation rules: Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the owning service guide before work. Reference ../zaq-feat-channel-files is behavioral evidence, not code to copy wholesale. Preserve Outgoing.attachments and separate metadata-only Plan; PR2 FileSettings/resolver remain authoritative. Keep existing test behavior unless its exact change is explicitly approved; add new tests for the new grouped evidence contract. No PR6 Agent selection/AttachDocuments or PR7 workflow/notification implementation. Unit/integration/property/LiveView tests are immediate; new feature E2E belongs to the gated finalization task. Validation follows docs/WORKFLOW_AGENT.md; no per-step numerical coverage gate.",
   "id": "zaq-6rc.7",
@@ -26,8 +28,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-6rc.7] Report confirmed messages and grouped failures through Engine events",
   "type": "task",
-  "updated_at": "2026-11-27T22:23:00Z"
+  "updated_at": "2026-11-27T22:24:01Z"
 }
