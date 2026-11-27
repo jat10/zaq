@@ -31,11 +31,15 @@
     {
       "text": "Validation: all 109 SMTP configuration tests/property pass; mix q passes. Existing full E2E: 597 passed, 3 skipped in 14.2m. Refreshed existing history journey across three browsers running against latest implementation. Broader SMTP-related suites selected for checking persistence fixture compatibility before UX handoff. No new feature E2E authored.",
       "timestamp": "2026-11-27T23:35:48Z"
+    },
+    {
+      "text": "Manual persisted local browser inspection: mixed, unconfirmed/aborted, all-failed and successful scenes generated through real Channels API/executor/Engine with controlled external adapter; keyboard Enter, Tab containment, Escape and focus restoration work, long file names do not overflow. Found dark modal content inherited browser black; apply existing semantic text-default to modal focus wrapper and recapture. New feature E2E remains gated.",
+      "timestamp": "2026-11-27T23:39:41Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.9] Validate PR5 delivery journeys and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-27T23:35:48Z"
+  "updated_at": "2026-11-27T23:39:41Z"
 }
