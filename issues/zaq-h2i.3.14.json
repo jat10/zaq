@@ -11,11 +11,15 @@
     {
       "text": "Reviewed PR #16 description, changed files, core validation/transport/settings composition and dependency history. Upstream main f736652a1 squash #956 contains all five prerequisite capability commits through 92caba18f; every prerequisite source/test/config file matches exactly, with only unrelated HTTP documentation added on main. Replay only 2107c75e5 and bfb3e677c using --onto upstream/main 92caba18f. Preserve mounted inactive controls, exact decimal conversion, unknown capability facts, explicit false policy, omitted settings, final grouped-save validation and authorization/confidentiality. Backup ref created before rebase.",
       "timestamp": "2026-11-27T14:55:27Z"
+    },
+    {
+      "text": "Rebase succeeded without conflicts. New commits f65e54f12 and 1b2637d9a are patch-identical to 2107c75e5 and bfb3e677c per git range-diff; exactly two commits above upstream/main f736652a1. All feature paths retain prior content except unrelated main additions to channels documentation and API HTTP preparation confidentiality, both preserved. mix deps.get fetched missing main dependency without tracked changes. mix q passed (/tmp/zaq-file-settings-main-rebase-q.log); 23 affected suites running. Existing feature UX/E2E/review/coverage/final-precommit gates unchanged; original PR explicitly deferred precommit. No new browser tests or behavior changes, no remote push or PR retargeting.",
+      "timestamp": "2026-11-27T14:57:46Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Rebase file settings onto merged main",
   "type": "task",
-  "updated_at": "2026-11-27T14:55:27Z"
+  "updated_at": "2026-11-27T14:57:46Z"
 }
