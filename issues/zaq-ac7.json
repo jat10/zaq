@@ -14,11 +14,15 @@
     {
       "text": "Current user explicitly authorized publication and order: push updated dark-theme PR3, then move to/rebase/push PR4, with final acceptance that the PR5 worktree contains every PR2 change. Use captured explicit expected-old-SHA force-with-lease for published PR3/PR4. PR5 has no remote branch or PR; move its local worktree to cumulative updated PR4 and verify PR2 ancestor plus identical cumulative tree. No merge or deferred precommit.",
       "timestamp": "2026-11-27T18:42:46Z"
+    },
+    {
+      "text": "Restack complete in user-requested order. PR3 rebased/pushed 5be66210b534279d946b35fbb6df02244539b262 onto PR2 9d0fc08cf1bedb4e228bb1a095ae73410d80921e; PR4 rebased/pushed 81629c90a555b32c6b66cbcc1339779c89f4a9d5 onto PR3; then PR5 moved to 81629c90a555b32c6b66cbcc1339779c89f4a9d5. PR3/PR4 range-diffs show identical single child commits, no conflicts or source/test edits. Fresh Context Mode: both mix q PASS; PR3 310 focused checks PASS; PR4 308 checks PASS (9 properties). Explicit expected-old-SHA force-with-lease pushes verified; GitHub fork PR17 and PR18 each show exactly one child commit, correct base/head and mergeable=true; descriptions updated and verified with fresh versus historical validation clearly separated. PR5 final PR2 ancestry, 14 core-file blob identities, exact PR4 tree equality, zero own commits and clean status verified. Backups and old/remote tips in earlier checkpoint. Stack map ../workspace-planning/channel_file_delivery_stack.md updated; no unrelated worktrees changed. Deferred precommit, feature E2E authoring, merge and PR5 environment bootstrap not performed. Owning feature gates remain open.",
+      "timestamp": "2026-11-27T18:49:30Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-ac7] Restack communication descendants after file-settings review",
   "type": "epic",
-  "updated_at": "2026-11-27T18:42:46Z"
+  "updated_at": "2026-11-27T18:49:30Z"
 }
