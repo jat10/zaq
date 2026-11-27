@@ -9,7 +9,7 @@
   "parent": "zaq-pi3",
   "priority": 2,
   "status": "open",
-  "title": "Add the validated attach_documents Action and pure reducer",
+  "title": "[zaq-pi3.3] Add the validated attach_documents Action and pure reducer",
   "type": "task",
-  "updated_at": "2026-11-27T19:20:36Z"
+  "updated_at": "2026-11-27T19:20:39Z"
 }
