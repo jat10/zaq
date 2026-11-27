@@ -11,9 +11,15 @@
   "id": "zaq-9j8.4",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Executor contract before implementation: execute(outgoing, plan, bridge, selected_connection, opts) returns {:ok, Result} when any publication confirms, {:error, Error, Result} when none confirms, and {:error, Error} for invalid preflight inputs before effects. Reuse Preparation attempt state and Plan validation. Resolve :channel_delivery config once via Zaq.Config; defaults step_timeout_ms 30000/max_concurrency 4, per-call overrides and existing Zaq.TaskSupervisor. No reporting inside runtime; existing DeliveryConfirmation integration remains .7.\nBridge optional execute_delivery_step/3 consumes one validated Step and inputs containing current Outgoing, indexed attachments (raw files for direct sends, index/reference maps after uploads), exact prepared payload, and continuation flag. Upload returns {:ok, %{uploaded_refs: %{original_index =\u003e actual provider ID}}} or {:error, Error, %{uploaded_refs: partial_refs}}; publication returns normalized confirmed receipt with message_id or typed Error. Unknown/malformed success stays unconfirmed. Never retry provider operations.\nUse Task.Supervisor.async_stream_nolink with unordered results, bounded concurrency, kill-on-timeout and exit input attribution; fold outcomes into an ID map and build Result in plan order. Catch provider exceptions privately; timeout/exit unconfirmed. Abort acquires/prepares required direct requests or completes uploads before any publication, then publishes sequentially. Continue promotes threaded roots sequentially until confirmation, then runs ready replies concurrently; independent groups do not wait for a root. Empty failed groups prefer later usable files, or one text-only original answer if none survive. Continuation body follows reference Additional files (ordinal/total); preserve original answer for root promotion. Re-encode actual body/thread headers before each publication and recheck size. Upload byte state releases per completed upload; direct state releases per publication.\nValidate phase compatibility before effects: uploads cannot depend on publication, because approved abort requires all uploads before publication. Other acyclic upload/pub dependencies respect readiness. Partial upload facts preserve usable provider IDs and missing-file failure evidence; no uploaded ID alone confirms publication. Configuration-resolution fallback remains no-acquisition/no-upload and uses only explicitly supplied valid text transport constraints; real bridge text compatibility is .5. Tests cover sequencing, promotion/edit, bounded concurrency, deadlines including sole operations, partial uploads, no duplicates, original-index ordering, invalid metadata/dependencies, and no publication on abort preparation failure.",
+      "timestamp": "2026-11-27T20:52:32Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.4] Execute delivery dependencies and approved failure policies",
   "type": "task",
-  "updated_at": "2026-11-27T20:47:50Z"
+  "updated_at": "2026-11-27T20:52:32Z"
 }
