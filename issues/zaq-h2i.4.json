@@ -25,11 +25,15 @@
     {
       "text": "External prerequisite zaq-h2i.4.2 now tracks the exact missing WebWidget declaration source at locked 42b7ef71. zaq-h2i.4.1 implements independent native-Web metadata in existing WebBridge.capability_snapshot/1 only; native web is configless, has no attachment transport, and cannot truthfully expose configurable/required file overrides. WebWidget integration stays unresolved and depends on the external source contract; no external implementation, pin change or publication is authorized by this work.",
       "timestamp": "2026-11-26T11:28:16Z"
+    },
+    {
+      "text": "PR5 planning now has focused child zaq-h2i.4.3 for Mattermost file operation/declaration compatibility. It blocks PR5 compatibility task zaq-9j8.5; unrelated WebWidget/native BO children do not block PR5. Existing selected-configuration declaration ownership is retained; no adapter code or dependency pins changed.",
+      "timestamp": "2026-11-27T18:40:23Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.4] Supply compatible adapter configuration metadata",
   "type": "task",
-  "updated_at": "2026-11-26T11:28:16Z"
+  "updated_at": "2026-11-27T18:40:23Z"
 }
