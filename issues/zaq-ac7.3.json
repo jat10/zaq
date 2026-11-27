@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-ac7.2"
+  ],
   "blocks": [],
   "created": "2026-11-27T18:38:46Z",
   "description": "Scope: feat/delivery-execution; owner zaq-9j8. Replay only child-owned commits using the captured previous parent tip. No new functions/modules or tests; reuse existing operations, components and fixtures through Git replay. Validate relevant existing suites, parent ancestry, git range-diff and diff --check; record unavailable environment checks. Mocks: none added. Documentation: update stack map after all descendants move. Action reuse: N/A, history-only restack; conflicts must preserve both parent behavior and child intent. No existing test behavior changes without approval. No automatic stashing, unrelated worktrees or deferred precommit.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-ac7.3] Move empty delivery execution onto updated planning",
   "type": "task",
-  "updated_at": "2026-11-27T18:38:47Z"
+  "updated_at": "2026-11-27T18:38:50Z"
 }
