@@ -19,11 +19,15 @@
     {
       "text": "Combined integration validation passed 149 tests including 12 properties, and mix q. Full existing npm E2E suite launched (599 discovered tests across journey browsers and Storybook) against verified isolated DB zaq_test_e2e_feat_delivery_execution; owned dev Storybook server starts on free port4000, E2E server uses4002. Logs /tmp/zaq-pr5-e2e.log; no new feature E2E source authored. Final UX evidence will use representative persisted local fixtures after existing suite completes. mix.lock still identical to HEAD; no dependency state/pins/publication changes.",
       "timestamp": "2026-11-27T23:16:45Z"
+    },
+    {
+      "text": "Additional integration correctness fix validated with a red/green real API test: confirmed attachment history now uses actual acquired name/MIME/size metadata retained without bytes across upload release, rather than stale source size declarations. Private Result metadata remains excluded from safe_evidence; only confirmed indices/provider IDs and bounded descriptors are reported. Focused run 152 passed (10 properties), mix q passed. Existing real-browser delivery visibility suite passed all 3 engines. Full existing Playwright suite remains running; no new feature E2E authoring.",
+      "timestamp": "2026-11-27T23:26:40Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.9] Validate PR5 delivery journeys and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-27T23:16:45Z"
+  "updated_at": "2026-11-27T23:26:40Z"
 }
