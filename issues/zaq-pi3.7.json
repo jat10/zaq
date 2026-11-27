@@ -9,7 +9,7 @@
   "parent": "zaq-pi3",
   "priority": 2,
   "status": "open",
-  "title": "Restack when authorized and verify PR6 against PR5 delivery",
+  "title": "[zaq-pi3.7] Restack when authorized and verify PR6 against PR5 delivery",
   "type": "task",
-  "updated_at": "2026-11-27T19:20:58Z"
+  "updated_at": "2026-11-27T19:21:01Z"
 }
