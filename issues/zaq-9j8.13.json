@@ -9,9 +9,15 @@
   "id": "zaq-9j8.13",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Approved by user in current conversation: \"approved\", replying to the specific Mattermost test-contract question. Scope: replace Mattermost absent file_delivery/capabilities_unavailable assertions with verified selected-configuration declarations and resolver checks, retaining optional unresolved limits; Telegram/Discord and web/native BO expectations remain unchanged until separately verified. This does not approve unrelated existing test behavior or feature UX/E2E.",
+      "timestamp": "2026-11-27T20:37:46Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-9j8.13] Approve Mattermost delivery contract test expectations",
   "type": "task",
-  "updated_at": "2026-11-27T19:54:08Z"
+  "updated_at": "2026-11-27T20:37:46Z"
 }
