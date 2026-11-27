@@ -11,9 +11,15 @@
   "id": "zaq-9j8.3",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Module-context investigation complete before edits (A-J):\nA/B mental model/responsibility: Preparation.acquire/3 owns trusted per-Record acquisition/decoding/raw limits; Attachments owns metadata packing/group byte checks; Plan owns immutable fixed refs/graph; bridges own encoding/provider mechanics; Executor will own policy/order/effects.\nC dependencies: Materialization and TrustedContext (authorization/event boundary), DecodeBase64 via validated Jido.Exec (decoding), Attachments/TransportRequirements (pure limits). Dependencies are per-request context; no new global selection/configuration.\nD contracts: acquire returns transient content/size/name/MIME or error. Existing CommunicationBridge has no preparation callbacks; add optional prepare_upload_request/2 and prepare_delivery_message/3 seams returning exact prepared map with size_bytes. No requirements resolver added.\nE state ownership: new private Preparation struct scoped to one invocation, containing indexed source Records, success/error cache, prepared payloads, remaining metadata steps, safe-coded failures and trusted context. Never persisted or put into Outgoing/Plan. No process/global state.\nF flows: start validates metadata/count/requirements -\u003e acquire_group redeems each original index once -\u003e existing group validation -\u003e prepare_step delegates exact encoding and checks size -\u003e release_step removes prepared data and acquired bytes after final byte consumer -\u003e close clears transient state. Upload mode byte consumers are upload steps; publication uses provider refs. Direct-send consumers retain bytes through final header/body re-encoding and release after publication.\nG invariants: unchanged source Records/Plan, fixed refs, nil identity no bypass, denial cached once, continue retains usable files/text fallback and failure facts, abort cannot publish via preparation, unknown optional ceilings stay unknown, requests re-encoded when inputs change.\nH risks: prepared maps are opaque; bridge size honesty needs real wire proof in zaq-9j8.5. Never keep a cached request across changed thread/body inputs. Failed file never counts as published.\nI coverage: existing preparation tests prove signed-handle identity/bypass/canonical denial, raw/base64, metadata/size drift. Add attempt-cache/group/size/lifetime/properties and request-seam tests; integration proves abort no publication in executor task.\nJ unknowns: real chat/SMTP exact prepared forms and adapter compatibility remain gated by .5; no inferred support or pin changes.\nAction reuse rechecked: extend Preparation and optional existing CommunicationBridge interface; reuse acquire/3, Materialization, Attachments.validate_group/2/validate_upload_group/2. Local-only runtime infrastructure, no Action/tool, no duplicated resolver/redemption. Existing test expectations unchanged in this task.",
+      "timestamp": "2026-11-27T20:39:59Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.3] Prepare fixed delivery groups with bounded attachment lifetime",
   "type": "task",
-  "updated_at": "2026-11-27T20:37:49Z"
+  "updated_at": "2026-11-27T20:39:59Z"
 }
