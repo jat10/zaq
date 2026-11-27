@@ -11,9 +11,15 @@
   "id": "zaq-9j8.8",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Using design skill for existing component extension. Read DESIGN.md token/layout/component constraints and BO guide; reviewed BOModal Storybook and existing delivery-status/modal implementation. No extraction, token migration or component replacement applies: reuse ChatMessage, BOModal, DSButton and current authorized message_changes read. User explicitly approved grouped-failure behavior in epic; final completed UX approval remains zaq-9j8.10 before feature E2E. Plan: safe failed-part rows inside existing modal, partial-success status on a normal canonical bubble, canonical+pending lookup on open/refresh, retain rating/info actions for canonical messages, unchanged focus/escape/close handling. No new transcript card or persistence/Action.",
+      "timestamp": "2026-11-27T22:57:32Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.8] Show grouped failed parts in existing delivery details modal",
   "type": "task",
-  "updated_at": "2026-11-27T22:57:25Z"
+  "updated_at": "2026-11-27T22:57:32Z"
 }
