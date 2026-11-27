@@ -1,7 +1,6 @@
 {
   "assignee": "",
   "blocked_by": [
-    "zaq-6rc.11",
     "zaq-9j8.5"
   ],
   "blocks": [
@@ -22,5 +21,5 @@
   "status": "open",
   "title": "[zaq-6rc.5] Integrate chat delivery operations",
   "type": "task",
-  "updated_at": "2026-11-27T18:39:24Z"
+  "updated_at": "2026-11-27T18:39:39Z"
 }
