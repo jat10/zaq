@@ -15,11 +15,15 @@
     {
       "text": "Boundary audit/reuse: Engine MessageDelivery owns exact input/answer/origin checks and private supplemental evidence; TranscriptHistory owns canonical content and placements; HistoryIngress owns durable confirmation/association transaction and recovery. Existing confirmed_message lookup binds one canonical answer and rejects a second provider ID: continuation messages therefore need scoped supplemental confirmed messages, not weakening that invariant. Extend existing capture path with typed delivery_part evidence, validate exact root ownership before creating a continuation, reuse transcript targets and source identity locking/idempotency. New grouped metadata must be bounded/allowlisted, additive beside confirmation; legacy observation dominance stays unchanged. Authorized history projection exposes only presentation facts, never raw metadata. No new persistence service/Action.",
       "timestamp": "2026-11-27T22:24:06Z"
+    },
+    {
+      "text": "Grouped evidence and confirmed continuation storage implemented. Real NodeRouter tests prove exact answer/input/origin scope, idempotent replay, only successful transcript rows, canonical versus continuation content/thread and safe authorized projection with no duplicate pending row. Legacy late observation after confirmation remains ignored; supplemental grouped evidence persists before/after confirmation. Added pure bounded/redaction JSON properties. Existing Engine runs exposed additional SMTP fixtures missing required limits; applying user-approved explicit fixture limits only, preserving text/assertions. Final broader validation ongoing.",
+      "timestamp": "2026-11-27T22:34:47Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.6] Persist grouped failure evidence alongside confirmed Engine delivery",
   "type": "task",
-  "updated_at": "2026-11-27T22:24:06Z"
+  "updated_at": "2026-11-27T22:34:47Z"
 }
