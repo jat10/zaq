@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-9j8.9"
+  ],
   "blocks": [],
   "created": "2026-11-27T18:38:02Z",
   "description": "Functional specifications / files: no production changes. After implementation/integration, present completed existing delivery modal showing grouped failed parts on one message, successful transcript messages, partial success and unconfirmed labels.\nTests/branches: provide screenshots or live review evidence for mixed outcomes, all failures, no failures, keyboard/focus, long filenames and light/dark themes. Existing component/LiveView tests must pass; no new feature E2E authored before explicit approval.\nMocking: representative persisted local fixtures only; do not use real external recipients.\nDocumentation: record approver, date, source and exact approved scope here. Prior policy discussions are not final UX approval.\nAction reuse: not applicable, human acceptance gate. Keep open until explicit approval after completed implementation; material UX changes reopen it. Blocks consolidated feature E2E.\n\nImplementation rules: Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the owning service guide before work. Reference ../zaq-feat-channel-files is behavioral evidence, not code to copy wholesale. Preserve Outgoing.attachments and separate metadata-only Plan; PR2 FileSettings/resolver remain authoritative. Keep existing test behavior unless its exact change is explicitly approved; add new tests for the new grouped evidence contract. No PR6 Agent selection/AttachDocuments or PR7 workflow/notification implementation. Unit/integration/property/LiveView tests are immediate; new feature E2E belongs to the gated finalization task. Validation follows docs/WORKFLOW_AGENT.md; no per-step numerical coverage gate.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-9j8.10] Obtain human approval of grouped delivery-failure UX",
   "type": "task",
-  "updated_at": "2026-11-27T18:38:04Z"
+  "updated_at": "2026-11-27T18:39:31Z"
 }
