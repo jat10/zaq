@@ -44,11 +44,15 @@
     {
       "text": "Native configuration implementation child .4.1.4 is validated and closed; this human UX gate remains open. Final browser suite 590 passed/3 skipped; no E2E assertions changed. Latest review patch SHA256 4d30ef5e1a0a7d6c6a7659ffceec33b497b79807647e3c35e8a3c8976ef10216 at /tmp/zaq-native-configuration.patch includes native-only horizontal overflow containment during sidebar reflow. Stable UI screenshots: /tmp/zaq-native-web-main.png, /tmp/zaq-native-web-advanced.png, /tmp/zaq-native-web-mobile-collapsed.png. Review of these and the completed Global → BO chat flow is still required before new feature E2E authoring. No commits/publication authorized.",
       "timestamp": "2026-11-26T15:15:42Z"
+    },
+    {
+      "text": "PR #16 fixes .15–.19 update the pending review scope: rejected-save capability refresh with retained drafts; selected SMTP capability dialog/file-control scope; shared field errors with hint suppression, danger styling and accessible unique IDs. Human approvals received here cover only the disclosed test behavior updates, not final UX approval. Keep this gate open; no new feature E2E authored and no precommit restarted.",
+      "timestamp": "2026-11-27T16:26:34Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3.4] Obtain human UX approval for consolidated file settings",
   "type": "task",
-  "updated_at": "2026-11-26T15:15:42Z"
+  "updated_at": "2026-11-27T16:26:34Z"
 }
