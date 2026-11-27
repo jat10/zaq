@@ -23,11 +23,15 @@
     {
       "text": "Follow-up explicitly authorized by the current user: strengthen the same independent-connection widget-creation regression with genuinely non-default min_interval_ms = 250 and assert persistence. Existing enabled=true matches the default (100 ms was unchanged), so it did not exercise changed-policy creation. Preserve rejection, rollback, built-proposal and routing assertions. Test-only change; reuse the same fixture and execution path; no domain operation changes or new Actions. No production changes or new test case. Run mix q and focused regression through Context Mode; no Git mutations or deferred precommit.",
       "timestamp": "2026-11-27T16:38:04Z"
+    },
+    {
+      "text": "Follow-up complete: the existing independent-connection widget-creation regression now submits live_updates.min_interval_ms = 250 (default is 100), asserts the built proposal contains 250, and asserts the saved connector persists 250. All prior rejection/error, rollback/count, built-state, enabled-policy, file-limit and routing assertions remain intact. No production changes or new test case; net +2 test lines. Context Mode validation: mix q PASS (exit 0); mix test test/zaq/engine/channel_config_test.exs:114 PASS (1 passed, 72 excluded; seed 20623). git diff --check PASS. User explicitly authorized this test update in the current request. No commit/push/precommit; existing finalization gates unchanged.",
+      "timestamp": "2026-11-27T16:38:54Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Fix cross-node validation of uncommitted widget creation",
   "type": "bug",
-  "updated_at": "2026-11-27T16:38:04Z"
+  "updated_at": "2026-11-27T16:38:54Z"
 }
