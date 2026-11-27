@@ -31,11 +31,15 @@
     {
       "text": "Final compatibility review chose an explicit literal partial_upload_facts: true evidence opt-in on the existing primitive. Default upload_prepared error shapes and convenience post/edit behavior remain identical, including for callers outside this repository. This is per-call evidence selection, not failure policy, splitting, retries or publication; SDK existing opts/error passthrough requires no SDK source change. Compared unconditional structured-error extension versus a separate callback; opt-in preserves exact consumers with less interface churn. New tests cover default/false/string-true behavior. Full isolated adapter suite passed 289 tests (18 real integrations excluded) before this final additive opt-in; rerunning against final source plus owner q. Malformed improper-list response regression was reproduced and fixed before this pass.",
       "timestamp": "2026-11-27T21:28:01Z"
+    },
+    {
+      "text": "Validated isolated adapter patch ready, prerequisite remains in_progress pending an immutable published revision. Worktree ../jido_chat_mattermost-zaq-h2i4-3, branch zaq-h2i.4.3/partial-upload-facts, base c319c6ed9867364e63c81327c5be8d2881e55ea2. Changed only lib/jido/chat/mattermost/adapter.ex, docs/jido_chat_adapter.md and new test/jido/chat/mattermost/partial_prepared_upload_test.exs. New literal partial_upload_facts: true opts into structured partial error facts bound to batch-local input_index by explicit unique provider filename and matching supplied size. Default primitive errors, all complete successes, convenience post/edit behavior and retired prefix-inference protections remain unchanged. No guessed prefix, duplicate/ambiguous identities or request/response bodies in facts. Existing SDK f176793 opts/error passthrough works without SDK source changes.\nValidation: published candidate regression probe reproduced loss of named confirmed ID. New tests red first; final full owning unit suite 290 passed, 18 actual-server integrations excluded. Final malformed-input hardening (proper-list validation and missing filename metadata) reproduced before fix; final focused new+unchanged legacy suite 79 passed. Final owner mix q passed formatting check, warnings-as-errors compile, Credo, Dialyzer and Doctor. Owner q is check-only for formatting, so its configured formatter was applied to the two changed Elixir files before q. Whitespace/diff scope reviewed. Original adapter checkout remains clean; original SDK untracked .serena/ preserved. No source commits, pushes, merges, ignored-dependency edits or publication. Main mix.exs/mix.lock pins unchanged. Actual pinned-package HTTP/SMTP wire compatibility remains zaq-9j8.5 and cannot pass using the old published adapter. Agent cannot create a new immutable/published pin under user's explicit no-commit/no-publication instruction. Resume once an authorized owner publishes this patch (or supplies another verified compatible revision).",
+      "timestamp": "2026-11-27T21:32:33Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.3] Supply verified Mattermost file operations and declarations for PR5",
   "type": "task",
-  "updated_at": "2026-11-27T21:28:01Z"
+  "updated_at": "2026-11-27T21:32:33Z"
 }
