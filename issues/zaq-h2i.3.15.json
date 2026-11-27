@@ -15,11 +15,15 @@
     {
       "text": "Implemented final normalized policy in initial built proposal, retaining existing locked update path and avoiding redundant policy write. Regression exercises real Bridge proposal identity checks from Task + Sandbox.unboxed_run on an independent connection, rejecting invalid final limits atomically then accepting correction. Context Mode: mix q PASS; ChannelConfig + WidgetConnectorSettings + LiveUpdateSettings isolated suites PASS, 107 tests including 1 property. No existing test expectations changed. Final gates remain deferred per user.",
       "timestamp": "2026-11-27T15:57:19Z"
+    },
+    {
+      "text": "Final working-tree validation through Context Mode: mix q PASS; 14 relevant isolated suites PASS, 524 checks (520 tests + 4 properties), seed 50911. After removing an unused local test-helper default, final mix q PASS and FileDeliverySettings focused suite PASS (6 tests), seed 171220. git diff --check PASS. No implementation blockers. No commits, pushes, merges, new gated feature E2E or mix precommit. Parent UX approval .3.4, consolidated E2E .3.5 and post-review coverage/final gate .3.13 remain pending. Issues remain in progress pending landing/finalization under repository workflow.",
+      "timestamp": "2026-11-27T16:27:36Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Fix cross-node validation of uncommitted widget creation",
   "type": "bug",
-  "updated_at": "2026-11-27T15:57:19Z"
+  "updated_at": "2026-11-27T16:27:36Z"
 }
