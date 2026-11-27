@@ -23,11 +23,15 @@
     {
       "text": "Boundary audit/reuse: EmailBridge owns reply subject/threading and selected SMTP receipt; SmtpSender owns pure Swoosh composition, credentials/TLS options and external SMTP submission; shared Preparation/Executor owns acquisition, grouping, policy and deadlines. Extend existing composition rather than add another mail lifecycle. File callback receives frozen actual outbound SMTP connection and never resolves notification defaults or rereads settings. Prepare once per final body/headers, submit exact encoded body through gen_smtp with retries=0, relay acceptance only. Local TCP capture is the sole external fixture. Existing send_notification text behavior remains on Mailer. Required positive count/encoded limits activate SMTP file mode; IMAP snapshot itself cannot substitute inbox settings for SMTP.",
       "timestamp": "2026-11-27T22:10:12Z"
+    },
+    {
+      "text": "Additional approval received 2026-11-28: user approved the exact SMTP snapshot and no-file property updates in email_bridge_test.exs plus explicit valid count/MIME-size limits in SMTP test fixtures. Existing text/routing/encryption/envelope assertions must stay intact. Approval source asynchronous answer Approve these scoped SMTP test updates. This extends earlier delivery_contract_test approval only; no UX/E2E approval inferred.",
+      "timestamp": "2026-11-27T22:15:56Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.6] Integrate SMTP preparation and delivery",
   "type": "task",
-  "updated_at": "2026-11-27T22:10:12Z"
+  "updated_at": "2026-11-27T22:15:56Z"
 }
