@@ -35,11 +35,15 @@
     {
       "text": "Manual persisted local browser inspection: mixed, unconfirmed/aborted, all-failed and successful scenes generated through real Channels API/executor/Engine with controlled external adapter; keyboard Enter, Tab containment, Escape and focus restoration work, long file names do not overflow. Found dark modal content inherited browser black; apply existing semantic text-default to modal focus wrapper and recapture. New feature E2E remains gated.",
       "timestamp": "2026-11-27T23:39:41Z"
+    },
+    {
+      "text": "Approved fixture limit updates expanded to SMTP-dependent history, notification, People and connector tests. Shared PeopleAuthDelivery fixture now persists its valid SMTP config before selecting its transport mock, retaining real capability validation and unchanged mock send assertions. Repaired 17-suite run: 418/419 pass, then remaining auth mock setup fixed and all 10 focused auth/modal checks pass. Pending explicit approval covers seven old capability/saved-limit assertions across the three disclosed files; these assertions remain unchanged. Current mix q passes; final precommit remains reserved for after gated E2E/review/coverage per lifecycle.",
+      "timestamp": "2026-11-27T23:44:33Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.9] Validate PR5 delivery journeys and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-27T23:39:41Z"
+  "updated_at": "2026-11-27T23:44:33Z"
 }
