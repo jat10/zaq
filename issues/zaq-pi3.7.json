@@ -13,9 +13,15 @@
   "id": "zaq-pi3.7",
   "labels": [],
   "parent": "zaq-pi3",
+  "comments": [
+    {
+      "text": "PR5 producer contract note: Channels.Events.build_deliver_outgoing_event now forwards explicit actor and forces confidential:true for nonempty attachments, preventing transient bytes on NodeRouter workflow-trigger stream. PR6 Agent return-hop/AttachDocuments integration must preserve Event actor and set confidentiality before routing any attachment-bearing Outgoing (or use the standardized builder). PR5 does not modify Agent producer/selection; its current return hop remains text-only. Keep provider publication/full compatibility prerequisite zaq-h2i.4.3 for PR6.",
+      "timestamp": "2026-11-27T22:53:07Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.7] Restack when authorized and verify PR6 against PR5 delivery",
   "type": "task",
-  "updated_at": "2026-11-27T21:49:28Z"
+  "updated_at": "2026-11-27T22:53:07Z"
 }
