@@ -5,7 +5,8 @@
   ],
   "blocks": [
     "zaq-6rc.5",
-    "zaq-9j8"
+    "zaq-9j8",
+    "zaq-9j8.1"
   ],
   "closed_at": "2026-11-26T13:35:22Z",
   "close_reason": "Dedicated post-review coverage and final mix precommit passed; ready for final human review, no Git landing authorized.",
@@ -40,5 +41,5 @@
   "status": "closed",
   "title": "[zaq-6rc.11] Complete post-review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-26T14:26:26Z"
+  "updated_at": "2026-11-27T18:39:17Z"
 }
