@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-6rc.6"
   ],
@@ -18,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-6rc.7] Report confirmed messages and grouped failures through Engine events",
   "type": "task",
-  "updated_at": "2026-11-27T18:39:26Z"
+  "updated_at": "2026-11-27T22:18:28Z"
 }
