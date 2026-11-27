@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-27T18:38:38Z",
+  "description": "Restack only the three descendants in ../workspace-planning/channel_file_delivery_stack.md onto reviewed file-settings HEAD 9d0fc08cf. Current user explicitly requests the local rebases. Preserve clean worktrees, original tips, remote tips and backup refs before rewriting. Recover old settings parent from reflog (bfb3e677c), replay dark-theme own commit, then delivery-plan own commit, then move empty delivery-execution branch. Compare old/new ranges, verify ancestry/tree/state and run mix q + relevant isolated tests through Context Mode in usable environments. Preserve all existing test behavior; no feature E2E authoring or deferred precommit. Update planning map and owning issues with boundaries and validation. Remote publication is a separate final decision after concrete local results. Application Action reuse is not applicable: Git orchestration and history replay only, no new domain operation.\n\n```mermaid\ngraph LR\n  dark --\u003e plan --\u003e execution\n```",
+  "id": "zaq-ac7",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Restack communication descendants after file-settings review",
+  "type": "epic",
+  "updated_at": "2026-11-27T18:38:38Z"
+}
