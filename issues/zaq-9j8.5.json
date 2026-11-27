@@ -2,8 +2,7 @@
   "assignee": "",
   "blocked_by": [
     "zaq-9j8.13",
-    "zaq-9j8.4",
-    "zaq-h2i.4.3"
+    "zaq-9j8.4"
   ],
   "blocks": [
     "zaq-6rc.5"
@@ -23,5 +22,5 @@
   "status": "open",
   "title": "[zaq-9j8.5] Verify PR5 adapter and SMTP execution compatibility",
   "type": "task",
-  "updated_at": "2026-11-27T21:49:19Z"
+  "updated_at": "2026-11-27T21:49:27Z"
 }
