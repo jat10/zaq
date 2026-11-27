@@ -9,7 +9,7 @@
   "parent": "zaq-pi3",
   "priority": 2,
   "status": "open",
-  "title": "Propagate successful selections through configured Agent results",
+  "title": "[zaq-pi3.6] Propagate successful selections through configured Agent results",
   "type": "task",
-  "updated_at": "2026-11-27T19:20:53Z"
+  "updated_at": "2026-11-27T19:20:56Z"
 }
