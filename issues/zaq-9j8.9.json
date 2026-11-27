@@ -39,11 +39,15 @@
     {
       "text": "Approved fixture limit updates expanded to SMTP-dependent history, notification, People and connector tests. Shared PeopleAuthDelivery fixture now persists its valid SMTP config before selecting its transport mock, retaining real capability validation and unchanged mock send assertions. Repaired 17-suite run: 418/419 pass, then remaining auth mock setup fixed and all 10 focused auth/modal checks pass. Pending explicit approval covers seven old capability/saved-limit assertions across the three disclosed files; these assertions remain unchanged. Current mix q passes; final precommit remains reserved for after gated E2E/review/coverage per lifecycle.",
       "timestamp": "2026-11-27T23:44:33Z"
+    },
+    {
+      "text": "Latest validation: 3/3 existing delivery-visibility browser journeys pass after final dark modal text correction; mix q passes (1859 files, no issues). Refreshed existing history E2E: 24/24 pass across Chromium/Firefox/WebKit. Full existing E2E earlier 597 passed/3 skipped. 45 People auth/controller regressions pass; 10 focused modal/auth cases pass; Add Config regression passes after approved explicit limits. Seven existing capability/saved-limit assertions remain unchanged pending the explicit three-file approval question; .9 remains in progress, .10/.11 stay open. No Git commits/pushes or dependency changes.",
+      "timestamp": "2026-11-27T23:46:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.9] Validate PR5 delivery journeys and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-27T23:44:33Z"
+  "updated_at": "2026-11-27T23:46:28Z"
 }
