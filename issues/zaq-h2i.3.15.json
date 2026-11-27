@@ -7,9 +7,15 @@
   "id": "zaq-h2i.3.15",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Implementation sequence: .15 transaction visibility, .16 rejected-save recovery, .17 boundary/cache simplification, .18 shared errors, .19 test consolidation last. Reuse audit: existing WidgetConnectorSettings transaction, LiveUpdates normalization, ChannelConfig persistence guard, confidential Channels capability_snapshot event; no new Actions or callbacks. Initial policy will be included in built insert; existing locked update path retained. User forbids final precommit and Git mutations.",
+      "timestamp": "2026-11-27T15:54:33Z"
+    }
+  ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Fix cross-node validation of uncommitted widget creation",
   "type": "bug",
-  "updated_at": "2026-11-27T15:54:31Z"
+  "updated_at": "2026-11-27T15:54:33Z"
 }
