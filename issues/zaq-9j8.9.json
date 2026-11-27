@@ -27,11 +27,15 @@
     {
       "text": "User explicitly approved required SMTP ceiling rejection in EmailConnectorSettingsTest and matching ChannelConfigTest persistence contract (2026-11-28 chat replies). Empty/incomplete/cleared limits now must reject and preserve persisted settings. Prior explicit valid SMTP fixture limits approval applies to configuration regression fixtures.",
       "timestamp": "2026-11-27T23:32:53Z"
+    },
+    {
+      "text": "Validation: all 109 SMTP configuration tests/property pass; mix q passes. Existing full E2E: 597 passed, 3 skipped in 14.2m. Refreshed existing history journey across three browsers running against latest implementation. Broader SMTP-related suites selected for checking persistence fixture compatibility before UX handoff. No new feature E2E authored.",
+      "timestamp": "2026-11-27T23:35:48Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.9] Validate PR5 delivery journeys and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-27T23:32:53Z"
+  "updated_at": "2026-11-27T23:35:48Z"
 }
