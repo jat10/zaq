@@ -19,11 +19,15 @@
     {
       "text": "Grouped evidence and confirmed continuation storage implemented. Real NodeRouter tests prove exact answer/input/origin scope, idempotent replay, only successful transcript rows, canonical versus continuation content/thread and safe authorized projection with no duplicate pending row. Legacy late observation after confirmation remains ignored; supplemental grouped evidence persists before/after confirmation. Added pure bounded/redaction JSON properties. Existing Engine runs exposed additional SMTP fixtures missing required limits; applying user-approved explicit fixture limits only, preserving text/assertions. Final broader validation ongoing.",
       "timestamp": "2026-11-27T22:34:47Z"
+    },
+    {
+      "text": "Validation complete: broader Engine run 102 passed (8 properties), including existing TranscriptHistory, HistoryIngress, confirmation dominance, recovery and visibility suites; mix q passed. Final explicit SMTP fixture changes rerun separately with assertions preserved under prior approval. Engine guide records additive grouped evidence, scoped continuation confirmation, idempotency and safe canonical projection. No schema migration, new reporter lifecycle, source-handle provider locators or failed transcript rows.",
+      "timestamp": "2026-11-27T22:35:24Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.6] Persist grouped failure evidence alongside confirmed Engine delivery",
   "type": "task",
-  "updated_at": "2026-11-27T22:34:47Z"
+  "updated_at": "2026-11-27T22:35:24Z"
 }
