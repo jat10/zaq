@@ -31,37 +31,47 @@
         id="new-config-button"
         phx-click="open_modal"
         phx-value-action="new"
-        class="font-mono text-[0.75rem] tracking-wide px-4 py-2 rounded-lg bg-[#03b6d4] text-white hover:bg-[#03b6d4]/90 transition-colors"
+        class="zaq-btn zaq-btn-text_label-default zaq-btn-primary"
       >
         Add Config
       </button>
     </div>
     <div
       :if={disk_provider?(@provider)}
-      class="mt-4 rounded-xl border border-black/10 bg-white p-4"
+      class="mt-4 border p-4 rounded-2xl"
+      style="border-color: var(--zaq-border-color-default); background-color: var(--zaq-surface-color-raised)"
     >
-      <p class="font-mono text-[0.62rem] uppercase tracking-wider text-black/35 mb-1">
+      <p
+        class="zaq-text-body-sm uppercase tracking-wider mb-1"
+        style="color: var(--zaq-text-color-body-tertiary)"
+      >
         Storage base path
       </p>
-      <p class="font-mono text-sm text-black">
+      <p class="zaq-text-body-sm" style="color: var(--zaq-text-color-body-default)">
         {@storage_base_path || "Not configured"}
       </p>
-      <p class="font-mono text-[0.65rem] text-black/40 mt-1">
+      <p class="zaq-text-body-sm mt-1" style="color: var(--zaq-text-color-body-tertiary)">
         Volume paths are resolved relative to this `Zaq.Storage` base path.
       </p>
     </div>
   </div>
 
-  <p class="font-mono text-[0.65rem] uppercase tracking-widest text-black/30 mb-3">
+  <p
+    class="zaq-text-body-sm uppercase tracking-widest mb-3"
+    style="color: var(--zaq-text-color-body-tertiary)"
+  >
     Configurations
   </p>
 
   <div
     :if={@configs == []}
-    class="bg-white rounded-xl border border-dashed border-black/15 p-8 text-center"
+    class="border border-dashed p-8 text-center rounded-2xl"
+    style="background-color: var(--zaq-surface-color-raised); border-color: var(--zaq-border-color-default)"
   >
-    <p class="font-mono text-sm font-bold text-black mb-1">No configs yet</p>
-    <p class="font-mono text-[0.7rem] text-black/40">
+    <p class="zaq-text-body-sm font-bold mb-1" style="color: var(--zaq-text-color-body-default)">
+      No configs yet
+    </p>
+    <p class="zaq-text-body-sm" style="color: var(--zaq-text-color-body-tertiary)">
       Create a data source config to see insights.
     </p>
   </div>
@@ -70,7 +80,8 @@
     <div
       :for={config <- @configs}
       id={"data-source-config-#{config.id}"}
-      class="bg-white rounded-xl border border-black/10 p-5"
+      class="border p-5 rounded-2xl"
+      style="background-color: var(--zaq-surface-color-raised); border-color: var(--zaq-border-color-default)"
     >
       <% grant = active_grant_for_config(config, @grants_by_config) %>
       <% root_folders_list = Map.get(@root_folders_by_config, config.id) %>
@@ -80,18 +91,23 @@
       <div class="flex items-center justify-between mb-4">
         <div>
           <div class="flex items-center gap-2">
-            <p class="font-mono text-sm font-bold text-black">{config.name}</p>
+            <p
+              class="zaq-text-body-sm font-bold"
+              style="color: var(--zaq-text-color-body-default)"
+            >
+              {config.name}
+            </p>
           </div>
-          <p class="font-mono text-[0.7rem] text-black/35 mt-1">
+          <p class="zaq-text-body-sm mt-1" style="color: var(--zaq-text-color-body-tertiary)">
             {if grant, do: "Grant active (#{grant.auth_kind})", else: "No active grant"}
           </p>
         </div>
         <div class="flex items-center gap-2">
           <span class={[
-            "font-mono text-[0.6rem] px-2 py-0.5 rounded-full uppercase tracking-wider",
+            "zaq-text-caption px-2 py-0.5 rounded-full uppercase tracking-wider",
             if(config.enabled,
-              do: "bg-emerald-100 text-emerald-700",
-              else: "bg-black/5 text-black/30"
+              do: "zaq-pill--success",
+              else: "zaq-pill--elevated"
             )
           ]}>
             {if config.enabled, do: "Active", else: "Disabled"}
@@ -100,7 +116,7 @@
             id={"toggle-config-#{config.id}"}
             phx-click="toggle_enabled"
             phx-value-id={config.id}
-            class="font-mono text-[0.65rem] px-2.5 py-1.5 rounded-lg border border-black/10 text-black/40 hover:text-black hover:border-black/20 transition-all"
+            class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
           >
             {if config.enabled, do: "Disable", else: "Enable"}
           </button>
@@ -109,8 +125,9 @@
             phx-click="open_modal"
             phx-value-action="edit"
             phx-value-id={config.id}
-            class="w-8 h-8 rounded-lg border border-black/10 grid place-items-center text-black/30 hover:text-[#03b6d4] hover:border-[#03b6d4]/30 transition-all"
+            class="zaq-btn zaq-btn-text_label-default zaq-btn-tertiary zaq-btn-icon"
             title="Edit"
+            aria-label="Edit"
           >
             <svg
               class="w-3.5 h-3.5"
@@ -128,8 +145,9 @@
             id={"open-test-config-#{config.id}"}
             phx-click="open_test"
             phx-value-id={config.id}
-            class="w-8 h-8 rounded-lg border border-black/10 grid place-items-center text-black/30 hover:text-amber-500 hover:border-amber-300 transition-all phx-click-loading:opacity-70"
+            class="zaq-btn zaq-btn-text_label-default zaq-btn-tertiary zaq-btn-icon phx-click-loading:opacity-70"
             title="Refresh"
+            aria-label="Refresh"
           >
             <svg
               class="w-3.5 h-3.5 phx-click-loading:animate-spin"
@@ -147,8 +165,9 @@
             id={"confirm-delete-config-#{config.id}"}
             phx-click="confirm_delete"
             phx-value-id={config.id}
-            class="w-8 h-8 rounded-lg border border-black/10 grid place-items-center text-black/30 hover:text-red-500 hover:border-red-200 transition-all"
+            class="zaq-btn zaq-btn-text_label-default zaq-btn-tertiary zaq-btn-icon"
             title="Delete"
+            aria-label="Delete"
           >
             <svg
               class="w-3.5 h-3.5"
@@ -163,57 +182,82 @@
         </div>
       </div>
 
-      <div :if={stats_error} class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
-        <p class="font-mono text-[0.72rem] text-amber-800">{stats_error.message}</p>
-        <p class="font-mono text-[0.62rem] text-amber-700 mt-1">
+      <div
+        :if={stats_error}
+        class="mb-4 rounded-lg border p-3"
+        style="border-color: var(--zaq-border-color-warning); background-color: var(--zaq-surface-color-warning)"
+      >
+        <p class="zaq-text-body-sm" style="color: var(--zaq-text-color-body-warning)">
+          {stats_error.message}
+        </p>
+        <p class="zaq-text-body-sm mt-1" style="color: var(--zaq-text-color-body-warning)">
           Code: {stats_error[:code] || "n/a"} · Provider: {stats_error[:provider] || "n/a"} · HTTP: {stats_error[
             :status
           ] || "n/a"}
         </p>
       </div>
 
-      <div class="rounded-lg border border-black/10 p-3 mb-4">
+      <div
+        class="rounded-lg border p-3 mb-4"
+        style="border-color: var(--zaq-border-color-default)"
+      >
         <div :if={disk_provider?(@provider)}>
           <% default_volume = disk_default_volume(config) %>
-          <p class="font-mono text-[0.62rem] uppercase tracking-wider text-black/35 mb-2">
+          <p
+            class="zaq-text-body-sm uppercase tracking-wider mb-2"
+            style="color: var(--zaq-text-color-body-tertiary)"
+          >
             Volumes
           </p>
           <ul class="space-y-1">
             <li
               :for={volume <- Map.get(config.settings || %{}, "volumes", [])}
-              class="font-mono text-[0.75rem] text-black/70 flex items-center gap-2"
+              class="zaq-text-body-sm flex items-center gap-2"
+              style="color: var(--zaq-text-color-body-secondary)"
             >
               <span class="font-bold">{volume["name"]}</span>
               <span
                 :if={volume["name"] == default_volume}
-                class="rounded-full bg-[#03b6d4]/10 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-wider text-[#028aa1]"
+                class="rounded-full px-2 py-0.5 zaq-text-caption font-bold uppercase tracking-wider"
+                style="background-color: var(--zaq-surface-color-accent); color: var(--zaq-text-color-body-accent)"
               >
                 Default
               </span>
-              <span class="text-black/35">{@storage_base_path}/{volume["path"]}</span>
+              <span class="" style="color: var(--zaq-text-color-body-tertiary)">{@storage_base_path}/{volume[
+                "path"
+              ]}</span>
             </li>
           </ul>
         </div>
         <div :if={!disk_provider?(@provider)}>
-          <p class="font-mono text-[0.62rem] uppercase tracking-wider text-black/35 mb-2">
+          <p
+            class="zaq-text-body-sm uppercase tracking-wider mb-2"
+            style="color: var(--zaq-text-color-body-tertiary)"
+          >
             Root folders
             <span :if={Map.get(root_meta, :pages_loaded, 0) > 0}>
               ({Map.get(root_meta, :pages_loaded, 0)} pages loaded)
             </span>
           </p>
-          <div :if={root_folders_list == nil} class="font-mono text-[0.75rem] text-black/45">
+          <div
+            :if={root_folders_list == nil}
+            class="zaq-text-body-sm"
+            style="color: var(--zaq-text-color-body-tertiary)"
+          >
             N/A
           </div>
           <div
             :if={root_folders_list != nil and root_folders(root_folders_list) == []}
-            class="font-mono text-[0.75rem] text-black/45"
+            class="zaq-text-body-sm"
+            style="color: var(--zaq-text-color-body-tertiary)"
           >
             None found
           </div>
           <ul :if={root_folders(root_folders_list) != []} class="space-y-1">
             <li
               :for={folder <- root_folders(root_folders_list)}
-              class="font-mono text-[0.75rem] text-black/70 flex items-center gap-2"
+              class="zaq-text-body-sm flex items-center gap-2"
+              style="color: var(--zaq-text-color-body-secondary)"
             >
               <img
                 :if={folder_icon(folder)}
@@ -228,7 +272,7 @@
                 href={folder_url(folder)}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="underline decoration-black/20 hover:decoration-black"
+                class="zaq-link underline"
               >
                 {folder_name(folder)}
               </a>
@@ -238,8 +282,9 @@
                 phx-click="open_folder_info"
                 phx-value-config-id={config.id}
                 phx-value-folder-id={folder.id}
-                class="w-5 h-5 rounded border border-black/10 grid place-items-center text-black/40 hover:text-[#03b6d4] hover:border-[#03b6d4]/30"
+                class="zaq-btn zaq-btn-text_label-default zaq-btn-tertiary zaq-btn-icon"
                 title="Folder details"
+                aria-label="Folder details"
               >
                 <svg
                   class="w-3 h-3"
@@ -260,7 +305,7 @@
               type="button"
               phx-click="fetch_more"
               phx-value-id={config.id}
-              class="font-mono text-[0.68rem] px-3 py-1.5 rounded-lg border border-black/10 text-black/55 hover:text-black hover:border-black/20 transition-all"
+              class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
             >
               Fetch more (+{Map.get(root_meta, :max_pages_per_batch, 5)} pages)
             </button>
@@ -278,31 +323,47 @@
     max_width_class="zaq-modal--width-lg"
   >
     <% folder = selected_folder_info(@folder_info_modal) %>
-    <div class="space-y-2 font-mono text-[0.73rem] text-black/75">
-      <p><span class="text-black/40">Name:</span> {folder_name(folder)}</p>
-      <p><span class="text-black/40">ID:</span> {folder.id}</p>
+    <div class="space-y-2 zaq-text-body-sm" style="color: var(--zaq-text-color-body-secondary)">
+      <p>
+        <span class="" style="color: var(--zaq-text-color-body-tertiary)">Name:</span> {folder_name(
+          folder
+        )}
+      </p>
+      <p>
+        <span class="" style="color: var(--zaq-text-color-body-tertiary)">ID:</span> {folder.id}
+      </p>
       <p :if={folder.description}>
-        <span class="text-black/40">Description:</span> {folder.description}
+        <span class="" style="color: var(--zaq-text-color-body-tertiary)">Description:</span> {folder.description}
       </p>
       <p :if={folder.created_at}>
-        <span class="text-black/40">Created:</span> {folder.created_at}
+        <span class="" style="color: var(--zaq-text-color-body-tertiary)">Created:</span> {folder.created_at}
       </p>
       <p :if={folder.modified_at}>
-        <span class="text-black/40">Modified:</span> {folder.modified_at}
+        <span class="" style="color: var(--zaq-text-color-body-tertiary)">Modified:</span> {folder.modified_at}
       </p>
-      <p :if={folder.size}><span class="text-black/40">Size:</span> {folder.size}</p>
-      <p :if={folder.mime_type}><span class="text-black/40">Mime:</span> {folder.mime_type}</p>
-      <p :if={folder.parent_id}><span class="text-black/40">Parent:</span> {folder.parent_id}</p>
+      <p :if={folder.size}>
+        <span class="" style="color: var(--zaq-text-color-body-tertiary)">Size:</span> {folder.size}
+      </p>
+      <p :if={folder.mime_type}>
+        <span class="" style="color: var(--zaq-text-color-body-tertiary)">Mime:</span> {folder.mime_type}
+      </p>
+      <p :if={folder.parent_id}>
+        <span class="" style="color: var(--zaq-text-color-body-tertiary)">Parent:</span> {folder.parent_id}
+      </p>
       <p :if={folder_url(folder)}>
-        <span class="text-black/40">URL:</span>
+        <span class="" style="color: var(--zaq-text-color-body-tertiary)">URL:</span>
         <a href={folder_url(folder)} target="_blank" rel="noopener noreferrer" class="underline">
           Open
         </a>
       </p>
       <div :if={folder.owners != []}>
-        <p class="text-black/40 mb-1">Owners:</p>
+        <p class="mb-1" style="color: var(--zaq-text-color-body-tertiary)">Owners:</p>
         <ul class="space-y-2">
-          <li :for={owner <- folder.owners} class="rounded-md border border-black/10 p-2">
+          <li
+            :for={owner <- folder.owners}
+            class="rounded-md border p-2"
+            style="border-color: var(--zaq-border-color-default)"
+          >
             <div class="flex items-center gap-2 mb-1">
               <img
                 :if={is_binary(owner[:photo_url]) and owner[:photo_url] != ""}
@@ -317,20 +378,33 @@
                 {owner[:display_name] || owner[:email] || owner[:id] || "Unknown owner"}
               </span>
             </div>
-            <pre class="text-[0.64rem] text-black/55 whitespace-pre-wrap break-words">{inspect(owner[:raw], pretty: true)}</pre>
+            <pre
+              class="zaq-text-pre whitespace-pre-wrap break-words"
+              style="color: var(--zaq-text-color-body-secondary)"
+            >{inspect(owner[:raw], pretty: true)}</pre>
           </li>
         </ul>
       </div>
       <div>
-        <p class="text-black/40 mb-1">Permissions:</p>
-        <p :if={folder_permissions(folder) == []} class="text-[0.68rem] text-black/50">Empty</p>
+        <p class="mb-1" style="color: var(--zaq-text-color-body-tertiary)">Permissions:</p>
+        <p
+          :if={folder_permissions(folder) == []}
+          class="zaq-text-body-sm"
+          style="color: var(--zaq-text-color-body-secondary)"
+        >
+          Empty
+        </p>
         <ul :if={folder_permissions(folder) != []} class="space-y-2">
           <li
             :for={permission <- folder_permissions(folder)}
-            class="rounded-md border border-black/10 p-2"
+            class="rounded-md border p-2"
+            style="border-color: var(--zaq-border-color-default)"
           >
             <p class="font-semibold">{permission_label(permission)}</p>
-            <pre class="text-[0.64rem] text-black/55 whitespace-pre-wrap break-words">{inspect(permission.raw, pretty: true)}</pre>
+            <pre
+              class="zaq-text-pre whitespace-pre-wrap break-words"
+              style="color: var(--zaq-text-color-body-secondary)"
+            >{inspect(permission.raw, pretty: true)}</pre>
           </li>
         </ul>
       </div>
@@ -350,7 +424,7 @@
       <input type="hidden" name="form[kind]" value="data_source" />
 
       <div class="mb-4">
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-text-body-sm uppercase mb-2 block zaq-field-label-uppercase">
           Name
         </label>
         <input
@@ -358,18 +432,18 @@
           name="form[name]"
           value={@form[:name].value}
           placeholder="e.g. Product Drive"
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black placeholder:text-black/30 text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-text w-full"
         />
       </div>
 
       <div :if={!disk_provider?(@provider)} class="mb-6">
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-text-body-sm uppercase mb-2 block zaq-field-label-uppercase">
           Credential
         </label>
         <div class="flex items-center gap-2">
           <select
             name="form[settings][connect][credential_id]"
-            class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+            class="zaq-control-select zaq-control-select--native w-full"
           >
             <option
               value=""
@@ -391,7 +465,7 @@
           <button
             type="button"
             phx-click="open_new_credential"
-            class="h-11 px-4 rounded-xl border border-[#03b6d4]/30 text-[#03b6d4] font-mono text-[0.7rem] font-bold hover:bg-[#03b6d4]/5 transition-all shrink-0"
+            class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary shrink-0"
           >
             + New
           </button>
@@ -401,7 +475,7 @@
           type="button"
           phx-click="open_oauth_claim"
           phx-value-url={claim.url}
-          class="inline-flex mt-2 font-mono text-[0.65rem] px-3 py-1.5 rounded-lg border border-[#03b6d4]/30 text-[#03b6d4] hover:bg-[#03b6d4]/5 transition-all"
+          class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary mt-2"
         >
           Claim OAuth2 Grant
         </button>
@@ -409,32 +483,36 @@
           :if={not claim.enabled?}
           type="button"
           disabled
-          class="inline-flex mt-2 font-mono text-[0.65rem] px-3 py-1.5 rounded-lg border border-black/10 text-black/35 bg-black/[0.03]"
+          class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary mt-2"
         >
           Claim OAuth2 Grant
         </button>
-        <p :if={claim.message} class="font-mono text-[0.62rem] text-black/35 mt-1">
+        <p
+          :if={claim.message}
+          class="zaq-text-body-sm mt-1"
+          style="color: var(--zaq-text-color-body-tertiary)"
+        >
           {claim.message}
         </p>
       </div>
 
       <div :if={!disk_provider?(@provider)} class="mb-6">
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-text-body-sm uppercase mb-2 block zaq-field-label-uppercase">
           Root folder
         </label>
         <input
           type="text"
           name="form[settings][connect][root_selector]"
           value={root_selector_from_changeset(@changeset, @provider)}
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black placeholder:text-black/30 text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-text w-full"
         />
-        <p class="font-mono text-[0.62rem] text-black/35 mt-1">
+        <p class="zaq-text-body-sm mt-1" style="color: var(--zaq-text-color-body-tertiary)">
           Provider-specific folder selector used to namespace this config.
         </p>
       </div>
 
       <div class="mb-6">
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-text-body-sm uppercase mb-2 block zaq-field-label-uppercase">
           Max pages per fetch
         </label>
         <input
@@ -448,9 +526,9 @@
             |> Map.get("connect", %{})
             |> Map.get("max_pages", 5)
           }
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black placeholder:text-black/30 text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-text w-full"
         />
-        <p class="font-mono text-[0.62rem] text-black/35 mt-1">
+        <p class="zaq-text-body-sm mt-1" style="color: var(--zaq-text-color-body-tertiary)">
           Number of pages to load per refresh/fetch-more batch.
         </p>
       </div>
@@ -459,10 +537,10 @@
         :if={!disk_provider?(@provider) and map_size(@native_export_options || %{}) > 0}
         class="mb-6"
       >
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-text-body-sm uppercase mb-2 block zaq-field-label-uppercase">
           Native Export Defaults
         </label>
-        <p class="font-mono text-[0.62rem] text-black/35 mb-3">
+        <p class="zaq-text-body-sm mb-3" style="color: var(--zaq-text-color-body-tertiary)">
           Used when document MIME type is provided and no export MIME type is explicitly set.
         </p>
         <div class="space-y-3">
@@ -470,10 +548,15 @@
             :for={{native_mime_type, export_mime_types} <- @native_export_options}
             class="grid grid-cols-1 md:grid-cols-2 gap-2 items-center"
           >
-            <div class="font-mono text-[0.68rem] text-black/60 break-all">{native_mime_type}</div>
+            <div
+              class="zaq-text-body-sm break-all"
+              style="color: var(--zaq-text-color-body-secondary)"
+            >
+              {native_mime_type}
+            </div>
             <select
               name={"form[settings][connect][export_defaults_by_native_mime][#{native_mime_type}]"}
-              class="w-full h-10 px-3 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-xs font-mono outline-none focus:border-[#03b6d4] transition-colors"
+              class="zaq-control-select zaq-control-select--native w-full"
             >
               <option
                 value=""
@@ -498,18 +581,27 @@
         </div>
       </div>
 
-      <div :if={disk_provider?(@provider)} class="mb-6 rounded-xl border border-black/10 p-4">
+      <div
+        :if={disk_provider?(@provider)}
+        class="mb-6 rounded-xl border p-4"
+        style="border-color: var(--zaq-border-color-default)"
+      >
         <div class="flex items-center justify-between mb-3">
           <div>
-            <p class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider">Volumes</p>
-            <p class="font-mono text-[0.62rem] text-black/35 mt-1">
+            <p
+              class="zaq-text-body-sm uppercase tracking-wider"
+              style="color: var(--zaq-text-color-body-tertiary)"
+            >
+              Volumes
+            </p>
+            <p class="zaq-text-body-sm mt-1" style="color: var(--zaq-text-color-body-tertiary)">
               Removing a declaration hides that folder from ZAQ without deleting files.
             </p>
           </div>
           <button
             type="button"
             phx-click="add_disk_volume"
-            class="font-mono text-[0.65rem] px-3 py-1.5 rounded-lg border border-[#03b6d4]/30 text-[#03b6d4] hover:bg-[#03b6d4]/5 transition-all"
+            class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
           >
             Add volume
           </button>
@@ -524,16 +616,19 @@
               name={"form[settings][volumes][#{index}][name]"}
               value={volume["name"]}
               placeholder="Name"
-              class="w-full h-10 px-3 rounded-xl border border-black/10 bg-[#f5f5f5] text-black placeholder:text-black/30 text-xs font-mono outline-none focus:border-[#03b6d4] transition-colors"
+              class="zaq-control-text w-full"
             />
             <input
               type="text"
               name={"form[settings][volumes][#{index}][path]"}
               value={volume["path"]}
               placeholder="Relative path"
-              class="w-full h-10 px-3 rounded-xl border border-black/10 bg-[#f5f5f5] text-black placeholder:text-black/30 text-xs font-mono outline-none focus:border-[#03b6d4] transition-colors"
+              class="zaq-control-text w-full"
             />
-            <label class="h-10 px-3 rounded-xl border border-black/10 text-black/55 hover:border-[#03b6d4]/30 transition-all font-mono text-[0.65rem] flex items-center gap-2">
+            <label
+              class="h-10 px-3 rounded-xl border transition-all zaq-text-body-sm flex items-center gap-2 zaq-field-label-uppercase"
+              style="border-color: var(--zaq-border-color-default)"
+            >
               <input
                 type="radio"
                 name="form[settings][default_volume]"
@@ -541,14 +636,15 @@
                 checked={disk_default_volume_from_changeset(@changeset) == volume["name"]}
                 phx-click="set_default_disk_volume"
                 phx-value-index={index}
-                class="w-3.5 h-3.5 border-black/20 accent-[#03b6d4]"
+                class="w-3.5 h-3.5 zaq-bo-checkbox"
+                style="border-color: var(--zaq-border-color-default)"
               /> Default
             </label>
             <button
               type="button"
               phx-click="remove_disk_volume"
               phx-value-index={index}
-              class="h-10 px-3 rounded-xl border border-black/10 text-black/40 hover:text-red-500 hover:border-red-200 transition-all font-mono text-[0.65rem]"
+              class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
             >
               Remove
             </button>
@@ -565,34 +661,49 @@
           value="true"
           checked={@form[:enabled].value}
           disabled={disk_provider?(@provider) and storage_base_path_blank?(@storage_base_path)}
-          class="w-4 h-4 rounded border-black/20 accent-[#03b6d4]"
+          class="w-4 h-4 rounded zaq-bo-checkbox"
+          style="border-color: var(--zaq-border-color-default)"
         />
-        <label for="form_enabled" class="font-mono text-[0.75rem] text-black/60 cursor-pointer">
+        <label
+          for="form_enabled"
+          class="zaq-text-body-sm cursor-pointer zaq-field-label-uppercase"
+        >
           Enable this configuration
         </label>
         <span
           :if={disk_provider?(@provider) and storage_base_path_blank?(@storage_base_path)}
-          class="font-mono text-[0.65rem] text-amber-600"
+          class="zaq-text-body-sm"
+          style="color: var(--zaq-text-color-body-warning)"
         >
           Set Zaq.Storage base_path first.
         </span>
       </div>
 
-      <div :if={@modal_errors != []} class="mb-4 rounded-xl bg-red-50 border border-red-200 p-3">
-        <p :for={err <- @modal_errors} class="font-mono text-[0.7rem] text-red-600">{err}</p>
+      <div
+        :if={@modal_errors != []}
+        class="mb-4 rounded-xl border p-3"
+        style="background-color: var(--zaq-surface-color-danger); border-color: var(--zaq-border-color-danger)"
+      >
+        <p
+          :for={err <- @modal_errors}
+          class="zaq-text-body-sm"
+          style="color: var(--zaq-text-color-body-danger)"
+        >
+          {err}
+        </p>
       </div>
 
       <div class="flex items-center justify-end gap-3">
         <button
           type="button"
           phx-click="close_modal"
-          class="font-mono text-[0.75rem] tracking-wide px-5 py-2.5 rounded-xl border border-black/10 text-black/40 hover:text-black hover:border-black/20 transition-all"
+          class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
         >
           Cancel
         </button>
         <button
           type="submit"
-          class="font-mono text-[0.75rem] tracking-wide px-5 py-2.5 rounded-xl font-bold bg-[#03b6d4] text-white hover:bg-[#03b6d4]/90 transition-all"
+          class="zaq-btn zaq-btn-text_label-default zaq-btn-primary"
         >
           {if @modal == :new, do: "Create", else: "Update"}
         </button>

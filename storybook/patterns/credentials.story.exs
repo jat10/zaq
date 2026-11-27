@@ -1,94 +1,41 @@
 defmodule Storybook.Patterns.Credentials do
   use PhoenixStorybook.Story, :page
 
+  alias Zaq.Engine.Connect.Credential
+
   def description,
-    do:
-       "credential_form — reusable form for OAuth2, API key, JWT bearer, and no-auth credentials. Requires a live form/changeset so it is documented here as a usage pattern."
+    do: "Credential controls, readonly values and validation feedback. Use the theme switch to inspect both palettes."
 
   def render(assigns) do
+    changeset =
+      Ecto.Changeset.change(%Credential{}, %{
+        name: "Company Drive",
+        provider: "google_drive",
+        auth_kind: "oauth2",
+        request_format: "bearer",
+        client_id: "example-client",
+        scopes: ["drive.readonly"],
+        metadata: %{}
+      })
+
+    assigns =
+      assigns
+      |> assign(:changeset, changeset)
+      |> assign(:form, Phoenix.Component.to_form(changeset, as: :credential))
+
     ~H"""
-    <div style="font-family: var(--zaq-font-primary, monospace); padding: 2rem; display: flex; flex-direction: column; gap: 2rem; max-width: 700px;">
-      <p style="font-size: 0.75rem; opacity: 0.5; font-family: ui-monospace, monospace;">
-        ZaqWeb.Components.ConnectCredentialForm.credential_form/1
-      </p>
-
-      <p style="font-size: 0.85rem; opacity: 0.6; line-height: 1.6;">
-         Use this form whenever creating or editing a Connect integration credential. It shows only controls for the selected OAuth2, API key, JWT bearer, or No authentication mode. No-auth configuration has no grant or secrets.
-      </p>
-
-      <pre style="background: var(--zaq-color-surface, #faf9f7); border: 1px solid var(--zaq-color-surface-border, #e8e6e1); border-radius: 6px; padding: 1rem; font-size: 0.75rem; overflow-x: auto;"><code>&lt;ZaqWeb.Components.ConnectCredentialForm.credential_form
-      form=&#123;&#64;form&#125;
-      changeset=&#123;&#64;changeset&#125;
-      errors=&#123;&#64;errors&#125;
-      submit_event="save_credential"
-      change_event="validate_credential"
-      cancel_event="close_credential_form"
-      submit_label="Create"
-      id_prefix="connect-credential"
-      /&gt;</code></pre>
-
-      <table style="width: 100%; font-size: 0.8rem; border-collapse: collapse; margin-top: 0.5rem;">
-        <thead>
-          <tr style="border-bottom: 1px solid var(--zaq-color-surface-border, #e8e6e1);">
-            <th style="text-align: left; padding: 0.5rem 0.75rem; opacity: 0.4;">Attr</th>
-            <th style="text-align: left; padding: 0.5rem 0.75rem; opacity: 0.4;">Required</th>
-            <th style="text-align: left; padding: 0.5rem 0.75rem; opacity: 0.4;">Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style="border-bottom: 1px solid var(--zaq-color-surface-border, #e8e6e1);">
-            <td style="padding: 0.5rem 0.75rem; font-family: ui-monospace, monospace;">form</td>
-            <td style="padding: 0.5rem 0.75rem;">yes</td>
-            <td style="padding: 0.5rem 0.75rem; opacity: 0.6;">Phoenix form struct</td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--zaq-color-surface-border, #e8e6e1);">
-            <td style="padding: 0.5rem 0.75rem; font-family: ui-monospace, monospace;">changeset</td>
-            <td style="padding: 0.5rem 0.75rem;">yes</td>
-            <td style="padding: 0.5rem 0.75rem; opacity: 0.6;">
-              Ecto changeset for the credential schema
-            </td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--zaq-color-surface-border, #e8e6e1);">
-            <td style="padding: 0.5rem 0.75rem; font-family: ui-monospace, monospace;">
-              submit_event
-            </td>
-            <td style="padding: 0.5rem 0.75rem;">yes</td>
-            <td style="padding: 0.5rem 0.75rem; opacity: 0.6;">phx-submit event name</td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--zaq-color-surface-border, #e8e6e1);">
-            <td style="padding: 0.5rem 0.75rem; font-family: ui-monospace, monospace;">
-              change_event
-            </td>
-            <td style="padding: 0.5rem 0.75rem;">yes</td>
-            <td style="padding: 0.5rem 0.75rem; opacity: 0.6;">
-              phx-change event name for live validation
-            </td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--zaq-color-surface-border, #e8e6e1);">
-            <td style="padding: 0.5rem 0.75rem; font-family: ui-monospace, monospace;">
-              cancel_event
-            </td>
-            <td style="padding: 0.5rem 0.75rem;">yes</td>
-            <td style="padding: 0.5rem 0.75rem; opacity: 0.6;">phx-click event for cancel button</td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--zaq-color-surface-border, #e8e6e1);">
-            <td style="padding: 0.5rem 0.75rem; font-family: ui-monospace, monospace;">
-              submit_label
-            </td>
-            <td style="padding: 0.5rem 0.75rem; opacity: 0.5;">no</td>
-            <td style="padding: 0.5rem 0.75rem; opacity: 0.6;">Default: "Create"</td>
-          </tr>
-          <tr>
-            <td style="padding: 0.5rem 0.75rem; font-family: ui-monospace, monospace;">
-              restore_scopes_event
-            </td>
-            <td style="padding: 0.5rem 0.75rem; opacity: 0.5;">no</td>
-            <td style="padding: 0.5rem 0.75rem; opacity: 0.6;">
-              OAuth2 scope restoration event — omit for API key credentials
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="zaq-card-default zaq-card-hover max-w-2xl">
+      <ZaqWeb.Components.ConnectCredentialForm.credential_form
+        form={@form}
+        changeset={@changeset}
+        submit_event="save_credential"
+        change_event="validate_credential"
+        cancel_event="close_credential_form"
+        restore_scopes_event="restore_scopes"
+        default_scopes_text="drive.readonly"
+        errors={["Global base URL must be configured before authorization."]}
+        global_settings_path="/bo/system-config"
+      />
     </div>
     """
   end

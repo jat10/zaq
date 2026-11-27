@@ -9,7 +9,9 @@ defmodule Storybook.Components.Cards.ChannelConnectorCard do
 
   def render(assigns) do
     ~H"""
-    <div class="space-y-4 p-6">
+    <div class="zaq-layout-stack p-6">
+      <section class="zaq-card-default space-y-4" style="background-color: var(--zaq-surface-color-base); color: var(--zaq-text-color-body-default)">
+      <h2 class="zaq-text-h3">Enabled, selected, disabled and prerequisite states</h2>
       <.channel_connector_card
         id="config-card-100"
         name="Workplace Mattermost"
@@ -23,7 +25,7 @@ defmodule Storybook.Components.Cards.ChannelConnectorCard do
         edit_button_id="edit-config-100"
         edit_action="edit"
       >
-        <:status><span class="status status-success" title="Ingress connected" /></:status>
+        <:status><span class="zaq-status-dot zaq-status-dot--active" title="Ingress connected" /></:status>
       </.channel_connector_card>
 
       <.channel_connector_card
@@ -84,6 +86,7 @@ defmodule Storybook.Components.Cards.ChannelConnectorCard do
           >Unknown</ZaqWeb.Components.DesignSystem.Table.table_badge>
         </:status>
       </.channel_connector_card>
+      </section>
     </div>
     """
   end

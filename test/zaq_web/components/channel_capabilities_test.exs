@@ -22,7 +22,7 @@ defmodule ZaqWeb.Components.ChannelCapabilitiesTest do
 
       supported_labels =
         document
-        |> LazyHTML.query("#capabilities-modal li.text-emerald-700")
+        |> LazyHTML.query("#capabilities-modal li[style*='--zaq-text-color-body-success']")
         |> Enum.map(&LazyHTML.text/1)
         |> Enum.map(&String.trim/1)
 
@@ -84,7 +84,7 @@ defmodule ZaqWeb.Components.ChannelCapabilitiesTest do
 
       assert html =~ "capabilities-modal"
       assert html =~ "Empty Channel"
-      refute html =~ "text-emerald-700"
+      refute html =~ "--zaq-text-color-body-success"
     end
 
     test "renders supported and unsupported capabilities with correct styling" do
@@ -101,8 +101,8 @@ defmodule ZaqWeb.Components.ChannelCapabilitiesTest do
 
       assert html =~ "Read Messages"
       assert html =~ "Write Messages"
-      assert html =~ "text-emerald-700"
-      assert html =~ "text-black/40"
+      assert html =~ "--zaq-text-color-body-success"
+      assert html =~ "--zaq-text-color-body-tertiary"
     end
 
     test "mode capability with atom key and non-empty value shows label: value" do
@@ -194,7 +194,7 @@ defmodule ZaqWeb.Components.ChannelCapabilitiesTest do
           }
         )
 
-      assert html =~ "text-emerald-700"
+      assert html =~ "--zaq-text-color-body-success"
     end
 
     test "falls back to string key when atom key not found in resolved map" do
@@ -209,7 +209,7 @@ defmodule ZaqWeb.Components.ChannelCapabilitiesTest do
           }
         )
 
-      assert html =~ "text-emerald-700"
+      assert html =~ "--zaq-text-color-body-success"
     end
 
     test "uses custom label from labels map" do

@@ -31,20 +31,20 @@ defmodule ZaqWeb.Components.ConnectCredentialForm do
       class="space-y-4"
     >
       <div>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Name
         </label>
         <input
           type="text"
           name="credential[name]"
           value={@form[:name].value}
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black placeholder:text-black/30 text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-text w-full"
           placeholder="e.g. Google Drive OAuth"
         />
       </div>
 
       <div>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Provider
         </label>
         <input
@@ -52,12 +52,13 @@ defmodule ZaqWeb.Components.ConnectCredentialForm do
           name="credential[provider]"
           value={@form[:provider].value}
           readonly
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-black/5 text-black/50 text-sm font-mono outline-none"
+          class="zaq-control-text w-full"
+          style="background-color: var(--zaq-surface-color-elevated); color: var(--zaq-text-color-body-secondary)"
         />
       </div>
 
       <div>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Request Format
         </label>
         <input
@@ -65,17 +66,18 @@ defmodule ZaqWeb.Components.ConnectCredentialForm do
           name="credential[request_format]"
           value={@form[:request_format].value}
           readonly
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-black/5 text-black/50 text-sm font-mono outline-none"
+          class="zaq-control-text w-full"
+          style="background-color: var(--zaq-surface-color-elevated); color: var(--zaq-text-color-body-secondary)"
         />
       </div>
 
       <div>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Auth Kind
         </label>
         <select
           name="credential[auth_kind]"
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-select zaq-control-select--native w-full"
         >
           <option value="oauth2" selected={auth_kind(@changeset) == "oauth2"}>oauth2</option>
           <option value="api_key" selected={auth_kind(@changeset) == "api_key"}>api_key</option>
@@ -84,18 +86,22 @@ defmodule ZaqWeb.Components.ConnectCredentialForm do
             jwt_bearer
           </option>
         </select>
-        <p :if={auth_kind(@changeset) == "none"} class="mt-1 font-mono text-[0.65rem] text-black/45">
+        <p
+          :if={auth_kind(@changeset) == "none"}
+          class="mt-1 zaq-text-body-sm"
+          style="color: var(--zaq-text-color-body-tertiary)"
+        >
           Requests using this credential will carry no authentication.
         </p>
       </div>
 
       <div :if={auth_kind(@changeset) == "jwt_bearer"}>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Auth Profile
         </label>
         <select
           name="credential[metadata][auth_profile_id]"
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-select zaq-control-select--native w-full"
         >
           <option
             value="service_account"
@@ -113,40 +119,39 @@ defmodule ZaqWeb.Components.ConnectCredentialForm do
       </div>
 
       <div :if={auth_kind(@changeset) == "jwt_bearer"}>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Issuer
         </label>
         <input
           type="text"
           name="credential[issuer]"
           value={@form[:issuer].value}
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-text w-full"
         />
       </div>
 
       <div :if={auth_kind(@changeset) == "jwt_bearer"}>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Key ID
         </label>
         <input
           type="text"
           name="credential[key_id]"
           value={@form[:key_id].value}
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-text w-full"
         />
       </div>
 
       <div :if={auth_kind(@changeset) == "jwt_bearer"}>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Private Key
         </label>
-        <.secret_input
+        <ZaqWeb.Components.DesignSystem.SecretInput.secret_input
           id={"#{@id_prefix}-private-key"}
           name="credential[private_key]"
           value={@form[:private_key].value}
           placeholder="••••••••"
-          input_class="w-full h-11 px-4 pr-11 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
-          button_class="absolute right-3 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 transition-colors focus:outline-none"
+          class="w-full"
         />
       </div>
 
@@ -154,24 +159,24 @@ defmodule ZaqWeb.Components.ConnectCredentialForm do
         auth_kind(@changeset) == "jwt_bearer" &&
           jwt_profile(@changeset) == "domain_delegated_service_account"
       }>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Subject
         </label>
         <input
           type="text"
           name="credential[metadata][subject]"
           value={jwt_subject(@form[:metadata].value)}
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-text w-full"
         />
       </div>
 
       <div :if={auth_kind(@changeset) == "oauth2" and @oauth_behaviours != []}>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           OAuth behaviour
         </label>
         <select
           name="credential[metadata][auth_profile]"
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-select zaq-control-select--native w-full"
         >
           <option
             :for={behaviour <- @oauth_behaviours}
@@ -184,48 +189,48 @@ defmodule ZaqWeb.Components.ConnectCredentialForm do
         <p
           :for={behaviour <- @oauth_behaviours}
           :if={oauth_behaviour(@changeset) == behaviour.id}
-          class="mt-1 font-mono text-[0.65rem] text-black/45"
+          class="mt-1 zaq-text-body-sm"
+          style="color: var(--zaq-text-color-body-tertiary)"
         >
           {behaviour.description}
         </p>
       </div>
 
       <div :if={auth_kind(@changeset) == "oauth2"}>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Client ID
         </label>
         <input
           type="text"
           name="credential[client_id]"
           value={@form[:client_id].value}
-          class="w-full h-11 px-4 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-text w-full"
         />
       </div>
 
       <div :if={auth_kind(@changeset) == "oauth2"}>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           Client Secret
         </label>
-        <.secret_input
+        <ZaqWeb.Components.DesignSystem.SecretInput.secret_input
           id={"#{@id_prefix}-client-secret"}
           name="credential[client_secret]"
           value={@form[:client_secret].value}
           placeholder="••••••••"
-          input_class="w-full h-11 px-4 pr-11 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
-          button_class="absolute right-3 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 transition-colors focus:outline-none"
+          class="w-full"
         />
       </div>
 
       <div :if={auth_kind(@changeset) == "oauth2"}>
         <div class="mb-2 flex items-center justify-between gap-2">
-          <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider block">
+          <label class="zaq-field-label-uppercase block">
             Scopes
           </label>
           <button
             :if={@restore_scopes_event && @default_scopes_text != ""}
             type="button"
             phx-click={@restore_scopes_event}
-            class="font-mono text-[0.65rem] px-2 py-1 rounded-lg border border-black/10 text-black/70 hover:bg-black/[0.04]"
+            class="zaq-btn zaq-btn-text_label-default zaq-btn-tertiary"
           >
             Restore defaults
           </button>
@@ -233,34 +238,33 @@ defmodule ZaqWeb.Components.ConnectCredentialForm do
         <textarea
           name="credential[scopes]"
           rows="3"
-          class="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
+          class="zaq-control-text w-full"
           placeholder="drive.readonly, drive.metadata.readonly"
         ><%= scopes_input_value(@form[:scopes].value) %></textarea>
-        <p class="mt-1 font-mono text-[0.65rem] text-black/45">
+        <p class="mt-1 zaq-text-body-sm" style="color: var(--zaq-text-color-body-tertiary)">
           Comma or newline separated. Defaults are loaded from the provider and can be edited.
         </p>
       </div>
 
       <div :if={auth_kind(@changeset) == "api_key"}>
-        <label class="font-mono text-[0.7rem] text-black/40 uppercase tracking-wider mb-2 block">
+        <label class="zaq-field-label-uppercase mb-2 block">
           API Key
         </label>
-        <.secret_input
+        <ZaqWeb.Components.DesignSystem.SecretInput.secret_input
           id={"#{@id_prefix}-api-key"}
           name="credential[api_key]"
           value={@form[:api_key].value}
           placeholder="••••••••"
-          input_class="w-full h-11 px-4 pr-11 rounded-xl border border-black/10 bg-[#f5f5f5] text-black text-sm font-mono outline-none focus:border-[#03b6d4] transition-colors"
-          button_class="absolute right-3 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 transition-colors focus:outline-none"
+          class="w-full"
         />
       </div>
 
-      <div :if={@errors != []} class="rounded-xl bg-red-50 border border-red-200 p-3">
+      <div :if={@errors != []} class="zaq-danger rounded-xl p-3">
         <p
           :for={err <- @errors}
-          class="font-mono text-[0.7rem] text-red-600 flex items-center gap-1.5"
+          class="zaq-text-body-sm flex items-center gap-1.5"
         >
-          <span class="text-red-400">✗</span> {err}
+          <span>✗</span> {err}
         </p>
         <.link
           :if={
@@ -268,7 +272,7 @@ defmodule ZaqWeb.Components.ConnectCredentialForm do
               Enum.any?(@errors, &String.contains?(&1, "Global base URL"))
           }
           navigate={@global_settings_path}
-          class="mt-2 inline-block font-mono text-[0.7rem] text-red-700 underline decoration-red-300 hover:decoration-red-600"
+          class="mt-2 inline-block zaq-text-body-sm underline zaq-focus-visible"
         >
           Open Global settings
         </.link>
@@ -278,13 +282,13 @@ defmodule ZaqWeb.Components.ConnectCredentialForm do
         <button
           type="button"
           phx-click={@cancel_event}
-          class="font-mono text-[0.75rem] tracking-wide px-5 py-2.5 rounded-xl border border-black/10 text-black/40 hover:text-black hover:border-black/20 transition-all"
+          class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
         >
           Cancel
         </button>
         <button
           type="submit"
-          class="font-mono text-[0.75rem] tracking-wide px-5 py-2.5 rounded-xl font-bold bg-[#03b6d4] text-white hover:bg-[#03b6d4]/90 transition-all"
+          class="zaq-btn zaq-btn-text_label-default zaq-btn-primary"
         >
           {@submit_label}
         </button>

@@ -32,23 +32,26 @@
       </span>
     </:page_tag>
     <div class="mb-6">
-      <div class="flex items-center gap-1.5 font-mono text-[0.7rem] text-black/40 mb-4">
-        <.link navigate={~p"/bo/channels"} class="hover:text-black transition-colors">
+      <div
+        class="flex items-center gap-1.5 zaq-text-body-sm mb-4"
+        style="color: var(--zaq-text-color-body-tertiary)"
+      >
+        <.link navigate={~p"/bo/channels"} class="zaq-link transition-colors">
           Channels
         </.link>
         <span>/</span>
-        <.link navigate={~p"/bo/channels/retrieval"} class="hover:text-black transition-colors">
+        <.link navigate={~p"/bo/channels/retrieval"} class="zaq-link transition-colors">
           Communication Channels
         </.link>
         <span>/</span>
         <.link
           navigate={~p"/bo/channels/retrieval/email"}
-          class="hover:text-black transition-colors"
+          class="zaq-link transition-colors"
         >
           Email
         </.link>
         <span>/</span>
-        <span class="text-black">IMAP</span>
+        <span class="" style="color: var(--zaq-text-color-body-default)">IMAP</span>
       </div>
 
       <div class="flex items-center justify-end">
@@ -61,14 +64,7 @@
           :if={length(@configs) <= 1 or @selected_config_id}
           type="button"
           phx-click="activate"
-          class={[
-            "font-mono text-[0.82rem] font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm",
-            if(@imap_enabled,
-              do:
-                "bg-white border border-black/10 text-black/60 hover:border-red-300 hover:text-red-600",
-              else: "bg-[#0284c7] text-white hover:bg-[#0369a1] shadow-[#0284c7]/20"
-            )
-          ]}
+          class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
         >
           {if @imap_enabled, do: "Deactivate", else: "Activate"}
         </button>
@@ -95,11 +91,17 @@
 
     <div
       :if={length(@configs) <= 1 or @selected_config_id}
-      class="max-w-2xl bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden"
+      class="max-w-2xl border shadow-sm overflow-hidden rounded-2xl"
+      style="background-color: var(--zaq-surface-color-raised); border-color: var(--zaq-border-color-default)"
     >
-      <div class="px-8 py-5 border-b border-black/[0.06] bg-[#fafafa]">
-        <h2 class="font-mono text-[0.95rem] font-bold text-black">IMAP Settings</h2>
-        <p class="font-mono text-[0.75rem] text-black/40 mt-0.5">
+      <div
+        class="px-8 py-5 border-b"
+        style="border-color: var(--zaq-border-color-default); background-color: var(--zaq-surface-color-base)"
+      >
+        <h2 class="zaq-text-h3 font-bold" style="color: var(--zaq-text-color-body-default)">
+          IMAP Settings
+        </h2>
+        <p class="zaq-text-body-sm mt-0.5" style="color: var(--zaq-text-color-body-tertiary)">
           Inbound mailbox connection and listener behavior.
         </p>
       </div>
@@ -113,11 +115,11 @@
           class="space-y-5"
         >
           <div>
-            <label for="imap-connector-name" class="zaq-field-label">Configuration name</label>
+            <label for="imap-connector-name" class="zaq-field-label-uppercase">Configuration name</label>
             <input
               id="imap-connector-name"
               name="imap_config[connector_name]"
-              class="zaq-control"
+              class="zaq-control-text w-full"
               required
               value={
                 Map.get(
@@ -131,14 +133,14 @@
           <div>
             <label
               for="imap-reply-smtp-select"
-              class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2"
+              class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase"
             >
               SMTP account for replies
             </label>
             <select
               id="imap-reply-smtp-select"
               name="imap_config[smtp_config_id]"
-              class="w-full rounded-lg border border-black/10 p-2"
+              class="zaq-control-select zaq-control-select--native w-full"
             >
               <option value="" selected={is_nil(@smtp_reply_config_id)}>
                 Select an SMTP connector
@@ -155,7 +157,7 @@
           </div>
           <div class="grid grid-cols-3 gap-4">
             <div class="col-span-3 sm:col-span-1">
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+              <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                 IMAP Host / URL
               </label>
               <input
@@ -164,18 +166,19 @@
                 value={@form[:url].value}
                 phx-debounce="400"
                 placeholder="imap.gmail.com"
-                class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/20 focus:border-[#0284c7] transition-all"
+                class="zaq-control-text w-full"
               />
               <p
                 :if={@form[:url].errors != []}
-                class="font-mono text-[0.72rem] text-red-500 mt-1.5"
+                class="zaq-text-body-sm mt-1.5"
+                style="color: var(--zaq-text-color-body-danger)"
               >
                 {elem(hd(@form[:url].errors), 0)}
               </p>
             </div>
 
             <div>
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+              <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                 Port
               </label>
               <input
@@ -184,12 +187,12 @@
                 value={@form[:port].value}
                 phx-debounce="400"
                 placeholder="993"
-                class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/20 focus:border-[#0284c7] transition-all"
+                class="zaq-control-text w-full"
               />
             </div>
 
             <div>
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+              <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                 SSL Depth
               </label>
               <input
@@ -198,7 +201,7 @@
                 value={@form[:ssl_depth].value}
                 phx-debounce="400"
                 min="0"
-                class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/20 focus:border-[#0284c7] transition-all"
+                class="zaq-control-text w-full"
               />
             </div>
           </div>
@@ -210,16 +213,17 @@
               name="imap_config[ssl]"
               value="true"
               checked={@form[:ssl].value != false}
-              class="rounded border-black/20 text-[#0284c7] focus:ring-[#0284c7]/30"
+              class="rounded"
+              style="border-color: var(--zaq-border-color-default); color: var(--zaq-text-color-body-accent)"
             />
-            <label for="imap-ssl" class="font-mono text-[0.75rem] text-black/70">
+            <label for="imap-ssl" class="zaq-text-body-sm zaq-field-label-uppercase">
               Enable SSL/TLS (recommended)
             </label>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+              <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                 Username
               </label>
               <input
@@ -228,35 +232,34 @@
                 value={@form[:username].value}
                 phx-debounce="400"
                 placeholder="zaq@example.com"
-                class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/20 focus:border-[#0284c7] transition-all"
+                class="zaq-control-text w-full"
               />
             </div>
 
             <div>
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+              <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                 Password
               </label>
-              <.secret_input
+              <ZaqWeb.Components.DesignSystem.SecretInput.secret_input
                 id="imap-password"
                 name="imap_config[password]"
                 value={@form[:password].value}
                 phx-debounce="400"
                 placeholder="••••••••"
-                input_class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 pr-11 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/20 focus:border-[#0284c7] transition-all"
-                button_class="absolute right-3 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 transition-colors focus:outline-none"
+                class="w-full"
               />
             </div>
           </div>
 
           <div class="space-y-3">
             <div>
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+              <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                 Provider Default Agent
               </label>
               <select
                 id="imap-provider-default-agent-select"
                 name="imap_config[provider_default_agent_id]"
-                class="w-full font-mono text-[0.82rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] focus:outline-none focus:ring-2 focus:ring-[#0284c7]/20 focus:border-[#0284c7] transition-all"
+                class="zaq-control-select zaq-control-select--native w-full"
               >
                 <option value="" selected={@provider_default_agent_value == ""}>
                   No default agent
@@ -272,7 +275,7 @@
             </div>
 
             <div class="flex items-center justify-between gap-3">
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block">
+              <label class="zaq-text-body-sm uppercase block zaq-field-label-uppercase">
                 Selected Mailboxes
               </label>
               <button
@@ -280,7 +283,7 @@
                 type="button"
                 phx-click="load_mailboxes"
                 disabled={@mailbox_status == :loading}
-                class="font-mono text-[0.72rem] font-semibold px-3 py-1.5 rounded-lg border border-[#0284c7]/25 text-[#0284c7] hover:bg-[#0284c7]/5 transition-all"
+                class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
               >
                 {if @mailbox_status == :loading, do: "Loading...", else: "Load / Refresh"}
               </button>
@@ -290,7 +293,7 @@
               id="imap-selected-mailboxes"
               name="imap_config[selected_mailboxes][]"
               multiple
-              class="w-full min-h-32 font-mono text-[0.88rem] text-black border border-black/10 rounded-xl px-3 py-2 bg-[#fafafa] focus:outline-none focus:ring-2 focus:ring-[#0284c7]/20 focus:border-[#0284c7] transition-all"
+              class="zaq-control-select zaq-control-select--native w-full"
             >
               <option
                 :for={mailbox <- @available_mailboxes}
@@ -301,14 +304,15 @@
               </option>
             </select>
 
-            <p class="font-mono text-[0.68rem] text-black/40">
+            <p class="zaq-text-body-sm" style="color: var(--zaq-text-color-body-tertiary)">
               Load mailboxes first, then pick one or more folders to listen to.
             </p>
 
             <div
               :if={@mailbox_status == :ok}
               id="imap-mailboxes-status-ok"
-              class="font-mono text-[0.72rem] text-emerald-600"
+              class="zaq-text-body-sm"
+              style="color: var(--zaq-text-color-body-success)"
             >
               Mailboxes loaded.
             </div>
@@ -316,20 +320,22 @@
             <div
               :if={is_tuple(@mailbox_status) and elem(@mailbox_status, 0) == :error}
               id="imap-mailboxes-status-error"
-              class="font-mono text-[0.72rem] text-red-500"
+              class="zaq-text-body-sm"
+              style="color: var(--zaq-text-color-body-danger)"
             >
               {elem(@mailbox_status, 1)}
             </div>
 
             <p
               :if={@form[:selected_mailboxes].errors != []}
-              class="font-mono text-[0.72rem] text-red-500"
+              class="zaq-text-body-sm"
+              style="color: var(--zaq-text-color-body-danger)"
             >
               {elem(hd(@form[:selected_mailboxes].errors), 0)}
             </p>
 
             <div id="imap-mailbox-agent-assignments" class="space-y-2 pt-1">
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-1">
+              <label class="zaq-text-body-sm uppercase block mb-1 zaq-field-label-uppercase">
                 Mailbox Agent Assignments
               </label>
               <div
@@ -337,10 +343,12 @@
                 class="grid grid-cols-[1fr,1.2fr] gap-3 items-center"
               >
                 <input type="hidden" name={"imap_config[mailbox_agent_ids][#{mailbox}]"} value="" />
-                <p class="font-mono text-[0.72rem] text-black/60">{mailbox}</p>
+                <p class="zaq-text-body-sm" style="color: var(--zaq-text-color-body-secondary)">
+                  {mailbox}
+                </p>
                 <select
                   name={"imap_config[mailbox_agent_ids][#{mailbox}]"}
-                  class="w-full font-mono text-[0.78rem] text-black border border-black/10 rounded-lg h-9 px-2 bg-[#fafafa]"
+                  class="zaq-control-select zaq-control-select--native w-full"
                 >
                   <option
                     value=""
@@ -364,7 +372,7 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+              <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                 Poll Interval (ms)
               </label>
               <input
@@ -373,12 +381,12 @@
                 value={@form[:poll_interval].value}
                 phx-debounce="400"
                 min="1000"
-                class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/20 focus:border-[#0284c7] transition-all"
+                class="zaq-control-text w-full"
               />
             </div>
 
             <div>
-              <label class="font-mono text-[0.7rem] font-semibold text-black/60 uppercase tracking-wider block mb-2">
+              <label class="zaq-text-body-sm uppercase block mb-2 zaq-field-label-uppercase">
                 IDLE Timeout (ms)
               </label>
               <input
@@ -387,7 +395,7 @@
                 value={@form[:idle_timeout].value}
                 phx-debounce="400"
                 min="1000"
-                class="w-full font-mono text-[0.88rem] text-black border border-black/10 rounded-xl h-11 px-4 bg-[#fafafa] placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/20 focus:border-[#0284c7] transition-all"
+                class="zaq-control-text w-full"
               />
             </div>
           </div>
@@ -399,9 +407,10 @@
               name="imap_config[mark_as_read]"
               value="true"
               checked={@form[:mark_as_read].value != false}
-              class="rounded border-black/20 text-[#0284c7] focus:ring-[#0284c7]/30"
+              class="rounded"
+              style="border-color: var(--zaq-border-color-default); color: var(--zaq-text-color-body-accent)"
             />
-            <label for="imap-mark-as-read" class="font-mono text-[0.75rem] text-black/70">
+            <label for="imap-mark-as-read" class="zaq-text-body-sm zaq-field-label-uppercase">
               Mark processed emails as read
             </label>
           </div>
@@ -413,9 +422,13 @@
               name="imap_config[load_initial_unread]"
               value="true"
               checked={@form[:load_initial_unread].value == true}
-              class="rounded border-black/20 text-[#0284c7] focus:ring-[#0284c7]/30"
+              class="rounded"
+              style="border-color: var(--zaq-border-color-default); color: var(--zaq-text-color-body-accent)"
             />
-            <label for="imap-load-initial-unread" class="font-mono text-[0.75rem] text-black/70">
+            <label
+              for="imap-load-initial-unread"
+              class="zaq-text-body-sm zaq-field-label-uppercase"
+            >
               Load existing unread emails on startup
             </label>
           </div>
@@ -424,7 +437,7 @@
             <button
               id="save-imap-config"
               type="submit"
-              class="font-mono text-[0.82rem] font-bold px-6 py-3 rounded-xl bg-[#2c3a50] text-white hover:bg-[#2c3a50]/80 shadow-sm transition-all"
+              class="zaq-btn zaq-btn-text_label-default zaq-btn-secondary"
             >
               Save Configuration
             </button>
@@ -432,7 +445,8 @@
             <div
               :if={@save_status == :ok}
               id="save-status-ok"
-              class="flex items-center gap-2 font-mono text-[0.75rem] text-emerald-600"
+              class="flex items-center gap-2 zaq-text-body-sm"
+              style="color: var(--zaq-text-color-body-success)"
             >
               <svg
                 class="w-4 h-4"
@@ -449,7 +463,8 @@
             <div
               :if={is_tuple(@save_status) and elem(@save_status, 0) == :error}
               id="save-status-error"
-              class="font-mono text-[0.75rem] text-red-500"
+              class="zaq-text-body-sm"
+              style="color: var(--zaq-text-color-body-danger)"
             >
               {elem(@save_status, 1)}
             </div>
