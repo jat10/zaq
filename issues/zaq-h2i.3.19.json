@@ -11,11 +11,15 @@
     {
       "text": "Consolidation begins after production fixes .15–.18 settled and issue-level q/isolated checks passed. Preserve all assertions and scenarios: combine ConnectionSettings renders, move SMTP/IMAP metadata checks into existing provider endpoint table, retain no-metadata heading/policy coverage when folding file-heading case. Also remove dead pre-open socket/change setup in approved webhook test: actual open_modal now constructs that draft. Snapshot test LOC before consolidation for net accounting. No expectations weakened.",
       "timestamp": "2026-11-27T16:23:16Z"
+    },
+    {
+      "text": "Consolidation final broad validation through Context Mode: mix q PASS; 14 isolated component/Channels API/EmailBridge/LiveView/Engine suites PASS: 524 checks (520 tests, 4 properties), seed 50911. All .15–.18 regression contracts retained. Removed compiler warning for unused local helper default; final q + focused file component suite rerun in progress. Consolidation baseline 10647 test lines across 9 touched/candidate files; final 10553, net -94 lines: ConnectionSettings -11, FileDeliverySettings -40, ChannelsLive dead setup -43, API metadata case/setup eliminated with net 0 LOC (assertions retained in provider table). Three duplicated test wrappers consolidated; no distinct scenario removed. Overall working-tree test delta including added regression coverage is +315 LOC.",
+      "timestamp": "2026-11-27T16:26:32Z"
     }
   ],
   "priority": 3,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Consolidate PR #16 tests and reduce duplicated LOC",
   "type": "task",
-  "updated_at": "2026-11-27T16:23:16Z"
+  "updated_at": "2026-11-27T16:26:32Z"
 }
