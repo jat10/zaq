@@ -32,11 +32,15 @@
     {
       "text": "API integration now exercises committed selection, actual outbound SMTP for IMAP, normalized snapshot/shared resolver once, planner/executor, real Engine reporting and once-only completion. Materialization uses Event identity; outgoing metadata actor/skip claims cannot bypass permissions. Requirements errors use selected FileSettings policy and independently validated selected encoded ceiling, without acquisition; text fallback preserves streamed IDs (including integer normalization) and never replaces uncertain edits. Invalid plans produce grouped safe configuration facts. Standard Channels outgoing events force confidentiality for files and carry explicit actor; SMTP ingress uses that builder. Web/WebWidget remain on their existing legacy text path and do not advertise file capabilities, preserving the explicit PR4 contract and deferred WebWidget scope. 165 API/settings/bridge regressions passed and mix q passed; final narrow privacy/ceiling checks in progress.",
       "timestamp": "2026-11-27T22:55:43Z"
+    },
+    {
+      "text": "Final API checks passed: 220 tests (12 properties) across execution, events, email ingress and selected text-limit validation, plus mix q. Separate 165-case API/settings/bridge run also passed. Trigger-stream test verifies subscription with a control event, excludes the confidential attachment event and checks published events for a unique byte sentinel. Invalid and unavailable selected text ceilings cannot authorize fallback. No local dependency overrides, commits, pushes or provider publication. API task complete; UI grouped details next.",
+      "timestamp": "2026-11-27T22:57:21Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.7] Wire Channel-local execution into the existing delivery route",
   "type": "task",
-  "updated_at": "2026-11-27T22:55:43Z"
+  "updated_at": "2026-11-27T22:57:21Z"
 }
