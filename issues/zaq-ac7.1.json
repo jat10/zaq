@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [],
   "blocks": [
     "zaq-ac7.2"
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "zaq-ac7",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-ac7.1] Rebase dark theme onto reviewed settings",
   "type": "task",
-  "updated_at": "2026-11-27T18:38:49Z"
+  "updated_at": "2026-11-27T18:38:51Z"
 }
