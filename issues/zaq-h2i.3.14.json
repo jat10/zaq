@@ -15,11 +15,15 @@
     {
       "text": "Rebase succeeded without conflicts. New commits f65e54f12 and 1b2637d9a are patch-identical to 2107c75e5 and bfb3e677c per git range-diff; exactly two commits above upstream/main f736652a1. All feature paths retain prior content except unrelated main additions to channels documentation and API HTTP preparation confidentiality, both preserved. mix deps.get fetched missing main dependency without tracked changes. mix q passed (/tmp/zaq-file-settings-main-rebase-q.log); 23 affected suites running. Existing feature UX/E2E/review/coverage/final-precommit gates unchanged; original PR explicitly deferred precommit. No new browser tests or behavior changes, no remote push or PR retargeting.",
       "timestamp": "2026-11-27T14:57:46Z"
+    },
+    {
+      "text": "Validation complete: all 20 affected ExUnit suites passed, 701 checks (11 properties and 690 tests), zero failures; /tmp/zaq-file-settings-main-rebase-tests.log. This corrects the provisional suite count in the prior progress note. mix q passed, git diff --check passed, range-diff shows both replayed commits unchanged, and working tree is clean. Rebase-only maintenance complete; no feature behavior/test assertions changed. Existing browser journeys were not rerun for this behavior-preserving rebase. Backup backup/channel-file-settings-before-main-rebase-20261127 retained. Local tip 1b2637d9a; remote branch and PR base unchanged. Existing final feature approval/coverage/precommit gates remain pending as before.",
+      "timestamp": "2026-11-27T14:59:20Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Rebase file settings onto merged main",
   "type": "task",
-  "updated_at": "2026-11-27T14:57:46Z"
+  "updated_at": "2026-11-27T14:59:20Z"
 }
