@@ -157,11 +157,15 @@
     {
       "text": "Created upstream PR https://github.com/www-zaq-ai/zaq/pull/970 with title feat(channels): add capability-driven file settings. Base www-zaq-ai/zaq:main; head jat10:feat/channel-file-settings at 9d0fc08cf1bedb4e228bb1a095ae73410d80921e, three commits. Verified title, description, base and head after creation. Description covers full feature, review fixes .15–.19, operation/component reuse, validation recency and pending UX/E2E/coverage/final gates; links fork review PR #16. GitHub connector creation was forbidden by integration permissions; authenticated gh CLI created the PR successfully. No merge or precommit run.",
       "timestamp": "2026-11-27T16:55:53Z"
+    },
+    {
+      "text": "Restack complete in user-requested order. PR3 rebased/pushed 5be66210b534279d946b35fbb6df02244539b262 onto PR2 9d0fc08cf1bedb4e228bb1a095ae73410d80921e; PR4 rebased/pushed 81629c90a555b32c6b66cbcc1339779c89f4a9d5 onto PR3; then PR5 moved to 81629c90a555b32c6b66cbcc1339779c89f4a9d5. PR3/PR4 range-diffs show identical single child commits, no conflicts or source/test edits. Fresh Context Mode: both mix q PASS; PR3 310 focused checks PASS; PR4 308 checks PASS (9 properties). Explicit expected-old-SHA force-with-lease pushes verified; GitHub fork PR17 and PR18 each show exactly one child commit, correct base/head and mergeable=true; descriptions updated and verified with fresh versus historical validation clearly separated. PR5 final PR2 ancestry, 14 core-file blob identities, exact PR4 tree equality, zero own commits and clean status verified. Backups and old/remote tips in earlier checkpoint. Stack map ../workspace-planning/channel_file_delivery_stack.md updated; no unrelated worktrees changed. Deferred precommit, feature E2E authoring, merge and PR5 environment bootstrap not performed. Owning feature gates remain open.",
+      "timestamp": "2026-11-27T18:49:31Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-27T16:55:53Z"
+  "updated_at": "2026-11-27T18:49:31Z"
 }
