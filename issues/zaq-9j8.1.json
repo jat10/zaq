@@ -23,11 +23,15 @@
     {
       "text": "User explicitly approved restoring the committed Git Finch lock and fetching pinned revision in async reply. Saved original lock bytes to a temporary backup before restoration; verified Finch was the only changed entry. Proceeding with locked dependency fetch and isolated environment setup.",
       "timestamp": "2026-11-27T19:14:54Z"
+    },
+    {
+      "text": "Readiness update: locked fetch and dev compilation passed; all 147 migrations applied with no missing revisions in each verified isolated dev/test/E2E database. E2E requires MIX_ENV=test E2E=1 MIX_BUILD_PATH=_build/test-e2e (initial normal-test-build invocation rejected compile-env mismatch; corrected with dedicated build). Asset download stalled; stopped only owned downloader after checking cwd and reused matching Tailwind 4.1.12/esbuild 0.25.4 binaries from ../zaq/_build into local _build. Assets setup/build passed. Pinned Python scripts 60a68595c31846b0e89de3599424efa897496b68 fetched; local Python 3.13 venv installation ongoing. npm ci in test/e2e passed and all three expected browser executables exist. mix q passed. Isolated existing Attachments/Preparation/DeliveryContract suite passed: 36 cases including 3 properties. Working tree remains clean; no existing test behavior changed. No final precommit yet, reserved for final lifecycle gate.",
+      "timestamp": "2026-11-27T19:30:26Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.1] Verify and complete isolated PR5 development environment",
   "type": "task",
-  "updated_at": "2026-11-27T19:14:54Z"
+  "updated_at": "2026-11-27T19:30:26Z"
 }
