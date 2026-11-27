@@ -6,6 +6,7 @@
   "blocks": [
     "zaq-9j8.2"
   ],
+  "closed_at": "2026-11-27T19:41:32Z",
   "created": "2026-11-27T18:37:37Z",
   "description": "Functional specifications / files: environment only; follow docs/agent-setup.md and worktree-setup guidance. Verify branch/base, effective isolated dev/test/E2E DB names, fetch locked dependencies, compile, create/migrate only verified isolated DBs and prepare local assets. No application changes, copying parent DBs, overwriting secrets or user-level installs without applicable authorization.\nReadiness evidence 2026-11-27: Elixir 1.20.4/OTP28 present; effective dev database zaq_feat_delivery_execution and test database zaq_test_feat_delivery_execution verified via Config.Reader. Local PostgreSQL query succeeded but expected dev/test/E2E DBs absent. deps contains only heroicons, llm_db, nimble_pool and web_widget; _build, assets/node_modules, priv/static/assets and test/e2e/node_modules absent. config/dev.secret.exs exists; no secret contents logged. Missing .claude/settings.local.json is not a runtime dependency and must not prompt fabrication of host configuration.\nTests / branches: dependency resolution/compile, migration status, basic isolated DB connection and asset readiness; record failures and versions. No production tests changed.\nMocking plan: none; inspect real local tools and configuration with credentials redacted.\nDocumentation: record readiness evidence here; environment setup guide remains policy owner.\nAction reuse assessment: not applicable, environment setup only. Acceptance: execution prerequisites verified against this worktree; no credentials leaked or sibling state modified.\n\nImplementation rules: Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the owning service guide before work. Reference ../zaq-feat-channel-files is behavioral evidence, not code to copy wholesale. Preserve Outgoing.attachments and separate metadata-only Plan; PR2 FileSettings/resolver remain authoritative. Keep existing test behavior unless its exact change is explicitly approved; add new tests for the new grouped evidence contract. No PR6 Agent selection/AttachDocuments or PR7 workflow/notification implementation. Unit/integration/property/LiveView tests are immediate; new feature E2E belongs to the gated finalization task. Validation follows docs/WORKFLOW_AGENT.md; no per-step numerical coverage gate.\n\nRestack audit for PR #970 (2026-11-27): current PR5/PR4 tip is 81629c90a555b32c6b66cbcc1339779c89f4a9d5, containing PR2 head 9d0fc08cf1bedb4e228bb1a095ae73410d80921e; previous audit baseline f2681e07b is historical. Working tree has a pre-existing mix.lock delta changing committed Finch git 25976c12ce421a5e6a329fef34f269a7432bd69c to Hex 0.25.0 while mix.exs retains the git override. This is not a PR970 change. Preserve the user's delta; verify/reconcile actual dependency resolution before compile/tests rather than silently reset it. This audit did not install dependencies or rerun setup; earlier readiness evidence must be rechecked.",
   "id": "zaq-9j8.1",
@@ -38,8 +39,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-9j8.1] Verify and complete isolated PR5 development environment",
   "type": "task",
-  "updated_at": "2026-11-27T19:41:31Z"
+  "updated_at": "2026-11-27T19:41:32Z"
 }
