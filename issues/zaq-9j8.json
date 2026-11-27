@@ -52,11 +52,15 @@
     {
       "text": "Independent pre-review readiness check: full epic is NOT implemented yet. Confirmed zaq-9j8.1-.4 completed plus specific test approval .13; compatibility .5, transports zaq-6rc.5/.6, reporting .7, Engine/API/UI .6-.8 and integrated/final gates remain open. Current Channels.Api :deliver_outgoing still calls bridge.send_reply directly; no production caller of Delivery.Executor exists. Existing delivery modal still shows a single reason without grouped failures. Adapter fix remains uncommitted at ../jido_chat_mattermost-zaq-h2i4-3 on c319c6e; main pins remain Jido 1.2.1/Mattermost 93025d5, confirming recorded immutable-revision prerequisite is unmet. Independently reran mix test test/zaq/channels/delivery test/zaq/channels/delivery_contract_test.exs test/zaq/connector_config/file_failure_policy_test.exs: 100 passed (89 tests, 11 properties), seed 37577. git diff --check passed. This is a scope/readiness validation, not a completed adversarial correctness review or final approval. No production/source/dependency changes made. Foundation can be reviewed separately, but the requested full PR5 review should follow adapter prerequisite resolution and completion of integrations.",
       "timestamp": "2026-11-27T21:46:16Z"
+    },
+    {
+      "text": "User clarified PR5 is the foundation; defer published Mattermost compatibility to PR6 with AttachDocuments. Removed zaq-h2i.4.3 -\u003e zaq-9j8.5, added zaq-h2i.4.3 -\u003e zaq-pi3.7. Updated affected scopes/tests and retained safe unsupported behavior for current pins. Cycle check passed; bw ready confirms zaq-9j8.5 can resume. Earlier readiness verdict based on mandatory publication is superseded; remaining PR5 integration tasks still must be implemented and validated before full foundation review. No application or dependency files changed.",
+      "timestamp": "2026-11-27T21:49:43Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8] PR5 delivery execution and outcomes",
   "type": "epic",
-  "updated_at": "2026-11-27T21:49:17Z"
+  "updated_at": "2026-11-27T21:49:43Z"
 }
