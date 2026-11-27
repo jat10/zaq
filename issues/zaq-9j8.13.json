@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-9j8.5"
   ],
+  "closed_at": "2026-11-27T20:37:48Z",
   "created": "2026-11-27T19:54:05Z",
   "description": "Required explicit human approval under docs/testing-approach.md existing-test-behavior-approval-gate. Current test/zaq/channels/delivery_contract_test.exs selected Jido adapter loop includes Mattermost and asserts no file_delivery snapshot metadata and capabilities_unavailable from resolver. Verified candidate Mattermost adapter supplies pure file_requirements (selected max_file_size, fixed count 10, upload-request limit not_applicable). Proposed change: Mattermost case checks verified selected-configuration file declarations and resolver semantics, preserving optional unresolved values; Telegram/Discord retain existing assertions until independently verified. Keep web/native BO expectations and all legacy confirmation-dominance tests intact. Approval requested via async question in current execution session; pending, no test changes authorized yet. This gates ZAQ compatibility test/integration work, not unrelated native BO/WebWidget tasks. No feature E2E or UX approval implied.",
   "id": "zaq-9j8.13",
@@ -16,8 +17,8 @@
     }
   ],
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "[zaq-9j8.13] Approve Mattermost delivery contract test expectations",
   "type": "task",
-  "updated_at": "2026-11-27T20:37:46Z"
+  "updated_at": "2026-11-27T20:37:48Z"
 }
