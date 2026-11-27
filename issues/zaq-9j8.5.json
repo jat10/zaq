@@ -13,9 +13,15 @@
   "id": "zaq-9j8.5",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Not started: still gated by zaq-h2i.4.3. User approval gate zaq-9j8.13 and executor zaq-9j8.4 are closed. Published candidate pair c319c6e/f176793 verified on GitHub, but direct SDK probe proves partial upload references are erased. Compatible opt-in evidence fix is validated, uncommitted in ../jido_chat_mattermost-zaq-h2i4-3. A published revision including that fix is required before pins/real HTTP+SMTP compatibility and chat integration. Current ZAQ pins and Finch Git lock remain unchanged. Do not substitute local path dependencies, edit ignored deps, infer source indices from partial order, publish dependencies or bypass this gate. Mattermost existing-test contract change remains explicitly approved by user; no other existing test behavior approval or completed-UX approval inferred.",
+      "timestamp": "2026-11-27T21:32:34Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-9j8.5] Verify PR5 adapter and SMTP execution compatibility",
   "type": "task",
-  "updated_at": "2026-11-27T19:54:08Z"
+  "updated_at": "2026-11-27T21:32:34Z"
 }
