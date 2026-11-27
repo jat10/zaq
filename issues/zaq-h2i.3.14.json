@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-27T14:55:10Z",
+  "description": "User requested reviewing PR #16 intent and files before careful rebase onto main. Inspect merged capability prerequisite, preserve file settings validation and UI contracts, back up current tip, replay only unmerged changes, inspect range-diff and run mix q plus relevant isolated suites. Action reuse assessment: not applicable; history maintenance preserving existing operations and boundaries. No new feature E2E authoring or remote publication authorized.",
+  "id": "zaq-h2i.3.14",
+  "labels": [],
+  "parent": "zaq-h2i.3",
+  "priority": 2,
+  "status": "open",
+  "title": "[zaq-h2i.3] Rebase file settings onto merged main",
+  "type": "task",
+  "updated_at": "2026-11-27T14:55:10Z"
+}
