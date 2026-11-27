@@ -27,11 +27,15 @@
     {
       "text": "Isolated source fix now passes 77 cases including all unchanged selected legacy all-or-nothing tests. New tests prove the second/third input can be the only confirmed upload (never inferred as a prefix), exhaustive three-input subset/order identity preservation, ambiguity/malformed/duplicate/size mismatch refusal, body-free error facts and SDK error passthrough. Only explicit upload_prepared/2 gains {:error, {:partial_upload, %{files: [%{input_index: ...}], unconfirmed_input_indices: ...}}}; convenience APIs remain unchanged and no SDK source change needed. Owner q checks formatting only; changed files formatted using owner settings before full q. Fresh isolated Dialyzer/Doctor gate running with status ../jido_chat_mattermost-zaq-h2i4-3/_build/zaq-h2i-quality-status.json and log sibling path. Existing PLTs are directory caches and were not copied. Main dependency pins remain unchanged; new fix has no immutable published SHA because commits/publication are explicitly unauthorized.",
       "timestamp": "2026-11-27T21:22:58Z"
+    },
+    {
+      "text": "Final compatibility review chose an explicit literal partial_upload_facts: true evidence opt-in on the existing primitive. Default upload_prepared error shapes and convenience post/edit behavior remain identical, including for callers outside this repository. This is per-call evidence selection, not failure policy, splitting, retries or publication; SDK existing opts/error passthrough requires no SDK source change. Compared unconditional structured-error extension versus a separate callback; opt-in preserves exact consumers with less interface churn. New tests cover default/false/string-true behavior. Full isolated adapter suite passed 289 tests (18 real integrations excluded) before this final additive opt-in; rerunning against final source plus owner q. Malformed improper-list response regression was reproduced and fixed before this pass.",
+      "timestamp": "2026-11-27T21:28:01Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.3] Supply verified Mattermost file operations and declarations for PR5",
   "type": "task",
-  "updated_at": "2026-11-27T21:22:58Z"
+  "updated_at": "2026-11-27T21:28:01Z"
 }
