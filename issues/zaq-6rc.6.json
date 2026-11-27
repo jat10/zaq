@@ -15,11 +15,15 @@
     {
       "text": "Moved to PR5 per Jad seven-PR split. Not part of feat/delivery_plan PR4. Existing functional/test/reuse specification retained. Executor prerequisite and PR5 review/coverage finalization must be planned before implementation.",
       "timestamp": "2026-11-26T12:23:11Z"
+    },
+    {
+      "text": "User explicitly approved the scoped existing SMTP contract-test update on 2026-11-28: replace blanket SMTP/IMAP unsupported expectations with valid selected outbound SMTP support plus incomplete-settings failure coverage. Web providers remain unsupported. Source: asynchronous question and user answer Approve this scoped SMTP contract-test update. No other test behavior changes or UX approval inferred.",
+      "timestamp": "2026-11-27T22:02:23Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-6rc.6] Integrate SMTP preparation and delivery",
   "type": "task",
-  "updated_at": "2026-11-27T19:10:02Z"
+  "updated_at": "2026-11-27T22:02:23Z"
 }
