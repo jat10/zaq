@@ -12,9 +12,15 @@
   "id": "zaq-9j8.7",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Boundary audit/reuse: Channels.Api owns existing deliver_outgoing orchestration and trusted Event actor/opts. Empty attachments keep current text route exactly. File route selects committed connector once, then actual SMTP for IMAP, freezes runtime details/settings, takes normalized bridge snapshot once, calls shared TransportRequirements.resolve and Attachments.build_plan once, then Executor and existing DeliveryConfirmation. Bridge owns snapshot normalization; add helper around current normalization rather than alternative resolver. Completion/status callback happens once after transport result and is isolated from reporting. Actor/context comes only from Event, never outgoing metadata. No file acquisition on resolver-error fallback, no notices, and unsupported adapters remain disabled.",
+      "timestamp": "2026-11-27T22:35:34Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.7] Wire Channel-local execution into the existing delivery route",
   "type": "task",
-  "updated_at": "2026-11-27T22:35:28Z"
+  "updated_at": "2026-11-27T22:35:34Z"
 }
