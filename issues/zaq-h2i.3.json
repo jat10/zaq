@@ -149,11 +149,15 @@
     {
       "text": "PR #16 review issues .15–.19 implemented in requested order; consolidation performed last. Final working-tree validation through Context Mode: mix q PASS; 14 relevant isolated suites PASS, 524 checks (520 tests + 4 properties), seed 50911. After removing an unused local test-helper default, final mix q PASS and FileDeliverySettings focused suite PASS (6 tests), seed 171220. git diff --check PASS. No implementation blockers. No commits, pushes, merges, new gated feature E2E or mix precommit. Parent UX approval .3.4, consolidated E2E .3.5 and post-review coverage/final gate .3.13 remain pending. Issues remain in progress pending landing/finalization under repository workflow. Human approvals for the disclosed existing-test changes are recorded in .17/.18. Consolidation saved 94 net test lines (10647→10553): ConnectionSettings -11, FileDeliverySettings -40, unused webhook setup -43; email API metadata assertions moved into the provider table with net 0 LOC and duplicated calls removed. Overall test delta including focused regression additions is +315 lines. Reuse: existing transactions, policy normalization, ChannelConfig/FileSettings guards, confidential capability_snapshot event and shared Input/FieldHint. No new Actions, endpoints or callbacks; one scoped SMTP snapshot replaces duplicate assigns.",
       "timestamp": "2026-11-27T16:27:43Z"
+    },
+    {
+      "text": "User explicitly authorized commit and push in the current conversation. Committed all PR #16 review fixes and strengthened non-default-policy regression as 9d0fc08cf (fix(channels): address capability settings review findings), pushed successfully to origin/feat/channel-file-settings. Existing pre-commit qf, Conventional Commit message check and pre-push format hook all PASS. No mix precommit run; pending UX/E2E/coverage/finalization gates unchanged, no merge. Working tree clean and local/remote branch synchronized.",
+      "timestamp": "2026-11-27T16:52:20Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Add shared file settings and capability-driven transport requirements",
   "type": "task",
-  "updated_at": "2026-11-27T16:27:43Z"
+  "updated_at": "2026-11-27T16:52:20Z"
 }
