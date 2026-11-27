@@ -11,11 +11,15 @@
     {
       "text": "Source audit found an explicit existing SMTP test requiring provider scope even for a selected connector. Proposed single snapshot uses exact selected scope (and provider scope for new/unselected); requested specific human approval before updating that assertion, retry counts, and cached webhook-validation setup. No existing test behavior has been changed. Current isolated editor run: 132/135 pass; three failures correspond exactly to those pending contract changes. Source implementation in progress; not claiming validation complete.",
       "timestamp": "2026-11-27T16:10:14Z"
+    },
+    {
+      "text": "Human approval received in this conversation: update SMTP retry lookup counts 2→3→5→5 to 2→3→4→4; load webhook-test facts through routed editor opening then verify zero typing lookups; use exact selected SMTP scope in dialog and file controls while retaining provider scope for new/unselected SMTP and existing IMAP provider scope. All display/validation/draft assertions retained.",
+      "timestamp": "2026-11-27T16:11:34Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Respect Channels boundary in BO capability validation",
   "type": "bug",
-  "updated_at": "2026-11-27T16:10:14Z"
+  "updated_at": "2026-11-27T16:11:34Z"
 }
