@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-9j8.3"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-9j8.5"
+  ],
   "created": "2026-11-27T18:37:45Z",
   "description": "Functional specifications / files: add lib/zaq/channels/delivery/executor.ex with a cohesive orchestration responsibility, using contracts/preparation above and existing Zaq.TaskSupervisor. Validate graph/indices before effects. Abort publishes sequentially and stops on failure retaining prior confirmations. Continue promotes next eligible root with original answer after an unconfirmed root, never retries the failed operation, then runs ready threaded replies concurrently; independent messages need no root. Configurable concurrency default 4 per attempt; reports remain in plan order. Per upload/send/edit supervised timeout defaults to 30,000ms; task exit/timeout is unconfirmed, not rejected. Preserve uploaded-only and unattempted facts.\nTests before implementation: reference executor/group execution matrix ported to separate Plan/Outgoing; confirmed-root promotion, one invocation per step, no repeated failed edit, bounded concurrency, sequential abort, sole-send/edit/upload deadlines, task exits, stable result order and original indices. Property tests for dependency ordering and no duplicate invocation. Preparation continue text fallback retains failure evidence.\nBranches: both placements/modes/policies, partial uploads, blocked dependency, all candidates uncertain, existing streamed edit, no confirmations.\nMocking: controllable external operation boundary only; real runtime/preparation; injected config/dependencies resolved once. No globals/sleep synchronization.\nDocumentation: executor module contract and Channels guide.\nAction reuse: local-only Channel infrastructure over existing bridges/preparation; no new send Action or provider-specific executor. Safe normalized results consumed by DeliveryConfirmation/Engine; transport calls at most once per step, not global idempotency across separate caller submissions.\n\nImplementation rules: Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the owning service guide before work. Reference ../zaq-feat-channel-files is behavioral evidence, not code to copy wholesale. Preserve Outgoing.attachments and separate metadata-only Plan; PR2 FileSettings/resolver remain authoritative. Keep existing test behavior unless its exact change is explicitly approved; add new tests for the new grouped evidence contract. No PR6 Agent selection/AttachDocuments or PR7 workflow/notification implementation. Unit/integration/property/LiveView tests are immediate; new feature E2E belongs to the gated finalization task. Validation follows docs/WORKFLOW_AGENT.md; no per-step numerical coverage gate.",
   "id": "zaq-9j8.4",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-9j8.4] Execute delivery dependencies and approved failure policies",
   "type": "task",
-  "updated_at": "2026-11-27T18:39:22Z"
+  "updated_at": "2026-11-27T18:39:23Z"
 }
