@@ -20,11 +20,15 @@
     {
       "text": "Resumed under user scope correction: adapter publication/pins/full provider verification are PR6 prerequisites zaq-h2i.4.3 -\u003e zaq-pi3.7, not PR5 blockers. Preserve all existing work and locked dependencies; no local overrides or changes in external worktrees. PR5 gate verifies pinned adapters stay unsupported where primitives absent, fixture operation shapes against real plan/preparation/executor, and current SMTP encoder/submission framing. Subsequent tasks wire real JidoChatBridge/EmailBridge, Channels.Api, existing DeliveryConfirmation/Engine and existing grouped failure modal. No unsupported capability claims. Action reuse rechecked: existing SDK/bridge ports, FileSettings/resolver and executor; no new Action or resolver.",
       "timestamp": "2026-11-27T21:57:20Z"
+    },
+    {
+      "text": "Compatibility gate passed under revised PR5 scope: four async tests exercise controlled external adapter prepare/upload/send/edit shapes through the pinned SDK, installed Mattermost/Telegram absent primitives and unavailable resolution, real Swoosh MIME binary/unicode headers through local gen_smtp submission with exact dot framing, and temporary rejection with retries=0/no second connection. No pins, overrides or external worktrees changed. mix q passed. No production file readiness claim; full Mattermost provider verification/publication remains deferred via zaq-h2i.4.3 -\u003e zaq-pi3.7. Subsequent bridge integration must preserve exact-size attestation where a numeric encoded ceiling applies.",
+      "timestamp": "2026-11-27T22:04:07Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.5] Verify PR5 adapter and SMTP execution compatibility",
   "type": "task",
-  "updated_at": "2026-11-27T21:57:20Z"
+  "updated_at": "2026-11-27T22:04:07Z"
 }
