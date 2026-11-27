@@ -3,7 +3,8 @@
   "blocked_by": [],
   "blocks": [
     "zaq-h2i.3.8",
-    "zaq-h2i.4"
+    "zaq-h2i.4",
+    "zaq-h2i.4.3"
   ],
   "closed_at": "2026-11-25T18:18:06Z",
   "close_reason": "Static contract audit complete within corrected scope; external work is nonblocking follow-up. No code landing implied.",
@@ -54,5 +55,5 @@
   "status": "closed",
   "title": "[zaq-h2i.3.1] Confirm adapter declarations and normalized capability contract",
   "type": "task",
-  "updated_at": "2026-11-25T19:07:41Z"
+  "updated_at": "2026-11-27T18:39:35Z"
 }
