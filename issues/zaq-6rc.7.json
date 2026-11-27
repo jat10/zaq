@@ -15,11 +15,15 @@
     {
       "text": "Moved to PR5 per Jad seven-PR split. Not part of feat/delivery_plan PR4. Existing functional/test/reuse specification retained. Executor prerequisite and PR5 review/coverage finalization must be planned before implementation.",
       "timestamp": "2026-11-26T12:23:13Z"
+    },
+    {
+      "text": "Boundary audit/reuse: extend DeliveryConfirmation, keep existing Engine event names/NodeRouter; executor Result stays private. Add one attempt reporter: confirmed parts use safe receipt allowlist, original canonical answer for first successful root and actual continuation body/thread for subsequent parts; attachment display facts only for confirmed indices, provider file locator comes only from confirmed upload references, never source handles. Grouped failures use Result.safe_evidence once plus trusted outgoing persisted input/answer/connector IDs. Separate event failures are isolated and never alter transport result. Engine persistence/projection remains dependent zaq-9j8.6; no Channels writes or failed transcript parts.",
+      "timestamp": "2026-11-27T22:19:08Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.7] Report confirmed messages and grouped failures through Engine events",
   "type": "task",
-  "updated_at": "2026-11-27T22:18:28Z"
+  "updated_at": "2026-11-27T22:19:08Z"
 }
