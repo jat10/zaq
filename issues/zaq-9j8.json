@@ -36,11 +36,15 @@
     {
       "text": "Final acceptance achieved: PR5 worktree ../zaq-feat-delivery-execution moved from f2681e07be9b3df329b0be18345ad793da758ec6 to 81629c90a555b32c6b66cbcc1339779c89f4a9d5 using previous PR4 boundary f2681e07be9b3df329b0be18345ad793da758ec6. PR2 9d0fc08cf1bedb4e228bb1a095ae73410d80921e is an ancestor; PR5 and validated PR4 have identical tracked trees and tips with zero own PR5 commits. Fourteen core PR2 implementation/regression files are byte-identical to PR2, including min_interval_ms=250 regression; cumulative differences contain only expected PR3/PR4-owned paths, and obsolete old-settings copy is absent. All three target worktrees clean; diff --check PASS. PR5 independent environment readiness remains unverified as previously recorded; no setup/implementation or additional tests claimed for PR5. Backup backup/channel-stack-before-9d0fc08cf-20261127T183911/execution. Stack map updated in existing untracked planning document; unrelated handoffs preserved.",
       "timestamp": "2026-11-27T18:49:27Z"
+    },
+    {
+      "text": "PR #970 impact audit (2026-11-27): inspected live GitHub PR head 9d0fc08cf1bedb4e228bb1a095ae73410d80921e and its new review-fix commit separately from unrelated upstream rebase changes. PR5 and PR4 currently share 81629c90a555b32c6b66cbcc1339779c89f4a9d5; PR2 head is an ancestor. Compared file blob IDs with the planning baseline f2681e07b: Attachments, Preparation, Plan/Step, TransportRequirements, JidoChatBridge, EmailBridge, DeliveryConfirmation, MessageDelivery and ChatMessage are unchanged. No approved execution behavior or dependency ordering needs revision. New PR2 code carries evaluated capabilities through rejected-save errors, shares a BO presentation snapshot and validates final widget policy before insert. These do not replace runtime requirements resolution or confer attachment support. Added integration regressions to zaq-9j8.5, zaq-6rc.6, zaq-9j8.7 and zaq-9j8.9 for persisted selected configuration, explicit false policy, disabled-inspection/runtime distinction and SMTP support activation with incomplete settings. Setup task zaq-9j8.1 records the pre-existing unrelated Finch lock delta (git pin -\u003e Hex 0.25.0 while manifest requests git); untouched by this audit and must be resolved/verified before tests. PR2 approval/E2E/final gates remain its own lifecycle, not evidence that PR5 tests passed. Source/test inspection only; no application edits or tests executed. Action reuse: audit/planning only, no executable operation changes. Source: https://github.com/www-zaq-ai/zaq/pull/970",
+      "timestamp": "2026-11-27T19:10:25Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8] PR5 delivery execution and outcomes",
   "type": "epic",
-  "updated_at": "2026-11-27T19:10:24Z"
+  "updated_at": "2026-11-27T19:10:25Z"
 }
