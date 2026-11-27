@@ -1508,6 +1508,61 @@ The caller selects the outbound connection first, including SMTP for IMAP-origin
 replies, then resolves once per delivery attempt and passes that result onward.
 The resolver performs no acquisition, planning, sending or history operations.
 
+### Attachment plans and acquisition
+
+`Outgoing.attachments` contains explicitly supplied file Records and defaults to
+`[]`. `Outgoing.from_pipeline_result/2` carries the result's attachment list in
+that field, excludes attachment payloads and Channel-local delivery state from
+metadata, and never echoes incoming attachments. JSON Record reconstruction uses
+the existing provenance-verifying `Record.from_map/1` contract before supplying
+Records to the builder.
+
+`Zaq.Channels.Delivery.Attachments.build_plan/3` accepts the outgoing payload,
+once-resolved `TransportRequirements`, and an optional existing message ID. It
+returns a separate internal `Delivery.Plan`, or nil for empty attachments. Resolver
+errors are returned unchanged, without notices or failure-policy execution.
+Invalid metadata or a file that exceeds known limits rejects the plan with its
+original attachment index. No attachment is silently dropped or reindexed.
+
+Groups and upload/send/edit steps contain ordered original attachment indices.
+Only explicit attachment-edit capability permits editing a supplied existing
+message. Metadata planning performs no materialization, decoding, encoding,
+uploading or sending. Plans contain no Records, acquired bytes, prepared requests
+or operation outcomes and never travel in `Outgoing`.
+
+Packing enforces positive count and known byte limits using available raw-size
+lower bounds. Missing Record sizes remain unknown. IMAP attachment Records retain
+MIME encoded size; their durable `email:imap` communication-media source marks
+raw size as unknown for planning, including after history hydration. Other
+producers can supply known raw sizes even with base64 content. Acquisition must
+validate actual bytes before execution. `:not_applicable` and optional
+`:unresolved` limits remain distinct in the supplied requirements; neither an
+unknown size nor a successful plan establishes that a provider request fits.
+Actual content, fixed groups and encoded requests still require validation.
+Raw file sizes constrain encoded-message packing only for direct attachment
+sends; upload publication contains file references and requires separate sizing.
+
+`Zaq.Channels.Delivery.Preparation.acquire/3` explicitly acquires one Record when
+called. It reuses signed-handle redemption through `Zaq.Materialization`, projects
+trusted identity and literal permission bypass through `TrustedContext`, and never
+infers access from nil identity. Canonical attachment redemption retains the
+existing transcript-read authorization contract. It validates metadata again
+after materialization, preserves raw binary and UTF-8 representations unchanged,
+decodes only explicitly declared standard base64, and checks actual raw byte
+limits. Unsupported encodings are rejected. Size drift is accepted only within those limits.
+Returned content is transient and leaves the Record and plan unchanged. The
+future executor must check fixed message and upload groups with
+`Attachments.validate_group/2` and `validate_upload_group/2`, then validate exact
+encoded requests without treating unresolved limits as known unlimited capacity.
+
+These primitives are not connected to the production delivery route. Text delivery
+and `DeliveryConfirmation` keep their existing behavior. Executor orchestration,
+provider uploads/sends/edits, exact SMTP MIME sizing, runtime failure policy and
+partial outcomes are tracked in PR5 (`zaq-9j8`). The locked Jido adapters expose
+file-send support without structured file requirements; SMTP and web snapshots
+do not advertise attachment delivery. Missing declarations remain unavailable or
+unsupported rather than inferred from provider names or generic text editing.
+
 ## Channel Config
 
 Configuration persistence is owned by [`Zaq.Engine.ChannelConfig`](engine.md#connector-configuration-persistence).

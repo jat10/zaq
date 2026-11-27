@@ -2,6 +2,8 @@ defmodule Zaq.Channels.JidoConnectBridgeTest do
   use Zaq.DataCase, async: false
 
   alias Zaq.Channels.{DataSourceBridge, JidoConnectBridge}
+  alias Zaq.Channels.Delivery.Preparation
+  alias Zaq.Channels.TransportRequirements
   alias Zaq.Contracts.Record
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Connect
@@ -3976,6 +3978,37 @@ defmodule Zaq.Channels.JidoConnectBridgeTest do
 
     assert_received {:invoke_export, params}
     assert params["mime_type"] == "text/plain" or params[:mime_type] == "text/plain"
+  end
+
+  test "downloaded UTF-8 text can be acquired for attachment delivery unchanged" do
+    config = insert_data_source_config(:google_drive)
+    credential = create_credential!()
+    _grant = create_active_grant!(credential, config.id)
+
+    Application.put_env(
+      :zaq,
+      :jido_connect_bridge_jido_connect_module,
+      StubJidoConnectExportDownload
+    )
+
+    assert {:ok, %{record: record}} =
+             JidoConnectBridge.download_document(config, %{
+               "file_id" => "text-attachment",
+               "export_mime_type" => "text/plain"
+             })
+
+    assert record.attributes["encoding"] == "utf-8"
+    assert record.content == "a,b\n1,2\n"
+
+    requirements = %TransportRequirements{
+      transfer_mode: :send_with_attachments,
+      max_attachments_per_message: 1,
+      max_attachment_bytes: byte_size(record.content)
+    }
+
+    assert {:ok, acquired} = Preparation.acquire(record, requirements)
+    assert acquired.content == record.content
+    assert acquired.size == byte_size(record.content)
   end
 
   test "sheet_get maps nested value_range.values into record content" do
