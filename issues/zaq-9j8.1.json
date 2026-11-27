@@ -31,11 +31,15 @@
     {
       "text": "Python install first attempt timed out after 240 seconds while downloading the 67.2 MB PyMuPDF wheel; resolver and cached dependencies had progressed, not a requirements failure. Retried as a worktree-local background job with 20-minute process deadline; log tmp/zaq-9j8-python-install.log and completion status tmp/zaq-9j8-python-install-status.json. It runs pip check after successful install. Readiness remains in_progress until success; downstream tasks remain blocked.",
       "timestamp": "2026-11-27T19:31:49Z"
+    },
+    {
+      "text": "Environment readiness completed: Python dependency install and pip check both exited 0 (tmp/zaq-9j8-python-install-status.json). All recorded readiness checks passed: committed locked dependency fetch, Finch exact revision, dev/test/E2E migrations (147 each, none missing), dev compile, configured local asset build, pinned crawler scripts, local E2E npm dependencies and cached browser executables, mix q and 36 existing delivery baseline cases (3 properties). User-approved Finch restoration is the only change to prior dependency state; original lock backup retained. Worktree has no tracked source changes; no existing test behavior edits, commits/pushes/merges/publication. Context Mode explicit execution works; automatic capture hooks remain unavailable as previously recorded. Final precommit is reserved for final lifecycle gate.",
+      "timestamp": "2026-11-27T19:41:31Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.1] Verify and complete isolated PR5 development environment",
   "type": "task",
-  "updated_at": "2026-11-27T19:31:49Z"
+  "updated_at": "2026-11-27T19:41:31Z"
 }
