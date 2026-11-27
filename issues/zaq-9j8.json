@@ -5,7 +5,7 @@
   ],
   "blocks": [],
   "created": "2026-11-26T12:23:01Z",
-  "description": "User-defined PR5: plan execution through Jido and email adapters, exact SMTP MIME sizing, failure policies, partial outcomes, confirmation and history. Depends on PR4 contracts/planning. Reuse DeliveryConfirmation and existing Engine event. No AttachDocuments (PR6), workflow/notification integration (PR7), or replacement of PR2 FileSettings/resolver. Detailed executor and PR5 finalization tasks must be added before implementation; existing transport tasks are carried here. Reuse zaq-h2i.4 for real adapter prerequisites. Planning only.",
+  "description": "User-defined PR5: plan execution through Jido and email adapters, exact SMTP MIME sizing, failure policies, partial outcomes, confirmation and history. Depends on PR4 contracts/planning. Reuse DeliveryConfirmation and existing Engine event. No AttachDocuments (PR6), workflow/notification integration (PR7), or replacement of PR2 FileSettings/resolver. Detailed executor and PR5 finalization tasks must be added before implementation; existing transport tasks are carried here. Reuse zaq-h2i.4 for real adapter prerequisites. Planning only.\n\nApproved PR5 behavior (user confirmation, 2026-11-27): Preserve the reference root-publication policy. Under abort, stop publication after failure and retain earlier confirmed results. Under continue, an unconfirmed root send remains unconfirmed; promote the next eligible candidate with the original answer, then thread subsequent messages under the confirmed root. Never retry the failed operation itself. Possible duplicate answer text after an uncertain provider acceptance is an accepted consequence of this policy. This supersedes the audit suggestion to stop dependent publications after an unconfirmed root. Implement with current separate Plan and Outgoing.attachments contracts; do not restore Outgoing.Delivery. Regression acceptance: a timed-out first root is invoked once, the next candidate publishes the original answer once, later messages use the confirmed root ID, and the report preserves the original uncertainty and partial outcome. Reference: ../zaq-feat-channel-files/test/zaq/channels/delivery/executor_test.exs, test \"continue retains an unknown send and promotes the next candidate with the original answer\". This approval settles this policy only; it does not approve unrelated reference architecture or change existing test expectations wholesale. Action reuse: planning update only; no executable operation changes.",
   "id": "zaq-9j8",
   "labels": [],
   "comments": [
@@ -30,5 +30,5 @@
   "status": "open",
   "title": "[zaq-9j8] PR5 delivery execution and outcomes",
   "type": "epic",
-  "updated_at": "2026-11-27T16:44:03Z"
+  "updated_at": "2026-11-27T16:53:05Z"
 }
