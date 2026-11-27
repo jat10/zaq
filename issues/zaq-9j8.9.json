@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-27T18:38:00Z",
+  "description": "Functional specifications / files: focused tests under test/zaq/channels, test/zaq/engine and existing delivery visibility LiveView/component suites; docs/services/channels.md and engine.md. Exercise real API-\u003eplanner/preparation/executor-\u003ebridge-\u003eexternal transport-\u003eDeliveryConfirmation-\u003eEngine-\u003ehistory projection. Document approved contracts and supported adapter limits, not speculative PR6/7 behavior.\nTests before implementation: scripted local Mattermost HTTP and SMTP journey, multiple groups/upload batches, actual bytes/IDs, exact MIME ceiling and continuation overflow, abort/continue, root promotion, timeout/uncertainty, failed-only modal data, all files unusable text fallback, exact actor/connector scope, provider success with reporting outage, edits without duplicates, concurrent attempt isolation. Properties for stable indices, once-only effects and confirmation preservation. Reuse existing test/support helpers; do not import reference fixtures with old Outgoing.Delivery.\nBranches: successful/partial/failed/unconfirmed; text parity; unsupported declaration behavior; failure matrix across acquisition/prepare/upload/send/edit/history.\nMocking: external network only; internal domain calls real. Runtime config per attempt; Sandbox ownership explicit.\nDocumentation: module docs and owning service guides; record validation and reuse audit here.\nAction reuse: verification of shared implementation and existing events, no new executable operation. Run issue validation per workflow, existing required E2E, review diff for scope/privacy/unused code. New feature E2E waits for human UX gate.\n\nImplementation rules: Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the owning service guide before work. Reference ../zaq-feat-channel-files is behavioral evidence, not code to copy wholesale. Preserve Outgoing.attachments and separate metadata-only Plan; PR2 FileSettings/resolver remain authoritative. Keep existing test behavior unless its exact change is explicitly approved; add new tests for the new grouped evidence contract. No PR6 Agent selection/AttachDocuments or PR7 workflow/notification implementation. Unit/integration/property/LiveView tests are immediate; new feature E2E belongs to the gated finalization task. Validation follows docs/WORKFLOW_AGENT.md; no per-step numerical coverage gate.",
+  "id": "zaq-9j8.9",
+  "labels": [],
+  "parent": "zaq-9j8",
+  "priority": 2,
+  "status": "open",
+  "title": "Validate PR5 delivery journeys and update owning documentation",
+  "type": "task",
+  "updated_at": "2026-11-27T18:38:00Z"
+}
