@@ -15,11 +15,15 @@
     {
       "text": "Human approval received in this conversation: update SMTP retry lookup counts 2→3→5→5 to 2→3→4→4; load webhook-test facts through routed editor opening then verify zero typing lookups; use exact selected SMTP scope in dialog and file controls while retaining provider scope for new/unselected SMTP and existing IMAP provider scope. All display/validation/draft assertions retained.",
       "timestamp": "2026-11-27T16:11:34Z"
+    },
+    {
+      "text": "Boundary/cache implementation verified: routed selected/provider facts; no direct BO bridge inspection; draft/tab/dialog use cache; data-source saves requiring missing-base-URL decisions inspect current facts once; failed lookup stays recoverable. SMTP now has one snapshot and one lookup per selection/retry; dialog scope approved and documented. Existing widget closed-editor provider retry contract retained. Editor suites passed in latest combined run (308/309 total; sole failure was new component whitespace assertion, now corrected). Self-review found nil response handling in new shared helper; fixed to preserve unavailable versus absent validation metadata and added regression.",
+      "timestamp": "2026-11-27T16:19:49Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Respect Channels boundary in BO capability validation",
   "type": "bug",
-  "updated_at": "2026-11-27T16:11:34Z"
+  "updated_at": "2026-11-27T16:19:49Z"
 }
