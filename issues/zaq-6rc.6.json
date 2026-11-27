@@ -19,11 +19,15 @@
     {
       "text": "User explicitly approved the scoped existing SMTP contract-test update on 2026-11-28: replace blanket SMTP/IMAP unsupported expectations with valid selected outbound SMTP support plus incomplete-settings failure coverage. Web providers remain unsupported. Source: asynchronous question and user answer Approve this scoped SMTP contract-test update. No other test behavior changes or UX approval inferred.",
       "timestamp": "2026-11-27T22:02:23Z"
+    },
+    {
+      "text": "Boundary audit/reuse: EmailBridge owns reply subject/threading and selected SMTP receipt; SmtpSender owns pure Swoosh composition, credentials/TLS options and external SMTP submission; shared Preparation/Executor owns acquisition, grouping, policy and deadlines. Extend existing composition rather than add another mail lifecycle. File callback receives frozen actual outbound SMTP connection and never resolves notification defaults or rereads settings. Prepare once per final body/headers, submit exact encoded body through gen_smtp with retries=0, relay acceptance only. Local TCP capture is the sole external fixture. Existing send_notification text behavior remains on Mailer. Required positive count/encoded limits activate SMTP file mode; IMAP snapshot itself cannot substitute inbox settings for SMTP.",
+      "timestamp": "2026-11-27T22:10:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.6] Integrate SMTP preparation and delivery",
   "type": "task",
-  "updated_at": "2026-11-27T22:10:02Z"
+  "updated_at": "2026-11-27T22:10:12Z"
 }
