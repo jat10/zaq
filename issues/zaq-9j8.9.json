@@ -11,9 +11,15 @@
   "id": "zaq-9j8.9",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Integration matrix expanded through real API/Engine: attested partial uploads across groups yield only confirmed file descriptors and one grouped failure record; uncertain first publication promotes next root with original canonical body once; later upload uncertainty under abort publishes no uploaded prefix; concurrent attempts retain connector/bytes/answer isolation. Existing API tests already cover requirements-error no acquisition, literal-false abort, streamed/integer edit identity, real signed materialization identity/HTTP boundary, selected SMTP for IMAP, callbacks and Engine outage. SMTP integration found and fixed two new-path threading regressions with red tests: preserve immediate parent on first reply, mint new continuation MIME IDs instead of reusing a preminted answer ID. Per-operation continuation context remains on private preparation connection, not Outgoing/Plan. Added exact final-header overflow test proving first confirmed submission survives and later part is not submitted. Guide/module docs updated to actual wired behavior and deferred provider verification. Final focused checks and existing browser validation next.",
+      "timestamp": "2026-11-27T23:15:11Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.9] Validate PR5 delivery journeys and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-27T23:06:19Z"
+  "updated_at": "2026-11-27T23:15:11Z"
 }
