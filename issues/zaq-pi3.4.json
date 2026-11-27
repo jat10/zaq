@@ -9,7 +9,7 @@
   "parent": "zaq-pi3",
   "priority": 2,
   "status": "open",
-  "title": "Expand selection output aliases through the existing schema traversal",
+  "title": "[zaq-pi3.4] Expand selection output aliases through the existing schema traversal",
   "type": "task",
-  "updated_at": "2026-11-27T19:20:42Z"
+  "updated_at": "2026-11-27T19:20:45Z"
 }
