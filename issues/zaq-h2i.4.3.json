@@ -19,11 +19,15 @@
     {
       "text": "Candidate audit: GitHub verified published fork revisions Mattermost c319c6ed9867364e63c81327c5be8d2881e55ea2 and Jido f17679337a9975bee43b9540cb08ac5cfc12b86a. Owning adapter suites passed 140 tests (18 integration excluded); original repositories unchanged. Pure declarations/explicit prepare/upload/send/edit are present, but an actual primitive probe proves a two-file request with one named confirmed provider ID returns only {:error, :unconfirmed_upload}, losing partial facts. Probe at tmp/zaq-9j8-mattermost-partial-probe.exs. Preserve existing all-or-nothing convenience APIs and retired-prefix-inference tests. Preparing an isolated uncommitted adapter-only extension: expose provably associated indexed references in a structured two-tuple error through the SDK existing error passthrough; ambiguous/duplicate/malformed identities remain unconfirmed with no guessed prefix. No dependency pin changed, no upstream publication authorized. Integration remains blocked until a compatible revision is published by an authorized owner.",
       "timestamp": "2026-11-27T21:19:04Z"
+    },
+    {
+      "text": "Adapter module-context before edits: owner Adapter normalizes one prepared candidate and confirmed provider identities; ReqClient owns exact multipart/HTTP; SDK validates full success and transparently passes {:error, reason}. Primitive upload_prepared/2 currently joins complete unique IDs to all inputs by order; convenience upload_files/post/edit paths must keep all-or-nothing behavior. New private partial correlation will run only for incomplete, valid unique provider ID lists and match explicit names uniquely to the encoded candidate (including matching reported size when present). It will expose batch-local input_index and allowlisted file reference metadata; no inferred prefix or raw body. Ambiguous names, duplicate/missing IDs or unknown sources remain plain unconfirmed errors. State stays per-call; no globals/source policy/automatic retries/publication. Existing tests preserved; new transport-boundary tests plus exhaustive partial-order matrix. SDK existing error passthrough means no SDK code change is needed. Isolated adapter worktree ../jido_chat_mattermost-zaq-h2i4-3 on zaq-h2i.4.3/partial-upload-facts, existing source repos unchanged. Upstream compatible published revision remains necessary before ZAQ pins change.",
+      "timestamp": "2026-11-27T21:20:17Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.3] Supply verified Mattermost file operations and declarations for PR5",
   "type": "task",
-  "updated_at": "2026-11-27T21:19:04Z"
+  "updated_at": "2026-11-27T21:20:17Z"
 }
