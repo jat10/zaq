@@ -28,11 +28,15 @@
     {
       "text": "Planning readiness audit completed 2026-11-27. Created zaq-9j8.1-.12, rewrote existing zaq-6rc.5/.6/.7 for approved PR5 contracts, and created narrow external prerequisite zaq-h2i.4.3 under existing adapter epic. All 15 PR5 tasks have functional/files, tests, branches, mocking, documentation and reuse sections. Dependency closure checked against live Beadwork: no cycles, blocker/blocks edges reciprocal; only zaq-9j8.1 and zaq-h2i.4.3 are actionable roots in this scope. Compatibility needs both completed shared runtime and actual adapter contract evidence, so its convergence is intentional; no parent-completion blocker. Human UX -\u003e feature E2E -\u003e finalization gates explicit. Existing legacy confirmation-dominance tests remain protected; new typed grouped failure tests cover the approved extension. Environment and adapter gaps are evidenced in .1/.5 and the external prerequisite, not waived. No application code, dependency pins, database/migration state, secrets or existing tests changed; git working tree clean. Application tests/mix q/precommit not run because this work updated Beadwork planning only, not an implementation requesting final approval. Plan is ready to execute starting with prerequisites; production feature implementation/testing readiness is not yet claimed.",
       "timestamp": "2026-11-27T18:41:15Z"
+    },
+    {
+      "text": "Final bw ready verification: marked the parent epic in_progress to reflect active planning; this exposes its ready child in Beadwork. Actual bw ready --json now lists zaq-9j8.1 and zaq-h2i.4.3 as the two starting tasks in this scope. All implementation children remain open; no application implementation has started.",
+      "timestamp": "2026-11-27T18:42:09Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8] PR5 delivery execution and outcomes",
   "type": "epic",
-  "updated_at": "2026-11-27T18:42:01Z"
+  "updated_at": "2026-11-27T18:42:09Z"
 }
