@@ -23,11 +23,15 @@
     {
       "text": "Consolidated feature E2E pending existing UX gate .3.4: include native BO-chat file preferences in System config Global, Main/Advanced tab behavior, exact MB/count/policy save-reload, optional blank/whitespace clearing while unsupported, invalid supplied values with local errors, preserved drafts/retry, Cancel no write, confidential authorized Engine persistence and independence from widget connectors. Native attachment sending/downloading/live-history is excluded here and tracked separately in zaq-h2i.5. Do not author these journeys until final UX approval; current run executes existing specs only.",
       "timestamp": "2026-11-26T14:38:54Z"
+    },
+    {
+      "text": "Pending approved E2E scope from PR #16 review: fixed-to-required control recovery after rejected saves, effective proposed-policy declarations, selected SMTP dialog/file-control consistency, retry/typing/tab cache behavior and shared accessible errors/hint suppression. Existing smaller regression coverage added and passing. Authoring remains blocked on .3.4 final human UX approval; no feature E2E created.",
+      "timestamp": "2026-11-27T16:26:35Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-h2i.3.5] Validate approved consolidated file settings browser journeys",
   "type": "task",
-  "updated_at": "2026-11-26T14:38:54Z"
+  "updated_at": "2026-11-27T16:26:35Z"
 }
