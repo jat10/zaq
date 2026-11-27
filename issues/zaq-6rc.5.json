@@ -19,11 +19,15 @@
     {
       "text": "Boundary audit (module-context A-J): JidoChatBridge owns selected adapter operations and SDK formatting; Attachments/Preparation/Executor own policy, bytes and attempt lifetime; Engine owns durable evidence. Entry send_reply is legacy text, new pure prepare and one-step callbacks feed Executor. Config adapter_for/2 is existing per-request selection seam; preserve it in selected connection opts without global mutation. Credentials stay transient in AdapterOptions; no new options needed. Flow: selected snapshot -\u003e shared resolve -\u003e metadata Plan -\u003e materialized FileUpload -\u003e exact prepared upload -\u003e one upload -\u003e existing SDK Thread.post or edit. Existing create callback must be deferred to once per completed attempt, never per part. Risks: SDK publication has no pure wire encoder, upload responses need attested original indices, generic text edits do not imply attachment edit support. New chat tests will cross real bridge/SDK/executor with only external adapter fixture. No new Action/resolver or lifecycle owner.",
       "timestamp": "2026-11-27T22:04:41Z"
+    },
+    {
+      "text": "Implemented selected-connection adapter config via existing opts/config seam; capability declarations gated by uploaded-files plus prepare/upload primitives, generic editing never grants attachment editing. Pure upload preparation and one upload/send/edit callbacks reuse existing SDK formatting and edit normalization; no per-step completion callbacks. complete_delivery invokes existing callback once from confirmed final attempt; API wiring follows later task. Partial-upload indexed facts map batch-local indices to original indices; count mismatch without attestation drops all guesses. Publication sizes remain explicitly unresolved because pinned SDK owns encoding: accepted only for unresolved/inapplicable ceiling; numeric encoded ceiling fails before publication. Uploads still require exact size. Existing text send behavior preserved. Validation: 365 tests passed (14 properties), mix q passed. No existing test behavior changed. No pins/overrides/provider readiness claims.",
+      "timestamp": "2026-11-27T22:09:57Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.5] Integrate chat delivery operations",
   "type": "task",
-  "updated_at": "2026-11-27T22:04:41Z"
+  "updated_at": "2026-11-27T22:09:57Z"
 }
