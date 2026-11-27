@@ -23,11 +23,15 @@
     {
       "text": "Adapter module-context before edits: owner Adapter normalizes one prepared candidate and confirmed provider identities; ReqClient owns exact multipart/HTTP; SDK validates full success and transparently passes {:error, reason}. Primitive upload_prepared/2 currently joins complete unique IDs to all inputs by order; convenience upload_files/post/edit paths must keep all-or-nothing behavior. New private partial correlation will run only for incomplete, valid unique provider ID lists and match explicit names uniquely to the encoded candidate (including matching reported size when present). It will expose batch-local input_index and allowlisted file reference metadata; no inferred prefix or raw body. Ambiguous names, duplicate/missing IDs or unknown sources remain plain unconfirmed errors. State stays per-call; no globals/source policy/automatic retries/publication. Existing tests preserved; new transport-boundary tests plus exhaustive partial-order matrix. SDK existing error passthrough means no SDK code change is needed. Isolated adapter worktree ../jido_chat_mattermost-zaq-h2i4-3 on zaq-h2i.4.3/partial-upload-facts, existing source repos unchanged. Upstream compatible published revision remains necessary before ZAQ pins change.",
       "timestamp": "2026-11-27T21:20:17Z"
+    },
+    {
+      "text": "Isolated source fix now passes 77 cases including all unchanged selected legacy all-or-nothing tests. New tests prove the second/third input can be the only confirmed upload (never inferred as a prefix), exhaustive three-input subset/order identity preservation, ambiguity/malformed/duplicate/size mismatch refusal, body-free error facts and SDK error passthrough. Only explicit upload_prepared/2 gains {:error, {:partial_upload, %{files: [%{input_index: ...}], unconfirmed_input_indices: ...}}}; convenience APIs remain unchanged and no SDK source change needed. Owner q checks formatting only; changed files formatted using owner settings before full q. Fresh isolated Dialyzer/Doctor gate running with status ../jido_chat_mattermost-zaq-h2i4-3/_build/zaq-h2i-quality-status.json and log sibling path. Existing PLTs are directory caches and were not copied. Main dependency pins remain unchanged; new fix has no immutable published SHA because commits/publication are explicitly unauthorized.",
+      "timestamp": "2026-11-27T21:22:58Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.4.3] Supply verified Mattermost file operations and declarations for PR5",
   "type": "task",
-  "updated_at": "2026-11-27T21:20:17Z"
+  "updated_at": "2026-11-27T21:22:58Z"
 }
