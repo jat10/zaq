@@ -27,11 +27,15 @@
     {
       "text": "Additional approval received 2026-11-28: user approved the exact SMTP snapshot and no-file property updates in email_bridge_test.exs plus explicit valid count/MIME-size limits in SMTP test fixtures. Existing text/routing/encryption/envelope assertions must stay intact. Approval source asynchronous answer Approve these scoped SMTP test updates. This extends earlier delivery_contract_test approval only; no UX/E2E approval inferred.",
       "timestamp": "2026-11-27T22:15:56Z"
+    },
+    {
+      "text": "SMTP implementation validated: frozen selected settings/envelope, shared legacy composition, private non-inspectable PreparedMessage, exact encoded MIME measured and submitted, retries=0/no MX routing and no opportunistic TLS reconnect. Final root/continuation headers re-encode and revalidate. Explicit negative acknowledgment -\u003e failed/rejected; dropped acknowledgment -\u003e unconfirmed; neither retries. SMTP requires count and MIME limits; IMAP itself remains unsupported until actual SMTP selection in later API task. Approved fixture/snapshot/property updates preserve text/routing/encryption/envelope assertions. Validation: 402 tests passed (19 properties), mix q passed. Selection through API and downstream reporting-outage checks follow dependent tasks; no publication/pins/overrides.",
+      "timestamp": "2026-11-27T22:18:23Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.6] Integrate SMTP preparation and delivery",
   "type": "task",
-  "updated_at": "2026-11-27T22:15:56Z"
+  "updated_at": "2026-11-27T22:18:23Z"
 }
