@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-9j8.6"
   ],
@@ -13,8 +13,8 @@
   "labels": [],
   "parent": "zaq-9j8",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-9j8.7] Wire Channel-local execution into the existing delivery route",
   "type": "task",
-  "updated_at": "2026-11-27T19:21:35Z"
+  "updated_at": "2026-11-27T22:35:28Z"
 }
