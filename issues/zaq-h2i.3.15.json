@@ -11,11 +11,15 @@
     {
       "text": "Implementation sequence: .15 transaction visibility, .16 rejected-save recovery, .17 boundary/cache simplification, .18 shared errors, .19 test consolidation last. Reuse audit: existing WidgetConnectorSettings transaction, LiveUpdates normalization, ChannelConfig persistence guard, confidential Channels capability_snapshot event; no new Actions or callbacks. Initial policy will be included in built insert; existing locked update path retained. User forbids final precommit and Git mutations.",
       "timestamp": "2026-11-27T15:54:33Z"
+    },
+    {
+      "text": "Implemented final normalized policy in initial built proposal, retaining existing locked update path and avoiding redundant policy write. Regression exercises real Bridge proposal identity checks from Task + Sandbox.unboxed_run on an independent connection, rejecting invalid final limits atomically then accepting correction. Context Mode: mix q PASS; ChannelConfig + WidgetConnectorSettings + LiveUpdateSettings isolated suites PASS, 107 tests including 1 property. No existing test expectations changed. Final gates remain deferred per user.",
+      "timestamp": "2026-11-27T15:57:19Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Fix cross-node validation of uncommitted widget creation",
   "type": "bug",
-  "updated_at": "2026-11-27T15:54:33Z"
+  "updated_at": "2026-11-27T15:57:19Z"
 }
