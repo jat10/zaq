@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-27T18:37:40Z",
+  "description": "Functional specifications / files: lib/zaq/channels/delivery/ (new focused result/error contracts only as needed), existing Plan/Step and Preparation contracts; extend module docs rather than adding speculative abstractions. Define executor input as separate Outgoing, Plan, selected connection and trusted runtime dependencies. Define stable original attachment indices, step/group IDs, confirmed receipts, uploaded-only references, failed/unconfirmed facts and unattempted steps. Report raw provider errors privately; project bounded safe evidence for Engine. Confirmation is authoritative; partial failure evidence supplements it. No raw bytes or execution plan crosses reporting boundary.\nTests to add before implementation: contract examples and properties for stable indices, confirmation versus uploaded-only, rejected versus uncertain, content-free safe projections, invalid dependency references and cycles before effects. Preserve old contracts for callers without grouped evidence.\nBranches validated: full/partial/no confirmations, configuration/preparation/upload/publication failure, prior streamed message, malformed evidence. Design exact bounded schema before implementation and record it here, including association to persisted answer and connector scope.\nMocking plan: pure tests, no mocks; use domain fixtures for Records.\nDocumentation: module contracts and docs/services/channels.md / engine.md as ownership requires.\nAction reuse: local-only execution infrastructure; reuse Plan/Step, Outgoing, Preparation and existing DeliveryConfirmation evidence semantics. Existing NotifyUsers is a consumer-level notification Action, not an execution runtime; no new Action/tool. Inputs carry trusted actor; no nil-identity bypass or implicit retries. Verification is the contract suite and downstream real-boundary integration.\n\nImplementation rules: Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the owning service guide before work. Reference ../zaq-feat-channel-files is behavioral evidence, not code to copy wholesale. Preserve Outgoing.attachments and separate metadata-only Plan; PR2 FileSettings/resolver remain authoritative. Keep existing test behavior unless its exact change is explicitly approved; add new tests for the new grouped evidence contract. No PR6 Agent selection/AttachDocuments or PR7 workflow/notification implementation. Unit/integration/property/LiveView tests are immediate; new feature E2E belongs to the gated finalization task. Validation follows docs/WORKFLOW_AGENT.md; no per-step numerical coverage gate.",
+  "id": "zaq-9j8.2",
+  "labels": [],
+  "parent": "zaq-9j8",
+  "priority": 2,
+  "status": "open",
+  "title": "Define Channel execution and grouped outcome contracts",
+  "type": "task",
+  "updated_at": "2026-11-27T18:37:40Z"
+}
