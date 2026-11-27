@@ -15,11 +15,15 @@
     {
       "text": "Added distinct SMTP and widget rejected-save recovery regressions using existing declaration bridges, forms and fixtures. Both prove newly refreshed numeric controls, retained credentials/name and explicit false drafts, unchanged rejected storage, then successful correction. Context Mode mix q PASS; SMTP + widget isolated suites PASS (90 tests).",
       "timestamp": "2026-11-27T16:23:12Z"
+    },
+    {
+      "text": "Final working-tree validation through Context Mode: mix q PASS; 14 relevant isolated suites PASS, 524 checks (520 tests + 4 properties), seed 50911. After removing an unused local test-helper default, final mix q PASS and FileDeliverySettings focused suite PASS (6 tests), seed 171220. git diff --check PASS. No implementation blockers. No commits, pushes, merges, new gated feature E2E or mix precommit. Parent UX approval .3.4, consolidated E2E .3.5 and post-review coverage/final gate .3.13 remain pending. Issues remain in progress pending landing/finalization under repository workflow.",
+      "timestamp": "2026-11-27T16:27:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Refresh capability declarations after rejected connector saves",
   "type": "bug",
-  "updated_at": "2026-11-27T16:23:12Z"
+  "updated_at": "2026-11-27T16:27:38Z"
 }
