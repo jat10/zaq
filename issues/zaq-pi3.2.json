@@ -9,7 +9,7 @@
   "parent": "zaq-pi3",
   "priority": 2,
   "status": "open",
-  "title": "Bind signed provenance to effective authorization principals",
+  "title": "[zaq-pi3.2] Bind signed provenance to effective authorization principals",
   "type": "task",
-  "updated_at": "2026-11-27T19:20:30Z"
+  "updated_at": "2026-11-27T19:20:33Z"
 }
