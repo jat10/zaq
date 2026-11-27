@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-27T18:38:08Z",
+  "description": "Functional specifications / files: review complete PR5 diff for all approved policies, Action reuse, permissions, no duplicate send/history path and grouped-failure UX. Resolve review before invoking dedicated coverage-upper workflow; validate any resulting changes. Final mix precommit precedes final human approval under docs/WORKFLOW_AGENT.md.\nTests/branches: verify implementation issue checks, approved feature E2E, fresh coverage and explicit uncovered exceptions, final validation against exact final tree. Do not claim final readiness with adapter/setup/E2E blockers. Preserve test behavior approval gate.\nMocking: existing focused tests; external edges only. No new parallel fixtures/global config.\nDocumentation: final results, reviewer approval, coverage exceptions and remaining scope in Beadwork and PR description; no commit/push/merge without authorization.\nAction reuse: review/validation only, no new operation. Approval/review and coverage ordering follows authoritative workflow. Epic closes only after required feature validation and normal landing lifecycle.\n\nImplementation rules: Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the owning service guide before work. Reference ../zaq-feat-channel-files is behavioral evidence, not code to copy wholesale. Preserve Outgoing.attachments and separate metadata-only Plan; PR2 FileSettings/resolver remain authoritative. Keep existing test behavior unless its exact change is explicitly approved; add new tests for the new grouped evidence contract. No PR6 Agent selection/AttachDocuments or PR7 workflow/notification implementation. Unit/integration/property/LiveView tests are immediate; new feature E2E belongs to the gated finalization task. Validation follows docs/WORKFLOW_AGENT.md; no per-step numerical coverage gate.",
+  "id": "zaq-9j8.12",
+  "labels": [],
+  "parent": "zaq-9j8",
+  "priority": 2,
+  "status": "open",
+  "title": "Complete PR5 review coverage and final validation",
+  "type": "task",
+  "updated_at": "2026-11-27T18:38:08Z"
+}
