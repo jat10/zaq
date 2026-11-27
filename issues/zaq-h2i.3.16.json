@@ -11,11 +11,15 @@
     {
       "text": "Reuse/extend: existing confidential ChannelConfig proposal validation now retains its normalized result on file-error metadata; grouped/widget projections optionally include :capabilities and SMTP retains metadata on the submitted form. Shared CapabilitySnapshot presentation helper consumes it, preserving all drafts and avoiding another request. Shared error formatter now interpolates only referenced metadata (required for structured capability facts). Context Mode mix q PASS; 292 isolated tests/properties PASS. Added fixed-to-required editor regression and stale ceiling control-refresh assertion. Additional boundary/retry coverage follows with .17. No existing expectations changed.",
       "timestamp": "2026-11-27T16:02:03Z"
+    },
+    {
+      "text": "Added distinct SMTP and widget rejected-save recovery regressions using existing declaration bridges, forms and fixtures. Both prove newly refreshed numeric controls, retained credentials/name and explicit false drafts, unchanged rejected storage, then successful correction. Context Mode mix q PASS; SMTP + widget isolated suites PASS (90 tests).",
+      "timestamp": "2026-11-27T16:23:12Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Refresh capability declarations after rejected connector saves",
   "type": "bug",
-  "updated_at": "2026-11-27T16:02:03Z"
+  "updated_at": "2026-11-27T16:23:12Z"
 }
