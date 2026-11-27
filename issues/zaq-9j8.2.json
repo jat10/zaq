@@ -15,11 +15,15 @@
     {
       "text": "Pre-implementation source audit while environment setup runs: Plan and Plan.Step own only metadata and original indices; Attachments.plan_steps produces upload dependencies and independent send/edit metadata. Preparation.acquire owns trusted redemption and byte validation. DeliveryConfirmation remains the reporter and MessageDelivery owns exact persisted input/answer/origin validation; legacy safe_observation is private and confirmation-dominant, so grouped evidence needs a separate typed allowlisted contract alongside it. NotifyUsers is an Engine notification consumer, not the Channel runtime. Keep bridge preparation/provider effects outside these pure contracts. No production/test edits started; environment zaq-9j8.1 still gates implementation. Next contract work must record exact bounds/association schema before tests/implementation, preserving SMTP transport selection versus origin connector identity.",
       "timestamp": "2026-11-27T19:34:01Z"
+    },
+    {
+      "text": "Contract design for implementation once environment gate passes:\n- Keep Executor inputs separate: Outgoing, metadata Plan, selected connection, bridge/runtime dependencies. No wrapper or plan field on Outgoing.\n- Extend Plan with pure structural validation against original attachment count: unique group/step IDs, fixed original refs, valid dependencies, no cycles, and valid send/edit/upload intent before effects. Reuse Attachments requirements/group checks rather than duplicating size/configuration logic.\n- Channel-local Result/Error contracts retain ordered step outcomes, actual confirmed publication receipts and actual delivered attachment refs, uploaded-only references, preparation/configuration failures and unattempted facts. Raw provider causes stay private and excluded from Inspect/projection. A confirmed text fallback never confirms discarded attachments.\n- Proposed safe evidence v1: attempt UUID, confirmed-message count, failed parts carrying stable group/step identifiers, original attachment refs, operation/stage, failed/unconfirmed/unattempted outcome, allowlisted reason and optional integer provider code 0..999. No payloads, Records, handles, prepared requests, raw causes or provider response maps. Bound projection to 128 failed parts and 128 refs per part, retaining explicit omitted counts; retain full evidence privately. Upload success alone never creates a confirmed publication.\n- Existing DeliveryConfirmation will attach persisted assistant/user UUIDs and origin channel_config_id from trusted Outgoing context; Engine continues exact ownership/scope validation. Selected SMTP transport identity must not replace origin connector identity. Missing persisted association cannot trigger a provider resend.\n- Preserve every legacy confirmation-dominance expectation; add standalone contract/property tests. Finalize precise names against implementation, keeping this schema and boundaries. No source/test changes yet; zaq-9j8.1 is still active.",
+      "timestamp": "2026-11-27T19:39:57Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-9j8.2] Define Channel execution and grouped outcome contracts",
   "type": "task",
-  "updated_at": "2026-11-27T19:34:01Z"
+  "updated_at": "2026-11-27T19:39:57Z"
 }
