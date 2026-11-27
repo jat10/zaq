@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-6rc.7"
+  ],
   "blocks": [],
   "created": "2026-11-27T18:37:51Z",
   "description": "Functional specifications / files: lib/zaq/engine/api.ex, conversations/message_delivery.ex, history/delivery.ex, existing HistoryIngress/ChannelHistoryUpdates projection only where required. Extend existing :record_delivery_confirmation and :record_delivery_observation boundaries; no new Channels persistence. Associate grouped failed/unconfirmed parts with one canonical persisted answer and exact connector/input scope. Preserve successful provider messages in normal transcript history; never create a failed transcript row per part. Allow bounded supplemental part evidence alongside confirmed delivery without downgrading confirmation. Keep legacy unstructured late-failure observations ignored after confirmation.\nTests before implementation: real NodeRouter Channels-\u003eEngine-\u003epersistence path, mixed successes/failures, one grouped failure association, only successful parts in normal history, canonical body/thread and edit semantics, duplicate reports idempotent, spoofed cross-answer/connector evidence rejected, nil identity safe, missing persisted answer, provider locator versus source-handle distinction, redacted payload and invalidation. Properties for confirmation monotonicity, bounded evidence and scoped association.\nExisting tests to preserve: test/zaq/engine/conversations/message_delivery_test.exs 'confirmation dominates late failure observations without losing metadata' and 'confirmation always dominates the display status of observations'. Add separate typed/grouped-evidence cases; do not alter these legacy expectations. Any necessary changed assertion requires specific human approval before editing.\nMocking: real Engine/Repo with Sandbox and explicit child permissions; external transport only. No global state.\nDocumentation: owning module docs; docs/services/engine.md and channels.md.\nAction reuse: extend MessageDelivery and History.Delivery/HistoryIngress through existing Engine events/changesets; no direct Channel Repo writes/new Action/history lifecycle. Exact scope validation and read authorization remain authoritative. Confirmation/reporting failure never resends transport.\n\nImplementation rules: Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/conventions.md and docs/code-quality.md plus the owning service guide before work. Reference ../zaq-feat-channel-files is behavioral evidence, not code to copy wholesale. Preserve Outgoing.attachments and separate metadata-only Plan; PR2 FileSettings/resolver remain authoritative. Keep existing test behavior unless its exact change is explicitly approved; add new tests for the new grouped evidence contract. No PR6 Agent selection/AttachDocuments or PR7 workflow/notification implementation. Unit/integration/property/LiveView tests are immediate; new feature E2E belongs to the gated finalization task. Validation follows docs/WORKFLOW_AGENT.md; no per-step numerical coverage gate.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-9j8.6] Persist grouped failure evidence alongside confirmed Engine delivery",
   "type": "task",
-  "updated_at": "2026-11-27T18:37:53Z"
+  "updated_at": "2026-11-27T18:39:26Z"
 }
