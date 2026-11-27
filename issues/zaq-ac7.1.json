@@ -9,9 +9,15 @@
   "id": "zaq-ac7.1",
   "labels": [],
   "parent": "zaq-ac7",
+  "comments": [
+    {
+      "text": "Restacked dark theme 6d94a281325e8fc640fbf6f52596b7635491df2b -\u003e 5be66210b534279d946b35fbb6df02244539b262 onto settings 9d0fc08cf1bedb4e228bb1a095ae73410d80921e, excluding old settings bfb3e677cd83196087c24ec94d6bdce409eb1fec recovered from reflog. range-diff = identical one-commit patch; no conflicts or source/test edits. Context Mode mix q PASS, 310 focused component/LiveView tests PASS (seed 154497). Missing locked finch fetched with --check-locked; lockfile unchanged. Explicit expected-old-SHA force-with-lease push PASS; remote SHA verified; pre-push format hook PASS. No deferred precommit. Backup backup/channel-stack-before-9d0fc08cf-20261127T183911/dark.",
+      "timestamp": "2026-11-27T18:43:31Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ac7.1] Rebase dark theme onto reviewed settings",
   "type": "task",
-  "updated_at": "2026-11-27T18:38:51Z"
+  "updated_at": "2026-11-27T18:43:31Z"
 }
