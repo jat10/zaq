@@ -10,11 +10,15 @@
     {
       "text": "Captured live boundaries and recovery refs before any rewrite: {\"settings\":\"9d0fc08cf1bedb4e228bb1a095ae73410d80921e\",\"oldSettings\":\"bfb3e677cd83196087c24ec94d6bdce409eb1fec\",\"dark\":\"6d94a281325e8fc640fbf6f52596b7635491df2b\",\"plan\":\"f2681e07be9b3df329b0be18345ad793da758ec6\",\"execution\":\"f2681e07be9b3df329b0be18345ad793da758ec6\",\"prefix\":\"backup/channel-stack-before-9d0fc08cf-20261127T183911\",\"remoteTips\":[\"f2681e07be9b3df329b0be18345ad793da758ec6\\trefs/heads/feat/delivery_plan\",\"6d94a281325e8fc640fbf6f52596b7635491df2b\\trefs/heads/fix/channel-dark-theme\"],\"issues\":{\"root\":\"zaq-ac7\",\"dark\":\"zaq-ac7.1\",\"plan\":\"zaq-ac7.2\",\"execution\":\"zaq-ac7.3\"},\"backups\":{\"settings\":\"backup/channel-stack-before-9d0fc08cf-20261127T183911/settings\",\"oldSettings\":\"backup/channel-stack-before-9d0fc08cf-20261127T183911/oldSettings\",\"dark\":\"backup/channel-stack-before-9d0fc08cf-20261127T183911/dark\",\"plan\":\"backup/channel-stack-before-9d0fc08cf-20261127T183911/plan\",\"execution\":\"backup/channel-stack-before-9d0fc08cf-20261127T183911/execution\"}}",
       "timestamp": "2026-11-27T18:39:11Z"
+    },
+    {
+      "text": "Current user explicitly authorized publication and order: push updated dark-theme PR3, then move to/rebase/push PR4, with final acceptance that the PR5 worktree contains every PR2 change. Use captured explicit expected-old-SHA force-with-lease for published PR3/PR4. PR5 has no remote branch or PR; move its local worktree to cumulative updated PR4 and verify PR2 ancestor plus identical cumulative tree. No merge or deferred precommit.",
+      "timestamp": "2026-11-27T18:42:46Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-ac7] Restack communication descendants after file-settings review",
   "type": "epic",
-  "updated_at": "2026-11-27T18:39:11Z"
+  "updated_at": "2026-11-27T18:42:46Z"
 }
