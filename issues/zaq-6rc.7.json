@@ -19,11 +19,15 @@
     {
       "text": "Boundary audit/reuse: extend DeliveryConfirmation, keep existing Engine event names/NodeRouter; executor Result stays private. Add one attempt reporter: confirmed parts use safe receipt allowlist, original canonical answer for first successful root and actual continuation body/thread for subsequent parts; attachment display facts only for confirmed indices, provider file locator comes only from confirmed upload references, never source handles. Grouped failures use Result.safe_evidence once plus trusted outgoing persisted input/answer/connector IDs. Separate event failures are isolated and never alter transport result. Engine persistence/projection remains dependent zaq-9j8.6; no Channels writes or failed transcript parts.",
       "timestamp": "2026-11-27T22:19:08Z"
+    },
+    {
+      "text": "Attempt reporting implemented through existing event names and DeliveryConfirmation. Confirmed parts carry canonical original body or actual continuation/thread, private Results retain publication context but safe_evidence excludes it, and attachment descriptors drop source identity/handles/attributes/bytes. Provider locator IDs derive only from confirmed upload inputs; direct SMTP files have no invented provider locator. One grouped failure event attaches only trusted persisted-answer/input/origin IDs. Malformed evidence emits nothing; missing persisted answer emits no grouped observation. Each reporting error/exit/throw is isolated from transport and later reports. Focused validation 126 passed including 10 properties and mix q passed; adding final thrown-report regression before closing. Engine persistence/projection follows zaq-9j8.6.",
+      "timestamp": "2026-11-27T22:23:00Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-6rc.7] Report confirmed messages and grouped failures through Engine events",
   "type": "task",
-  "updated_at": "2026-11-27T22:19:08Z"
+  "updated_at": "2026-11-27T22:23:00Z"
 }
