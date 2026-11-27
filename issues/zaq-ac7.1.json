@@ -4,6 +4,7 @@
   "blocks": [
     "zaq-ac7.2"
   ],
+  "closed_at": "2026-11-27T18:43:34Z",
   "created": "2026-11-27T18:38:41Z",
   "description": "Scope: fix/channel-dark-theme; owner zaq-twk. Replay only child-owned commits using the captured previous parent tip. No new functions/modules or tests; reuse existing operations, components and fixtures through Git replay. Validate relevant existing suites, parent ancestry, git range-diff and diff --check; record unavailable environment checks. Mocks: none added. Documentation: update stack map after all descendants move. Action reuse: N/A, history-only restack; conflicts must preserve both parent behavior and child intent. No existing test behavior changes without approval. No automatic stashing, unrelated worktrees or deferred precommit.",
   "id": "zaq-ac7.1",
@@ -16,8 +17,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "[zaq-ac7.1] Rebase dark theme onto reviewed settings",
   "type": "task",
-  "updated_at": "2026-11-27T18:43:31Z"
+  "updated_at": "2026-11-27T18:43:34Z"
 }
