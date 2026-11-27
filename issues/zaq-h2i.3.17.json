@@ -7,9 +7,15 @@
   "id": "zaq-h2i.3.17",
   "labels": [],
   "parent": "zaq-h2i.3",
+  "comments": [
+    {
+      "text": "Source audit found an explicit existing SMTP test requiring provider scope even for a selected connector. Proposed single snapshot uses exact selected scope (and provider scope for new/unselected); requested specific human approval before updating that assertion, retry counts, and cached webhook-validation setup. No existing test behavior has been changed. Current isolated editor run: 132/135 pass; three failures correspond exactly to those pending contract changes. Source implementation in progress; not claiming validation complete.",
+      "timestamp": "2026-11-27T16:10:14Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Respect Channels boundary in BO capability validation",
   "type": "bug",
-  "updated_at": "2026-11-27T16:02:04Z"
+  "updated_at": "2026-11-27T16:10:14Z"
 }
