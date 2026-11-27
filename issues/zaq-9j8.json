@@ -40,11 +40,15 @@
     {
       "text": "PR #970 impact audit (2026-11-27): inspected live GitHub PR head 9d0fc08cf1bedb4e228bb1a095ae73410d80921e and its new review-fix commit separately from unrelated upstream rebase changes. PR5 and PR4 currently share 81629c90a555b32c6b66cbcc1339779c89f4a9d5; PR2 head is an ancestor. Compared file blob IDs with the planning baseline f2681e07b: Attachments, Preparation, Plan/Step, TransportRequirements, JidoChatBridge, EmailBridge, DeliveryConfirmation, MessageDelivery and ChatMessage are unchanged. No approved execution behavior or dependency ordering needs revision. New PR2 code carries evaluated capabilities through rejected-save errors, shares a BO presentation snapshot and validates final widget policy before insert. These do not replace runtime requirements resolution or confer attachment support. Added integration regressions to zaq-9j8.5, zaq-6rc.6, zaq-9j8.7 and zaq-9j8.9 for persisted selected configuration, explicit false policy, disabled-inspection/runtime distinction and SMTP support activation with incomplete settings. Setup task zaq-9j8.1 records the pre-existing unrelated Finch lock delta (git pin -\u003e Hex 0.25.0 while manifest requests git); untouched by this audit and must be resolved/verified before tests. PR2 approval/E2E/final gates remain its own lifecycle, not evidence that PR5 tests passed. Source/test inspection only; no application edits or tests executed. Action reuse: audit/planning only, no executable operation changes. Source: https://github.com/www-zaq-ai/zaq/pull/970",
       "timestamp": "2026-11-27T19:10:25Z"
+    },
+    {
+      "text": "Execution progress: zaq-9j8.1 readiness and zaq-9j8.2 pure contracts completed and validated in the working tree. Finch delta restored to committed Git pin only with explicit user approval; original backup retained in task notes. Next implementation is zaq-9j8.3. Existing-test expectation approval zaq-9j8.13 is pending and blocks zaq-9j8.5 alongside adapter prerequisite zaq-h2i.4.3 and executor zaq-9j8.4. No existing test expectations changed; no production integration/UI/E2E authoring or Git publication. UX gate zaq-9j8.10 remains open; final validation/review/coverage remain future tasks.",
+      "timestamp": "2026-11-27T19:54:54Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8] PR5 delivery execution and outcomes",
   "type": "epic",
-  "updated_at": "2026-11-27T19:10:25Z"
+  "updated_at": "2026-11-27T19:54:54Z"
 }
