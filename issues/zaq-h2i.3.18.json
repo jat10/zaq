@@ -11,11 +11,15 @@
     {
       "text": "Human approval received in this conversation: move existing required/help-text assertions to an error-free render of the same controls; retain both assertions and error assertions; add hint-suppression, shared styling and accessible error-ID checks. Reuse Input/FieldHint; add optional error_id forwarding without changing default behavior. No executable domain operations: Action reuse not applicable.",
       "timestamp": "2026-11-27T16:11:36Z"
+    },
+    {
+      "text": "Shared Input errors now suppress hints and use danger styling; FieldHint renders numeric/fixed/policy/root errors with optional unique error IDs. Numeric aria-invalid is rendered as explicit true/false and aria-describedby points to the actual error. Approved hint assertions retained in error-free render. Context Mode mix q PASS and all 16 isolated FileDeliverySettings/Input/FieldHint tests PASS. No domain operations added.",
+      "timestamp": "2026-11-27T16:19:51Z"
     }
   ],
   "priority": 3,
   "status": "in_progress",
   "title": "[zaq-h2i.3] Reuse shared field errors in file settings",
   "type": "task",
-  "updated_at": "2026-11-27T16:11:36Z"
+  "updated_at": "2026-11-27T16:19:51Z"
 }
