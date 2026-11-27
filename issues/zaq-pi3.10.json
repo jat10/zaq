@@ -9,7 +9,7 @@
   "parent": "zaq-pi3",
   "priority": 2,
   "status": "open",
-  "title": "Run post-review coverage and final validation for PR6",
+  "title": "[zaq-pi3.10] Run post-review coverage and final validation for PR6",
   "type": "task",
-  "updated_at": "2026-11-27T19:21:12Z"
+  "updated_at": "2026-11-27T19:21:14Z"
 }
