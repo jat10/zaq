@@ -27,11 +27,15 @@
     {
       "text": "Readiness update: locked fetch and dev compilation passed; all 147 migrations applied with no missing revisions in each verified isolated dev/test/E2E database. E2E requires MIX_ENV=test E2E=1 MIX_BUILD_PATH=_build/test-e2e (initial normal-test-build invocation rejected compile-env mismatch; corrected with dedicated build). Asset download stalled; stopped only owned downloader after checking cwd and reused matching Tailwind 4.1.12/esbuild 0.25.4 binaries from ../zaq/_build into local _build. Assets setup/build passed. Pinned Python scripts 60a68595c31846b0e89de3599424efa897496b68 fetched; local Python 3.13 venv installation ongoing. npm ci in test/e2e passed and all three expected browser executables exist. mix q passed. Isolated existing Attachments/Preparation/DeliveryContract suite passed: 36 cases including 3 properties. Working tree remains clean; no existing test behavior changed. No final precommit yet, reserved for final lifecycle gate.",
       "timestamp": "2026-11-27T19:30:26Z"
+    },
+    {
+      "text": "Python install first attempt timed out after 240 seconds while downloading the 67.2 MB PyMuPDF wheel; resolver and cached dependencies had progressed, not a requirements failure. Retried as a worktree-local background job with 20-minute process deadline; log tmp/zaq-9j8-python-install.log and completion status tmp/zaq-9j8-python-install-status.json. It runs pip check after successful install. Readiness remains in_progress until success; downstream tasks remain blocked.",
+      "timestamp": "2026-11-27T19:31:49Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.1] Verify and complete isolated PR5 development environment",
   "type": "task",
-  "updated_at": "2026-11-27T19:30:26Z"
+  "updated_at": "2026-11-27T19:31:49Z"
 }
