@@ -16,11 +16,15 @@
     {
       "text": "Not started: still gated by zaq-h2i.4.3. User approval gate zaq-9j8.13 and executor zaq-9j8.4 are closed. Published candidate pair c319c6e/f176793 verified on GitHub, but direct SDK probe proves partial upload references are erased. Compatible opt-in evidence fix is validated, uncommitted in ../jido_chat_mattermost-zaq-h2i4-3. A published revision including that fix is required before pins/real HTTP+SMTP compatibility and chat integration. Current ZAQ pins and Finch Git lock remain unchanged. Do not substitute local path dependencies, edit ignored deps, infer source indices from partial order, publish dependencies or bypass this gate. Mattermost existing-test contract change remains explicitly approved by user; no other existing test behavior approval or completed-UX approval inferred.",
       "timestamp": "2026-11-27T21:32:34Z"
+    },
+    {
+      "text": "Resumed under user scope correction: adapter publication/pins/full provider verification are PR6 prerequisites zaq-h2i.4.3 -\u003e zaq-pi3.7, not PR5 blockers. Preserve all existing work and locked dependencies; no local overrides or changes in external worktrees. PR5 gate verifies pinned adapters stay unsupported where primitives absent, fixture operation shapes against real plan/preparation/executor, and current SMTP encoder/submission framing. Subsequent tasks wire real JidoChatBridge/EmailBridge, Channels.Api, existing DeliveryConfirmation/Engine and existing grouped failure modal. No unsupported capability claims. Action reuse rechecked: existing SDK/bridge ports, FileSettings/resolver and executor; no new Action or resolver.",
+      "timestamp": "2026-11-27T21:57:20Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.5] Verify PR5 adapter and SMTP execution compatibility",
   "type": "task",
-  "updated_at": "2026-11-27T21:53:26Z"
+  "updated_at": "2026-11-27T21:57:20Z"
 }
