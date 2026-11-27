@@ -11,9 +11,15 @@
   "id": "zaq-9j8.2",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Pre-implementation source audit while environment setup runs: Plan and Plan.Step own only metadata and original indices; Attachments.plan_steps produces upload dependencies and independent send/edit metadata. Preparation.acquire owns trusted redemption and byte validation. DeliveryConfirmation remains the reporter and MessageDelivery owns exact persisted input/answer/origin validation; legacy safe_observation is private and confirmation-dominant, so grouped evidence needs a separate typed allowlisted contract alongside it. NotifyUsers is an Engine notification consumer, not the Channel runtime. Keep bridge preparation/provider effects outside these pure contracts. No production/test edits started; environment zaq-9j8.1 still gates implementation. Next contract work must record exact bounds/association schema before tests/implementation, preserving SMTP transport selection versus origin connector identity.",
+      "timestamp": "2026-11-27T19:34:01Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-9j8.2] Define Channel execution and grouped outcome contracts",
   "type": "task",
-  "updated_at": "2026-11-27T18:39:20Z"
+  "updated_at": "2026-11-27T19:34:01Z"
 }
