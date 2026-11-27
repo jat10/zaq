@@ -11,9 +11,15 @@
   "id": "zaq-ac7.2",
   "labels": [],
   "parent": "zaq-ac7",
+  "comments": [
+    {
+      "text": "Restacked PR4 f2681e07be9b3df329b0be18345ad793da758ec6 -\u003e 81629c90a555b32c6b66cbcc1339779c89f4a9d5 onto new dark theme 5be66210b534279d946b35fbb6df02244539b262, excluding previous dark tip 6d94a281325e8fc640fbf6f52596b7635491df2b. range-diff = identical single PR4 commit; no conflicts or source/test changes. Context Mode mix q PASS; 308 focused delivery/planning/resolver/settings/persistence checks PASS (9 properties, 299 tests; seed 743978). Explicit expected-old-SHA force-with-lease push and format hook PASS, remote SHA verified. Backup backup/channel-stack-before-9d0fc08cf-20261127T183911/plan. Deferred precommit/coverage/E2E not rerun; prior finalization evidence remains historical.",
+      "timestamp": "2026-11-27T18:47:18Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-ac7.2] Rebase delivery planning onto updated dark theme",
   "type": "task",
-  "updated_at": "2026-11-27T18:43:35Z"
+  "updated_at": "2026-11-27T18:47:18Z"
 }
