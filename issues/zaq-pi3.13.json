@@ -9,7 +9,7 @@
   "parent": "zaq-pi3",
   "priority": 2,
   "status": "open",
-  "title": "Add the widget session-authorized file API",
+  "title": "[zaq-pi3.13] Add the widget session-authorized file API",
   "type": "task",
-  "updated_at": "2026-11-28T10:10:55Z"
+  "updated_at": "2026-11-28T10:10:56Z"
 }
