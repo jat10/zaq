@@ -13,11 +13,15 @@
     {
       "text": "Rechecked exact approved consolidation and Action reuse: test-only, reuse existing packing generator and Plan.validate/2. Preserve size/count/ceiling assertions and malformed-reference/cycle/edit tests. Remove only duplicate property plus now-unused ExUnitProperties import and unused helper limit argument; no production operation or new Action.",
       "timestamp": "2026-11-28T10:32:56Z"
+    },
+    {
+      "text": "Implemented exact approved consolidation: existing broader packing property now asserts Plan.validate/2 with original Record count; redundant narrower property removed. Original ordering/count/byte-ceiling assertions and all malformed-reference/dependency-cycle/invalid-edit tests preserved. Removed only unused property import/helper limit parameter. mix q passed; Attachments and PlanValidation suites passed 18 checks (2 properties, 16 tests). No commit/push/merge.",
+      "timestamp": "2026-11-28T10:34:07Z"
     }
   ],
   "priority": 3,
   "status": "in_progress",
   "title": "[zaq-9j8.17] Consolidate duplicated planner property coverage",
   "type": "task",
-  "updated_at": "2026-11-28T10:32:56Z"
+  "updated_at": "2026-11-28T10:34:07Z"
 }
