@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-9j8.12"
+  ],
   "created": "2026-11-28T10:19:02Z",
   "description": "User approved review finding 5 and the stated SMTP regression reconciliation scope on 2026-11-28.\n\nEvidence: review of commit 6a546dc44 ran delivery/API/email/Engine/UI suites: 412/417 passed, all 14 properties passed. Five existing test/zaq_web/live/bo/communication/notification_smtp_live_test.exs cases failed at assertions on lines 155, 337, 384, 397 and 498. These include unavailable-attachment copy, disabled File capability and exact saved file_delivery settings expectations.\n\nApproved scope: reconcile the existing suite with native SMTP attachment support introduced in PR5. Expect native File capability when supported while preserving required delivery-limit validation. Update exact saved-settings expectations to include intentionally configured delivery limits. Preserve exact byte conversion, selected SMTP connector persistence, credentials, explicit false failure policy, unknown-setting rejection and invalid-setting rejection. Keep an explicitly unsupported bridge fixture to prove declarations alone cannot grant support. If any failure exposes incorrect production behavior, fix that behavior rather than changing the assertion. Keep scenarios in the existing suite; avoid parallel test modules and duplicated fixtures.\n\nApproval evidence: user explicitly agreed after the exact changes and docs/testing-approach.md existing-test-behavior approval gate were explained. This approval is restricted to these contract/fixture updates; it does not authorize removing protections, skipping failing tests or weakening unrelated expectations.\n\nImplementation: inspect current failures and relevant EmailBridge capability snapshot, FileSettings, SMTP form and existing DeclaredSmtpBridge fixtures before edits. Preserve selected-connection configuration and capability/readiness distinction. No change to abort/continue policy, no guessed delivery ceilings, and no unsupported transport enabled solely by metadata.\n\nAction reuse assessment: primarily existing-test/fixture reconciliation, using established EmailBridge, FileSettings, Channels endpoint and SMTP LiveView paths. No new Action or parallel operation. Any necessary production fix must stay with its existing owning domain and preserve Event/NodeRouter boundaries.\n\nValidation: rerun the existing SMTP settings suite, affected capability/persistence tests and the focused PR5 integration suite; record the exact resulting counts and failures. Follow docs/WORKFLOW_AGENT.md validation lifecycle and existing UX/E2E gates. Read AGENTS.md, docs/testing-approach.md, docs/code-quality.md, docs/action-reuse.md and applicable Channels/Engine guides before implementation; read DESIGN.md if production UI changes become necessary. This issue records the agreed scope only; no implementation or test edits performed in this decision turn.",
   "id": "zaq-9j8.18",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-9j8.18] Reconcile SMTP settings tests with native attachment support",
   "type": "task",
-  "updated_at": "2026-11-28T10:19:13Z"
+  "updated_at": "2026-11-28T10:19:15Z"
 }
