@@ -18,11 +18,15 @@
     {
       "text": "Five approved fixes are implemented in the current worktree with individual mix q and focused regression evidence on .14-.18; no Git commit/push/merge. Combined 20-surface matrix initially 409/411 passed (all 16 properties). Existing grouped-modal fixture now supplies explicit start time without assertion changes; unchanged shared ChannelCapabilities SMTP expectation still omits native File and remains outside the approved SMTP-suite changes. Full existing npm E2E is running against refreshed worktree server/isolated database; no new feature E2E authored. Preserve .10 human UX -\u003e .11 feature E2E, post-review coverage and final precommit sequencing. Mattermost publication/real provider readiness remains PR6.",
       "timestamp": "2026-11-28T10:41:16Z"
+    },
+    {
+      "text": "Final combined PR5 matrix after unchanged-assertion modal fixture repair: 494/495 passed, all 18 properties passed (476/477 tests). Sole failure is unchanged test/zaq_web/components/channel_capabilities_test.exs:29 SMTP supported-label list omitting native File; EmailBridge, component and this assertion are untouched by these five fixes. All approved SMTP/settings and delivery regressions pass. Final mix q passed against current tree; git diff --check clean. Existing three-browser delivery visibility and full 600-case Playwright execution still running. Final precommit remains downstream of the existing review/UX/E2E/coverage gates per workflow; not requesting final approval.",
+      "timestamp": "2026-11-28T10:43:34Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-9j8.12] Complete PR5 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-28T10:41:16Z"
+  "updated_at": "2026-11-28T10:43:34Z"
 }
