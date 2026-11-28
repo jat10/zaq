@@ -12,9 +12,15 @@
   "id": "zaq-pi3.12",
   "labels": [],
   "parent": "zaq-pi3",
+  "comments": [
+    {
+      "text": "Reuse evidence: Engine Conversations.resolve_display_conversation/get_conversation_message protect BO, and existing private channel scope + canonical get_canonical_message protect widgets. Extend these owners with an attachment-descriptor read, never accept a browser-supplied source/handle. Channels refreshes through existing DataSourceBridge.get_file and redeems the fresh handle via Materialization; existing DecodeBase64 Action owns encoded bytes. BO source bypass is only freshly validated super_admin; widget identity comes from verified adapter scope and current Person. Record.attachment_metadata already preserves bounded non-capability source payloads. Canonical historical-source retrieval can proceed independently of PR5 source persistence bug zaq-9j8.19; no PR5 transport/persistence patch or second attachment store.",
+      "timestamp": "2026-11-28T11:24:32Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3.12] Add authorized retrieval for delivered source attachments",
   "type": "task",
-  "updated_at": "2026-11-28T11:16:55Z"
+  "updated_at": "2026-11-28T11:24:32Z"
 }
