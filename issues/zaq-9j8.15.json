@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-9j8.12"
+  ],
   "created": "2026-11-28T10:15:00Z",
   "description": "User approved review finding 2 and its proposed fix on 2026-11-28.\n\nProblem: independent publication assigns the original answer to the initial group before preparation succeeds. If its encoding fails, later groups still use continuation text. Reproduced at 6a546dc44 with max_encoded_message_bytes 25 and actual attachment sizes 24 and 1: first request fails encoding; only \"Additional files (2/2).\" is sent, losing the original answer.\n\nAgreed behavior: if the intended answer message fails preparation, transfer the original answer to the next group that can be prepared successfully and validate its full encoded size with that answer. If no attachment-bearing request fits, attempt a valid text-only original answer and retain attachment failure evidence through existing reporting. Preserve selected transport limits. Keep independent publications independent; do not add a root/thread dependency or retry a failed provider operation. This approval concerns preparation failures, not new retry/promotion behavior after uncertain independent provider sends.\n\nImplementation ownership: extend lib/zaq/channels/delivery/executor.ex answer ownership and preparation orchestration; reuse Preparation.prepare_step/5 and existing bridge prepare callbacks. Bridges continue to prepare/execute one operation. Plan remains metadata-only and Channels-local. Preserve bounded concurrency, at-most-once provider operations, original attachment indices and successful-message/failed-parts reporting.\n\nTests: extend existing continue-policy scenarios in test/zaq/channels/delivery/executor_test.exs and existing helpers. Assert later usable group carries the original answer after earlier encoding failure, full request is revalidated, valid text fallback occurs when no attachment-bearing request fits, and no provider operation is retried. Preserve existing assertions and distinct policy cases; do not create parallel fixture modules merely for this regression.\n\nAction reuse assessment: extend existing Channel-local Executor orchestration; reuse Preparation, communication bridge callbacks and DeliveryConfirmation -\u003e Event/NodeRouter -\u003e Engine. No new Action or parallel delivery/history operation. Existing selected connection and trusted context remain authoritative. Verification uses current executor and integrated reporting suites.\n\nRead AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and docs/services/channels.md before implementation. Update owning documentation if needed and follow issue validation lifecycle. User approved recording this fix; remaining review findings are being discussed before implementation.",
   "id": "zaq-9j8.15",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-9j8.15] Preserve the answer after independent preparation failure",
   "type": "bug",
-  "updated_at": "2026-11-28T10:15:04Z"
+  "updated_at": "2026-11-28T10:15:06Z"
 }
