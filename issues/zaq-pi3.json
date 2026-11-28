@@ -18,11 +18,15 @@
     {
       "text": "Implementation checkpoint 2026-11-28: current user request authorizes implementation. Selection core .2-.6 is complete and unit-validated; .1 setup was already closed. Reused existing ActionContract/GetDocument/authorization/provenance, OpaqueAliases schema traversal, StreamEvents canonical invocation collection, Executor and Outgoing builder. Factory and all PR4/PR5 delivery/Engine/PR7 code and dependency pins are unchanged. Final mix q passed; combined focused suite passed 502 checks (6 doctests, 29 properties, 467 tests), including real native Agent/source ACL/role propagation/PR5 confirmation integration. git diff --check passed. Remaining approved serial tasks .11/.7/.12-.16/.8 are open: immutable Mattermost adapter publication, complete configured-provider evidence, authorized browser retrieval/file API/web transport/BO/widget presentation and full disk/Drive x destination acceptance. No new browser E2E authored; UX approval .17 -\u003e browser acceptance .18 -\u003e technical review .9 -\u003e dedicated coverage and final mix precommit .10 remain pending. No final human approval requested; no commits/pushes/publication or external-worktree edits. Existing native pre-tool alias-interceptor errors retain their fail-closed request-terminal behavior; Action validation/authorization errors are tool feedback and successful corrected calls retain ordinary selection semantics.",
       "timestamp": "2026-11-28T11:01:48Z"
+    },
+    {
+      "text": "Dependency refinement under explicit user direction to continue independent work: .12 authorized source retrieval depends on completed .6 selection, not Mattermost integration .7. .14 shared web delivery depends on .12 retrieval contracts, not unpublished widget HTTP package .13. Widget presentation .16 additionally requires .13, and full acceptance .8 explicitly still requires .7. External adapter gate .11/.7 remains intact. The convergence at .16 is necessary: widget presentation needs both shared delivery/BO patterns and authenticated HTTP API. No feature gate waived; provider and browser acceptance still gate final review/coverage. Added a child of .11 for independently verifiable published pin configuration. PR4/PR5 defects will be recorded in their owning workspace and never patched in PR6.",
+      "timestamp": "2026-11-28T11:14:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3] PR6 authorized document attachments across Mattermost, email, BO and widget",
   "type": "epic",
-  "updated_at": "2026-11-28T11:01:48Z"
+  "updated_at": "2026-11-28T11:14:38Z"
 }
