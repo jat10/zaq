@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Jad",
   "blocked_by": [
     "zaq-pi3.3"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "zaq-pi3",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "[zaq-pi3.4] Expand selection output aliases through the existing schema traversal",
   "type": "task",
-  "updated_at": "2026-11-28T10:11:15Z"
+  "updated_at": "2026-11-28T10:35:44Z"
 }
