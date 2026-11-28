@@ -34,6 +34,8 @@ defmodule Zaq.Channels.JidoChatBridge do
     WebhookUrl
   }
 
+  alias Zaq.Channels.Delivery.Result
+
   alias Zaq.ConnectorConfig.Settings
   alias Zaq.Engine.ChannelConfig
 
@@ -41,6 +43,7 @@ defmodule Zaq.Channels.JidoChatBridge do
   alias Jido.Chat.Thread
   alias Zaq.Channels.JidoChatBridge.AdapterOptions
   alias Zaq.Channels.JidoChatBridge.DeliveryResult
+  alias Zaq.Channels.JidoChatBridge.FileDelivery
   alias Zaq.Channels.JidoChatBridge.ListenerStatus
   alias Zaq.Channels.JidoChatBridge.ReactionMapper
   alias Zaq.Channels.JidoChatBridge.State
@@ -280,7 +283,7 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   @impl true
   def capability_snapshot(config) when is_map(config) do
-    with {:ok, adapter} <- adapter_for(config.provider) do
+    with {:ok, adapter} <- adapter_for(config.provider, Map.get(config, :opts, [])) do
       normalized_capabilities = Capabilities.channel_capabilities(adapter)
       adapter_capabilities = Adapter.capabilities(adapter)
       declared_capabilities = declared_adapter_capabilities(adapter)
@@ -300,7 +303,7 @@ defmodule Zaq.Channels.JidoChatBridge do
           )
         end)
 
-      {:ok, %{resolved: resolved}}
+      {:ok, FileDelivery.snapshot(%{resolved: resolved}, adapter, config)}
     end
   end
 
@@ -490,8 +493,8 @@ defmodule Zaq.Channels.JidoChatBridge do
   """
   @spec send_reply(Outgoing.t(), map()) :: {:ok, map()} | {:error, term()}
   @impl true
-  def send_reply(%Outgoing{} = outgoing, %{url: url, token: token}) do
-    do_send_reply(outgoing, %{url: url, token: token})
+  def send_reply(%Outgoing{} = outgoing, %{url: _url, token: _token} = connection) do
+    do_send_reply(outgoing, connection)
   end
 
   def send_reply(%Outgoing{} = outgoing, _connection_details) do
@@ -500,6 +503,97 @@ defmodule Zaq.Channels.JidoChatBridge do
     )
 
     {:error, :missing_connection_details}
+  end
+
+  @doc "Prepares one selected adapter upload without transport I/O."
+  @impl true
+  def prepare_upload_request(files, connection) do
+    with {:ok, adapter} <- adapter_for(connection.provider, Map.get(connection, :opts, [])) do
+      FileDelivery.prepare_upload(files, adapter, connection)
+    end
+  end
+
+  @doc "Prepares a logical SDK publication; no exact wire size is claimed by the SDK."
+  @impl true
+  def prepare_delivery_message(outgoing, files, _connection) do
+    if Enum.all?(files, &Map.has_key?(&1, :reference)) do
+      {:ok,
+       %{
+         size_bytes: :unresolved,
+         outgoing: outgoing,
+         uploaded_files: Enum.map(files, &%{id: &1.reference})
+       }}
+    else
+      {:error, :unsupported}
+    end
+  end
+
+  @doc "Executes one planned operation without policy, callbacks or hidden retries."
+  @impl true
+  def execute_delivery_step(step, inputs, connection) do
+    with {:ok, adapter} <- adapter_for(inputs.outgoing.provider, Map.get(connection, :opts, [])) do
+      execute_file_step(step, inputs, adapter, connection)
+    end
+  end
+
+  defp execute_file_step(%{operation: :upload}, inputs, adapter, connection),
+    do: FileDelivery.upload(inputs, adapter, connection)
+
+  defp execute_file_step(step, inputs, adapter, connection) do
+    outgoing = inputs.prepared.outgoing
+
+    opts =
+      if inputs.prepared.uploaded_files == [],
+        do: [],
+        else: [uploaded_files: inputs.prepared.uploaded_files]
+
+    response =
+      case step do
+        %{operation: :send} ->
+          create_message(
+            outgoing.provider,
+            adapter,
+            outgoing.channel_id,
+            outgoing.thread_id,
+            outgoing.body,
+            connection,
+            outgoing.metadata,
+            opts
+          )
+
+        %{operation: :edit, message_ref: {:existing, id}} ->
+          edit_message(
+            outgoing.provider,
+            adapter,
+            outgoing.channel_id,
+            id,
+            outgoing.body,
+            connection,
+            %{metadata: outgoing.metadata, delivery_opts: opts}
+          )
+      end
+
+    case response do
+      {:ok, %{message_id: id} = receipt} when is_present_message_id(id) ->
+        {:ok,
+         Map.merge(receipt, %{
+           confirmation: :confirmed,
+           message_id: ConversationIdentity.normalize(id),
+           thread_id: outgoing.thread_id
+         })}
+
+      response ->
+        {:error, FileDelivery.error(adapter, response, :publication)}
+    end
+  end
+
+  @doc "Runs the existing completion callback once after a confirmed delivery attempt."
+  @impl true
+  def complete_delivery(outgoing, result) do
+    case Result.confirmed_receipts(result) do
+      [%{message_id: id} | _] -> dispatch_on_reply(outgoing.metadata, id)
+      [] -> :ok
+    end
   end
 
   @impl true
@@ -1856,7 +1950,7 @@ defmodule Zaq.Channels.JidoChatBridge do
 
   @doc "Sends a reply outbound via the provider adapter. Called by the bridge state process."
   def do_send_reply(%Outgoing{} = outgoing, %{url: _url, token: _token} = connection) do
-    case adapter_for(outgoing.provider) do
+    case adapter_for(outgoing.provider, Map.get(connection, :opts, [])) do
       {:ok, adapter_module} ->
         handle_send_with_adapter(outgoing, adapter_module, connection)
 
@@ -1987,7 +2081,8 @@ defmodule Zaq.Channels.JidoChatBridge do
          thread_id,
          body,
          %{url: url, token: token} = connection,
-         metadata
+         metadata,
+         delivery_opts \\ []
        ) do
     effective_thread_id = thread_id || channel_id
 
@@ -2003,7 +2098,9 @@ defmodule Zaq.Channels.JidoChatBridge do
 
     post_body = build_post_body(body, metadata)
 
-    case Chat.Thread.post(thread, post_body, format_delivery_opts(provider, connection, metadata)) do
+    opts = format_delivery_opts(provider, connection, metadata) ++ delivery_opts
+
+    case Chat.Thread.post(thread, post_body, opts) do
       {:ok, post} ->
         {:ok,
          %{
@@ -2021,7 +2118,7 @@ defmodule Zaq.Channels.JidoChatBridge do
 
     opts =
       (AdapterOptions.build(provider, connection) ++
-         [update_intent: Map.get(request, :update_intent)])
+         [update_intent: Map.get(request, :update_intent)] ++ Map.get(request, :delivery_opts, []))
       |> maybe_put_format_from_metadata(metadata)
 
     result = adapter_module.edit_message(channel_id, message_id, body, opts)

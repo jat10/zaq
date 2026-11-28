@@ -378,7 +378,7 @@ defmodule Zaq.Engine.EmailConnectorSettingsTest do
 
     cleared = Map.put(params, "file_delivery", %{"max_encoded_message_mb" => ""})
 
-    assert {:ok, _} =
+    assert {:error, %Ecto.Changeset{} = errors} =
              EmailConnectorSettings.save(
                %{
                  provider: "email:smtp",
@@ -388,8 +388,11 @@ defmodule Zaq.Engine.EmailConnectorSettingsTest do
                node_router: RuntimeStub
              )
 
+    assert FileSettings.errors(errors)["max_encoded_message_bytes"] ==
+             "Required for file delivery"
+
     settings = ChannelConfig.get(channel.id).settings
-    refute Map.has_key?(settings["file_delivery"], "max_encoded_message_bytes")
+    assert settings == saved.settings
     assert settings["file_delivery"]["max_attachments_per_message"] == 2
     assert settings["custom"] == %{"retained" => true}
 
@@ -416,6 +419,8 @@ defmodule Zaq.Engine.EmailConnectorSettingsTest do
         |> Map.put("relay", "draft.example.com")
         |> Map.put("file_delivery", %{
           "max_attachment_mb" => "1.000001",
+          "max_attachments_per_message" => "10",
+          "max_encoded_message_mb" => "25",
           "send_on_file_failure" => "false"
         })
 
@@ -432,6 +437,8 @@ defmodule Zaq.Engine.EmailConnectorSettingsTest do
 
       assert Ecto.Changeset.get_field(changeset, :file_delivery) == %{
                "max_attachment_bytes" => 1_000_001,
+               "max_attachments_per_message" => 10,
+               "max_encoded_message_bytes" => 25_000_000,
                "send_on_file_failure" => false
              }
 
@@ -455,6 +462,10 @@ defmodule Zaq.Engine.EmailConnectorSettingsTest do
       "tls_verify" => "verify_peer",
       "from_email" => "noreply@example.com",
       "from_name" => "ZAQ",
+      "file_delivery" => %{
+        "max_attachments_per_message" => "10",
+        "max_encoded_message_mb" => "25"
+      },
       "password" => "secret"
     }
   end
@@ -469,10 +480,21 @@ defmodule Zaq.Engine.EmailConnectorSettingsTest do
       url: "https://example.invalid",
       token: "token",
       settings:
-        if(provider == "email:imap",
-          do: %{"imap" => %{"selected_mailboxes" => ["INBOX"], "smtp_config_id" => nil}},
-          else: %{}
-        )
+        case provider do
+          "email:imap" ->
+            %{"imap" => %{"selected_mailboxes" => ["INBOX"], "smtp_config_id" => nil}}
+
+          "email:smtp" ->
+            %{
+              "file_delivery" => %{
+                "max_attachments_per_message" => 10,
+                "max_encoded_message_bytes" => 25_000_000
+              }
+            }
+
+          _ ->
+            %{}
+        end
     })
     |> Repo.insert!()
   end

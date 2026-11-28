@@ -62,6 +62,19 @@ defmodule Zaq.Channels.CommunicationBridge do
   # message's id/anchor) back to the caller; bridges without receipts return `:ok`,
   # which `Zaq.Channels.Api` normalizes to `{:ok, %{}}`.
   @callback send_reply(term(), map()) :: :ok | {:ok, receipt :: map()} | {:error, term()}
+
+  @doc "Encodes an upload request without provider I/O, returning its exact size_bytes."
+  @callback prepare_upload_request([map()], map()) :: {:ok, map()} | {:error, term()}
+  @doc "Prepares a send/edit without I/O; size_bytes is exact or explicitly unresolved."
+  @callback prepare_delivery_message(Outgoing.t(), [map()], map()) ::
+              {:ok, map()} | {:error, term()}
+  @doc "Executes exactly one prepared operation; partial uploads retain actual indexed IDs."
+  @callback execute_delivery_step(Zaq.Channels.Delivery.Plan.Step.t(), map(), map()) ::
+              {:ok, map()}
+              | {:error, Zaq.Channels.Delivery.Error.t()}
+              | {:error, Zaq.Channels.Delivery.Error.t(), map()}
+  @callback outbound_connection(map()) :: {:ok, map()} | {:error, term()}
+  @callback complete_delivery(Outgoing.t(), Zaq.Channels.Delivery.Result.t()) :: term()
   @doc """
   Purely projects a bridge error into `outcome`, allowlisted `reason` and optional
   bounded `provider_code` facts. Returns nil for unrecognized responses. This
@@ -107,6 +120,11 @@ defmodule Zaq.Channels.CommunicationBridge do
   @callback incoming_routing(map()) :: %{incoming?: boolean(), topics: [String.t()]}
 
   @optional_callbacks delivery_observation: 2,
+                      outbound_connection: 1,
+                      complete_delivery: 2,
+                      prepare_upload_request: 2,
+                      prepare_delivery_message: 3,
+                      execute_delivery_step: 3,
                       send_typing: 3,
                       upsert_message: 3,
                       add_reaction: 5,

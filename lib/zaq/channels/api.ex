@@ -15,6 +15,8 @@ defmodule Zaq.Channels.Api do
     credential themselves.
   - Resolve provider bridge modules through `Zaq.Channels.Bridge`.
   - Delegate transport-specific behavior to bridge callbacks.
+  - Wire selected attachment attempts to the shared resolver, planner, executor
+    and existing Engine delivery reporting; keep transient delivery state local.
   - Derive public tool-step snapshots from canonical invocation facts on final
     delivery copies, after Engine finalization has consumed private evidence.
 
@@ -32,6 +34,7 @@ defmodule Zaq.Channels.Api do
     WebBridge
   }
 
+  alias Zaq.Channels.Delivery.{Connection, Dispatch}
   alias Zaq.Channels.DeliveryConfirmation
   alias Zaq.Channels.HttpClient
   alias Zaq.Channels.Materializers.CommunicationMedia
@@ -199,7 +202,8 @@ defmodule Zaq.Channels.Api do
 
     with {:ok, outgoing} <- outgoing_from_event(event),
          {:ok, bridge} <- resolve_bridge(bridge_module, outgoing.provider),
-         {:ok, connection_details} <- delivery_connection(bridge_module, outgoing, event.opts) do
+         {:ok, connection_details} <-
+           outgoing_connection(bridge_module, bridge, outgoing, event.opts) do
       formatted_outgoing =
         outgoing
         |> publish_tool_steps()
@@ -207,15 +211,21 @@ defmodule Zaq.Channels.Api do
         |> MessageFormatter.format_outgoing()
 
       response =
-        formatted_outgoing
-        |> bridge.send_reply(connection_details)
-        |> normalize_delivery_response()
+        if file_execution?(outgoing, bridge) do
+          Dispatch.run(outgoing, formatted_outgoing, bridge, connection_details, event)
+        else
+          response =
+            formatted_outgoing
+            |> bridge.send_reply(connection_details)
+            |> normalize_delivery_response()
 
-      observation = CommunicationBridge.delivery_observation(bridge, outgoing, response)
+          observation = CommunicationBridge.delivery_observation(bridge, outgoing, response)
+          DeliveryConfirmation.record(response, outgoing, observation, event.opts)
+        end
 
       %{
         event
-        | response: DeliveryConfirmation.record(response, outgoing, observation, event.opts)
+        | response: response
       }
     else
       {:error, reason} ->
@@ -1119,6 +1129,15 @@ defmodule Zaq.Channels.Api do
     with {:ok, config} <- bridge_module.fetch_channel_config(provider) do
       {:ok, config, bridge_module.fetch_connection_details(provider)}
     end
+  end
+
+  defp file_execution?(outgoing, bridge),
+    do: outgoing.attachments != [] and supports_callback?(bridge, :execute_delivery_step, 3)
+
+  defp outgoing_connection(bridge_module, bridge, outgoing, opts) do
+    if file_execution?(outgoing, bridge),
+      do: Connection.select(outgoing, bridge, opts),
+      else: delivery_connection(bridge_module, outgoing, opts)
   end
 
   defp delivery_connection(bridge_module, %Outgoing{provider: provider}, _opts)

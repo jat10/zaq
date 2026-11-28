@@ -211,13 +211,13 @@
                       <:actions>
                         <ChatMessage.copy_action_button text={message.content} />
                         <ChatMessage.feedback_positive_button
-                          :if={!message[:root_context?] && is_nil(message[:delivery])}
+                          :if={!message[:root_context?] && not is_nil(message[:position])}
                           message_id={message.message_id}
                           feedback={message.feedback}
                           count={message.rating_summary.positive}
                         />
                         <ChatMessage.feedback_negative_button
-                          :if={!message[:root_context?] && is_nil(message[:delivery])}
+                          :if={!message[:root_context?] && not is_nil(message[:position])}
                           message_id={message.message_id}
                           feedback={message.feedback}
                           count={message.rating_summary.negative}

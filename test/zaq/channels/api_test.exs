@@ -30,7 +30,17 @@ defmodule Zaq.Channels.ApiTest do
           kind: "retrieval",
           url: "https://#{value}.example.invalid",
           token: "token-#{value}",
-          enabled: true
+          enabled: true,
+          settings:
+            if(to_string(provider) == "email:smtp",
+              do: %{
+                "file_delivery" => %{
+                  "max_attachments_per_message" => 10,
+                  "max_encoded_message_bytes" => 25_000_000
+                }
+              },
+              else: %{}
+            )
         },
         attrs
       )
@@ -2406,7 +2416,8 @@ defmodule Zaq.Channels.ApiTest do
       assert result.actor == event.actor
       assert {:ok, snapshot} = result.response
       assert snapshot.file_delivery.limits.max_encoded_message_bytes.type == :integer
-      assert :file in snapshot.unsupported
+      assert snapshot.resolved.file == :native
+      refute :file in snapshot.unsupported
 
       config = insert_config("email:smtp", %{enabled: false})
 
@@ -2433,7 +2444,13 @@ defmodule Zaq.Channels.ApiTest do
           provider: "email:smtp",
           kind: "retrieval",
           enabled: false,
-          settings: %{"relay" => "smtp.example.com"}
+          settings: %{
+            "relay" => "smtp.example.com",
+            "file_delivery" => %{
+              "max_attachments_per_message" => 10,
+              "max_encoded_message_bytes" => 25_000_000
+            }
+          }
         })
         |> Repo.insert!()
 
@@ -2464,7 +2481,7 @@ defmodule Zaq.Channels.ApiTest do
 
     for {provider, mode, unsupported} <- [
           {"email:smtp", "none",
-           [:image, :audio, :video, :file, :streaming, :reactions, :typing, :edit_messages]},
+           [:image, :audio, :video, :streaming, :reactions, :typing, :edit_messages]},
           {"email:imap", "imap_idle",
            [:image, :audio, :video, :file, :streaming, :reactions, :typing, :edit_messages]}
         ] do
@@ -2480,11 +2497,11 @@ defmodule Zaq.Channels.ApiTest do
         assert snapshot.resolved.mode == unquote(mode)
         assert snapshot.labels.text == "Text"
         assert snapshot.labels.threads == "Threads"
-        refute Map.has_key?(snapshot.resolved, :file)
 
         if unquote(provider) == "email:smtp" do
-          assert :file in snapshot.unsupported
-          assert snapshot.file_delivery.transfer_mode == :unresolved
+          assert snapshot.resolved.file == :native
+          refute :file in snapshot.unsupported
+          assert snapshot.file_delivery.transfer_mode == :send_with_attachments
 
           assert snapshot.file_delivery.limits.max_encoded_message_bytes == %{
                    value: :unresolved,
@@ -2497,6 +2514,7 @@ defmodule Zaq.Channels.ApiTest do
 
           assert snapshot.file_delivery.limits.max_attachments_per_message.required
         else
+          refute Map.has_key?(snapshot.resolved, :file)
           refute Map.has_key?(snapshot, :file_delivery)
         end
 
@@ -2515,7 +2533,13 @@ defmodule Zaq.Channels.ApiTest do
           url: "smtp://configured-in-settings",
           token: "smtp-unused",
           enabled: false,
-          settings: %{"relay" => "smtp.example.com"}
+          settings: %{
+            "relay" => "smtp.example.com",
+            "file_delivery" => %{
+              "max_attachments_per_message" => 10,
+              "max_encoded_message_bytes" => 25_000_000
+            }
+          }
         })
         |> Repo.insert!()
       end
@@ -2529,8 +2553,8 @@ defmodule Zaq.Channels.ApiTest do
                  nil
                )
 
-      assert snapshot.resolved == %{mode: "none", text: :native, threads: :native}
-      assert :file in snapshot.unsupported
+      assert snapshot.resolved == %{mode: "none", text: :native, threads: :native, file: :native}
+      refute :file in snapshot.unsupported
     end
 
     test "email uses the same text and thread support values as Mattermost" do

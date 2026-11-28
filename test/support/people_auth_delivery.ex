@@ -8,7 +8,6 @@ defmodule Zaq.TestSupport.PeopleAuthDelivery do
 
   def setup do
     previous = Application.get_env(:zaq, :channels)
-    Application.put_env(:zaq, :channels, %{email: %{bridge: PeopleAuthDeliveryMock}})
     on_exit(fn -> Application.put_env(:zaq, :channels, previous) end)
     stub(PeopleAuthDeliveryMock, :outbound_conversation_key, fn _, _ -> nil end)
 
@@ -17,8 +16,16 @@ defmodule Zaq.TestSupport.PeopleAuthDelivery do
         name: "Test delivery",
         kind: "retrieval",
         enabled: true,
-        settings: %{"relay" => "test.invalid"}
+        settings: %{
+          "relay" => "test.invalid",
+          "file_delivery" => %{
+            "max_attachments_per_message" => 10,
+            "max_encoded_message_bytes" => 25_000_000
+          }
+        }
       })
+
+    Application.put_env(:zaq, :channels, %{email: %{bridge: PeopleAuthDeliveryMock}})
 
     :ok
   end

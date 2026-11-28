@@ -158,7 +158,7 @@ defmodule ZaqWeb.Components.ChatMessage do
   attr :is_error, :boolean, default: false
 
   attr :delivery_state, :atom,
-    values: [nil, :failed, :unconfirmed, :history_updating],
+    values: [nil, :failed, :unconfirmed, :history_updating, :partial],
     default: nil
 
   attr :error_type, :atom, default: nil
@@ -185,6 +185,10 @@ defmodule ZaqWeb.Components.ChatMessage do
   def assistant_bubble(assigns) do
     assigns =
       assigns
+      |> assign(
+        :pending_delivery?,
+        assigns.delivery_state in [:failed, :unconfirmed, :history_updating]
+      )
       |> assign(:rendered_content, assigns.content |> Markdown.render() |> Phoenix.HTML.raw())
       |> assign_error_parts()
       |> assign(
@@ -209,7 +213,7 @@ defmodule ZaqWeb.Components.ChatMessage do
       <div class={["flex min-w-0", if(@align == :right, do: "justify-end", else: "justify-start")]}>
         <div class={[
           "flex min-w-0 max-w-[82%] gap-4",
-          @delivery_state && "zaq-chat-delivery-column",
+          @pending_delivery? && "zaq-chat-delivery-column",
           @tool_steps != [] && "w-full",
           @align == :right && "flex-row-reverse"
         ]}>
@@ -222,7 +226,7 @@ defmodule ZaqWeb.Components.ChatMessage do
           </div>
 
           <div
-            class={["flex-1 min-w-0", @delivery_state && "zaq-chat-delivery"]}
+            class={["flex-1 min-w-0", @pending_delivery? && "zaq-chat-delivery"]}
             data-delivery-tone={@delivery_state}
           >
             <p :if={@author_name} class="zaq-text-caption mb-1">{@author_name}</p>
@@ -362,7 +366,7 @@ defmodule ZaqWeb.Components.ChatMessage do
               if(@align == :right, do: "justify-end mr-0.5", else: "justify-start ml-0.5")
             ]}>
               <span class="zaq-text-caption" style="color: var(--zaq-text-color-body-tertiary);">
-                <span :if={@delivery_state}>Generated </span>
+                <span :if={@pending_delivery?}>Generated </span>
                 {format_time(@timestamp)}
               </span>
 
@@ -429,6 +433,15 @@ defmodule ZaqWeb.Components.ChatMessage do
   attr :message, :map, required: true
 
   def delivery_details(assigns) do
+    parts = Map.get(assigns.message.delivery, :parts, [])
+
+    assigns =
+      assign(
+        assigns,
+        :failed_parts,
+        Enum.filter(parts, &(&1["outcome"] in ["failed", "unconfirmed", "unattempted"]))
+      )
+
     ~H"""
     <BOModal.modal_shell
       id="channel-delivery-details"
@@ -443,8 +456,37 @@ defmodule ZaqWeb.Components.ChatMessage do
         id="channel-delivery-details-focus"
         phx-mounted={JS.focus_first(to: "#channel-delivery-details-focus")}
         class="zaq-layout-stack"
+        style="color: var(--zaq-text-color-body-default);"
       >
         <p class="zaq-text-body">{@message.delivery.reason}</p>
+        <ol
+          :if={@failed_parts != []}
+          class="zaq-layout-stack"
+          aria-label="Unsuccessful delivery parts"
+        >
+          <li
+            :for={part <- @failed_parts}
+            class="zaq-layout-stack-tight"
+            data-testid="delivery-failed-part"
+          >
+            <p class="zaq-text-h4">{delivery_part_title(part)}</p>
+            <p class="zaq-text-body-sm">
+              <strong>{delivery_part_outcome(part)}</strong> — {delivery_part_reason(part)}
+            </p>
+            <p :if={part["attachment_refs"] != []} class="zaq-text-caption">
+              Files {delivery_part_files(part)}
+            </p>
+            <p :if={part["provider_code"]} class="zaq-text-caption">
+              Provider code {part["provider_code"]}
+            </p>
+            <p :if={part["omitted_attachment_count"] > 0} class="zaq-text-caption">
+              {part["omitted_attachment_count"]} additional files omitted.
+            </p>
+          </li>
+        </ol>
+        <p :if={Map.get(@message.delivery, :omitted_part_count, 0) > 0} class="zaq-text-caption">
+          {@message.delivery.omitted_part_count} additional unsuccessful parts omitted.
+        </p>
         <p :if={@message.delivery[:provider_code]} class="zaq-text-caption">
           Provider code {@message.delivery.provider_code}
         </p>
@@ -452,7 +494,13 @@ defmodule ZaqWeb.Components.ChatMessage do
         <p :if={@message.delivery[:observed_at]} class="zaq-text-caption">
           Outcome recorded {@message.delivery.observed_at}
         </p>
-        <DSButton.button variant={:secondary} phx-click="close_delivery_info">Close</DSButton.button>
+        <DSButton.button
+          variant={:secondary}
+          phx-click="close_delivery_info"
+          style="color: var(--zaq-text-color-body-default);"
+        >
+          Close
+        </DSButton.button>
       </.focus_wrap>
     </BOModal.modal_shell>
     """
@@ -460,13 +508,57 @@ defmodule ZaqWeb.Components.ChatMessage do
 
   @doc "Names delivery presentation states without implying automatic resend."
   def delivery_label(:failed), do: "Delivery failed"
+  def delivery_label(:partial), do: "Partially delivered"
   def delivery_label(:unconfirmed), do: "Delivery unconfirmed"
   def delivery_label(:history_updating), do: "Delivered — history updating"
   def delivery_label(:delivered), do: "Delivery confirmed"
 
   defp delivery_icon(:failed), do: "hero-exclamation-circle"
+  defp delivery_icon(:partial), do: "hero-exclamation-circle"
   defp delivery_icon(:history_updating), do: "hero-check-circle"
   defp delivery_icon(_state), do: "hero-question-mark-circle"
+
+  defp delivery_part_title(part) do
+    label =
+      case part["operation"] do
+        "upload" -> "File upload"
+        "prepare" -> "File preparation"
+        "configure" -> "File configuration"
+        "edit" -> "Message update"
+        _ -> "Message"
+      end
+
+    case part["group_id"] do
+      group when is_integer(group) -> "#{label} #{group + 1}"
+      _ -> label
+    end
+  end
+
+  defp delivery_part_outcome(%{"outcome" => "unconfirmed"}), do: "Unconfirmed"
+  defp delivery_part_outcome(%{"outcome" => "unattempted"}), do: "Not attempted"
+  defp delivery_part_outcome(%{"reason" => "rejected"}), do: "Rejected"
+  defp delivery_part_outcome(_), do: "Failed"
+
+  defp delivery_part_reason(%{"outcome" => "unconfirmed", "reason" => "timeout"}),
+    do: "This part timed out. The provider may have accepted this part."
+
+  defp delivery_part_reason(%{"outcome" => "unconfirmed"}),
+    do: "No definitive outcome is recorded. The provider may have accepted this part."
+
+  defp delivery_part_reason(%{"outcome" => "unattempted"}),
+    do: "This part was not attempted after an earlier failure."
+
+  defp delivery_part_reason(%{"reason" => "rejected"}), do: "The provider rejected this part."
+
+  defp delivery_part_reason(%{"reason" => "size_limit"}),
+    do: "This part exceeds the connector's size limit."
+
+  defp delivery_part_reason(%{"stage" => "configuration"}),
+    do: "The connector's file settings were unavailable."
+
+  defp delivery_part_reason(_), do: "This part could not be delivered."
+
+  defp delivery_part_files(part), do: Enum.map_join(part["attachment_refs"], ", ", &(&1 + 1))
 
   defp tool_status_color("succeeded"), do: "--zaq-text-color-body-success"
   defp tool_status_color("failed"), do: "--zaq-text-color-body-danger"

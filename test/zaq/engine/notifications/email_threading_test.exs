@@ -112,7 +112,11 @@ defmodule Zaq.Engine.Notifications.EmailThreadingTest do
       url: "smtp://localhost",
       token: "test-token",
       enabled: true,
-      settings: settings
+      settings:
+        Map.put(settings, "file_delivery", %{
+          "max_attachments_per_message" => 10,
+          "max_encoded_message_bytes" => 25_000_000
+        })
     })
     |> Repo.insert!()
   end

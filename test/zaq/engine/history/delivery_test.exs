@@ -234,6 +234,12 @@ defmodule Zaq.Engine.History.DeliveryTest do
         name: "Delivery SMTP #{unique_id()}",
         provider: "email:smtp",
         kind: "retrieval",
+        settings: %{
+          "file_delivery" => %{
+            "max_attachments_per_message" => 10,
+            "max_encoded_message_bytes" => 25_000_000
+          }
+        },
         url: "https://example.invalid",
         token: "token"
       })

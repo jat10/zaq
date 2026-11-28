@@ -6,11 +6,19 @@ defmodule Zaq.Channels.EmailBridge.SmtpSender do
   comes from the `identifier` argument. SMTP settings are read from
   `channel_configs.settings` under provider `email:smtp` (same source as the
   SMTP configuration UI).
+
+  Attachment delivery prepares final MIME from a frozen selected connector and
+  submits those exact bytes. That path disables retries and MX routing; optional
+  TLS becomes required to avoid gen_smtp's reconnect-after-TLS-failure fallback.
+  Explicit plaintext SMTP remains available through the selected `tls: never`.
   """
 
   import Swoosh.Email
   import Zaq.Helpers, only: [blank?: 1]
 
+  alias Swoosh.Adapters.SMTP
+  alias Swoosh.Adapters.SMTP.Helpers
+  alias Zaq.Channels.EmailBridge.PreparedMessage
   alias Zaq.Channels.EmailBridge.SelfAddresses
   alias Zaq.Channels.EmailBridge.TlsHelpers
   alias Zaq.Engine.ChannelConfig
@@ -21,6 +29,93 @@ defmodule Zaq.Channels.EmailBridge.SmtpSender do
 
   alias Zaq.ConnectorConfig.SmtpSettings, as: SmtpHelpers
   alias Zaq.Utils.ParseUtils
+
+  @doc "Composes final MIME without I/O from the frozen selected SMTP settings."
+  def prepare_notification(identifier, payload, metadata, settings, attachments) do
+    with true <- valid_attachments?(attachments),
+         %Swoosh.Email{} = email <- compose_notification(identifier, payload, metadata, settings),
+         false <- email.to == [] and email.cc == [],
+         config when config != [] <- email_delivery_opts(settings) do
+      email =
+        Enum.reduce(attachments, email, fn file, email ->
+          attachment(
+            email,
+            Swoosh.Attachment.new({:data, file.content},
+              filename: file.name,
+              content_type: file.mime_type
+            )
+          )
+        end)
+
+      config = prepared_config(config)
+      body = Helpers.body(email, config)
+
+      {:ok,
+       %PreparedMessage{
+         body: body,
+         size_bytes: byte_size(body),
+         config: config,
+         sender: Helpers.sender(email),
+         recipients: Enum.map(email.to ++ email.cc ++ email.bcc, &elem(&1, 1)) |> Enum.uniq()
+       }}
+    else
+      _ -> {:error, :invalid_smtp_preparation}
+    end
+  end
+
+  defp valid_attachments?(files) when is_list(files) do
+    Enum.all?(files, fn
+      %{content: content, name: name, mime_type: mime} ->
+        is_binary(content) and is_binary(name) and is_binary(mime)
+
+      _ ->
+        false
+    end)
+  end
+
+  defp valid_attachments?(_), do: false
+
+  defp prepared_config(config) do
+    config
+    |> Keyword.delete(:adapter)
+    |> Keyword.put(:retries, 0)
+    |> Keyword.put(:no_mx_lookups, true)
+    |> Keyword.update(:tls, :always, fn
+      :if_available -> :always
+      selected -> selected
+    end)
+    |> SMTP.gen_smtp_config()
+  end
+
+  @doc "Submits exactly the measured MIME once; success establishes relay acceptance only."
+  def send_prepared(%PreparedMessage{
+        body: body,
+        size_bytes: size,
+        sender: sender,
+        recipients: recipients,
+        config: config
+      })
+      when is_binary(body) and byte_size(body) == size and is_binary(sender) and
+             is_list(recipients) and recipients != [] and is_list(config) do
+    if valid_submission?(recipients, config) do
+      case :gen_smtp_client.send_blocking({sender, recipients, body}, config) do
+        receipt when is_binary(receipt) ->
+          {:ok, %{sender_address: sender, recipient_addresses: recipients}}
+
+        error ->
+          {:error, error}
+      end
+    else
+      {:error, :invalid_prepared_message}
+    end
+  end
+
+  def send_prepared(_), do: {:error, :invalid_prepared_message}
+
+  defp valid_submission?(recipients, config),
+    do:
+      Enum.all?(recipients, &is_binary/1) and config[:retries] == 0 and
+        config[:no_mx_lookups] == true
 
   @doc "Sends a notification without exposing its delivery receipt to legacy callers."
   def send_notification(identifier, payload, metadata) do
@@ -71,22 +166,8 @@ defmodule Zaq.Channels.EmailBridge.SmtpSender do
   end
 
   defp deliver_notification(identifier, payload, metadata, settings) do
-    {from_name, from_email} = email_sender(payload, metadata, settings)
+    email = compose_notification(identifier, payload, metadata, settings)
     delivery_opts = email_delivery_opts(settings)
-
-    subject = Map.get(payload, "subject", "")
-    body = Map.get(metadata, "email_body") || Map.get(payload, "body", "")
-    format = Map.get(payload, "format")
-    {text, html} = resolve_email_bodies(body, Map.get(payload, "html_body"), format)
-
-    email =
-      new()
-      |> apply_recipients(identifier, payload, [from_email, map_get(settings, "from_email")])
-      |> from({from_name, from_email})
-      |> subject(subject)
-      |> text_body(text)
-      |> html_body(html)
-      |> apply_custom_headers(payload, metadata)
 
     result =
       if email.to == [] and email.cc == [],
@@ -105,6 +186,23 @@ defmodule Zaq.Channels.EmailBridge.SmtpSender do
       {:error, reason} ->
         {:error, reason}
     end
+  end
+
+  defp compose_notification(identifier, payload, metadata, settings) do
+    {from_name, from_email} = email_sender(payload, metadata, settings)
+
+    subject = Map.get(payload, "subject", "")
+    body = Map.get(metadata, "email_body") || Map.get(payload, "body", "")
+    format = Map.get(payload, "format")
+    {text, html} = resolve_email_bodies(body, Map.get(payload, "html_body"), format)
+
+    new()
+    |> apply_recipients(identifier, payload, [from_email, map_get(settings, "from_email")])
+    |> from({from_name, from_email})
+    |> subject(subject)
+    |> text_body(text)
+    |> html_body(html)
+    |> apply_custom_headers(payload, metadata)
   end
 
   defp apply_recipients(email, identifier, payload, own_addresses) do

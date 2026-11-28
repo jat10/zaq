@@ -113,7 +113,13 @@ defmodule Zaq.Engine.Notifications.OutboundThreadingRegressionTest do
       url: "smtp://localhost",
       token: "test-token",
       enabled: true,
-      settings: %{"from_email" => "bot@acme.test"}
+      settings: %{
+        "from_email" => "bot@acme.test",
+        "file_delivery" => %{
+          "max_attachments_per_message" => 10,
+          "max_encoded_message_bytes" => 25_000_000
+        }
+      }
     })
     |> Repo.insert!()
 

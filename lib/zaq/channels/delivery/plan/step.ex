@@ -18,4 +18,20 @@ defmodule Zaq.Channels.Delivery.Plan.Step do
           attachment_refs: [non_neg_integer()],
           depends_on: [term()]
         }
+
+  @doc "Returns a JSON-safe reference for a planner-generated step identifier."
+  @spec reference(t()) :: {:ok, list()} | {:error, :invalid_step_reference}
+  def reference(%__MODULE__{
+        id: {:upload, group, batch},
+        operation: :upload,
+        group_id: group
+      })
+      when group in 0..2_147_483_647 and batch in 0..2_147_483_647,
+      do: {:ok, [:upload, group, batch]}
+
+  def reference(%__MODULE__{id: {operation, group}, operation: operation, group_id: group})
+      when operation in [:send, :edit] and group in 0..2_147_483_647,
+      do: {:ok, [operation, group]}
+
+  def reference(_step), do: {:error, :invalid_step_reference}
 end

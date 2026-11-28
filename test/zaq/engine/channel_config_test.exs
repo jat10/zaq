@@ -654,8 +654,8 @@ defmodule Zaq.Engine.ChannelConfigTest do
       assert saved.name == config.name
     end
 
-    test "unsupported file sending permits empty settings and clearing required SMTP overrides" do
-      assert {:ok, smtp} =
+    test "SMTP file sending requires both limits and rejects clearing persisted limits" do
+      assert {:error, missing} =
                ChannelConfig.upsert_by_provider("email:smtp", %{
                  name: "SMTP empty files",
                  kind: "retrieval",
@@ -663,28 +663,52 @@ defmodule Zaq.Engine.ChannelConfigTest do
                  settings: %{"file_delivery" => %{}}
                })
 
-      assert Repo.reload!(smtp).settings["file_delivery"] == %{}
-
-      assert {:ok, configured} =
-               smtp
-               |> ChannelConfig.changeset(%{
-                 settings: %{"file_delivery" => %{"max_encoded_message_bytes" => 2_000}}
-               })
-               |> Repo.update()
-
-      assert Repo.reload!(smtp).settings["file_delivery"] == %{
-               "max_encoded_message_bytes" => 2_000
+      assert FileSettings.errors(missing) == %{
+               "max_attachments_per_message" => "Required for file delivery",
+               "max_encoded_message_bytes" => "Required for file delivery"
              }
 
-      assert {:ok, cleared} =
-               configured
+      assert {:ok, smtp} =
+               ChannelConfig.upsert_by_provider("email:smtp", %{
+                 name: "SMTP configured files",
+                 kind: "retrieval",
+                 enabled: false,
+                 settings: %{
+                   "file_delivery" => %{
+                     "max_attachments_per_message" => 2,
+                     "max_encoded_message_bytes" => 2_000
+                   }
+                 }
+               })
+
+      assert {:error, incomplete} =
+               %ChannelConfig{}
+               |> ChannelConfig.changeset(%{
+                 name: "SMTP incomplete files",
+                 provider: "email:smtp",
+                 kind: "retrieval",
+                 enabled: false,
+                 settings: %{"file_delivery" => %{"max_encoded_message_bytes" => 2_000}}
+               })
+               |> Repo.insert()
+
+      assert FileSettings.errors(incomplete) == %{
+               "max_attachments_per_message" => "Required for file delivery"
+             }
+
+      assert Repo.reload!(smtp).settings == smtp.settings
+
+      assert {:error, cleared} =
+               smtp
                |> ChannelConfig.changeset(%{
                  settings: %{"file_delivery" => %{"max_encoded_message_bytes" => ""}}
                })
                |> Repo.update()
 
-      assert cleared.settings["file_delivery"] == %{}
-      assert Repo.reload!(smtp).settings["file_delivery"] == %{}
+      assert FileSettings.errors(cleared)["max_encoded_message_bytes"] ==
+               "Required for file delivery"
+
+      assert Repo.reload!(smtp).settings == smtp.settings
     end
 
     @tag bridge: UnsupportedFileBridge
@@ -763,7 +787,14 @@ defmodule Zaq.Engine.ChannelConfigTest do
         name: "Email SMTP",
         kind: "retrieval",
         enabled: true,
-        settings: %{"relay" => "smtp.example.com", "port" => "587"}
+        settings: %{
+          "relay" => "smtp.example.com",
+          "port" => "587",
+          "file_delivery" => %{
+            "max_attachments_per_message" => 10,
+            "max_encoded_message_bytes" => 25_000_000
+          }
+        }
       })
 
     loaded = Repo.get!(ChannelConfig, smtp.id) |> Map.put(:token, nil)
@@ -1124,7 +1155,14 @@ defmodule Zaq.Engine.ChannelConfigTest do
                name: "Email SMTP",
                kind: "retrieval",
                enabled: true,
-               settings: %{"relay" => "smtp.example.com", "port" => "587"}
+               settings: %{
+                 "relay" => "smtp.example.com",
+                 "port" => "587",
+                 "file_delivery" => %{
+                   "max_attachments_per_message" => 10,
+                   "max_encoded_message_bytes" => 25_000_000
+                 }
+               }
              })
 
     changeset =
@@ -1146,7 +1184,14 @@ defmodule Zaq.Engine.ChannelConfigTest do
                name: "Email SMTP",
                kind: "retrieval",
                enabled: true,
-               settings: %{"relay" => "smtp.example.com", "port" => "587"}
+               settings: %{
+                 "relay" => "smtp.example.com",
+                 "port" => "587",
+                 "file_delivery" => %{
+                   "max_attachments_per_message" => 10,
+                   "max_encoded_message_bytes" => 25_000_000
+                 }
+               }
              })
 
     changeset =
@@ -1186,7 +1231,14 @@ defmodule Zaq.Engine.ChannelConfigTest do
                name: "Email SMTP",
                kind: "retrieval",
                enabled: true,
-               settings: %{"relay" => "smtp.example.com", "port" => "587"}
+               settings: %{
+                 "relay" => "smtp.example.com",
+                 "port" => "587",
+                 "file_delivery" => %{
+                   "max_attachments_per_message" => 10,
+                   "max_encoded_message_bytes" => 25_000_000
+                 }
+               }
              })
 
     imap = upsert_imap_config(enabled: true, mailbox: "INBOX")
@@ -1222,7 +1274,14 @@ defmodule Zaq.Engine.ChannelConfigTest do
                name: "Email SMTP",
                kind: "retrieval",
                enabled: true,
-               settings: %{"relay" => "smtp.example.com", "port" => "587"}
+               settings: %{
+                 "relay" => "smtp.example.com",
+                 "port" => "587",
+                 "file_delivery" => %{
+                   "max_attachments_per_message" => 10,
+                   "max_encoded_message_bytes" => 25_000_000
+                 }
+               }
              })
 
     imap = upsert_imap_config(enabled: true, mailbox: "INBOX")
@@ -1341,7 +1400,14 @@ defmodule Zaq.Engine.ChannelConfigTest do
       url: "smtp://configured-in-settings",
       token: "smtp-unused",
       enabled: true,
-      settings: %{"relay" => "smtp.example.com", "port" => "587"}
+      settings: %{
+        "relay" => "smtp.example.com",
+        "port" => "587",
+        "file_delivery" => %{
+          "max_attachments_per_message" => 10,
+          "max_encoded_message_bytes" => 25_000_000
+        }
+      }
     }
 
     assert {:ok, inserted} = ChannelConfig.upsert_by_provider("email:smtp", attrs)
@@ -1355,7 +1421,14 @@ defmodule Zaq.Engine.ChannelConfigTest do
                url: "smtp://configured-in-settings",
                token: "smtp-unused",
                enabled: false,
-               settings: %{"relay" => "smtp.internal.local", "port" => "465"}
+               settings: %{
+                 "relay" => "smtp.internal.local",
+                 "port" => "465",
+                 "file_delivery" => %{
+                   "max_attachments_per_message" => 10,
+                   "max_encoded_message_bytes" => 25_000_000
+                 }
+               }
              })
 
     assert updated.id == inserted.id
@@ -1561,7 +1634,14 @@ defmodule Zaq.Engine.ChannelConfigTest do
         name: "Email SMTP",
         kind: "retrieval",
         enabled: true,
-        settings: %{"relay" => "smtp.example.com", "port" => "587"}
+        settings: %{
+          "relay" => "smtp.example.com",
+          "port" => "587",
+          "file_delivery" => %{
+            "max_attachments_per_message" => 10,
+            "max_encoded_message_bytes" => 25_000_000
+          }
+        }
       })
 
     loaded = Repo.get!(ChannelConfig, smtp.id)

@@ -125,7 +125,13 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelHistoryLive do
     case message_request(socket, %{op: :message_changes, message_ids: [id]}) do
       {:ok, changes} ->
         socket = apply_history_changes(socket, changes)
-        message = Enum.find(changes.pending_messages, &(&1.message_id == id))
+
+        message =
+          Enum.find(
+            changes.pending_messages ++ changes.messages,
+            &(&1.message_id == id && is_map(&1[:delivery]))
+          )
+
         {:noreply, assign(socket, :delivery_info, message)}
 
       error ->
@@ -345,8 +351,15 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelHistoryLive do
   end
 
   defp confirmed_delivery_info(selected, messages) do
-    if Enum.any?(messages, &(&1.message_id == selected.message_id)) do
-      %{selected | delivery: %{state: :delivered, reason: "The provider confirmed delivery."}}
+    case Enum.find(messages, &(&1.message_id == selected.message_id)) do
+      %{delivery: delivery} = message when is_map(delivery) ->
+        message
+
+      message when is_map(message) ->
+        %{selected | delivery: %{state: :delivered, reason: "The provider confirmed delivery."}}
+
+      _ ->
+        nil
     end
   end
 

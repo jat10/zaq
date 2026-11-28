@@ -37,6 +37,18 @@ defmodule Zaq.ConnectorConfig.FileSettings do
 
   def from_connection(_), do: %{}
 
+  @doc "Reads stored failure policy without requiring transport facts."
+  @spec failure_policy(map()) :: {:ok, :continue | :abort} | {:error, :invalid_failure_policy}
+  def failure_policy(settings) when is_map(settings) do
+    case Map.get(settings, "send_on_file_failure", true) do
+      true -> {:ok, :continue}
+      false -> {:ok, :abort}
+      _ -> {:error, :invalid_failure_policy}
+    end
+  end
+
+  def failure_policy(_settings), do: {:error, :invalid_failure_policy}
+
   @doc "Attaches shared validation errors to the owning schema field with file-local keys."
   @spec add_errors(Ecto.Changeset.t(), atom(), map(), keyword()) :: Ecto.Changeset.t()
   def add_errors(changeset, field, errors, opts \\ []) do
@@ -206,6 +218,17 @@ defmodule Zaq.ConnectorConfig.FileSettings do
         do: {:ok, limits},
         else: {:error, %{"max_attachments_per_message" => "Required for file delivery"}}
     end
+  end
+
+  @doc "Validates the selected encoded ceiling independently of discarded file-only settings."
+  def encoded_message_limit(settings, snapshot) when is_map(settings) do
+    selected = Map.take(settings, ["max_encoded_message_bytes"])
+    changeset = validation_changeset(selected, snapshot)
+    changeset = validate_limit(:max_encoded_message_bytes, selected, snapshot, changeset)
+
+    if changeset.valid?,
+      do: {:ok, effective_limit(selected, snapshot, :max_encoded_message_bytes)},
+      else: {:error, :invalid_encoded_message_limit}
   end
 
   defp validation_changeset(settings, snapshot) do

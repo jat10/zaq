@@ -12,8 +12,14 @@ defmodule Zaq.Channels.Events do
     event_type = Keyword.get(opts, :type, :sync)
     event_opts = Keyword.get(opts, :event_opts, [])
 
+    event_opts =
+      if outgoing.attachments == [],
+        do: event_opts,
+        else: Keyword.put(event_opts, :confidential, true)
+
     Event.new(outgoing, :channels,
       type: event_type,
+      actor: Keyword.get(opts, :actor),
       opts: [action: :deliver_outgoing] ++ event_opts
     )
   end

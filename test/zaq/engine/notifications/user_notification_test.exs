@@ -50,6 +50,12 @@ defmodule Zaq.Engine.Notifications.UserNotificationTest do
     %ChannelConfig{}
     |> ChannelConfig.changeset(%{
       name: "SMTP",
+      settings: %{
+        "file_delivery" => %{
+          "max_attachments_per_message" => 10,
+          "max_encoded_message_bytes" => 25_000_000
+        }
+      },
       provider: "email:smtp",
       kind: "retrieval",
       url: "smtp://localhost",

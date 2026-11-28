@@ -8,11 +8,110 @@ defmodule Zaq.Channels.DeliveryConfirmation do
   this reporter never interprets provider errors or selects a transport policy.
   """
 
+  alias Zaq.Channels.Delivery.Result
+  alias Zaq.Contracts.Record
+  alias Zaq.Engine.Messages.Incoming.Audience
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
   alias Zaq.NodeRouter
 
   @reasons [:rejected, :missing_configuration, :unsupported_provider, :timeout, :unknown]
+
+  @doc "Reports confirmed messages individually and one bounded failure group; returns transport facts unchanged."
+  def record_attempt(response, outgoing, opts) do
+    result =
+      case response do
+        {:ok, %Result{} = result} -> result
+        {:error, _, %Result{} = result} -> result
+        _ -> nil
+      end
+
+    with {:ok, evidence} <- Result.safe_evidence(result) do
+      for %{outcome: :confirmed, receipt: receipt} = part <- result.steps do
+        {receipt, delivered} = confirmed_part(receipt, part, result.attempt_id, outgoing)
+        record({:ok, receipt}, delivered, opts)
+      end
+
+      if evidence.parts != [] or evidence.omitted_part_count > 0,
+        do: report_observation(%{delivery_parts: evidence}, outgoing, opts)
+    end
+
+    response
+  end
+
+  defp confirmed_part(receipt, part, attempt_id, outgoing) do
+    publication = Map.get(part, :publication, %{})
+    continuation? = publication[:continuation?] == true
+    metadata = outgoing.metadata || %{}
+
+    answer_id =
+      Map.get(metadata, :persisted_assistant_message_id, metadata[:assistant_message_id])
+
+    metadata =
+      metadata
+      |> Map.take([:user_message_id, :persisted_assistant_message_id])
+      |> Map.put(:assistant_message_id, answer_id)
+
+    delivered = %{
+      outgoing
+      | attachments: [],
+        metadata: metadata,
+        thread_anchor: nil,
+        routing_context:
+          Map.take(outgoing.routing_context || %{}, [
+            :channel_config_id,
+            :conversation_type,
+            :source_scope,
+            :conversation_id,
+            :audience
+          ]),
+        body: if(continuation?, do: publication.body, else: outgoing.body),
+        thread_id: Map.get(publication, :thread_id, receipt[:thread_id])
+    }
+
+    receipt =
+      receipt
+      |> Map.take([
+        :confirmation,
+        :message_id,
+        :thread_id,
+        :action,
+        :source_scope,
+        :conversation_id,
+        :audience
+      ])
+      |> Map.put(:delivery_part, %{
+        attempt_id: attempt_id,
+        group_id: part.step.group_id,
+        primary?: not continuation?
+      })
+      |> Map.put(:attachments, confirmed_attachments(outgoing, part))
+      |> Map.update(:audience, nil, &Audience.normalize/1)
+
+    {receipt, delivered}
+  end
+
+  defp confirmed_attachments(outgoing, part) do
+    refs = Map.get(part.receipt, :attachment_refs, %{})
+
+    for index <- Enum.take(Map.get(part, :delivered_attachment_refs, []), 128),
+        record = Enum.at(outgoing.attachments, index),
+        not is_nil(record) do
+      descriptor = record |> Record.attachment_metadata() |> Map.drop(["id", "attributes"])
+
+      actual =
+        Map.get(Map.get(part, :delivered_file_metadata, %{}), index, %{})
+        |> Map.put(:kind, :file)
+        |> Record.attachment_metadata()
+
+      descriptor = Map.merge(descriptor, actual)
+
+      case refs[index] do
+        id when is_binary(id) and byte_size(id) in 1..4096 -> Map.put(descriptor, "id", id)
+        _ -> descriptor
+      end
+    end
+  end
 
   @doc """
   Forwards a confirmed receipt and its original outgoing message to Engine.
@@ -47,7 +146,7 @@ defmodule Zaq.Channels.DeliveryConfirmation do
     _ ->
       {:ok, Map.put(receipt, :confirmation_recording, :unavailable)}
   catch
-    :exit, _ ->
+    _kind, _ ->
       {:ok, Map.put(receipt, :confirmation_recording, :unavailable)}
   end
 
@@ -102,6 +201,8 @@ defmodule Zaq.Channels.DeliveryConfirmation do
   catch
     _kind, _ -> :ok
   end
+
+  defp safe_observation(%{delivery_parts: evidence}), do: %{delivery_parts: evidence}
 
   defp safe_observation(%{outcome: outcome, reason: reason} = observation)
        when outcome in [:failed, :unconfirmed] and reason in @reasons and

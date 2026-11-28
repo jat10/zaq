@@ -73,7 +73,11 @@ defmodule ZaqWeb.Live.BO.System.ForgotPasswordLiveTest do
       "tls" => "enabled",
       "tls_verify" => "verify_peer",
       "from_email" => "noreply@example.com",
-      "from_name" => "ZAQ"
+      "from_name" => "ZAQ",
+      "file_delivery" => %{
+        "max_attachments_per_message" => 10,
+        "max_encoded_message_bytes" => 25_000_000
+      }
     }
 
     attrs_map = Enum.into(attrs, %{})

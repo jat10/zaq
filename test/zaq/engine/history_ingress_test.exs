@@ -195,7 +195,9 @@ defmodule Zaq.Engine.HistoryIngressTest do
     smtp = Repo.get_by!(ChannelConfig, name: "History SMTP")
 
     smtp
-    |> ChannelConfig.changeset(%{settings: %{"from_email" => "bot@example.com"}})
+    |> ChannelConfig.changeset(%{
+      settings: Map.put(smtp.settings, "from_email", "bot@example.com")
+    })
     |> Repo.update!()
 
     config =
@@ -234,7 +236,13 @@ defmodule Zaq.Engine.HistoryIngressTest do
       kind: "retrieval",
       url: "https://example.invalid",
       token: "fixture-token",
-      settings: %{"from_email" => "other@example.com"}
+      settings: %{
+        "from_email" => "other@example.com",
+        "file_delivery" => %{
+          "max_attachments_per_message" => 10,
+          "max_encoded_message_bytes" => 25_000_000
+        }
+      }
     })
     |> Repo.insert!()
 
@@ -447,7 +455,9 @@ defmodule Zaq.Engine.HistoryIngressTest do
     smtp = Repo.get_by!(ChannelConfig, name: "History SMTP")
 
     smtp
-    |> ChannelConfig.changeset(%{settings: %{"from_email" => "julien@eweev.com"}})
+    |> ChannelConfig.changeset(%{
+      settings: Map.put(smtp.settings, "from_email", "julien@eweev.com")
+    })
     |> Repo.update!()
 
     config =
@@ -496,7 +506,9 @@ defmodule Zaq.Engine.HistoryIngressTest do
     smtp = Repo.get_by!(ChannelConfig, name: "History SMTP")
 
     smtp
-    |> ChannelConfig.changeset(%{settings: %{"from_email" => "bot@example.com"}})
+    |> ChannelConfig.changeset(%{
+      settings: Map.put(smtp.settings, "from_email", "bot@example.com")
+    })
     |> Repo.update!()
 
     config =
@@ -592,6 +604,12 @@ defmodule Zaq.Engine.HistoryIngressTest do
         name: "History SMTP",
         provider: "email:smtp",
         kind: "retrieval",
+        settings: %{
+          "file_delivery" => %{
+            "max_attachments_per_message" => 10,
+            "max_encoded_message_bytes" => 25_000_000
+          }
+        },
         url: "https://example.invalid",
         token: "test-token"
       })
