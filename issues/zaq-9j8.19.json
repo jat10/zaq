@@ -9,7 +9,7 @@
   "parent": "zaq-9j8",
   "priority": 1,
   "status": "open",
-  "title": "PR5 confirmation drops durable attachment sources",
+  "title": "[zaq-9j8.19] Preserve validated source metadata in PR5 confirmations",
   "type": "bug",
-  "updated_at": "2026-11-28T11:23:26Z"
+  "updated_at": "2026-11-28T11:23:27Z"
 }
