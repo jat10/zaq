@@ -9,9 +9,15 @@
   "id": "zaq-9j8.15",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Boundary analysis: Executor owns answer selection, concurrency and operation at-most-once; Preparation validates full actual encoded inputs; bridges only prepare/execute one operation. Extend existing runtime with answer reservation after successful preparation, preserving threaded root promotion and independent concurrent sends. Reuse existing fallback on final unusable group and preserve failure facts. No new Action or provider retry; verify using existing Executor fixtures and safe reporting.",
+      "timestamp": "2026-11-28T10:23:49Z"
+    }
+  ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-9j8.15] Preserve the answer after independent preparation failure",
   "type": "bug",
-  "updated_at": "2026-11-28T10:23:47Z"
+  "updated_at": "2026-11-28T10:23:49Z"
 }
