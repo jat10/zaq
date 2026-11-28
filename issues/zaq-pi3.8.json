@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-pi3.7"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-pi3.9"
   ],
@@ -15,5 +13,5 @@
   "status": "open",
   "title": "[zaq-pi3.8] Validate PR6 acceptance and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-28T10:11:21Z"
+  "updated_at": "2026-11-28T10:11:27Z"
 }
