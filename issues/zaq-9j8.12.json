@@ -14,9 +14,15 @@
   "id": "zaq-9j8.12",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Five approved fixes are implemented in the current worktree with individual mix q and focused regression evidence on .14-.18; no Git commit/push/merge. Combined 20-surface matrix initially 409/411 passed (all 16 properties). Existing grouped-modal fixture now supplies explicit start time without assertion changes; unchanged shared ChannelCapabilities SMTP expectation still omits native File and remains outside the approved SMTP-suite changes. Full existing npm E2E is running against refreshed worktree server/isolated database; no new feature E2E authored. Preserve .10 human UX -\u003e .11 feature E2E, post-review coverage and final precommit sequencing. Mattermost publication/real provider readiness remains PR6.",
+      "timestamp": "2026-11-28T10:41:16Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-9j8.12] Complete PR5 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-28T10:19:15Z"
+  "updated_at": "2026-11-28T10:41:16Z"
 }
