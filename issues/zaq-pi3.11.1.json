@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-28T11:14:22Z",
+  "description": "Functional/files: update only SDK and Mattermost declarations/locks plus HTTP-boundary contracts; reference verified published f176793/98cd98c. Tests first: red on old primitive absence; prove exact multipart bytes, provider IDs, thread/edit, incomplete upload safe error and no retry. Branches: configured limits/unsupported Telegram/text compatibility. Mock only external Mattermost HTTP. Docs: Channels dependency compatibility and pending partial-facts publication. Action reuse: existing FileDelivery and adapter callbacks; no new transport or Action. Parent .11 retains external partial-upload/readiness acceptance.",
+  "id": "zaq-pi3.11.1",
+  "labels": [],
+  "parent": "zaq-pi3.11",
+  "priority": 2,
+  "status": "open",
+  "title": "Pin published Mattermost attachment primitives",
+  "type": "task",
+  "updated_at": "2026-11-28T11:14:22Z"
+}
