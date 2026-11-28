@@ -16,11 +16,15 @@
     {
       "text": "Implemented validated selection-only Action and explicit registry key data_source.attach_document. Reuses ActionContract.execute(GetDocument, trace_payload: false), trusted actor/explicit bypass, Record authorization and signed source identity. Atomic instructions and pure source-ordered reducer; no destination operations, inline bytes, acquisition or delivery. Red phase observed before implementation. Five focused checks pass including generated reducer sequences; mix q passes. Real configured native/source/transport acceptance remains in subsequent integration tasks; existing tests untouched.",
       "timestamp": "2026-11-28T10:35:37Z"
+    },
+    {
+      "text": "User explicitly approved adding data_source.attach_document to existing exact registry tool-list expectations on 2026-11-28 in response to the test-behavior gate question. Preserve every existing entry and assertion; only insert the new tool in both exact ordered lists.",
+      "timestamp": "2026-11-28T10:37:13Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "[zaq-pi3.3] Add the validated attach_documents Action and pure reducer",
   "type": "task",
-  "updated_at": "2026-11-28T10:35:40Z"
+  "updated_at": "2026-11-28T10:37:13Z"
 }
