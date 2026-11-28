@@ -13,11 +13,15 @@
     {
       "text": "Boundary/Action reuse assessment rechecked: extend Result safe evidence and existing DeliveryConfirmation reporting, Engine DeliveryEvidence validation and MessageDelivery row-lock persistence/presentation. No new Action, send route or history association implementation. Attempt precedence will use explicit UTC start time captured before preparation/provider operations, never UUID order or completion/report arrival; strictly later starts supersede, equal or missing start facts cannot displace an ordered current attempt, and same-attempt conflicting terminal facts cannot clear genuine failures. Preserve earlier snapshots separately in private delivery_attempts metadata. Legacy confirmation and history idempotency remain authoritative and untouched; test actual Channels-\u003eEngine persisted presentation.",
       "timestamp": "2026-11-28T10:25:30Z"
+    },
+    {
+      "text": "Regression evidence: new failure-\u003esuccess, timeout-\u003esuccess, delayed-success and tied/missing-time cases failed on original code. Focused implementation run passed 42 checks (5 properties, 37 tests). Broader run passed all 155 tests and 14/15 properties; the added permutation property exhausted uniqueness retries, corrected to StreamData.shuffle over the fixed domain. Subsequent mix q hit ExDNA internal 5-second task timeout; retrying unmodified check and full focused suite. Owning docs describe explicit UTC ordering/clock assumptions and immutable terminal snapshots. Supplemental .15 review regression prevents duplicate fallback after an independent answer is already reserved.",
+      "timestamp": "2026-11-28T10:32:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.16] Scope displayed delivery evidence to the current attempt",
   "type": "bug",
-  "updated_at": "2026-11-28T10:25:30Z"
+  "updated_at": "2026-11-28T10:32:03Z"
 }
