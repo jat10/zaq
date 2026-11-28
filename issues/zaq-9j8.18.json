@@ -9,7 +9,7 @@
   "parent": "zaq-9j8",
   "priority": 2,
   "status": "open",
-  "title": "[zaq-9j8] Reconcile SMTP settings tests with native attachment support",
+  "title": "[zaq-9j8.18] Reconcile SMTP settings tests with native attachment support",
   "type": "task",
-  "updated_at": "2026-11-28T10:19:02Z"
+  "updated_at": "2026-11-28T10:19:13Z"
 }
