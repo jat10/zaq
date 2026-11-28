@@ -11,9 +11,15 @@
   "id": "zaq-pi3.5",
   "labels": [],
   "parent": "zaq-pi3",
+  "comments": [
+    {
+      "text": "Implemented request-local selection within existing StreamEvents.handle_tool_completed -\u003e complete_tool_call, its tool_calls collection, invocation sequence and hierarchy/replay checks. Validated canonical instructions remain private on the existing invocation rows before trace conversion; result folds them by existing native declaration sequence and strips private data from exported evidence. Matching native root starts/request IDs are required; failed/malformed completions leave prior selection unchanged. Output alias expansion reuses OpaqueAliases; AttachDocuments.validate_output and reduce_selection are authoritative. Native-handle consumers ignore foreign request events; legacy stream behavior remains covered by unchanged tests. Success-only final attachments; error/cancel/handoff/max-iteration/exhaustion discard them. Existing evidence/status helpers redact selection capabilities. New tests cover reverse completion order, replay, unknown/nested/foreign/late calls, malformed output, failed-outcome envelopes, retry, clear and cross-scope aliases. Final mix q and all 502 focused checks passed. No parallel collector/process/cache or delivery state.",
+      "timestamp": "2026-11-28T11:01:36Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3.5] Reduce attachment selection within the native request lifecycle",
   "type": "task",
-  "updated_at": "2026-11-28T11:01:35Z"
+  "updated_at": "2026-11-28T11:01:36Z"
 }
