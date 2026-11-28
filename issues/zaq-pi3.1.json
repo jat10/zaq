@@ -17,11 +17,15 @@
     {
       "text": "First mix setup fetched/compiled dependencies, created isolated dev database and completed migrations. Asset-tool downloads stalled; stopped only this session setup process. esbuild installer reported registry fetch shutdown. Recovered using exact configured esbuild 0.25.4 binary copied from main build cache into ignored PR6 _build; Tailwind 4.1.12 download had completed and its existing binary was preserved. Both binaries return expected versions. No dependency pin/lock change, no owning workspace edits. Retrying setup after this local asset prerequisite recovery.",
       "timestamp": "2026-11-28T10:20:11Z"
+    },
+    {
+      "text": "Environment acceptance: mix setup exited 0 after local asset-tool recovery; dev DB zaq_feat_attach_documents created/migrated; Config.Reader verifies test DB zaq_test_feat_attach_documents with no DB/build/deps overrides. PostgreSQL vector 0.8.2 available; pg_search unavailable and supported native-search fallback selected. Assets built and pinned crawler scripts fetched. Created PR6-local .venv, installed checked-in Python requirements; pip check passed. mix q passed (Credo: 1859 files, no issues; hooks/docs/warnings-as-errors compile passed). Initial Record baseline is still compiling test dependencies; no passed-test claim yet. No new application tests needed for setup itself. Tracked tree and dependency pins remain unchanged. No commit per explicit user instruction. Setup task complete; later browser prerequisites remain owned by gated UI/E2E tasks.",
+      "timestamp": "2026-11-28T10:23:37Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3.1] Complete isolated PR6 developer environment",
   "type": "task",
-  "updated_at": "2026-11-28T10:20:11Z"
+  "updated_at": "2026-11-28T10:23:37Z"
 }
