@@ -22,11 +22,15 @@
     {
       "text": "Dependency refinement under explicit user direction to continue independent work: .12 authorized source retrieval depends on completed .6 selection, not Mattermost integration .7. .14 shared web delivery depends on .12 retrieval contracts, not unpublished widget HTTP package .13. Widget presentation .16 additionally requires .13, and full acceptance .8 explicitly still requires .7. External adapter gate .11/.7 remains intact. The convergence at .16 is necessary: widget presentation needs both shared delivery/BO patterns and authenticated HTTP API. No feature gate waived; provider and browser acceptance still gate final review/coverage. Added a child of .11 for independently verifiable published pin configuration. PR4/PR5 defects will be recorded in their owning workspace and never patched in PR6.",
       "timestamp": "2026-11-28T11:14:38Z"
+    },
+    {
+      "text": "Iteration checkpoint: published core remains 5cf1a690557f5946b7460c89dd64ba4474491bf5, verified remote PR5 remains 2144608e7f8110b75da7f05e4085dd84bfc16acd. Normal PR6 push already completed with recovery refs and unchanged restack patch. Follow-on work is local/uncommitted: two Mattermost SDK/adapter pin entries, approved compatibility tests, authorized retrieval, shared descriptors, BO route/cards/Storybook, and isolated widget companion API/presentation. Fresh ZAQ mix q passes; affected suite 465 and existing BO LiveViews 117 pass. Widget tsc/Vite build and 17 Node unit tests pass; full Elixir 370/374, four inherited subprocess output-format assertions tracked ww-9pq; unchanged warnings-as-errors blockers ww-e4z. External Mattermost partial facts/server smoke, Drive HTTP/export acceptance, PR5 defects, widget release/pin, actual web execution, UX .17, consolidated E2E .18, technical review .9, post-review coverage/final precommit .10 remain open. No E2E approval or publication inferred. Sibling stack map updated with exact parent/recovery refs; factory/delivery infrastructure identical to PR5.",
+      "timestamp": "2026-11-28T12:06:00Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3] PR6 authorized document attachments across Mattermost, email, BO and widget",
   "type": "epic",
-  "updated_at": "2026-11-28T11:14:38Z"
+  "updated_at": "2026-11-28T12:06:00Z"
 }
