@@ -17,11 +17,15 @@
     {
       "text": "Regression evidence: new failure-\u003esuccess, timeout-\u003esuccess, delayed-success and tied/missing-time cases failed on original code. Focused implementation run passed 42 checks (5 properties, 37 tests). Broader run passed all 155 tests and 14/15 properties; the added permutation property exhausted uniqueness retries, corrected to StreamData.shuffle over the fixed domain. Subsequent mix q hit ExDNA internal 5-second task timeout; retrying unmodified check and full focused suite. Owning docs describe explicit UTC ordering/clock assumptions and immutable terminal snapshots. Supplemental .15 review regression prevents duplicate fallback after an independent answer is already reserved.",
       "timestamp": "2026-11-28T10:32:03Z"
+    },
+    {
+      "text": "Validated final implementation and owning docs: mix q passed on retry without changing checks; complete delivery directory plus DeliveryConfirmation, grouped evidence, MessageDelivery, DeliveryEvidence and history Delivery suites passed 171 checks (15 properties, 156 tests). Fixed-domain shuffle now proves current attempt is independent of report permutation. Real reporting persists failure-\u003esuccess, timeout-\u003esuccess, delayed reports, tied/undated reports, same-attempt partial immutability and private history; legacy confirmation/idempotency tests remain unchanged. .15 trailing unusable-group duplication regression also passes. No commit/push/merge; UX/E2E gates remain open.",
+      "timestamp": "2026-11-28T10:32:52Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.16] Scope displayed delivery evidence to the current attempt",
   "type": "bug",
-  "updated_at": "2026-11-28T10:32:03Z"
+  "updated_at": "2026-11-28T10:32:52Z"
 }
