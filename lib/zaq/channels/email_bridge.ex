@@ -20,8 +20,11 @@ defmodule Zaq.Channels.EmailBridge do
   require Logger
 
   alias Zaq.Channels.Bridge
+  alias Zaq.Channels.Delivery.Error
   alias Zaq.Channels.EmailBridge.ImapConfigHelpers
   alias Zaq.Channels.EmailBridge.SelfAddresses
+  alias Zaq.Channels.EmailBridge.SmtpSender
+  alias Zaq.Channels.Events
   alias Zaq.Contracts.Record
   alias Zaq.Engine.ChannelConfig
   alias Zaq.Engine.Messages.{Incoming, Outgoing}
@@ -44,9 +47,9 @@ defmodule Zaq.Channels.EmailBridge do
       provider when provider in ["email:smtp", :"email:smtp"] ->
         {:ok,
          %{
-           resolved: %{text: :native, threads: :native, mode: "none"},
+           resolved: %{text: :native, file: :native, threads: :native, mode: "none"},
            file_delivery: %{
-             transfer_mode: :unresolved,
+             transfer_mode: :send_with_attachments,
              supports_attachment_edits: false,
              limits: %{
                max_attachment_bytes: %{
@@ -86,6 +89,22 @@ defmodule Zaq.Channels.EmailBridge do
   end
 
   def capability_snapshot(_config), do: {:error, :unsupported}
+
+  @doc "Selects the actual outbound SMTP connector for a committed email connection."
+  @impl true
+  def outbound_connection(%{provider: provider} = config)
+      when provider in ["email:smtp", :"email:smtp"], do: {:ok, config}
+
+  def outbound_connection(%{provider: provider, settings: settings})
+      when provider in ["email:imap", :"email:imap"] do
+    id = settings |> imap_settings() |> Map.get("smtp_config_id")
+
+    if is_nil(id) or (is_integer(id) and id > 0),
+      do: ChannelConfig.resolve_by_provider("email:smtp", id),
+      else: {:error, :connector_mismatch}
+  end
+
+  def outbound_connection(_), do: {:error, :connector_mismatch}
 
   @impl Zaq.Channels.CommunicationBridge
   def incoming_routing(config) when is_map(config) do
@@ -287,6 +306,22 @@ defmodule Zaq.Channels.EmailBridge do
   end
 
   defp send_reply_with_smtp(outgoing, smtp_config_id) do
+    {payload, threading} = reply_payload(outgoing, smtp_config_id)
+
+    case deliver_email_reply(outgoing, payload, smtp_config_id) do
+      :ok ->
+        {:ok, delivery_receipt(threading)}
+
+      {:ok, %{sender_address: sender, recipient_addresses: recipients}}
+      when is_binary(sender) and is_list(recipients) ->
+        {:ok, confirmed_email_receipt(outgoing, threading, sender, recipients)}
+
+      error ->
+        error
+    end
+  end
+
+  defp reply_payload(outgoing, smtp_config_id, domain \\ nil) do
     # Two independent predicates. `inbound_reply?` is about *provenance* (are we
     # answering an email someone sent us) and drives the `Re:` prefix. Continuity
     # (do we have a parent to point at) comes from `thread_anchor`/`in_reply_to`
@@ -302,7 +337,7 @@ defmodule Zaq.Channels.EmailBridge do
     html_body = get_meta(outgoing.metadata, "html_body", :html_body)
     format = get_meta(outgoing.metadata, "format", :format)
 
-    threading = resolve_threading(outgoing, smtp_config_id)
+    threading = resolve_threading(outgoing, smtp_config_id, domain)
     headers = automatic_reply_headers(threading_headers(threading), inbound_reply?)
 
     payload =
@@ -317,32 +352,104 @@ defmodule Zaq.Channels.EmailBridge do
       |> maybe_put("from_email", from_email)
       |> maybe_put("from_name", from_name)
 
-    case deliver_email_reply(outgoing, payload, smtp_config_id) do
-      :ok ->
-        {:ok, delivery_receipt(threading)}
+    {payload, threading}
+  end
 
-      {:ok, %{sender_address: sender, recipient_addresses: recipients}}
-      when is_binary(sender) and is_list(recipients) ->
-        receipt =
-          delivery_receipt(threading)
-          |> Map.put(:confirmation, :confirmed)
-          |> Map.put(:source_scope, "smtp:confirmed")
-          |> Map.put(
-            :conversation_id,
-            delivery_conversation_id(outgoing, threading)
-          )
-          |> Map.put(:audience, %Zaq.Engine.Messages.Incoming.Audience{
-            platform: "email",
-            sender: sender,
-            recipients: recipients
-          })
+  defp confirmed_email_receipt(outgoing, threading, sender, recipients) do
+    delivery_receipt(threading)
+    |> Map.put(:confirmation, :confirmed)
+    |> Map.put(:source_scope, "smtp:confirmed")
+    |> Map.put(
+      :conversation_id,
+      delivery_conversation_id(outgoing, threading)
+    )
+    |> Map.put(:audience, %Zaq.Engine.Messages.Incoming.Audience{
+      platform: "email",
+      sender: sender,
+      recipients: recipients
+    })
+  end
 
-        {:ok, receipt}
+  @doc "Encodes final MIME from the selected outbound SMTP connector without rereading it."
+  @impl true
+  def prepare_delivery_message(
+        outgoing,
+        files,
+        %{provider: provider, settings: settings} = connection
+      )
+      when provider in ["email:smtp", :"email:smtp"] and is_map(settings) do
+    domain = EmailUtils.sending_domain(Map.get(settings, "from_email"))
 
-      error ->
-        error
+    outgoing =
+      if Map.get(connection, :delivery_continuation?, false),
+        do: smtp_thread_outgoing(outgoing),
+        else: outgoing
+
+    {payload, threading} = reply_payload(outgoing, Map.get(connection, :id), domain)
+
+    with {:ok, request} <-
+           SmtpSender.prepare_notification(outgoing.channel_id, payload, %{}, settings, files) do
+      receipt = confirmed_email_receipt(outgoing, threading, request.sender, request.recipients)
+      {:ok, %{size_bytes: request.size_bytes, request: request, receipt: receipt}}
     end
   end
+
+  def prepare_delivery_message(_, _, _), do: {:error, :connector_mismatch}
+
+  defp smtp_thread_outgoing(outgoing) do
+    metadata = outgoing.metadata || %{}
+    threading = get_meta(metadata, "threading", :threading) || %{}
+
+    metadata =
+      metadata
+      |> Map.drop([:threading, "threading"])
+      |> Map.put("threading", Map.drop(threading, [:message_id, "message_id"]))
+
+    outgoing = %{outgoing | metadata: metadata}
+
+    if is_nil(outgoing.thread_id) do
+      outgoing
+    else
+      anchor =
+        (outgoing.thread_anchor || %{})
+        |> Map.delete(:message_id)
+        |> Map.put("message_id", outgoing.thread_id)
+
+      %{outgoing | in_reply_to: outgoing.thread_id, thread_anchor: anchor}
+    end
+  end
+
+  @doc "Submits one measured SMTP message; errors never trigger another submission."
+  @impl true
+  def execute_delivery_step(%{operation: :send}, %{prepared: prepared}, _connection) do
+    case SmtpSender.send_prepared(prepared.request) do
+      {:ok, _} ->
+        {:ok, prepared.receipt}
+
+      {:error, cause} ->
+        {:error, smtp_delivery_error(cause)}
+    end
+  end
+
+  def execute_delivery_step(_, _, _),
+    do: {:error, %Error{stage: :configuration, outcome: :failed, reason: :unsupported_provider}}
+
+  defp smtp_delivery_error(
+         {:error, _operation, {failure, _host, <<class, a, b, _rest::binary>>}} = cause
+       )
+       when failure in [:temporary_failure, :permanent_failure] and class in [?4, ?5] and
+              a in ?0..?9 and b in ?0..?9 do
+    %Error{
+      stage: :publication,
+      outcome: :failed,
+      reason: :rejected,
+      provider_code: (class - ?0) * 100 + (a - ?0) * 10 + b - ?0,
+      cause: cause
+    }
+  end
+
+  defp smtp_delivery_error(cause),
+    do: %Error{stage: :publication, outcome: :unconfirmed, reason: :unknown, cause: cause}
 
   defp deliver_email_reply(%Outgoing{} = outgoing, payload, smtp_config_id) do
     sender = smtp_sender_module()
@@ -478,10 +585,19 @@ defmodule Zaq.Channels.EmailBridge do
            acknowledge_response: true,
            node_router: node_router_module()
          ) do
-      %Outgoing{} = outgoing -> normalize_runtime_delivery(deliver_outgoing_runtime(outgoing))
-      :ok -> :ok
-      {:error, _} = error -> error
-      other -> {:error, other}
+      %Outgoing{} = outgoing ->
+        normalize_runtime_delivery(
+          deliver_outgoing_runtime(outgoing, actor_from_incoming(incoming))
+        )
+
+      :ok ->
+        :ok
+
+      {:error, _} = error ->
+        error
+
+      other ->
+        {:error, other}
     end
   end
 
@@ -552,10 +668,10 @@ defmodule Zaq.Channels.EmailBridge do
   defp node_router_module,
     do: Application.get_env(:zaq, :email_bridge_node_router_module, NodeRouter)
 
-  defp deliver_outgoing_runtime(%Outgoing{} = outgoing) do
+  defp deliver_outgoing_runtime(%Outgoing{} = outgoing, actor) do
     case Application.get_env(:zaq, :email_bridge_router_module, Zaq.Channels.Api) do
       Zaq.Channels.Api ->
-        Zaq.Event.new(outgoing, :channels, opts: [action: :deliver_outgoing])
+        Events.build_deliver_outgoing_event(outgoing, actor: actor)
         |> node_router_module().dispatch()
         |> then(& &1.response)
 
@@ -563,7 +679,7 @@ defmodule Zaq.Channels.EmailBridge do
         if Code.ensure_loaded?(module) and function_exported?(module, :deliver, 1) do
           module.deliver(outgoing)
         else
-          Zaq.Event.new(outgoing, :channels, opts: [action: :deliver_outgoing])
+          Events.build_deliver_outgoing_event(outgoing, actor: actor)
           |> node_router_module().dispatch()
           |> then(& &1.response)
         end
@@ -605,7 +721,7 @@ defmodule Zaq.Channels.EmailBridge do
 
   # RFC 5322 threading pointers for this send: own id from `metadata["threading"]`
   # (pre-mint) or freshly minted; parent from `thread_anchor` or `in_reply_to`.
-  defp resolve_threading(%Outgoing{} = outgoing, smtp_config_id) do
+  defp resolve_threading(%Outgoing{} = outgoing, smtp_config_id, domain) do
     email_meta = get_meta(outgoing.metadata, "email", :email) || %{}
     preminted = get_meta(outgoing.metadata, "threading", :threading) || %{}
     incoming_headers = get_meta(email_meta, "headers", :headers) || %{}
@@ -614,9 +730,7 @@ defmodule Zaq.Channels.EmailBridge do
     anchor_parent = EmailUtils.normalize_message_id(get_meta(anchor, "message_id", :message_id))
     in_reply_to = anchor_parent || EmailUtils.normalize_message_id(outgoing.in_reply_to)
 
-    message_id =
-      EmailUtils.normalize_message_id(get_meta(preminted, "message_id", :message_id)) ||
-        EmailUtils.new_message_id(sending_domain(smtp_config_id))
+    message_id = thread_message_id(preminted, domain, smtp_config_id)
 
     references = chain_references(in_reply_to, anchor_parent, anchor, preminted, incoming_headers)
 
@@ -627,6 +741,11 @@ defmodule Zaq.Channels.EmailBridge do
       # The root of the thread — or, on a first send, the message itself.
       thread_id: get_meta(anchor, "thread_id", :thread_id) || List.first(references) || message_id
     }
+  end
+
+  defp thread_message_id(preminted, domain, smtp_config_id) do
+    EmailUtils.normalize_message_id(get_meta(preminted, "message_id", :message_id)) ||
+      EmailUtils.new_message_id(domain || sending_domain(smtp_config_id))
   end
 
   # No parent → fresh thread, no ancestor chain (References without a parent

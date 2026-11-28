@@ -33,6 +33,10 @@ defmodule Zaq.Channels.EmailBridge.SmtpSenderTest do
         "username" => nil,
         "password" => nil,
         "from_email" => "noreply@example.com",
+        "file_delivery" => %{
+          "max_attachments_per_message" => 10,
+          "max_encoded_message_bytes" => 25_000_000
+        },
         "from_name" => "ZAQ"
       },
       overrides

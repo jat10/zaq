@@ -22,6 +22,8 @@ defmodule Zaq.Engine.Conversations.TranscriptHistory do
     TranscriptMessage
   }
 
+  alias Zaq.Engine.Conversations.MessageDelivery
+
   alias Zaq.Engine.History.{Facts, Strategy}
   alias Zaq.Engine.Messages.SourceIdentity
   alias Zaq.Permissions
@@ -384,19 +386,7 @@ defmodule Zaq.Engine.Conversations.TranscriptHistory do
     input = Repo.get(Message, input_id)
 
     if match?(%Message{}, input) and matching_execution_pair?(input, response) do
-      ids =
-        Repo.all(
-          from p in TranscriptMessage,
-            join: t in Transcript,
-            on: t.id == p.transcript_id,
-            where:
-              p.message_id == ^input_id and t.strategy in ["direct", "shared"] and
-                t.provider == ^delivery.provider and
-                t.channel_config_id == ^delivery.channel_config_id and
-                t.external_channel_id == ^delivery.channel_id,
-            order_by: t.id,
-            select: t.id
-        )
+      ids = execution_response_targets(input_id, delivery)
 
       with false <- ids == [],
            {:ok, response} <- bind_response_source(response, delivery) do
@@ -408,6 +398,65 @@ defmodule Zaq.Engine.Conversations.TranscriptHistory do
     else
       {:error, :invalid_execution_response}
     end
+  end
+
+  @doc "Prepares a confirmed continuation using the original execution's exact transcript targets."
+  def prepare_execution_part(input_id, %Message{} = answer, delivery, existing) do
+    input = Repo.get(Message, input_id)
+
+    with true <- match?(%Message{}, input) and matching_execution_pair?(input, answer),
+         [_ | _] = ids <- execution_response_targets(input_id, delivery),
+         {:ok, message} <- insert_execution_part(delivery, existing) do
+      {:ok, %{message_id: message.id, transcript_ids: ids, message: message}}
+    else
+      false -> {:error, :invalid_execution_response}
+      [] -> {:error, :unavailable_history_input}
+      {:error, _} = error -> error
+    end
+  end
+
+  def prepare_execution_part(_, _, _, _), do: {:error, :invalid_execution_response}
+
+  defp insert_execution_part(delivery, nil) do
+    attrs = %{
+      role: "assistant",
+      content: delivery.content,
+      attachments: delivery_attachments(delivery),
+      source_provider: delivery.provider,
+      source_account_key:
+        SourceIdentity.account_key(
+          delivery.provider,
+          delivery.channel_config_id,
+          delivery[:source_scope]
+        ),
+      external_message_id: delivery.message_id
+    }
+
+    %Message{} |> Message.canonical_changeset(attrs) |> Repo.insert()
+  end
+
+  defp insert_execution_part(_, _), do: {:error, :conflicting_delivery_confirmation}
+
+  defp execution_response_targets(input_id, delivery) do
+    Repo.all(
+      from p in TranscriptMessage,
+        join: t in Transcript,
+        on: t.id == p.transcript_id,
+        where:
+          p.message_id == ^input_id and t.strategy in ["direct", "shared"] and
+            t.provider == ^delivery.provider and
+            t.channel_config_id == ^delivery.channel_config_id and
+            t.external_channel_id == ^delivery.channel_id,
+        order_by: t.id,
+        select: t.id
+    )
+  end
+
+  defp delivery_attachments(delivery) do
+    delivery
+    |> Map.get(:attachments, [])
+    |> Enum.take(128)
+    |> Enum.map(&(sanitize_descriptor(&1) |> Map.delete("attributes")))
   end
 
   # Runs inside HistoryIngress's locked confirmation transaction. Bind the
@@ -423,6 +472,11 @@ defmodule Zaq.Engine.Conversations.TranscriptHistory do
           SourceIdentity.account_key(delivery.provider, delivery.channel_config_id, scope),
         external_message_id: id
       }
+
+      attrs =
+        if Map.has_key?(delivery, :delivery_part),
+          do: Map.put(attrs, :attachments, delivery_attachments(delivery)),
+          else: attrs
 
       case response |> Message.canonical_changeset(attrs) |> Repo.update() do
         {:ok, response} -> {:ok, response}
@@ -778,7 +832,11 @@ defmodule Zaq.Engine.Conversations.TranscriptHistory do
   defp present_messages(messages) do
     messages
     |> MessageAuthor.project()
-    |> Enum.map(&(&1 |> Map.drop([:history_context, :metadata]) |> sanitize_attachments()))
+    |> Enum.map(fn message ->
+      delivery = MessageDelivery.presentation(message)
+      message = if delivery.parts != [], do: Map.put(message, :delivery, delivery), else: message
+      message |> Map.drop([:history_context, :metadata]) |> sanitize_attachments()
+    end)
   end
 
   defp message_projection(id) do
@@ -800,7 +858,14 @@ defmodule Zaq.Engine.Conversations.TranscriptHistory do
             "jsonb_build_object('author_person_id', ?->'author_person_id')",
             message.history_context
           ),
-        metadata: fragment("jsonb_build_object('agent', ?->'agent')", message.metadata),
+        metadata:
+          fragment(
+            "jsonb_build_object('agent', ?->'agent', 'delivery_parts', ?->'delivery_parts', 'delivery_confirmation', ?->'delivery_confirmation', 'delivery_observation', ?->'delivery_observation')",
+            message.metadata,
+            message.metadata,
+            message.metadata,
+            message.metadata
+          ),
         attachments: message.attachments
       }
   end

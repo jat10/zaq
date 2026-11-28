@@ -282,6 +282,12 @@ defmodule Zaq.Engine.Notifications.NotificationTest do
       |> ChannelConfig.changeset(%{
         name: "Email",
         provider: "email:smtp",
+        settings: %{
+          "file_delivery" => %{
+            "max_attachments_per_message" => 10,
+            "max_encoded_message_bytes" => 25_000_000
+          }
+        },
         kind: "retrieval",
         url: "smtp://localhost",
         token: "test-token",
@@ -622,6 +628,12 @@ defmodule Zaq.Engine.Notifications.NotificationTest do
         name: "Email",
         provider: "email:smtp",
         kind: "retrieval",
+        settings: %{
+          "file_delivery" => %{
+            "max_attachments_per_message" => 10,
+            "max_encoded_message_bytes" => 25_000_000
+          }
+        },
         url: "smtp://localhost",
         token: "test-token",
         enabled: true

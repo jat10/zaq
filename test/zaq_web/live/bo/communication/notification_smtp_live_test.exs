@@ -79,6 +79,7 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
     def capability_snapshot(config) do
       {:ok, snapshot} = EmailBridge.capability_snapshot(config)
+      snapshot = put_in(snapshot, [:resolved, :file], :unsupported)
 
       {:ok,
        put_in(snapshot, [:file_delivery, :limits, :max_attachment_bytes, :validation], %{
@@ -154,6 +155,8 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
     assert saved.settings["file_delivery"] == %{
              "max_attachment_bytes" => 1_000_001,
+             "max_encoded_message_bytes" => 25_000_000,
+             "max_attachments_per_message" => 10,
              "send_on_file_failure" => false
            }
 
@@ -261,7 +264,12 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
       "transport_mode" => "starttls",
       "tls_verify" => "verify_peer",
       "ca_cert_path" => "/tmp/draft-ca.pem",
-      "file_delivery" => %{"max_attachment_mb" => "1.000001", "send_on_file_failure" => "false"}
+      "file_delivery" => %{
+        "max_attachment_mb" => "1.000001",
+        "send_on_file_failure" => "false",
+        "max_attachments_per_message" => "10",
+        "max_encoded_message_mb" => "25"
+      }
     }
   end
 
@@ -341,6 +349,8 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
     assert Repo.reload!(config).settings["file_delivery"] == %{
              "max_attachment_bytes" => 1_500_000,
+             "max_encoded_message_bytes" => 25_000_000,
+             "max_attachments_per_message" => 10,
              "send_on_file_failure" => false
            }
 
@@ -378,6 +388,8 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
     assert Repo.reload!(config).settings["file_delivery"] == %{
              "max_attachment_bytes" => 1_000_001,
+             "max_encoded_message_bytes" => 25_000_000,
+             "max_attachments_per_message" => 10,
              "send_on_file_failure" => false
            }
   end
@@ -389,7 +401,11 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
       {:ok, view, _} = live(conn, "/bo/channels/retrieval/email/smtp")
       assert has_element?(view, "#smtp-file-delivery")
       assert render(view) =~ "Optional override"
-      assert render(view) =~ "Attachment sending is unavailable"
+      refute render(view) =~ "Attachment sending is unavailable"
+
+      for field <- ~w(max_encoded_message_mb max_attachments_per_message) do
+        assert has_element?(view, "#smtp-file-delivery-#{field}[aria-required=true]")
+      end
 
       render_submit(view, "save", %{
         "email_config" => %{
@@ -490,11 +506,19 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
                  "Streaming"
                )
 
-        refute has_element?(
-                 view,
-                 "#capabilities-modal li[style*='--zaq-text-color-body-success']",
-                 "File"
-               )
+        if transport == "smtp" do
+          assert has_element?(
+                   view,
+                   "#capabilities-modal li[style*='--zaq-text-color-body-success']",
+                   "File"
+                 )
+        else
+          refute has_element?(
+                   view,
+                   "#capabilities-modal li[style*='--zaq-text-color-body-success']",
+                   "File"
+                 )
+        end
 
         assert has_element?(view, "#capabilities-modal li", "File")
         refute render(view) =~ "receive only"
@@ -518,7 +542,13 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
           url: "smtp://configured-in-settings",
           token: "smtp-unused",
           enabled: false,
-          settings: %{"relay" => "smtp.example.com"}
+          settings: %{
+            "relay" => "smtp.example.com",
+            "file_delivery" => %{
+              "max_attachments_per_message" => 10,
+              "max_encoded_message_bytes" => 25_000_000
+            }
+          }
         })
         |> Repo.insert!()
       end
@@ -621,7 +651,11 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
         "connector_name" => "Second SMTP",
         "relay" => "second.example.com",
         "from_email" => "second@example.com",
-        "port" => "587"
+        "port" => "587",
+        "file_delivery" => %{
+          "max_attachments_per_message" => "10",
+          "max_encoded_message_mb" => "25"
+        }
       }
     })
 
@@ -681,7 +715,14 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
         enabled: true,
         url: "smtp://configured-in-settings",
         token: "smtp-unused",
-        settings: %{"relay" => "second.example.com", "from_email" => "second@example.com"}
+        settings: %{
+          "relay" => "second.example.com",
+          "from_email" => "second@example.com",
+          "file_delivery" => %{
+            "max_attachments_per_message" => 10,
+            "max_encoded_message_bytes" => 25_000_000
+          }
+        }
       })
       |> Repo.insert!()
 
@@ -767,7 +808,11 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
         "username" => "mailer@example.com",
         "password" => "super-secret",
         "from_email" => "noreply@example.com",
-        "from_name" => "ZAQ"
+        "from_name" => "ZAQ",
+        "file_delivery" => %{
+          "max_attachments_per_message" => "10",
+          "max_encoded_message_mb" => "25"
+        }
       }
     })
 
@@ -1080,7 +1125,14 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
         enabled: true,
         url: "smtp://configured-in-settings",
         token: "smtp-unused",
-        settings: %{"relay" => "smtp.other.example", "from_email" => "selected@example.com"}
+        settings: %{
+          "relay" => "smtp.other.example",
+          "from_email" => "selected@example.com",
+          "file_delivery" => %{
+            "max_attachments_per_message" => 10,
+            "max_encoded_message_bytes" => 25_000_000
+          }
+        }
       })
       |> Repo.insert!()
 
@@ -1452,7 +1504,11 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
             "username" => "mailer@example.com",
             "password" => "",
             "from_email" => "sender@example.com",
-            "from_name" => "Sender"
+            "from_name" => "Sender",
+            "file_delivery" => %{
+              "max_attachments_per_message" => 10,
+              "max_encoded_message_bytes" => 25_000_000
+            }
           },
           attrs
         )
@@ -1476,12 +1532,24 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
         "username" => "mailer@example.com",
         "password" => "",
         "from_email" => "noreply@example.com",
-        "from_name" => "ZAQ"
+        "from_name" => "ZAQ",
+        "file_delivery" => %{
+          "max_attachments_per_message" => 10,
+          "max_encoded_message_bytes" => 25_000_000
+        }
       }
     }
 
-    {:ok, channel} =
-      ChannelConfig.upsert_by_provider("email:smtp", Map.merge(defaults, attrs))
+    params = Map.merge(defaults, attrs)
+
+    params =
+      Map.update!(
+        params,
+        :settings,
+        &Map.put_new(&1, "file_delivery", defaults.settings["file_delivery"])
+      )
+
+    {:ok, channel} = ChannelConfig.upsert_by_provider("email:smtp", params)
 
     channel
   end

@@ -58,6 +58,19 @@ defmodule Zaq.Engine.History.Delivery do
       content: outgoing.body
     }
 
+    request =
+      case receipt[:delivery_part] do
+        part when is_map(part) ->
+          Map.merge(request, %{
+            delivery_part: part,
+            thread_id: outgoing.thread_id,
+            attachments: Map.get(receipt, :attachments, [])
+          })
+
+        _ ->
+          request
+      end
+
     if kind == :replicated or
          (is_binary(request.user_message_id) and is_binary(request.assistant_message_id)) do
       {:ok, Map.merge(receipt, association_status(request))}

@@ -56,9 +56,21 @@ defmodule Zaq.Channels.DeliveryContractTest do
     end
   end
 
-  test "SMTP settings and generic web editing do not advertise attachment delivery" do
+  test "SMTP requires explicit limits while IMAP and generic web editing do not advertise delivery" do
+    smtp = %{id: 42, provider: "email:smtp", settings: %{}}
+    assert {:ok, snapshot} = EmailBridge.capability_snapshot(smtp)
+    assert {:error, {:invalid_configuration, _}} = TransportRequirements.resolve(snapshot, smtp)
+
+    configured =
+      put_in(smtp.settings["file_delivery"], %{
+        "max_attachments_per_message" => 2,
+        "max_encoded_message_bytes" => 20_000
+      })
+
+    assert {:ok, %{transfer_mode: :send_with_attachments}} =
+             TransportRequirements.resolve(snapshot, configured)
+
     for {bridge, provider} <- [
-          {EmailBridge, "email:smtp"},
           {EmailBridge, "email:imap"},
           {WebBridge, :web},
           {WebBridge, :web_widget}

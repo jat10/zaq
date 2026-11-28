@@ -4,8 +4,9 @@ defmodule Zaq.Engine.Messages.Outgoing do
 
   Produced by configured-agent execution and by the Notification center.
   Delivered through `Zaq.NodeRouter.dispatch/1` to `Zaq.Channels.Api`
-  (action `:deliver_outgoing`), which resolves the provider bridge
-  and calls `bridge.send_reply/2`.
+  (action `:deliver_outgoing`), which resolves the provider bridge. Ordinary text
+  uses `bridge.send_reply/2`; supported attachment attempts use separate Channel
+  planning, preparation and execution state, never a wrapper in this payload.
 
   Nothing inside ZAQ should depend on adapter-specific envelope types — all outbound
   delivery flows through this struct.

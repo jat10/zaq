@@ -16,7 +16,7 @@ defmodule Zaq.Engine.HistoryIngress do
   alias Zaq.Engine.ChannelHistoryMembership
   alias Zaq.Engine.ChannelHistoryUpdates
   alias Zaq.Engine.Conversations
-  alias Zaq.Engine.Conversations.{Message, TranscriptHistory}
+  alias Zaq.Engine.Conversations.{DeliveryEvidence, Message, MessageDelivery, TranscriptHistory}
   alias Zaq.Engine.History.{CommunicationPolicy, Facts}
   alias Zaq.Engine.HistoryDeliveryWorker
   alias Zaq.Engine.Messages.Incoming
@@ -227,6 +227,7 @@ defmodule Zaq.Engine.HistoryIngress do
 
   defp record_confirmation_transaction(delivery) do
     Repo.transaction(fn ->
+      validate_delivery_part(delivery)
       # Serialize the same delivery before looking up its canonical message.
       Repo.query!("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [
         Jason.encode!([
@@ -287,15 +288,45 @@ defmodule Zaq.Engine.HistoryIngress do
         audience -> Map.from_struct(audience)
       end
     )
+    |> fingerprint_part(delivery)
     |> Jason.encode!()
     |> then(&:crypto.hash(:sha256, &1))
     |> Base.encode64()
   end
 
+  defp fingerprint_part(facts, %{delivery_part: part} = delivery),
+    do:
+      Map.merge(facts, %{
+        delivery_part: part,
+        attachments: delivery[:attachments],
+        thread_id: delivery[:thread_id]
+      })
+
+  defp fingerprint_part(facts, _), do: facts
+
+  defp validate_delivery_part(%{delivery_part: part} = delivery) do
+    with {:ok, ^part} <- DeliveryEvidence.reference(part),
+         true <-
+           MessageDelivery.valid_scope?(
+             delivery[:user_message_id],
+             delivery[:assistant_message_id],
+             delivery[:channel_config_id]
+           ) do
+      :ok
+    else
+      _ -> Repo.rollback(:invalid_delivery_scope)
+    end
+  end
+
+  defp validate_delivery_part(_), do: :ok
+
   defp content_digest(content) when is_binary(content),
     do: :crypto.hash(:sha256, content) |> Base.encode64()
 
   defp content_digest(_), do: nil
+
+  defp confirmed_message(%{delivery_part: %{primary?: false}} = delivery),
+    do: confirmed_message(Map.drop(delivery, [:assistant_message_id, :delivery_part]))
 
   defp confirmed_message(%{assistant_message_id: id}) when is_binary(id) do
     case Ecto.UUID.cast(id) do
@@ -348,6 +379,7 @@ defmodule Zaq.Engine.HistoryIngress do
 
       metadata =
         message.metadata
+        |> put_delivery_part(delivery)
         |> Map.put("delivery_confirmation", receipt)
         |> Map.put("history_association", %{
           "fingerprint" => fingerprint,
@@ -359,6 +391,25 @@ defmodule Zaq.Engine.HistoryIngress do
       {:error, reason} -> Repo.rollback(reason)
       _ -> Repo.rollback(:invalid_delivery_scope)
     end
+  end
+
+  defp put_delivery_part(metadata, %{delivery_part: part} = delivery) do
+    facts =
+      Map.merge(part, %{
+        assistant_message_id: delivery[:assistant_message_id],
+        user_message_id: delivery[:user_message_id],
+        thread_id: delivery[:thread_id]
+      })
+
+    Map.put(metadata, "delivery_part", facts |> Jason.encode!() |> Jason.decode!())
+  end
+
+  defp put_delivery_part(metadata, _), do: metadata
+
+  defp prepare_delivery(%{kind: kind, delivery_part: %{primary?: false}} = delivery, existing)
+       when kind in [:direct, :channel] do
+    root = Repo.get(Message, delivery.assistant_message_id)
+    TranscriptHistory.prepare_execution_part(delivery.user_message_id, root, delivery, existing)
   end
 
   defp prepare_delivery(
@@ -394,6 +445,7 @@ defmodule Zaq.Engine.HistoryIngress do
         %{
           role: "assistant",
           content: content,
+          attachments: Map.get(delivery, :attachments, []),
           external_message_id: message_id,
           author_id: audience.sender
         },
@@ -402,7 +454,11 @@ defmodule Zaq.Engine.HistoryIngress do
           channel_config_id: delivery.channel_config_id,
           provenance: "provider_confirmed",
           source_scope: scope,
-          existing_message_id: Map.get(delivery, :assistant_message_id)
+          existing_message_id:
+            if(get_in(delivery, [:delivery_part, :primary?]) == false,
+              do: nil,
+              else: Map.get(delivery, :assistant_message_id)
+            )
         }
       )
     else

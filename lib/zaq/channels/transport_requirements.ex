@@ -71,11 +71,12 @@ defmodule Zaq.Channels.TransportRequirements do
   defp build(snapshot, metadata, settings, limits) do
     case Map.get(metadata, :transfer_mode) do
       mode when mode in [:upload_then_publish, :send_with_attachments] ->
+        {:ok, failure_policy} = FileSettings.failure_policy(settings)
+
         attributes =
           Map.merge(limits, %{
             transfer_mode: mode,
-            failure_policy:
-              if(Map.get(settings, "send_on_file_failure", true), do: :continue, else: :abort),
+            failure_policy: failure_policy,
             supports_threads: FileSettings.supported?(snapshot, :threads),
             supports_attachment_edits: Map.get(metadata, :supports_attachment_edits) == true
           })

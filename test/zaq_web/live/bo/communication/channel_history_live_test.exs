@@ -35,6 +35,16 @@ defmodule ZaqWeb.Live.BO.Communication.ChannelHistoryLiveTest do
         |> ChannelConfig.changeset(%{
           name: "Named #{provider}",
           provider: provider,
+          settings:
+            if(provider == "email:smtp",
+              do: %{
+                "file_delivery" => %{
+                  "max_attachments_per_message" => 10,
+                  "max_encoded_message_bytes" => 25_000_000
+                }
+              },
+              else: %{}
+            ),
           kind: "retrieval",
           url: "https://example.invalid",
           token: "fixture-token"

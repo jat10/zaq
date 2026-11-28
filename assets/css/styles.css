@@ -1254,7 +1254,8 @@ html[data-theme="dark"] .zaq-toggle-group-pill > button:nth-of-type(3) {
   color: var(--zaq-text-color-body-danger);
 }
 
-.zaq-chat-delivery-status[data-delivery-tone="unconfirmed"] {
+.zaq-chat-delivery-status[data-delivery-tone="unconfirmed"],
+.zaq-chat-delivery-status[data-delivery-tone="partial"] {
   color: var(--zaq-text-color-body-warning);
 }
 

@@ -87,7 +87,13 @@ defmodule Zaq.Engine.EmailConnectorSettingsApiTest do
         enabled: true,
         url: "smtp://configured-in-settings",
         token: "__smtp_unused__",
-        settings: %{"relay" => "smtp.example.com"}
+        settings: %{
+          "relay" => "smtp.example.com",
+          "file_delivery" => %{
+            "max_attachments_per_message" => 10,
+            "max_encoded_message_bytes" => 25_000_000
+          }
+        }
       })
       |> Repo.insert!()
 
@@ -125,6 +131,10 @@ defmodule Zaq.Engine.EmailConnectorSettingsApiTest do
       "tls_verify" => "verify_peer",
       "from_email" => "noreply@example.com",
       "from_name" => "ZAQ",
+      "file_delivery" => %{
+        "max_attachments_per_message" => "10",
+        "max_encoded_message_mb" => "25"
+      },
       "password" => "secret"
     }
   end

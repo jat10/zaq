@@ -464,8 +464,14 @@ defmodule Zaq.Channels.Bridge do
   @spec capability_snapshot(atom() | String.t(), map()) :: {:ok, map()} | {:error, term()}
   def capability_snapshot(provider, params \\ %{}) when is_map(params) do
     with {:ok, bridge} <- resolve_bridge(provider),
-         {:ok, config} <- fetch_capability_config(provider, params),
-         true <- bridge_supports?(bridge, :capability_snapshot, 1) || {:error, :unsupported},
+         {:ok, config} <- fetch_capability_config(provider, params) do
+      capability_snapshot_for_connection(bridge, config)
+    end
+  end
+
+  @doc "Normalizes one snapshot from an already selected connection without another configuration lookup."
+  def capability_snapshot_for_connection(bridge, config) do
+    with true <- bridge_supports?(bridge, :capability_snapshot, 1) || {:error, :unsupported},
          {:ok, raw_snapshot} <- bridge.capability_snapshot(config) do
       snapshot = normalize_capability_snapshot(raw_snapshot, config)
 

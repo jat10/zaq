@@ -7,11 +7,16 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
   neither place messages in transcripts nor schedule transport delivery.
   Eligibility composes `AnswerOwnership` relationships with delivery-specific reply
   and origin checks; neither grants permission to read a transcript.
+
+  Terminal snapshots are immutable per attempt. Explicit UTC start times select
+  current presentation under the answer row lock; earlier evidence stays private
+  in attempt history. Equal or missing times never displace a dated current attempt.
   """
 
   import Ecto.Query
 
   alias Zaq.Engine.ChannelHistoryUpdates
+  alias Zaq.Engine.Conversations.DeliveryEvidence
 
   alias Zaq.Engine.Conversations.{
     AnswerOwnership,
@@ -26,6 +31,23 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
 
   @doc "Records allowlisted transport evidence without altering content or confirmed delivery."
   def record(request, opts \\ [])
+
+  def record(%{delivery_parts: evidence} = request, opts) do
+    with {:ok, input} <- Ecto.UUID.cast(request[:user_message_id]),
+         {:ok, answer} <- Ecto.UUID.cast(request[:assistant_message_id]),
+         config when is_integer(config) and config > 0 <- request[:channel_config_id],
+         {:ok, safe} <- DeliveryEvidence.normalize(evidence) do
+      result =
+        Repo.transaction(fn ->
+          record_for_origin(input, answer, config, %{delivery_parts: safe})
+        end)
+
+      if result == {:ok, :recorded}, do: ChannelHistoryUpdates.publish([answer], opts)
+      result
+    else
+      _ -> {:error, :invalid_delivery_observation}
+    end
+  end
 
   def record(%{outcome: outcome, reason: reason} = request, opts)
       when outcome in [:failed, :unconfirmed] and reason in @reasons do
@@ -47,6 +69,17 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
   end
 
   def record(_request, _opts), do: {:error, :invalid_delivery_observation}
+
+  @doc "Checks exact completed-answer origin scope for Engine confirmation owners."
+  def valid_scope?(input_id, answer_id, config_id) do
+    with {:ok, input} <- Ecto.UUID.cast(input_id),
+         {:ok, answer} <- Ecto.UUID.cast(answer_id),
+         true <- is_integer(config_id) and config_id > 0 do
+      valid_origin?(input, answer, config_id)
+    else
+      _ -> false
+    end
+  end
 
   @doc "Builds an internal exact-answer query; callers must authorize their read scope."
   def answers_query do
@@ -110,19 +143,53 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
   def presentation(%{metadata: metadata}) do
     observation = metadata["delivery_observation"] || %{}
 
-    state =
-      cond do
-        is_map(metadata["delivery_confirmation"]) -> :history_updating
-        observation["outcome"] == "failed" -> :failed
-        true -> :unconfirmed
+    parts =
+      case DeliveryEvidence.normalize(metadata["delivery_parts"]) do
+        {:ok, safe} -> safe
+        _ -> %{}
       end
+
+    state = delivery_state(metadata, observation, parts)
+    observation = if parts == %{}, do: observation, else: %{}
 
     %{
       state: state,
       reason: explanation(state, observation["reason_code"]),
       provider_code: if(state != :history_updating, do: observation["provider_code"]),
-      observed_at: if(state != :history_updating, do: observation["observed_at"])
+      observed_at: if(state != :history_updating, do: observation["observed_at"]),
+      parts: Map.get(parts, "parts", []),
+      omitted_part_count: Map.get(parts, "omitted_part_count", 0)
     }
+  end
+
+  defp delivery_state(metadata, _observation, %{"confirmed_message_count" => count} = evidence) do
+    parts = evidence["parts"]
+
+    cond do
+      count > 0 and is_map(metadata["delivery_confirmation"]) ->
+        if parts == [] and evidence["omitted_part_count"] == 0,
+          do: :history_updating,
+          else: :partial
+
+      parts != [] and Enum.all?(parts, &(&1["outcome"] in ["failed", "unattempted"])) ->
+        :failed
+
+      true ->
+        :unconfirmed
+    end
+  end
+
+  defp delivery_state(metadata, observation, _parts) do
+    cond do
+      is_map(metadata["delivery_confirmation"]) ->
+        :history_updating
+
+      observation["outcome"] == "failed" ->
+        :failed
+
+      true ->
+        :unconfirmed
+    end
   end
 
   defp valid_origin?(input_id, answer_id, config_id) do
@@ -145,6 +212,44 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
     end
 
     record_locked(answer, request)
+  end
+
+  defp record_locked(answer, %{delivery_parts: parts}) do
+    current = answer.metadata["delivery_parts"] || %{}
+    attempts = answer.metadata["delivery_attempts"] || %{}
+
+    previous =
+      attempts[parts["attempt_id"]] ||
+        if(current["attempt_id"] == parts["attempt_id"], do: current)
+
+    if previous do
+      :unchanged
+    else
+      parts = Map.put(parts, "observed_at", DateTime.to_iso8601(DateTime.utc_now()))
+
+      attempts =
+        if current == %{},
+          do: attempts,
+          else: Map.put_new(attempts, current["attempt_id"], current)
+
+      metadata =
+        Map.put(
+          answer.metadata,
+          "delivery_attempts",
+          Map.put(attempts, parts["attempt_id"], parts)
+        )
+
+      metadata =
+        if newer_attempt?(parts, current),
+          do: Map.put(metadata, "delivery_parts", parts),
+          else: metadata
+
+      answer
+      |> Message.confirmation_changeset(metadata)
+      |> Repo.update!()
+
+      :recorded
+    end
   end
 
   defp record_locked(answer, %{outcome: outcome, reason: reason} = request) do
@@ -177,11 +282,26 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
     end
   end
 
+  defp newer_attempt?(_parts, current) when current == %{}, do: true
+
+  defp newer_attempt?(parts, current) do
+    with started_at when is_binary(started_at) <- parts["started_at"],
+         {:ok, incoming, 0} <- DateTime.from_iso8601(started_at),
+         previous_at when is_binary(previous_at) <- current["started_at"],
+         {:ok, previous, 0} <- DateTime.from_iso8601(previous_at) do
+      DateTime.compare(incoming, previous) == :gt
+    else
+      _ -> is_binary(parts["started_at"]) and is_nil(current["started_at"])
+    end
+  end
+
   defp valid_provider_code?(nil), do: true
   defp valid_provider_code?(code), do: is_integer(code) and code >= 0 and code <= 999
 
   defp explanation(:history_updating, _),
     do: "Delivery was confirmed. Transcript history is updating."
+
+  defp explanation(:partial, _), do: "Some delivery parts failed or remain unconfirmed."
 
   defp explanation(:failed, "rejected"), do: "The provider rejected the delivery."
 

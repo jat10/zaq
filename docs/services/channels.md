@@ -1164,8 +1164,9 @@ provider `"email:smtp"`.
 `capability_snapshot/1` uses the shared delivery capability contract, independently
 of connector readiness. Both email providers report `text: :native` and
 `threads: :native`; replies originating from an IMAP inbox use its SMTP binding.
-Unsupported delivery features are omitted, including attachments, streaming,
-reactions, typing indicators, and message editing. IMAP attachment reception is
+SMTP reports `file: :native` with required selected-connector encoded-message
+and attachment-count limits. Unsupported delivery features are omitted, including
+streaming, reactions, typing indicators, and message editing. IMAP attachment reception is
 outside this contract, which has no separate receive-capability dimension.
 The `mode` describes ingress: `none` for SMTP and `imap_idle` for IMAP.
 Shared normalization supplies capability labels and unsupported detection.
@@ -1463,8 +1464,8 @@ proposal nor returns it in the snapshot.
 Fixed values are read-only. Configurable overrides cannot exceed known ceilings.
 Declared aggregate-attachment and upload-request limits also appear when provided.
 Blank optional values fall back to declared transport limits; missing facts remain
-unresolved. SMTP declares configuration controls without advertising attachment
-sending. Required values apply only to usable file support (`:native`, `:fallback`
+unresolved. SMTP advertises native attachment sending with required configurable
+encoded-message and attachment-count limits. Required values apply only to usable file support (`:native`, `:fallback`
 or `true`). A valid fixed value satisfies a requirement; an unresolved required
 configurable value needs input. Ecto validates effective types and numeric rules
 through FileSettings; BO hints and the resolver consume those same rules.
@@ -1550,18 +1551,138 @@ existing transcript-read authorization contract. It validates metadata again
 after materialization, preserves raw binary and UTF-8 representations unchanged,
 decodes only explicitly declared standard base64, and checks actual raw byte
 limits. Unsupported encodings are rejected. Size drift is accepted only within those limits.
-Returned content is transient and leaves the Record and plan unchanged. The
-future executor must check fixed message and upload groups with
+Returned content is transient and leaves the Record and plan unchanged. Attempt
+preparation checks fixed message and upload groups with
 `Attachments.validate_group/2` and `validate_upload_group/2`, then validate exact
 encoded requests without treating unresolved limits as known unlimited capacity.
 
-These primitives are not connected to the production delivery route. Text delivery
-and `DeliveryConfirmation` keep their existing behavior. Executor orchestration,
-provider uploads/sends/edits, exact SMTP MIME sizing, runtime failure policy and
-partial outcomes are tracked in PR5 (`zaq-9j8`). The locked Jido adapters expose
-file-send support without structured file requirements; SMTP and web snapshots
+The existing `:deliver_outgoing` route connects these primitives through
+`Delivery.Connection` and `Delivery.Dispatch`. Attachment attempts freeze the
+selected committed outbound connector, normalize one runtime snapshot through
+`Bridge.capability_snapshot_for_connection/2`, resolve shared requirements once,
+and pass a separate Plan to the executor. Empty attachments retain ordinary text
+delivery. Web and WebWidget retain their existing text route without advertising
+attachment delivery. The locked Jido adapters expose
+file-send support without structured file requirements; web snapshots
 do not advertise attachment delivery. Missing declarations remain unavailable or
 unsupported rather than inferred from provider names or generic text editing.
+
+### Execution outcome contracts
+
+`Delivery.Plan.validate/2` checks fixed original indices, step identifiers, upload
+dependencies and cycles before effects. Acquired content and encoded requests
+still require the existing size validations. Executor inputs remain separate:
+Outgoing, Plan, the selected connection and trusted runtime dependencies.
+
+`Delivery.Result` retains outcomes in plan order, including confirmed publication
+receipts, actual delivered attachment indices, uploaded-only references and
+configuration/preparation failures. A confirmed text fallback does not confirm
+discarded files. `Delivery.Error` separates allowlisted certainty/reason facts from
+private provider causes; timeouts and unknown provider outcomes stay unconfirmed.
+
+`Result.safe_evidence/1` returns versioned, content-free grouped failure facts,
+bounded to 128 parts and 128 original indices per part with explicit omitted
+counts. Receipts, provider file references, raw causes, Records and plans remain
+private. Successful messages retain their normal history path. The existing
+`DeliveryConfirmation.record_attempt/3` attaches persisted input/answer UUIDs and the
+origin connector ID and reports terminal success as well as failures. Attempt start
+time is captured before preparation and provider effects; Engine owns precedence,
+validation and persistence. Selected SMTP
+transport identity does not replace the origin connector scope. Confirmed parts
+use canonical answer or continuation content with their actual thread identity;
+only confirmed attachment descriptors cross the history boundary. Source handles
+never become provider locators. Reporting and completion callbacks cannot repeat
+provider effects or erase confirmed transport outcomes.
+Confirmed attachment names, MIME types and sizes come from acquired/prepared
+inputs; stale source size declarations do not replace measured raw byte sizes.
+These small metadata facts can outlive released bytes within the private attempt.
+
+`Preparation.start/3` creates an isolated attempt after metadata/requirements
+validation. `acquire_group/2` caches both acquisition success and denial by original
+index, validates actual fixed groups, and preserves partial-file failure facts.
+Continue returns usable files or an empty list for text fallback; abort returns
+the preparation failure. Sources and plans remain unchanged.
+
+The optional communication bridge callbacks `prepare_upload_request/2` and
+`prepare_delivery_message/3` encode supplied files or uploaded references without
+provider I/O. Their prepared maps carry the exact `size_bytes` of the representation
+to submit. `Preparation.prepare_step/5` checks that size against the selected
+requirements, including every re-encoding after changed body/thread inputs.
+Wire-level accuracy remains a bridge compatibility requirement. `release_step/2`
+drops the prepared payload and acquired bytes after their final consumer; upload
+publication uses provider references, while direct sends retain bytes through
+final message preparation. `close/1` clears transient state and trusted context.
+
+`Delivery.Executor.execute/5` accepts Outgoing, Plan, the selected bridge and
+connection, and runtime opts. It uses the existing `Zaq.TaskSupervisor` for every
+upload/send/edit. `:channel_delivery` config supplies `step_timeout_ms` (30,000)
+and `max_concurrency` (4); per-call overrides remain isolated. Timeouts and task
+exits stay unconfirmed, with no provider retries. Results are assembled in plan
+order independently of completion order.
+
+Abort completes uploads and preflights all publication requests before the first
+send, then publishes sequentially until a failure. Final headers learned from a
+confirmed root are re-encoded and revalidated before each subsequent send;
+a newly discovered failure preserves earlier confirmations. Continue promotes threaded roots
+with the original answer until confirmation, then runs ready replies concurrently;
+independent groups need no root. Independent answer ownership is reserved only
+after preparation succeeds, so an encoding failure transfers the original answer
+to the next usable group or a size-validated text fallback. Uncertain independent
+sends do not transfer or retry a reserved answer. Partial uploads publish only attested provider
+IDs. Failed-file evidence excludes successful upload indices. Changed body/thread
+inputs are re-encoded and rechecked, including SMTP continuation headers.
+
+Requirements-resolution failures can continue with the original answer only when
+the selected connection's shared file policy permits it and an explicit valid
+`max_text_request_bytes` transport fact is supplied. This path acquires/uploads no
+files and retains per-attachment configuration failures. Literal false policy
+aborts; missing text transport facts cannot authorize a send. Planner/resolver
+purity and optional unresolved limits are preserved. `FileSettings` validates the
+selected encoded text ceiling independently of discarded file-only settings;
+missing required ceilings cannot authorize text fallback. Existing streamed text
+targets can be finalized when the selected adapter explicitly supports text edits.
+Compatibility tests exercise controlled
+external adapter operations while keeping the pinned SDK and internal delivery
+contracts real. The current Mattermost and Telegram packages lack structured
+requirements and prepared upload operations, so they remain unavailable for this
+file path. Swoosh 1.27.0 and gen_smtp 1.3.0 submit the encoded MIME unchanged apart
+from SMTP dot framing; local submission tests also verify `retries: 0`.
+Mattermost publication, pinning and full provider verification belong to PR6
+(`zaq-h2i.4.3` → `zaq-pi3.7`), not PR5 readiness.
+
+`JidoChatBridge` now implements the executor's one-operation callbacks. It adds
+file metadata only when the selected adapter declares uploaded-file support and
+implements requirements, preparation and upload primitives. Explicit partial
+upload indices retain their original attachment association; incomplete responses
+without identity evidence never imply an uploaded prefix. Publication reuses the
+SDK's text formatting and confirmed receipt path. The SDK has no pure publication
+encoder, so its logical request size remains `:unresolved`: numeric encoded
+ceilings reject such requests. Prepared uploads always require exact sizes.
+
+SMTP advertises direct attachment delivery with required selected-connector
+count and encoded-message limits. IMAP replies must first select their actual
+outbound SMTP connector. `SmtpSender` reuses Swoosh composition, freezes the
+envelope and transport options in a private `PreparedMessage`, and submits its
+measured MIME unchanged. Final thread headers and continuation bodies require
+fresh preparation and validation. Relay acceptance confirms submission only.
+The first reply preserves its immediate parent. Continuations use the executor's
+thread context and receive distinct MIME Message-IDs, including when the original
+answer ID was preminted.
+Prepared SMTP disables retries and MX routing. Optional TLS becomes required to
+avoid the SMTP client's TLS-failure reconnect; explicit `tls: never` is preserved.
+Explicit negative acknowledgments are rejected; missing acknowledgments remain
+unconfirmed. Neither outcome causes a retry.
+
+Attachment event builders carry explicit Event identity and force confidential
+routing before transient bytes reach NodeRouter's global trigger stream. Materialization
+uses that trusted Event context, never permission claims in Outgoing metadata.
+The PR6 Agent producer must preserve this contract when AttachDocuments is wired.
+
+The existing BO delivery-details modal groups only unsuccessful parts under the
+original answer. Rejected, unconfirmed and unattempted outcomes remain distinct.
+Confirmed messages retain ordinary transcript presentation and actions; a partial
+answer adds the existing status affordance without creating a pending duplicate.
+Opening or refreshing details rereads authorized canonical and pending rows.
 
 ## Channel Config
 

@@ -298,6 +298,10 @@ defmodule Zaq.Channels.EmailBridgeTest do
         "username" => nil,
         "password" => nil,
         "from_email" => "noreply@example.com",
+        "file_delivery" => %{
+          "max_attachments_per_message" => 10,
+          "max_encoded_message_bytes" => 25_000_000
+        },
         "from_name" => "ZAQ"
       },
       overrides
@@ -321,13 +325,13 @@ defmodule Zaq.Channels.EmailBridgeTest do
   end
 
   describe "capability_snapshot/1" do
-    test "SMTP advertises text and threads without claiming attachment delivery" do
+    test "SMTP advertises implemented file delivery with required configurable limits" do
       assert {:ok, snapshot} = EmailBridge.capability_snapshot(%{provider: "email:smtp"})
 
       assert snapshot == %{
-               resolved: %{text: :native, threads: :native, mode: "none"},
+               resolved: %{text: :native, file: :native, threads: :native, mode: "none"},
                file_delivery: %{
-                 transfer_mode: :unresolved,
+                 transfer_mode: :send_with_attachments,
                  supports_attachment_edits: false,
                  limits: %{
                    max_attachment_bytes: %{
@@ -382,7 +386,7 @@ defmodule Zaq.Channels.EmailBridgeTest do
       end
     end
 
-    property "configuration values cannot turn SMTP into an attachment sender" do
+    property "configuration flags cannot alter implemented SMTP capabilities" do
       check all(
               enabled <- boolean(),
               settings <-
@@ -402,8 +406,9 @@ defmodule Zaq.Channels.EmailBridgeTest do
 
         assert snapshot.resolved.text == :native
         assert snapshot.resolved.threads == :native
+        assert snapshot.resolved.file == :native
 
-        for key <- [:image, :audio, :video, :file] do
+        for key <- [:image, :audio, :video] do
           refute Map.has_key?(snapshot.resolved, key)
         end
       end

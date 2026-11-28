@@ -5,6 +5,7 @@
   "/storybook/chat/composer",
   "/storybook/chat/conversations_sidebar",
   "/storybook/chat/delete_confirm_modal",
+  "/storybook/chat/delivery_details",
   "/storybook/chat/feedback_modal",
   "/storybook/chat/header",
   "/storybook/chat/message_info_popin",

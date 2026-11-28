@@ -16,6 +16,32 @@ transport outcomes remain unconfirmed, including timeouts that may have occurred
 after provider acceptance. Private metadata stores reason codes, not raw provider
 responses or credentials.
 
+PR5 attachment attempts add bounded `delivery_parts` evidence to that same
+persisted answer. Each part contains only allowlisted stage, certainty, reason,
+group and original attachment indices, with explicit truncation counts. Engine
+validates the exact input/answer/origin connector before recording it. Grouped
+facts survive confirmation; legacy late failure observations remain ignored after
+confirmation. Neither form creates a failed transcript message.
+
+Terminal attempt reports include full success and an explicit UTC `started_at`
+captured in Channels before preparation or provider effects. Under the existing
+answer row lock, Engine selects a strictly later start for current `delivery_parts`
+and retains terminal snapshots by attempt ID in private `delivery_attempts`.
+UUID ordering and report arrival do not establish precedence. Equal or missing
+timestamps cannot displace a dated current attempt; a dated report can supersede
+legacy undated evidence. Each attempt's first terminal snapshot is immutable,
+so replay or a conflicting report cannot clear its partial failures. Start-time
+ordering uses the reporting node's UTC clock; it does not infer order across clock
+skew. Presentation uses the current attempt's counts and parts together with durable
+confirmation, without exposing earlier attempt failures as current ones.
+
+Confirmed continuation messages use the existing confirmation/association
+transaction and the original execution's verified transcript targets. They have
+their own provider identity and canonical body while retaining the original
+answer association privately. Replayed reports create no duplicate messages.
+Authorized history reads expose safe grouped presentation facts on the original
+message, including after canonical placement, without adding a pending bubble.
+
 `ChannelHistoryUpdates` publishes identifier-only UI invalidations through the
 existing confidential Channels broadcast event. Verified outer transaction owners
 publish after commit; nested context capture delegates publication to
