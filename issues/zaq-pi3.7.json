@@ -28,11 +28,15 @@
     {
       "text": "Partial backend integration evidence (not issue completion): real configured native Agent selection -\u003e canonical Outgoing.attachments -\u003e actual PR5 dispatch/materialization/preparation -\u003e controlled external chat adapter -\u003e Engine delivery confirmation/history passes in attachment_flow_integration_test.exs. Add A, forged failure, add B, remove A leaves only B, with exact bytes/name, one upload/publication, no A acquisition, and actual receipt recorded. Existing SMTP MIME/partial/failure/timeout regression suites pass in the same 502-check run. Full published Mattermost/SMTP configured-provider acceptance and remaining browser matrix remain pending; .11 prerequisite is not waived. No restack required at current PR5 boundary.",
       "timestamp": "2026-11-28T11:01:46Z"
+    },
+    {
+      "text": "User authorized core commit, exact-remote PR5 restack and PR6 push, followed by independent epic work. Origin push URL verified git@github.com:jat10/zaq.git. Saved recovery refs backup/pr6-selection-publish-20261128T110818Z/before-commit and /before-rebase; original core commit 855316c2f043d8e4ff3168daae4eb6c541ea072c. Fetched and verified pushed PR5 2144608e7f8110b75da7f05e4085dd84bfc16acd; rebased one unchanged core patch with no conflicts, range-diff equals. Final PR6 5cf1a690557f5946b7460c89dd64ba4474491bf5 pushed normally to origin/feat/attach-documents and remote SHA verified; no force required. Post-rebase mix q passed and 520 focused checks passed (6 doctests, 31 properties, 483 examples), including updated PR5 outcome/confirmation/history contracts. PR5 local branch/worktree untouched, no PR5 push. Use exact 2144608e7f8110b75da7f05e4085dd84bfc16acd as next PR6 previous-parent boundary.",
+      "timestamp": "2026-11-28T11:11:44Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.7] Restack when authorized and verify PR6 against PR5 delivery",
   "type": "task",
-  "updated_at": "2026-11-28T11:01:46Z"
+  "updated_at": "2026-11-28T11:11:44Z"
 }
