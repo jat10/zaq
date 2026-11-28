@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-28T10:12:32Z",
+  "description": "User approved this review fix on 2026-11-28 after discussion of finding 1.\n\nProblem: Executor.prepare_attachments/1 for upload_then_publish completes uploads but does not prepare every publication before sending. Reproduced at 6a546dc44: two groups, abort policy, encoded-message limit 10; first answer sends, second continuation fails preparation with size_limit. Preparation failures that are knowable before publication must publish nothing.\n\nAgreed fix: after uploads, preflight every publication request before the first send under abort. On any preparation failure, block all publication and report failed/unattempted parts through existing DeliveryConfirmation -\u003e Event/NodeRouter -\u003e Engine. Preserve uploaded-only evidence without claiming delivery. Keep policy/orchestration in Executor and preparation validation in Preparation; bridges encode or execute one operation only. Plan stays metadata-only and Channels-local.\n\nDynamic-header exception: actual root/thread IDs may only exist after first publication. Re-encode/revalidate final inputs before each send. A newly discoverable final-header overflow or provider failure stops subsequent publication and reports confirmed and failed/unattempted parts; do not undo already confirmed messages or retry operations.\n\nTests: extend the existing abort preparation regression in test/zaq/channels/delivery/executor_test.exs across direct and upload_then_publish modes, using existing DeliveryExecutionBridge/DeliveryPreparationBridge. Assert no publication for a later preflight encoding failure; retain upload-only facts, grouped reporting, sequential sends, stop after provider failure, and dynamic-header recheck behavior. Preserve existing assertions; user approval covers this extension, not weakening unrelated tests.\n\nAction reuse assessment: extend existing Channel-local Executor and Preparation; reuse bridge preparation callbacks and DeliveryConfirmation reporting. No new Action, provider-policy runtime, or parallel send/history route. Inputs remain separate Outgoing, Plan and trusted selected connection. No new permissions or retries. Verify through existing executor/reporting suites.\n\nRead AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and docs/services/channels.md before implementation. Update owning service/module documentation if needed. Follow issue validation lifecycle. This issue records approved work; this conversation is reviewing remaining findings before implementation.",
+  "id": "zaq-9j8.14",
+  "labels": [],
+  "parent": "zaq-9j8",
+  "priority": 1,
+  "status": "open",
+  "title": "[zaq-9j8] Preflight every publication before abort delivery starts",
+  "type": "bug",
+  "updated_at": "2026-11-28T10:12:32Z"
+}
