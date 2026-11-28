@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-9j8.12"
+  ],
   "created": "2026-11-28T10:16:44Z",
   "description": "User approved review finding 3 and the proposed fix on 2026-11-28.\n\nProblem: DeliveryConfirmation.record_attempt/3 skips empty failure evidence. After a rejected or timed-out delivery, a separate successful attempt on the same persisted answer leaves older delivery_parts in Engine. MessageDelivery presentation then labels the answer partial despite the newer confirmed attempt. Both failure-to-success and timeout-to-success were reproduced during review; success-first control passed.\n\nAgreed behavior: scope displayed delivery status and failed parts to the current attempt. A fully successful newer attempt supersedes previous displayed failures while historical evidence remains separately available. Do not clear genuine partial failures belonging to the same attempt. Delayed older reports must not overwrite newer attempt status. Define and verify explicit attempt precedence; UUID identity or report arrival order alone must not be assumed chronological.\n\nOwnership: Channels reports normalized attempt facts through existing DeliveryConfirmation -\u003e Event/NodeRouter -\u003e Engine. Engine owns persistence, attempt precedence and current presentation. Keep Plan, prepared requests, bytes, raw errors and policy execution Channels-local. Do not introduce a parallel history/reporting path or provider retries.\n\nFiles to inspect: lib/zaq/channels/delivery_confirmation.ex, lib/zaq/channels/delivery/result.ex, lib/zaq/engine/conversations/message_delivery.ex, existing delivery evidence and history ingress contracts. Choose the smallest coherent change that preserves confirmation idempotency and existing legacy confirmation behavior.\n\nTests: extend existing grouped-delivery/reporting tests and fixtures for failure -\u003e success, timeout -\u003e success, genuine same-attempt partial delivery, and delayed older reports. Assert persisted current attempt and UI presentation, not only intermediate reports. Preserve historical evidence and existing assertions; do not add duplicate fixture modules. User approval covers this new attempt-scoped behavior, not unrelated test weakening.\n\nAction reuse assessment: extend existing reporter and Engine delivery evidence/presentation ownership. Reuse Event/NodeRouter dispatch, evidence validation, history ingress and existing persistence synchronization. No new Action, send path or provider logic. Verification through existing reporting, Engine grouped-delivery and relevant presentation tests.\n\nRead AGENTS.md, docs/WORKFLOW_AGENT.md, docs/action-reuse.md, docs/testing-approach.md, docs/code-quality.md and relevant Channels/Engine service sections before implementation; documentation changes follow docs/documentation.md. Follow issue validation lifecycle and preserve current UX/E2E gates. This issue records the agreed fix while remaining findings are reviewed; no implementation performed in this decision turn.",
   "id": "zaq-9j8.16",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-9j8.16] Scope displayed delivery evidence to the current attempt",
   "type": "bug",
-  "updated_at": "2026-11-28T10:16:51Z"
+  "updated_at": "2026-11-28T10:16:53Z"
 }
