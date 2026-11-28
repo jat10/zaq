@@ -17,11 +17,15 @@
     {
       "text": "Before reconciliation existing SMTP suite reproduced exactly the five approved failures: 51/56 passed. After changes mix q passed; SMTP plus EmailConnectorSettings/API, ChannelConfig, TransportRequirements, FileDeliverySettings, native EmailBridge delivery and PR5 APIExecution suites passed 196 checks (2 properties, 194 tests), including all 56 SMTP cases. Exact configured byte/count values retained, unsupported declaration fixture remains negative control and required inputs remain asserted. Corrected stale Channels service capability prose to native SMTP behavior. Existing browser execution next; no new feature E2E authored, no commit/push/merge.",
       "timestamp": "2026-11-28T10:36:59Z"
+    },
+    {
+      "text": "Broader matrix exposed an unchanged pre-existing shared component expectation outside approved SMTP test scope: test/zaq_web/components/channel_capabilities_test.exs:29 expects SMTP supported labels to omit File, but unchanged native EmailBridge returns File. Preserving this assertion pending its own approval; no production behavior or test weakened. Initial combined run: 409/411 passed, all 16 properties passed; the other failure is .16 grouped-modal fixture missing explicit attempt time, now repaired without assertion changes.",
+      "timestamp": "2026-11-28T10:40:04Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.18] Reconcile SMTP settings tests with native attachment support",
   "type": "task",
-  "updated_at": "2026-11-28T10:36:59Z"
+  "updated_at": "2026-11-28T10:40:04Z"
 }
