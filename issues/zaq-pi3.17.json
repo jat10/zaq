@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-28T10:11:06Z",
+  "description": "Functional specifications covered with associated files to edit/add: Present completed BO/widget attachment display, download, unavailable/expired-session behavior and history restoration for explicit human review. Record the approved scope and source. Approval of this plan is not UX approval; keep this task open until the implemented feature is reviewed.\n\nTests to add before implementation: No new tests for the approval operation. Require passing immediate component/controller/integration checks and reviewable running screens.\n\nBranches/paths validated: Both sources, multiple files, text-only, failed/denied download and restored history in BO/widget.\n\nMocking plan: None for approval; clearly identify fixture versus actual-provider demonstrations.\n\nDocumentations to update for both code and docs/ related content: Record acceptance evidence in this issue; no production documentation claims before implementation.\n\nAction reuse assessment: Not applicable: human approval gate, no executable application operation. Follow docs/testing-approach.md feature E2E gate.\n\nImplementation handoff: Scope and sequence approved by the user on 2026-11-28. This turn records the plan only; application implementation, commits, pushes, rebases and dependency publication are not performed or authorized by this planning update. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/testing-approach.md, docs/documentation.md, docs/conventions.md and docs/code-quality.md before execution. Read applicable service guides and module responsibilities; Agent work requires the harness-critical checks; BO work requires DESIGN.md and docs/bo-components.md. Recheck live source and dependency contracts. Preserve existing test behavior unless specifically approved. Write immediate unit/integration/property tests before corresponding code; new browser journeys wait for the human UX gate. Keep real internal boundaries, mock only external edges, and inject runtime dependencies through existing opts/context and Zaq.Config. Follow the owning validation lifecycle. PR7 owns RunAgent, NotifyPerson and notification/workflow integration.",
+  "id": "zaq-pi3.17",
+  "labels": [],
+  "parent": "zaq-pi3",
+  "priority": 2,
+  "status": "open",
+  "title": "Obtain human approval of BO and widget attachment UX",
+  "type": "task",
+  "updated_at": "2026-11-28T10:11:06Z"
+}
