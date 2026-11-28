@@ -21,11 +21,15 @@
     {
       "text": "User authorized PR6 rebase onto committed PR5 on 2026-11-28. Preflight: PR6 and PR5 worktrees clean; PR6 has zero independent commits. Recovery ref backup/attach-documents-before-pr5-20261128T092334Z preserves 81629c90a555b32c6b66cbcc1339779c89f4a9d5; target PR5 6a546dc44a581013608b3d8a8f4efa138d357c38. Action reuse assessment: not applicable; branch restack only, no application operation changes. Existing setup/integration prerequisites remain open.",
       "timestamp": "2026-11-28T09:23:34Z"
+    },
+    {
+      "text": "Rebase complete: feat/attach-documents now points to PR5 commit 6a546dc44a581013608b3d8a8f4efa138d357c38 (feat(channels): add attachment delivery execution foundation (zaq-9j8)). Use this exact SHA as PR6 previous-parent boundary for the next restack. Recovery ref backup/attach-documents-before-pr5-20261128T092334Z preserves 81629c90a555b32c6b66cbcc1339779c89f4a9d5. Verified clean PR6, PR5 ancestor, identical tracked trees, PR5 ref unchanged and git diff --check passed. No independent PR6 commits existed, so there is no child patch range to compare and no conflict resolution/source edits. No application checks run for branch-only movement; no push or new feature commit. Updated existing sibling planning stack map. This completes only the user-authorized restack, not this issue setup/provider/integration prerequisites.",
+      "timestamp": "2026-11-28T09:23:59Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.7] Restack when authorized and verify PR6 against PR5 delivery",
   "type": "task",
-  "updated_at": "2026-11-28T09:23:34Z"
+  "updated_at": "2026-11-28T09:23:59Z"
 }
