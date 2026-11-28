@@ -1,6 +1,7 @@
 {
   "assignee": "",
   "blocked_by": [
+    "zaq-h2i.4.3",
     "zaq-pi3.6"
   ],
   "blocks": [
@@ -15,5 +16,5 @@
   "status": "open",
   "title": "[zaq-pi3.11] Verify and pin Mattermost attachment support",
   "type": "task",
-  "updated_at": "2026-11-28T10:11:32Z"
+  "updated_at": "2026-11-28T10:11:45Z"
 }
