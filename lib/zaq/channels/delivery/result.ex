@@ -11,6 +11,8 @@ defmodule Zaq.Channels.Delivery.Result do
   references, causes, content or plans. DeliveryConfirmation attaches the persisted input/answer
   and origin connector identifiers; Engine validates their ownership and scope.
   Reporting failure must never cause provider effects to be repeated.
+  `started_at` carries the UTC attempt start captured before preparation, including
+  when the terminal report has no unsuccessful parts. Undated legacy results remain valid.
   """
 
   alias Zaq.Channels.Delivery.{Error, Plan}
@@ -18,7 +20,7 @@ defmodule Zaq.Channels.Delivery.Result do
 
   @enforce_keys [:attempt_id, :steps]
   @derive {Inspect, only: [:attempt_id]}
-  defstruct [:attempt_id, :steps, failures: []]
+  defstruct [:attempt_id, :started_at, :steps, failures: []]
 
   @type step_result :: %{
           required(:step) => Step.t(),
@@ -40,7 +42,12 @@ defmodule Zaq.Channels.Delivery.Result do
           attachment_refs: [non_neg_integer()],
           error: Error.t()
         }
-  @type t :: %__MODULE__{attempt_id: Ecto.UUID.t(), steps: [step_result()], failures: [failure()]}
+  @type t :: %__MODULE__{
+          attempt_id: Ecto.UUID.t(),
+          started_at: String.t() | nil,
+          steps: [step_result()],
+          failures: [failure()]
+        }
   @type part :: %{
           optional(:provider_code) => 0..999,
           step_id: [atom() | non_neg_integer()] | nil,
@@ -55,6 +62,7 @@ defmodule Zaq.Channels.Delivery.Result do
   @type evidence :: %{
           version: 1,
           attempt_id: Ecto.UUID.t(),
+          started_at: String.t() | nil,
           confirmed_message_count: non_neg_integer(),
           confirmed_attachment_count: non_neg_integer(),
           parts: [part()],
@@ -111,6 +119,7 @@ defmodule Zaq.Channels.Delivery.Result do
   def safe_evidence(%__MODULE__{steps: steps, failures: failures} = result)
       when is_list(steps) and is_list(failures) do
     with {:ok, attempt_id} <- Ecto.UUID.cast(result.attempt_id),
+         true <- valid_start?(result.started_at),
          {:ok, step_facts} <- collect(steps, &step_facts/1),
          {:ok, failure_facts} <- collect(failures, &failure_facts/1) do
       parts =
@@ -121,6 +130,7 @@ defmodule Zaq.Channels.Delivery.Result do
        %{
          version: 1,
          attempt_id: attempt_id,
+         started_at: result.started_at,
          confirmed_message_count: Enum.count(step_facts, & &1.confirmed?),
          confirmed_attachment_count:
            step_facts |> Enum.flat_map(& &1.delivered_refs) |> Enum.uniq() |> length(),
@@ -133,6 +143,14 @@ defmodule Zaq.Channels.Delivery.Result do
   end
 
   def safe_evidence(_result), do: {:error, :invalid_delivery_result}
+
+  defp valid_start?(nil), do: true
+
+  defp valid_start?(value) when is_binary(value) and byte_size(value) <= 32 do
+    match?({:ok, _, 0}, DateTime.from_iso8601(value))
+  end
+
+  defp valid_start?(_), do: false
 
   defp step_facts(%{step: %Step{} = step} = facts) do
     with {:ok, reference} <- Step.reference(step),

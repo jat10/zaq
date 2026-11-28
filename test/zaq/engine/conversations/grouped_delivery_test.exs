@@ -1,5 +1,6 @@
 defmodule Zaq.Engine.Conversations.GroupedDeliveryTest do
   use Zaq.DataCase, async: true
+  use ExUnitProperties
   import Zaq.ChannelDeliveryFixtures
   import Zaq.AccountsFixtures
 
@@ -10,6 +11,80 @@ defmodule Zaq.Engine.Conversations.GroupedDeliveryTest do
   alias Zaq.Engine.Messages.Outgoing
   alias Zaq.Event
   alias Zaq.NodeRouter
+
+  property "current attempt is selected by start time across report permutations" do
+    check all(order <- shuffle(Enum.to_list(0..4)), max_runs: 10) do
+      ctx = stored_channel_answer()
+
+      attempts =
+        for index <- 0..4 do
+          attempt(
+            if(index == 4, do: :confirmed, else: :timeout),
+            "2026-11-28T10:00:0#{index}.000001Z"
+          )
+        end
+
+      for index <- order, do: report(Enum.at(attempts, index), ctx)
+      answer = Repo.get!(Message, ctx.answer.id)
+      assert answer.metadata["delivery_parts"]["attempt_id"] == List.last(attempts).attempt_id
+      assert map_size(answer.metadata["delivery_attempts"]) == 5
+      assert %{state: :history_updating, parts: []} = MessageDelivery.presentation(answer)
+    end
+  end
+
+  for failure <- [:rejected, :timeout] do
+    @failure failure
+    test "a newer successful attempt supersedes #{@failure} without erasing history" do
+      ctx = stored_channel_answer()
+      failed = attempt(@failure, "2026-11-28T10:00:00.000001Z")
+      success = attempt(:confirmed, "2026-11-28T10:00:00.000002Z")
+      report(failed, ctx)
+      report(success, ctx)
+      answer = Repo.get!(Message, ctx.answer.id)
+      assert answer.metadata["delivery_parts"]["attempt_id"] == success.attempt_id
+      assert %{state: :history_updating, parts: []} = MessageDelivery.presentation(answer)
+
+      assert [%{"reason" => reason}] =
+               answer.metadata["delivery_attempts"][failed.attempt_id]["parts"]
+
+      assert reason == to_string(@failure)
+
+      report(failed, ctx)
+      assert Repo.get!(Message, answer.id).metadata == answer.metadata
+    end
+  end
+
+  test "delayed older success cannot clear the newer attempt's genuine partial failure" do
+    ctx = stored_channel_answer()
+    partial = Map.put(result(), :started_at, "2026-11-28T10:00:00.000002Z")
+    report(partial, ctx)
+    older = attempt(:confirmed, "2026-11-28T10:00:00.000001Z")
+    report(older, ctx)
+    answer = Repo.get!(Message, ctx.answer.id)
+    assert answer.metadata["delivery_parts"]["attempt_id"] == partial.attempt_id
+
+    assert %{state: :partial, parts: [%{"reason" => "timeout"}]} =
+             MessageDelivery.presentation(answer)
+
+    assert answer.metadata["delivery_attempts"][older.attempt_id]["parts"] == []
+
+    conflicting = %{older | attempt_id: partial.attempt_id}
+    report(Map.put(conflicting, :started_at, partial.started_at), ctx)
+    assert Repo.get!(Message, answer.id).metadata == answer.metadata
+  end
+
+  test "equal or missing attempt start times cannot displace an ordered current attempt" do
+    ctx = stored_channel_answer()
+    success = attempt(:confirmed, "2026-11-28T10:00:00.000002Z")
+    report(success, ctx)
+
+    for started_at <- [success.started_at, nil] do
+      report(attempt(:rejected, started_at), ctx)
+      answer = Repo.get!(Message, ctx.answer.id)
+      assert answer.metadata["delivery_parts"]["attempt_id"] == success.attempt_id
+      assert %{state: :history_updating, parts: []} = MessageDelivery.presentation(answer)
+    end
+  end
 
   test "real Channels-to-Engine reporting persists successful messages and one supplemental failure group" do
     ctx = stored_channel_answer()
@@ -155,6 +230,33 @@ defmodule Zaq.Engine.Conversations.GroupedDeliveryTest do
         persisted_assistant_message_id: ctx.answer.id
       }
     }
+
+  defp report(result, ctx) do
+    response = {:ok, result}
+    assert ^response = DeliveryConfirmation.record_attempt(response, outgoing(ctx), [])
+  end
+
+  defp attempt(outcome, started_at) do
+    base = result()
+    [first | _] = base.steps
+
+    first =
+      if outcome == :confirmed do
+        first
+      else
+        %{
+          step: first.step,
+          outcome: if(outcome == :timeout, do: :unconfirmed, else: :failed),
+          error: %Error{
+            stage: :publication,
+            outcome: if(outcome == :timeout, do: :unconfirmed, else: :failed),
+            reason: outcome
+          }
+        }
+      end
+
+    base |> Map.put(:steps, [first]) |> Map.put(:started_at, started_at)
+  end
 
   defp result do
     steps = for group <- 0..2, do: %Step{id: {:send, group}, operation: :send, group_id: group}

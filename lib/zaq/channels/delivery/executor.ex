@@ -3,7 +3,8 @@ defmodule Zaq.Channels.Delivery.Executor do
   Executes a Channel-local metadata plan through single-operation bridge callbacks.
 
   Outgoing, Plan, the selected connection and trusted runtime context stay separate.
-  Abort completes required preparation/uploads before sequential publication.
+  Abort completes uploads and preflights every publication before sending.
+  Each publication is revalidated with its final root/thread headers.
   Continue promotes threaded roots without retrying failed operations, then runs
   ready replies with bounded concurrency. Independent messages need no root.
 
@@ -54,6 +55,7 @@ defmodule Zaq.Channels.Delivery.Executor do
         halted?: false,
         first_error: nil,
         answer_confirmed?: false,
+        answer_reserved?: false,
         root: outgoing.thread_id,
         fallback_reserved?: false
       })
@@ -108,6 +110,10 @@ defmodule Zaq.Channels.Delivery.Executor do
          concurrency: concurrency,
          supervisor: supervisor,
          attempt_id: attempt_id,
+         started_at:
+           Keyword.get_lazy(opts, :attempt_started_at, fn ->
+             DateTime.to_iso8601(DateTime.utc_now())
+           end),
          text_edits?: Keyword.get(opts, :text_edits?) == true
        }}
     else
@@ -145,8 +151,18 @@ defmodule Zaq.Channels.Delivery.Executor do
 
   defp prepare_attachments(
          %{plan: %{requirements: %{transfer_mode: :upload_then_publish}}} = state
-       ),
-       do: upload_pending(state, Enum.filter(state.plan.steps, &(&1.operation == :upload)))
+       ) do
+    state = upload_pending(state, Enum.filter(state.plan.steps, &(&1.operation == :upload)))
+
+    Enum.reduce_while(state.plan.groups, state, fn group, state ->
+      state =
+        if abort?(state) and not state.halted?,
+          do: prepare_abort_group(state, group.id),
+          else: state
+
+      if state.halted?, do: {:halt, state}, else: {:cont, state}
+    end)
+  end
 
   defp prepare_attachments(state) do
     Enum.reduce_while(state.plan.groups, state, fn group, state ->
@@ -314,6 +330,7 @@ defmodule Zaq.Channels.Delivery.Executor do
         state = %{
           state
           | preparation: preparation,
+            answer_reserved?: state.answer_reserved? or not inputs.continuation?,
             fallback_reserved?: state.fallback_reserved? or inputs.attachments == []
         }
 
@@ -330,7 +347,7 @@ defmodule Zaq.Channels.Delivery.Executor do
       abort?(state) ->
         {jobs, %{state | halted?: true}}
 
-      inputs.attachments != [] and not state.answer_confirmed? and not later_usable?(state, step) ->
+      inputs.attachments != [] and answer_pending?(state) and not later_usable?(state, step) ->
         fallback = %{
           inputs
           | attachments: [],
@@ -350,11 +367,16 @@ defmodule Zaq.Channels.Delivery.Executor do
 
     continuation? =
       if state.plan.placement == :independent,
-        do: not first?,
+        do: if(prototype?, do: not first?, else: state.answer_reserved?),
         else: state.answer_confirmed? or (prototype? and not first?)
 
     continuation? and not (files == [] and not state.answer_confirmed? and not prototype?)
   end
+
+  defp answer_pending?(state),
+    do:
+      not state.answer_confirmed? and
+        (state.plan.placement != :independent or not state.answer_reserved?)
 
   defp publication_inputs(state, step, prototype?) do
     files = publication_files(state, step.group_id)
@@ -391,7 +413,7 @@ defmodule Zaq.Channels.Delivery.Executor do
   end
 
   defp skip_empty?(state, step, []),
-    do: state.answer_confirmed? or state.fallback_reserved? or later_usable?(state, step)
+    do: not answer_pending?(state) or state.fallback_reserved? or later_usable?(state, step)
 
   defp skip_empty?(_state, _step, _files), do: false
 
@@ -621,6 +643,7 @@ defmodule Zaq.Channels.Delivery.Executor do
   defp finish(state) do
     closed = Preparation.close(state.preparation)
     result = Result.new(state.plan, state.results, state.attempt_id, Preparation.failures(closed))
+    result = %{result | started_at: state.started_at}
     classify_result(result, state.first_error || first_failure(result))
   end
 
@@ -660,6 +683,10 @@ defmodule Zaq.Channels.Delivery.Executor do
 
     result = %Result{
       attempt_id: Keyword.get_lazy(opts, :attempt_id, &Ecto.UUID.generate/0),
+      started_at:
+        Keyword.get_lazy(opts, :attempt_started_at, fn ->
+          DateTime.to_iso8601(DateTime.utc_now())
+        end),
       steps: [],
       failures: failures
     }

@@ -17,7 +17,7 @@ defmodule Zaq.Channels.DeliveryConfirmation do
 
   @reasons [:rejected, :missing_configuration, :unsupported_provider, :timeout, :unknown]
 
-  @doc "Reports confirmed messages individually and one bounded failure group; returns transport facts unchanged."
+  @doc "Reports confirmed messages and terminal attempt facts, including full success; preserves transport results."
   def record_attempt(response, outgoing, opts) do
     result =
       case response do
@@ -32,8 +32,7 @@ defmodule Zaq.Channels.DeliveryConfirmation do
         record({:ok, receipt}, delivered, opts)
       end
 
-      if evidence.parts != [] or evidence.omitted_part_count > 0,
-        do: report_observation(%{delivery_parts: evidence}, outgoing, opts)
+      report_observation(%{delivery_parts: evidence}, outgoing, opts)
     end
 
     response

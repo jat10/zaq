@@ -1164,8 +1164,9 @@ provider `"email:smtp"`.
 `capability_snapshot/1` uses the shared delivery capability contract, independently
 of connector readiness. Both email providers report `text: :native` and
 `threads: :native`; replies originating from an IMAP inbox use its SMTP binding.
-Unsupported delivery features are omitted, including attachments, streaming,
-reactions, typing indicators, and message editing. IMAP attachment reception is
+SMTP reports `file: :native` with required selected-connector encoded-message
+and attachment-count limits. Unsupported delivery features are omitted, including
+streaming, reactions, typing indicators, and message editing. IMAP attachment reception is
 outside this contract, which has no separate receive-capability dimension.
 The `mode` describes ingress: `none` for SMTP and `imap_idle` for IMAP.
 Shared normalization supplies capability labels and unsupported detection.
@@ -1463,8 +1464,8 @@ proposal nor returns it in the snapshot.
 Fixed values are read-only. Configurable overrides cannot exceed known ceilings.
 Declared aggregate-attachment and upload-request limits also appear when provided.
 Blank optional values fall back to declared transport limits; missing facts remain
-unresolved. SMTP declares configuration controls without advertising attachment
-sending. Required values apply only to usable file support (`:native`, `:fallback`
+unresolved. SMTP advertises native attachment sending with required configurable
+encoded-message and attachment-count limits. Required values apply only to usable file support (`:native`, `:fallback`
 or `true`). A valid fixed value satisfies a requirement; an unresolved required
 configurable value needs input. Ecto validates effective types and numeric rules
 through FileSettings; BO hints and the resolver consume those same rules.
@@ -1584,7 +1585,9 @@ bounded to 128 parts and 128 original indices per part with explicit omitted
 counts. Receipts, provider file references, raw causes, Records and plans remain
 private. Successful messages retain their normal history path. The existing
 `DeliveryConfirmation.record_attempt/3` attaches persisted input/answer UUIDs and the
-origin connector ID; Engine owns their validation and persistence. Selected SMTP
+origin connector ID and reports terminal success as well as failures. Attempt start
+time is captured before preparation and provider effects; Engine owns precedence,
+validation and persistence. Selected SMTP
 transport identity does not replace the origin connector scope. Confirmed parts
 use canonical answer or continuation content with their actual thread identity;
 only confirmed attachment descriptors cross the history boundary. Source handles
@@ -1617,10 +1620,15 @@ and `max_concurrency` (4); per-call overrides remain isolated. Timeouts and task
 exits stay unconfirmed, with no provider retries. Results are assembled in plan
 order independently of completion order.
 
-Abort finishes required direct-request preparation or uploads before publication,
-then publishes sequentially until a failure. Continue promotes threaded roots
+Abort completes uploads and preflights all publication requests before the first
+send, then publishes sequentially until a failure. Final headers learned from a
+confirmed root are re-encoded and revalidated before each subsequent send;
+a newly discovered failure preserves earlier confirmations. Continue promotes threaded roots
 with the original answer until confirmation, then runs ready replies concurrently;
-independent groups need no root. Partial uploads publish only attested provider
+independent groups need no root. Independent answer ownership is reserved only
+after preparation succeeds, so an encoding failure transfers the original answer
+to the next usable group or a size-validated text fallback. Uncertain independent
+sends do not transfer or retry a reserved answer. Partial uploads publish only attested provider
 IDs. Failed-file evidence excludes successful upload indices. Changed body/thread
 inputs are re-encoded and rechecked, including SMTP continuation headers.
 

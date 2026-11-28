@@ -23,6 +23,18 @@ validates the exact input/answer/origin connector before recording it. Grouped
 facts survive confirmation; legacy late failure observations remain ignored after
 confirmation. Neither form creates a failed transcript message.
 
+Terminal attempt reports include full success and an explicit UTC `started_at`
+captured in Channels before preparation or provider effects. Under the existing
+answer row lock, Engine selects a strictly later start for current `delivery_parts`
+and retains terminal snapshots by attempt ID in private `delivery_attempts`.
+UUID ordering and report arrival do not establish precedence. Equal or missing
+timestamps cannot displace a dated current attempt; a dated report can supersede
+legacy undated evidence. Each attempt's first terminal snapshot is immutable,
+so replay or a conflicting report cannot clear its partial failures. Start-time
+ordering uses the reporting node's UTC clock; it does not infer order across clock
+skew. Presentation uses the current attempt's counts and parts together with durable
+confirmation, without exposing earlier attempt failures as current ones.
+
 Confirmed continuation messages use the existing confirmation/association
 transaction and the original execution's verified transcript targets. They have
 their own provider identity and canonical body while retaining the original

@@ -28,21 +28,25 @@ defmodule Zaq.Engine.Conversations.DeliveryEvidence do
   def reference(_), do: {:error, :invalid_delivery_evidence}
 
   @doc "Returns content-free JSON facts; unknown fields never cross persistence."
-  def normalize(%{
-        version: 1,
-        attempt_id: attempt,
-        parts: parts,
-        confirmed_message_count: messages,
-        confirmed_attachment_count: attachments,
-        omitted_part_count: omitted
-      })
+  def normalize(
+        %{
+          version: 1,
+          attempt_id: attempt,
+          parts: parts,
+          confirmed_message_count: messages,
+          confirmed_attachment_count: attachments,
+          omitted_part_count: omitted
+        } = evidence
+      )
       when is_list(parts) and length(parts) <= 128 do
     with {:ok, uuid} <- Ecto.UUID.cast(attempt),
+         {:ok, started_at} <- normalize_start(evidence[:started_at]),
          true <- Enum.all?([messages, attachments, omitted], &count?/1),
          true <- Enum.all?(parts, &valid_part?/1) do
       safe = %{
         version: 1,
         attempt_id: uuid,
+        started_at: started_at,
         confirmed_message_count: messages,
         confirmed_attachment_count: attachments,
         omitted_part_count: omitted,
@@ -73,6 +77,7 @@ defmodule Zaq.Engine.Conversations.DeliveryEvidence do
     normalize(%{
       version: 1,
       attempt_id: stored["attempt_id"],
+      started_at: stored["started_at"],
       parts: Enum.map(parts, &stored_part/1),
       confirmed_message_count: stored["confirmed_message_count"],
       confirmed_attachment_count: stored["confirmed_attachment_count"],
@@ -81,6 +86,17 @@ defmodule Zaq.Engine.Conversations.DeliveryEvidence do
   end
 
   def normalize(_), do: {:error, :invalid_delivery_evidence}
+
+  defp normalize_start(nil), do: {:ok, nil}
+
+  defp normalize_start(value) when is_binary(value) and byte_size(value) <= 32 do
+    case DateTime.from_iso8601(value) do
+      {:ok, time, 0} -> {:ok, time |> DateTime.truncate(:microsecond) |> DateTime.to_iso8601()}
+      _ -> {:error, :invalid_delivery_evidence}
+    end
+  end
+
+  defp normalize_start(_), do: {:error, :invalid_delivery_evidence}
 
   defp stored_part(part) when is_map(part) do
     %{

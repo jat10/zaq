@@ -134,6 +134,7 @@ defmodule ZaqWeb.Live.BO.Communication.GroupedDeliveryDetailsLiveTest do
                delivery_parts: %{
                  version: 1,
                  attempt_id: Ecto.UUID.generate(),
+                 started_at: DateTime.to_iso8601(DateTime.utc_now()),
                  parts: Enum.take(parts, count),
                  confirmed_message_count: 1,
                  confirmed_attachment_count: 0,

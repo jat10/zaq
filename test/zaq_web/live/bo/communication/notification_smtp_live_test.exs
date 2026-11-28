@@ -79,6 +79,7 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
     def capability_snapshot(config) do
       {:ok, snapshot} = EmailBridge.capability_snapshot(config)
+      snapshot = put_in(snapshot, [:resolved, :file], :unsupported)
 
       {:ok,
        put_in(snapshot, [:file_delivery, :limits, :max_attachment_bytes, :validation], %{
@@ -154,6 +155,8 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
     assert saved.settings["file_delivery"] == %{
              "max_attachment_bytes" => 1_000_001,
+             "max_encoded_message_bytes" => 25_000_000,
+             "max_attachments_per_message" => 10,
              "send_on_file_failure" => false
            }
 
@@ -346,6 +349,8 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
     assert Repo.reload!(config).settings["file_delivery"] == %{
              "max_attachment_bytes" => 1_500_000,
+             "max_encoded_message_bytes" => 25_000_000,
+             "max_attachments_per_message" => 10,
              "send_on_file_failure" => false
            }
 
@@ -383,6 +388,8 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
 
     assert Repo.reload!(config).settings["file_delivery"] == %{
              "max_attachment_bytes" => 1_000_001,
+             "max_encoded_message_bytes" => 25_000_000,
+             "max_attachments_per_message" => 10,
              "send_on_file_failure" => false
            }
   end
@@ -394,7 +401,11 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
       {:ok, view, _} = live(conn, "/bo/channels/retrieval/email/smtp")
       assert has_element?(view, "#smtp-file-delivery")
       assert render(view) =~ "Optional override"
-      assert render(view) =~ "Attachment sending is unavailable"
+      refute render(view) =~ "Attachment sending is unavailable"
+
+      for field <- ~w(max_encoded_message_mb max_attachments_per_message) do
+        assert has_element?(view, "#smtp-file-delivery-#{field}[aria-required=true]")
+      end
 
       render_submit(view, "save", %{
         "email_config" => %{
@@ -495,11 +506,19 @@ defmodule ZaqWeb.Live.BO.Communication.NotificationSmtpLiveTest do
                  "Streaming"
                )
 
-        refute has_element?(
-                 view,
-                 "#capabilities-modal li[style*='--zaq-text-color-body-success']",
-                 "File"
-               )
+        if transport == "smtp" do
+          assert has_element?(
+                   view,
+                   "#capabilities-modal li[style*='--zaq-text-color-body-success']",
+                   "File"
+                 )
+        else
+          refute has_element?(
+                   view,
+                   "#capabilities-modal li[style*='--zaq-text-color-body-success']",
+                   "File"
+                 )
+        end
 
         assert has_element?(view, "#capabilities-modal li", "File")
         refute render(view) =~ "receive only"

@@ -1,6 +1,5 @@
 defmodule Zaq.Channels.Delivery.PlanValidationTest do
   use ExUnit.Case, async: true
-  use ExUnitProperties
 
   alias Zaq.Channels.Delivery.{Attachments, Plan}
   alias Zaq.Channels.TransportRequirements
@@ -66,15 +65,7 @@ defmodule Zaq.Channels.Delivery.PlanValidationTest do
              Plan.validate(%{edited | steps: [%{edit | message_ref: nil}]}, 1)
   end
 
-  property "planner output preserves every original index across fixed groups" do
-    check all(count <- integer(1..20), limit <- integer(1..5)) do
-      plan = plan(count, :upload_then_publish, limit)
-      assert :ok = Plan.validate(plan, count)
-      assert Enum.flat_map(plan.groups, & &1.attachment_refs) == Enum.to_list(0..(count - 1))
-    end
-  end
-
-  defp plan(count, mode \\ :upload_then_publish, limit \\ 1) do
+  defp plan(count, mode \\ :upload_then_publish) do
     records =
       for index <- 0..(count - 1) do
         %Record{id: "file-#{index}", kind: :file, size: 1, materialization_handle: "unredeemed"}
@@ -87,7 +78,7 @@ defmodule Zaq.Channels.Delivery.PlanValidationTest do
       attachments: records
     }
 
-    requirements = %TransportRequirements{transfer_mode: mode, max_attachments_per_message: limit}
+    requirements = %TransportRequirements{transfer_mode: mode, max_attachments_per_message: 1}
     {:ok, plan} = Attachments.build_plan(outgoing, requirements)
     plan
   end

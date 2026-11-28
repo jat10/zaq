@@ -7,6 +7,10 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
   neither place messages in transcripts nor schedule transport delivery.
   Eligibility composes `AnswerOwnership` relationships with delivery-specific reply
   and origin checks; neither grants permission to read a transcript.
+
+  Terminal snapshots are immutable per attempt. Explicit UTC start times select
+  current presentation under the answer row lock; earlier evidence stays private
+  in attempt history. Equal or missing times never displace a dated current attempt.
   """
 
   import Ecto.Query
@@ -145,7 +149,8 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
         _ -> %{}
       end
 
-    state = delivery_state(metadata, observation, Map.get(parts, "parts", []))
+    state = delivery_state(metadata, observation, parts)
+    observation = if parts == %{}, do: observation, else: %{}
 
     %{
       state: state,
@@ -157,15 +162,29 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
     }
   end
 
-  defp delivery_state(metadata, observation, parts) do
-    cond do
-      is_map(metadata["delivery_confirmation"]) ->
-        if parts == [], do: :history_updating, else: :partial
+  defp delivery_state(metadata, _observation, %{"confirmed_message_count" => count} = evidence) do
+    parts = evidence["parts"]
 
-      observation["outcome"] == "failed" ->
-        :failed
+    cond do
+      count > 0 and is_map(metadata["delivery_confirmation"]) ->
+        if parts == [] and evidence["omitted_part_count"] == 0,
+          do: :history_updating,
+          else: :partial
 
       parts != [] and Enum.all?(parts, &(&1["outcome"] in ["failed", "unattempted"])) ->
+        :failed
+
+      true ->
+        :unconfirmed
+    end
+  end
+
+  defp delivery_state(metadata, observation, _parts) do
+    cond do
+      is_map(metadata["delivery_confirmation"]) ->
+        :history_updating
+
+      observation["outcome"] == "failed" ->
         :failed
 
       true ->
@@ -196,15 +215,37 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
   end
 
   defp record_locked(answer, %{delivery_parts: parts}) do
-    previous = Map.drop(answer.metadata["delivery_parts"] || %{}, ["observed_at"])
+    current = answer.metadata["delivery_parts"] || %{}
+    attempts = answer.metadata["delivery_attempts"] || %{}
 
-    if previous == parts do
+    previous =
+      attempts[parts["attempt_id"]] ||
+        if(current["attempt_id"] == parts["attempt_id"], do: current)
+
+    if previous do
       :unchanged
     else
       parts = Map.put(parts, "observed_at", DateTime.to_iso8601(DateTime.utc_now()))
 
+      attempts =
+        if current == %{},
+          do: attempts,
+          else: Map.put_new(attempts, current["attempt_id"], current)
+
+      metadata =
+        Map.put(
+          answer.metadata,
+          "delivery_attempts",
+          Map.put(attempts, parts["attempt_id"], parts)
+        )
+
+      metadata =
+        if newer_attempt?(parts, current),
+          do: Map.put(metadata, "delivery_parts", parts),
+          else: metadata
+
       answer
-      |> Message.confirmation_changeset(Map.put(answer.metadata, "delivery_parts", parts))
+      |> Message.confirmation_changeset(metadata)
       |> Repo.update!()
 
       :recorded
@@ -238,6 +279,19 @@ defmodule Zaq.Engine.Conversations.MessageDelivery do
         |> Repo.update!()
 
         :recorded
+    end
+  end
+
+  defp newer_attempt?(_parts, current) when current == %{}, do: true
+
+  defp newer_attempt?(parts, current) do
+    with started_at when is_binary(started_at) <- parts["started_at"],
+         {:ok, incoming, 0} <- DateTime.from_iso8601(started_at),
+         previous_at when is_binary(previous_at) <- current["started_at"],
+         {:ok, previous, 0} <- DateTime.from_iso8601(previous_at) do
+      DateTime.compare(incoming, previous) == :gt
+    else
+      _ -> is_binary(parts["started_at"]) and is_nil(current["started_at"])
     end
   end
 

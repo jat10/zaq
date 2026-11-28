@@ -10,6 +10,7 @@ defmodule Zaq.Channels.Delivery.Dispatch do
 
   @doc "Resolves requirements once, executes once, and keeps completion/reporting failures separate."
   def run(canonical, formatted, bridge, connection, event) do
+    started_at = DateTime.to_iso8601(DateTime.utc_now())
     snapshot = Bridge.capability_snapshot_for_connection(bridge, connection)
 
     requirements =
@@ -24,7 +25,11 @@ defmodule Zaq.Channels.Delivery.Dispatch do
       |> Map.from_struct()
       |> Map.merge(Map.new(Keyword.take(event.opts, [:config, :node_router])))
 
-    opts = event.opts |> Keyword.put(:context, context) |> text_options(snapshot, connection)
+    opts =
+      event.opts
+      |> Keyword.put(:context, context)
+      |> Keyword.put(:attempt_started_at, started_at)
+      |> text_options(snapshot, connection)
 
     response =
       case execute(formatted, requirements, bridge, connection, opts) do
@@ -85,6 +90,7 @@ defmodule Zaq.Channels.Delivery.Dispatch do
 
     result = %Result{
       attempt_id: Keyword.get_lazy(opts, :attempt_id, &Ecto.UUID.generate/0),
+      started_at: opts[:attempt_started_at],
       steps: [],
       failures: [%{group_id: nil, attachment_refs: refs, error: error}]
     }

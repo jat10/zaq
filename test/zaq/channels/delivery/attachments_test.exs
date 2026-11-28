@@ -229,6 +229,7 @@ defmodule Zaq.Channels.Delivery.AttachmentsTest do
         )
 
       assert {:ok, plan} = Attachments.build_plan(outgoing(records), requirements)
+      assert :ok = Plan.validate(plan, length(records))
 
       assert Enum.flat_map(plan.groups, & &1.attachment_refs) ==
                Enum.to_list(0..(length(sizes) - 1))

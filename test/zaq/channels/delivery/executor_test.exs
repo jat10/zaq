@@ -28,19 +28,33 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
     refute_received {:operation, {:send, _}, _, _}
   end
 
-  test "abort preparation failure in a later direct group publishes nothing" do
-    {outgoing, plan} =
-      inputs(2,
-        transfer_mode: :send_with_attachments,
-        failure_policy: :abort,
-        max_encoded_message_bytes: 20
-      )
+  for mode <- [:send_with_attachments, :upload_then_publish] do
+    @mode mode
+    test "abort preparation failure in a later #{@mode} group publishes nothing" do
+      {outgoing, plan} =
+        inputs(2,
+          transfer_mode: @mode,
+          failure_policy: :abort,
+          max_encoded_message_bytes: 20
+        )
 
-    records = [file("a"), %{file(String.duplicate("b", 15)) | size: 1}]
-    outgoing = %{outgoing | attachments: records}
-    assert {:error, %Error{stage: :preparation}, result} = execute(outgoing, plan)
-    assert result.failures != []
-    refute_received {:operation, _, _, _}
+      records = [file("a"), %{file(String.duplicate("b", 15)) | size: 1}]
+      outgoing = %{outgoing | attachments: records}
+      assert {:error, %Error{stage: :preparation}, result} = execute(outgoing, plan)
+      assert result.failures != []
+
+      if @mode == :upload_then_publish do
+        for index <- 0..1, do: assert_receive({:operation, {:upload, ^index, 0}, _, _})
+
+        assert Enum.flat_map(result.steps, &Map.to_list(Map.get(&1, :uploaded_refs, %{}))) ==
+                 [{0, "file-0"}, {1, "file-1"}]
+      end
+
+      assert Result.confirmed_receipts(result) == []
+      assert {:ok, %{parts: parts, confirmed_message_count: 0}} = Result.safe_evidence(result)
+      assert Enum.any?(parts, &(&1.reason == :size_limit))
+      refute_received {:operation, _, _, _}
+    end
   end
 
   test "abort retains earlier confirmation and never publishes after rejection" do
@@ -286,20 +300,84 @@ defmodule Zaq.Channels.Delivery.ExecutorTest do
     refute_received {:operation, {:send, 0}, _, _}
   end
 
-  test "changed confirmed-root headers can halt abort after earlier confirmation" do
+  test "independent encoding failure transfers the answer to the next prepared group" do
     {outgoing, plan} =
-      inputs(2,
-        transfer_mode: :send_with_attachments,
-        supports_threads: true,
-        failure_policy: :abort,
-        max_encoded_message_bytes: 25
-      )
+      inputs(3, transfer_mode: :send_with_attachments, max_encoded_message_bytes: 25)
+
+    outgoing = %{outgoing | attachments: [file(String.duplicate("x", 24)), file("y"), file("z")]}
+    assert {:ok, result} = execute(outgoing, plan)
+    assert_receive {:operation, {:send, 1}, _, %{outgoing: %{body: "answer", thread_id: nil}}}
+
+    assert_receive {:operation, {:send, 2}, _,
+                    %{outgoing: %{body: "Additional files (3/3).", thread_id: nil}}}
+
+    refute_received {:operation, _, _, _}
+    assert {:ok, %{confirmed_attachment_count: 2, parts: parts}} = Result.safe_evidence(result)
+    assert Enum.any?(parts, &(&1.group_id == 0 and &1.reason == :size_limit))
+  end
+
+  test "independent answer transfer revalidates each full request before text fallback" do
+    {outgoing, plan} =
+      inputs(2, transfer_mode: :send_with_attachments, max_encoded_message_bytes: 25)
+
+    outgoing = %{
+      outgoing
+      | body: String.duplicate("a", 24),
+        attachments: [file("xx"), file("yy")]
+    }
 
     assert {:ok, result} = execute(outgoing, plan)
-    assert [%{message_id: "message-0"}] = Result.confirmed_receipts(result)
-    assert_receive {:operation, {:send, 0}, _, _}
-    refute_received {:operation, {:send, 1}, _, _}
-    assert [%{error: %Error{reason: :size_limit}}] = result.failures
+    assert_receive {:operation, {:send, 1}, _, %{outgoing: %{body: body}, attachments: []}}
+    assert body == outgoing.body
+    refute_received {:operation, _, _, _}
+    assert {:ok, %{confirmed_attachment_count: 0, parts: parts}} = Result.safe_evidence(result)
+
+    for index <- 0..1,
+        do:
+          assert(Enum.any?(parts, &(&1.attachment_refs == [index] and &1.reason == :size_limit)))
+
+    assert {:error, %Error{reason: :size_limit}, _} =
+             execute(%{outgoing | body: String.duplicate("a", 26)}, plan)
+
+    refute_received {:operation, _, _, _}
+  end
+
+  test "independent provider uncertainty does not transfer or retry a prepared answer" do
+    {outgoing, plan} = inputs(2, transfer_mode: :send_with_attachments)
+
+    assert {:ok, _} =
+             execute(outgoing, plan, %{owner: self(), responses: %{{:send, 0} => :unknown}})
+
+    assert_receive {:operation, {:send, 0}, _, %{outgoing: %{body: "answer"}}}
+    assert_receive {:operation, {:send, 1}, _, %{outgoing: %{body: "Additional files (2/2)."}}}
+    refute_received {:operation, _, _, _}
+  end
+
+  test "independent preparation omissions do not duplicate a reserved answer" do
+    {outgoing, plan} = inputs(2, transfer_mode: :send_with_attachments)
+    outgoing = %{outgoing | attachments: [file("usable"), file(nil)]}
+    assert {:ok, _} = execute(outgoing, plan)
+    assert_receive {:operation, {:send, 0}, _, %{outgoing: %{body: "answer"}}}
+    refute_received {:operation, _, _, _}
+  end
+
+  for mode <- [:send_with_attachments, :upload_then_publish] do
+    @mode mode
+    test "changed confirmed-root headers can halt #{@mode} abort after earlier confirmation" do
+      {outgoing, plan} =
+        inputs(2,
+          transfer_mode: @mode,
+          supports_threads: true,
+          failure_policy: :abort,
+          max_encoded_message_bytes: 25
+        )
+
+      assert {:ok, result} = execute(outgoing, plan)
+      assert [%{message_id: "message-0"}] = Result.confirmed_receipts(result)
+      assert_receive {:operation, {:send, 0}, _, _}
+      refute_received {:operation, {:send, 1}, _, _}
+      assert [%{error: %Error{reason: :size_limit}}] = result.failures
+    end
   end
 
   test "a sole reply after the root still observes its deadline" do
