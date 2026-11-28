@@ -14,11 +14,15 @@
     {
       "text": "Approved plan revision recorded on 2026-11-28. Retained and updated tasks .1-.10; added .11-.18 for adapter compatibility, shared authorized retrieval, widget file API, web delivery, BO/widget presentation, human UX approval and consolidated E2E. Validation passed: all 18 tasks remain open with six required specification sections; dependency graph is acyclic; reciprocal edges agree; .1 is the sole internal root; .17 blocks .18, which blocks review .9 and finalization .10. Existing Mattermost prerequisite zaq-h2i.4.3 and closed PR5 route zaq-9j8.7 are linked to their consumers. Application working tree is clean; no application tests run for tracker-only changes. Implementation has not started; setup readiness remains to be verified.",
       "timestamp": "2026-11-28T10:12:10Z"
+    },
+    {
+      "text": "Implementation checkpoint 2026-11-28: current user request authorizes implementation. Selection core .2-.6 is complete and unit-validated; .1 setup was already closed. Reused existing ActionContract/GetDocument/authorization/provenance, OpaqueAliases schema traversal, StreamEvents canonical invocation collection, Executor and Outgoing builder. Factory and all PR4/PR5 delivery/Engine/PR7 code and dependency pins are unchanged. Final mix q passed; combined focused suite passed 502 checks (6 doctests, 29 properties, 467 tests), including real native Agent/source ACL/role propagation/PR5 confirmation integration. git diff --check passed. Remaining approved serial tasks .11/.7/.12-.16/.8 are open: immutable Mattermost adapter publication, complete configured-provider evidence, authorized browser retrieval/file API/web transport/BO/widget presentation and full disk/Drive x destination acceptance. No new browser E2E authored; UX approval .17 -\u003e browser acceptance .18 -\u003e technical review .9 -\u003e dedicated coverage and final mix precommit .10 remain pending. No final human approval requested; no commits/pushes/publication or external-worktree edits. Existing native pre-tool alias-interceptor errors retain their fail-closed request-terminal behavior; Action validation/authorization errors are tool feedback and successful corrected calls retain ordinary selection semantics.",
+      "timestamp": "2026-11-28T11:01:48Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3] PR6 authorized document attachments across Mattermost, email, BO and widget",
   "type": "epic",
-  "updated_at": "2026-11-28T10:12:10Z"
+  "updated_at": "2026-11-28T11:01:48Z"
 }
