@@ -20,11 +20,15 @@
     {
       "text": "User explicitly approved adding data_source.attach_document to existing exact registry tool-list expectations on 2026-11-28 in response to the test-behavior gate question. Preserve every existing entry and assertion; only insert the new tool in both exact ordered lists.",
       "timestamp": "2026-11-28T10:37:13Z"
+    },
+    {
+      "text": "Final acceptance extends the original tests: meaningful generated sequences vary each operation record subset; empty IDs, valid signed folders, wrong actors, model-supplied/nonliteral bypass and literal trusted bypass are covered. Empty-ID regression was reproduced before adding a nonempty canonical ID guard. Native retry, source refresh/revocation and no acquisition at selection are proven by real flow tests. Final mix q and 502 focused checks passed. Only existing-test behavioral edit is the explicitly user-approved additive tool entry in both exact registry expectations.",
+      "timestamp": "2026-11-28T11:01:43Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "[zaq-pi3.3] Add the validated attach_documents Action and pure reducer",
   "type": "task",
-  "updated_at": "2026-11-28T10:37:13Z"
+  "updated_at": "2026-11-28T11:01:43Z"
 }
