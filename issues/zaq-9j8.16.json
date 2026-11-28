@@ -21,11 +21,15 @@
     {
       "text": "Validated final implementation and owning docs: mix q passed on retry without changing checks; complete delivery directory plus DeliveryConfirmation, grouped evidence, MessageDelivery, DeliveryEvidence and history Delivery suites passed 171 checks (15 properties, 156 tests). Fixed-domain shuffle now proves current attempt is independent of report permutation. Real reporting persists failure-\u003esuccess, timeout-\u003esuccess, delayed reports, tied/undated reports, same-attempt partial immutability and private history; legacy confirmation/idempotency tests remain unchanged. .15 trailing unusable-group duplication regression also passes. No commit/push/merge; UX/E2E gates remain open.",
       "timestamp": "2026-11-28T10:32:52Z"
+    },
+    {
+      "text": "Combined 20-surface matrix found an existing grouped-modal fixture creating separate UUID attempts without chronological facts; added explicit UTC started_at to that existing fixture under approved attempt-contract/fixture scope. All existing modal assertions remain unchanged, including refreshing from three parts to one. Current code intentionally cannot infer newer attempts from UUID/report arrival alone.",
+      "timestamp": "2026-11-28T10:40:01Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.16] Scope displayed delivery evidence to the current attempt",
   "type": "bug",
-  "updated_at": "2026-11-28T10:32:52Z"
+  "updated_at": "2026-11-28T10:40:01Z"
 }
