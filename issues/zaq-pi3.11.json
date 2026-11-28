@@ -12,9 +12,15 @@
   "id": "zaq-pi3.11",
   "labels": [],
   "parent": "zaq-pi3",
+  "comments": [
+    {
+      "text": "Compatibility gate remains pending zaq-h2i.4.3 publication. Inspected its latest owner evidence: partial_upload_facts patch validated in the owning tracked adapter worktree, with no immutable published revision supplied. Current pinned-package contract checks still pass by proving missing file_requirements/prepare_upload/upload_prepared fail safely; controlled external-adapter integration is fixture evidence, not published-package or real-server acceptance. No ignored deps, dependency pins, external worktrees or publication changed. Core selection is complete; retain the approved serial dependency chain for remaining provider and browser tasks.",
+      "timestamp": "2026-11-28T11:01:45Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.11] Verify and pin Mattermost attachment support",
   "type": "task",
-  "updated_at": "2026-11-28T10:11:45Z"
+  "updated_at": "2026-11-28T11:01:45Z"
 }
