@@ -51,11 +51,15 @@
     {
       "text": "User requested a stacked PR in jat10/zaq and explicitly directed checking PR #18. Created draft PR #19: https://github.com/jat10/zaq/pull/19 . Base feat/delivery_plan is PR #18 head at 81629c90a; GitHub compare confirms one commit ahead, zero behind, same merge base. Head feat/delivery-execution at 6a546dc44. Description records validation, unsupported production capability/PR6 deferral, seven pending existing-test approvals, and open UX/E2E/review/coverage/final-precommit gates. GitHub connector creation lacked permission (403); authenticated gh fallback succeeded.",
       "timestamp": "2026-11-28T09:09:26Z"
+    },
+    {
+      "text": "PR5 approved review fixes .14-.18 implemented and issue-validated without commit/push/merge. Five old SMTP test expectations now reconciled under recorded approval, preserving unsupported negative fixture and required limits. Broader final matrix 494/495 passes with all 18 properties; remaining shared capability component SMTP File assertion at test/zaq_web/components/channel_capabilities_test.exs:29 remains unchanged/outside the recorded SMTP-suite approval. Grouped modal fixture supplies explicit start time; all assertions preserved. .10/.11 approval/E2E gates stay open; Mattermost publication remains PR6.",
+      "timestamp": "2026-11-28T10:43:37Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.9] Validate PR5 delivery journeys and update owning documentation",
   "type": "task",
-  "updated_at": "2026-11-28T09:09:26Z"
+  "updated_at": "2026-11-28T10:43:37Z"
 }
