@@ -16,11 +16,15 @@
     {
       "text": "Compatibility gate remains pending zaq-h2i.4.3 publication. Inspected its latest owner evidence: partial_upload_facts patch validated in the owning tracked adapter worktree, with no immutable published revision supplied. Current pinned-package contract checks still pass by proving missing file_requirements/prepare_upload/upload_prepared fail safely; controlled external-adapter integration is fixture evidence, not published-package or real-server acceptance. No ignored deps, dependency pins, external worktrees or publication changed. Core selection is complete; retain the approved serial dependency chain for remaining provider and browser tasks.",
       "timestamp": "2026-11-28T11:01:45Z"
+    },
+    {
+      "text": "User approved replacing the old Mattermost absence assertions with verified published primitive/prepare/upload/send contract tests, retaining Telegram unsupported checks and SMTP tests. User also authorized continuing independent epic work when external dependencies are blocked. Reference source pins are publicly reachable: SDK f176793 on fix/attachment-edits and Mattermost 98cd98c ancestor of published fix/attachment-edit-history c319c6e; c319 adds tests only. Added HTTP-boundary red tests before changing two declarations. Pin only these SDK/adapter revisions; partial-upload evidence extension remains owned by zaq-h2i.4.3 and not claimed shipped.",
+      "timestamp": "2026-11-28T11:13:15Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.11] Verify and pin Mattermost attachment support",
   "type": "task",
-  "updated_at": "2026-11-28T11:01:45Z"
+  "updated_at": "2026-11-28T11:13:15Z"
 }
