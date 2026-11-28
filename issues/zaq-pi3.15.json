@@ -15,11 +15,15 @@
     {
       "text": "Independent BO retrieval/presentation slice implemented against historical canonical descriptors while PR5 source/history gate remains open: authenticated /bo/delivered-files route -\u003e confidential Channels event -\u003e shared current message/source ACL read; existing attachment_list, transcript, history component, MessageHelpers and Storybook extended without extract/migrate/replace operation. mix q passes; focused BO controller/component/helpers suite passes 72. Live execution attachment descriptors await .14; no new feature E2E authored, .17/.18 remain pending. Original FileController ingestion preview behavior unchanged.",
       "timestamp": "2026-11-28T11:51:16Z"
+    },
+    {
+      "text": "Final BO slice check after adding explicit unavailable labels: mix q clean; controller/component/helpers 72 passed (/tmp/pr6-bo-file-final.log). Existing chat/history LiveViews 117 passed. Historical reads/cards prepared independently; live web executor stays gated, no E2E scope authored or approval inferred.",
+      "timestamp": "2026-11-28T12:07:45Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.15] Render and download attachments in BO chat",
   "type": "task",
-  "updated_at": "2026-11-28T11:51:16Z"
+  "updated_at": "2026-11-28T12:07:45Z"
 }
