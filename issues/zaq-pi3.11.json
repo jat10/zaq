@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-pi3.6"
+  ],
   "blocks": [],
   "created": "2026-11-28T10:10:49Z",
   "description": "Functional specifications covered with associated files to edit/add: Inspect the published adapter supplied by existing prerequisite zaq-h2i.4.3; verify supported file requirements, upload/send/edit and partial-upload results. Mattermost already exists in mix.exs: update its declaration/lock only where compatibility requires. Owners: mix.exs, mix.lock and external adapter contract tests. Do not edit ignored deps or introduce a local dependency pin. External publication remains separately authorized.\n\nTests to add before implementation: Contract tests for the actual adapter revision, complete/partial uploads, precise file-reference mapping, unavailable declarations and text compatibility.\n\nBranches/paths validated: Supported and unsupported capabilities, partial success, timeout/uncertain delivery, selected connector/thread and configured limits.\n\nMocking plan: External Mattermost HTTP only; real PR4/PR5 internals. Record a real configured-server smoke test separately from fixture evidence.\n\nDocumentations to update for both code and docs/ related content: docs/services/channels.md and issue evidence for the verified dependency revision.\n\nAction reuse assessment: Reuse JidoChatBridge.FileDelivery and PR5 executor/reporting; extend adapter capability contracts only if required. Existing external task owns adapter changes; no new delivery Action. Inputs are planned file operations, outputs verified receipts/errors, retries remain PR5-owned.\n\nImplementation handoff: Scope and sequence approved by the user on 2026-11-28. This turn records the plan only; application implementation, commits, pushes, rebases and dependency publication are not performed or authorized by this planning update. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/testing-approach.md, docs/documentation.md, docs/conventions.md and docs/code-quality.md before execution. Read applicable service guides and module responsibilities; Agent work requires the harness-critical checks; BO work requires DESIGN.md and docs/bo-components.md. Recheck live source and dependency contracts. Preserve existing test behavior unless specifically approved. Write immediate unit/integration/property tests before corresponding code; new browser journeys wait for the human UX gate. Keep real internal boundaries, mock only external edges, and inject runtime dependencies through existing opts/context and Zaq.Config. Follow the owning validation lifecycle. PR7 owns RunAgent, NotifyPerson and notification/workflow integration.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-pi3.11] Verify and pin Mattermost attachment support",
   "type": "task",
-  "updated_at": "2026-11-28T10:10:51Z"
+  "updated_at": "2026-11-28T10:11:30Z"
 }
