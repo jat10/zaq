@@ -15,11 +15,15 @@
     {
       "text": "Companion package checkout prepared at ../web_widget-zaq-pi3, branch zaq-pi3/widget-file-delivery, base 42b7ef71fd43bb62562c05e9f29581e8152a89cb. Tracking ww-m45. Original ../web_widget main and its user .serena/project.yml change preserved. Reuse decision: existing command hook and fixed sink_mfa carry closed attachment_download command; Runtime authenticates a fresh HTTP-owned session and initializes existing delivery binding. No new host hook/socket and no local ZAQ dependency pin. Initial isolated HTTP/JWT tests authored before implementation. Backend retrieval current q and focused selection/retrieval/transport suite pass 27 (2 properties,25 tests); Drive external HTTP coverage still pending in .12.",
       "timestamp": "2026-11-28T11:38:14Z"
+    },
+    {
+      "text": "Companion HTTP API prepared and validated in isolated ../web_widget-zaq-pi3, ww-m45. Existing router/session pipeline, Runtime.authenticate/initialize/authorized? and command/sink reused. Tests explicitly cover independent HTTP process, cookie absence, token absence/corruption/expiry, wrong page/widget, unknown message/index, revocation during read, replacement key and runtime replacement during read. No package publication or host pin change; current ZAQ dependency remains original immutable version. Parent dependency remains open because full source/Drive acceptance is incomplete; package work is independent preparation, not gate closure.",
+      "timestamp": "2026-11-28T12:05:57Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.13] Add the widget session-authorized file API",
   "type": "task",
-  "updated_at": "2026-11-28T11:38:14Z"
+  "updated_at": "2026-11-28T12:05:57Z"
 }
