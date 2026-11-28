@@ -16,11 +16,15 @@
     {
       "text": "Reuse evidence: Engine Conversations.resolve_display_conversation/get_conversation_message protect BO, and existing private channel scope + canonical get_canonical_message protect widgets. Extend these owners with an attachment-descriptor read, never accept a browser-supplied source/handle. Channels refreshes through existing DataSourceBridge.get_file and redeems the fresh handle via Materialization; existing DecodeBase64 Action owns encoded bytes. BO source bypass is only freshly validated super_admin; widget identity comes from verified adapter scope and current Person. Record.attachment_metadata already preserves bounded non-capability source payloads. Canonical historical-source retrieval can proceed independently of PR5 source persistence bug zaq-9j8.19; no PR5 transport/persistence patch or second attachment store.",
       "timestamp": "2026-11-28T11:24:32Z"
+    },
+    {
+      "text": "Implemented local domain slice: Engine reuses private-channel scope + TranscriptHistory.get_message and BO resolve_display_conversation/get_conversation_message; confidential role events return authorized stored descriptor plus freshly resolved source actor. Channels composes DataSourceBridge.get_file, signed identity comparison, fresh materialization and existing DecodeBase64 Action. Durable source metadata is derived only from Record provenance after selection completion, never from supplied hints. Real disk/Engine/ACL tests cover exact content/MIME/name, revoked grants, disabled/deleted source, wrong sender/config/conversation/message/index, nil/spoofed BO actor and persisted-role demotion. Provenance/source properties cover disk and Drive identities; actual Drive HTTP content/export acceptance remains pending. No new provider implementation, bypass inference or alternate attachment store. mix q passes; full affected suite 465 passed (34 properties,431 tests), log /tmp/pr6-full-affected-tests.log. Domain task remains open for Drive/provider/history integration gates.",
+      "timestamp": "2026-11-28T12:05:55Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3.12] Add authorized retrieval for delivered source attachments",
   "type": "task",
-  "updated_at": "2026-11-28T11:24:32Z"
+  "updated_at": "2026-11-28T12:05:55Z"
 }
