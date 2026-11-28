@@ -9,9 +9,15 @@
   "id": "zaq-9j8.17",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Rechecked exact approved consolidation and Action reuse: test-only, reuse existing packing generator and Plan.validate/2. Preserve size/count/ceiling assertions and malformed-reference/cycle/edit tests. Remove only duplicate property plus now-unused ExUnitProperties import and unused helper limit argument; no production operation or new Action.",
+      "timestamp": "2026-11-28T10:32:56Z"
+    }
+  ],
   "priority": 3,
   "status": "in_progress",
   "title": "[zaq-9j8.17] Consolidate duplicated planner property coverage",
   "type": "task",
-  "updated_at": "2026-11-28T10:32:54Z"
+  "updated_at": "2026-11-28T10:32:56Z"
 }
