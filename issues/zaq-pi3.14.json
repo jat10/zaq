@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-pi3.13"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-pi3.15"
+  ],
   "created": "2026-11-28T10:10:58Z",
   "description": "Functional specifications covered with associated files to edit/add: Extend WebBridge capability declarations and file execution integration, Delivery dispatch/executor only at their existing extension boundaries, and web response contracts. BO/widget attachment deliveries use PR4 plans and PR5 execution/confirmation. Publish safe descriptors tied to canonical message attachment identities, with session-protected download URLs. Preserve configured limits, source identity and history reload. Clarify receipts as descriptor publication, not proof the user downloaded bytes; acquisition happens through the appropriate existing delivery or authorized file-read path. No duplicate planner/executor.\n\nTests to add before implementation: Integration through deliver_outgoing for web and widget, ordered multiple files, empty attachments, provider/acquisition errors, limits, partial outcomes, confirmation/persistence and history replay. Test descriptor fields are supported by the actual widget protocol.\n\nBranches/paths validated: BO versus widget connector resolution, text-only and attachment messages, both source types, failed publication, confirmed-only history and no resend on report failure.\n\nMocking plan: External provider edges; real delivery/Engine internals and package protocol fixtures.\n\nDocumentations to update for both code and docs/ related content: docs/services/channels.md and web-bridge.md; capabilities, descriptor contract and confirmation semantics.\n\nAction reuse assessment: Extend WebBridge and existing PR4/PR5 owners. Inputs remain Outgoing.attachments plus trusted routing; outputs existing delivery receipts and safe web descriptors. No Action or Agent transport logic. Reuse canonical history rather than a parallel attachment store.\n\nImplementation handoff: Scope and sequence approved by the user on 2026-11-28. This turn records the plan only; application implementation, commits, pushes, rebases and dependency publication are not performed or authorized by this planning update. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/testing-approach.md, docs/documentation.md, docs/conventions.md and docs/code-quality.md before execution. Read applicable service guides and module responsibilities; Agent work requires the harness-critical checks; BO work requires DESIGN.md and docs/bo-components.md. Recheck live source and dependency contracts. Preserve existing test behavior unless specifically approved. Write immediate unit/integration/property tests before corresponding code; new browser journeys wait for the human UX gate. Keep real internal boundaries, mock only external edges, and inject runtime dependencies through existing opts/context and Zaq.Config. Follow the owning validation lifecycle. PR7 owns RunAgent, NotifyPerson and notification/workflow integration.",
   "id": "zaq-pi3.14",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-pi3.14] Enable attachment execution and descriptors for web delivery",
   "type": "task",
-  "updated_at": "2026-11-28T10:11:36Z"
+  "updated_at": "2026-11-28T10:11:37Z"
 }
