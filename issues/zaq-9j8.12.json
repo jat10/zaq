@@ -26,11 +26,15 @@
     {
       "text": "Existing delivery-visibility browser journey passed all 3 engines (Chromium, Firefox, WebKit) against current implementation, with no test changes. Logs: /tmp/zaq-pr5-review-fixes-visibility.log; combined matrix: /tmp/zaq-pr5-review-fixes-matrix.log. Full existing npm suite remains running at /tmp/zaq-pr5-review-fixes-e2e.log. No new feature browser scenarios authored.",
       "timestamp": "2026-11-28T10:43:53Z"
+    },
+    {
+      "text": "Context Mode host RPC timed out at 300s for full npm run, but read-only process/log verification confirms original npm/Playwright process remains live and log advances (120/600, zero failures at check). Continuing to collect existing run rather than restarting or duplicating it. Focused three-engine browser journey already passed.",
+      "timestamp": "2026-11-28T10:44:48Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-9j8.12] Complete PR5 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-28T10:43:53Z"
+  "updated_at": "2026-11-28T10:44:48Z"
 }
