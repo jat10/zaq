@@ -11,9 +11,15 @@
   "id": "zaq-pi3.14",
   "labels": [],
   "parent": "zaq-pi3",
+  "comments": [
+    {
+      "text": "Upstream source/history blocker tracked separately as zaq-9j8.19, owner ../zaq-feat-delivery-execution at 2144608e7. Confirmed delivery currently discards durable source metadata. No PR5 source patch is made in PR6; continue independent retrieval/protocol/presentation implementation while retaining this full history/download acceptance gate.",
+      "timestamp": "2026-11-28T11:23:30Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.14] Enable attachment execution and descriptors for web delivery",
   "type": "task",
-  "updated_at": "2026-11-28T11:14:32Z"
+  "updated_at": "2026-11-28T11:23:30Z"
 }
