@@ -2,8 +2,7 @@
   "assignee": "",
   "blocked_by": [
     "zaq-9j8.7",
-    "zaq-h2i.4.3",
-    "zaq-pi3.6"
+    "zaq-h2i.4.3"
   ],
   "blocks": [
     "zaq-pi3.8"
@@ -31,5 +30,5 @@
   "status": "open",
   "title": "[zaq-pi3.7] Restack when authorized and verify PR6 against PR5 delivery",
   "type": "task",
-  "updated_at": "2026-11-28T10:11:19Z"
+  "updated_at": "2026-11-28T10:11:25Z"
 }
