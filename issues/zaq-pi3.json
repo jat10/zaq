@@ -10,11 +10,15 @@
     {
       "text": "Planning validation 2026-11-27: created ten open ID-prefixed tasks zaq-pi3.1-.10 with functional/files, test-first acceptance scenarios, branches, mocking, documentation and concrete Action reuse assessments. New issue direct dependencies and reverse blocks edges match the intended linear PR6 chain; the only external edge is zaq-9j8.7 -\u003e zaq-pi3.7. Protected PR5 issue comparison found no title/description/status/parent/existing-dependency changes: only that explicitly required outgoing link and its timestamp changed. bw ready exposes only zaq-pi3.1 in PR6, so PR5 does not block independent planning/selection work. PR6 git branch/tree clean at exact parent 81629c90a555b32c6b66cbcc1339779c89f4a9d5 with zero feature commits; secret copy equality verified without disclosure and Config.Reader confirms dev DB zaq_feat_attach_documents. PR5 initial uncommitted mix.lock was never edited, copied, reset or stashed by this task; concurrent changes are outside this audit. Worktree-setup remains stopped at step 5 because the source .claude/settings.local.json is missing; no substitute or mix setup/dependency/database/migration/assets action was performed. Missing-settings clarification was presented while independent planning continued. Context Mode hook gaps are recorded above, not silently repaired. No feature implementation, existing-test edits, feature commits, pushes, rebases, PR publication or application test/quality/coverage runs. This is completed setup/planning within the available inputs, not a claim of a ready application environment or implemented PR6. E2E is currently backend integration scope, with a future explicit UX gate required if UI scope is introduced.",
       "timestamp": "2026-11-27T19:22:43Z"
+    },
+    {
+      "text": "Approved plan revision recorded on 2026-11-28. Retained and updated tasks .1-.10; added .11-.18 for adapter compatibility, shared authorized retrieval, widget file API, web delivery, BO/widget presentation, human UX approval and consolidated E2E. Validation passed: all 18 tasks remain open with six required specification sections; dependency graph is acyclic; reciprocal edges agree; .1 is the sole internal root; .17 blocks .18, which blocks review .9 and finalization .10. Existing Mattermost prerequisite zaq-h2i.4.3 and closed PR5 route zaq-9j8.7 are linked to their consumers. Application working tree is clean; no application tests run for tracker-only changes. Implementation has not started; setup readiness remains to be verified.",
+      "timestamp": "2026-11-28T10:12:10Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3] PR6 authorized document attachments across Mattermost, email, BO and widget",
   "type": "epic",
-  "updated_at": "2026-11-28T10:11:47Z"
+  "updated_at": "2026-11-28T10:12:10Z"
 }
