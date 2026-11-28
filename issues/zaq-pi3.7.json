@@ -24,11 +24,15 @@
     {
       "text": "Rebase complete: feat/attach-documents now points to PR5 commit 6a546dc44a581013608b3d8a8f4efa138d357c38 (feat(channels): add attachment delivery execution foundation (zaq-9j8)). Use this exact SHA as PR6 previous-parent boundary for the next restack. Recovery ref backup/attach-documents-before-pr5-20261128T092334Z preserves 81629c90a555b32c6b66cbcc1339779c89f4a9d5. Verified clean PR6, PR5 ancestor, identical tracked trees, PR5 ref unchanged and git diff --check passed. No independent PR6 commits existed, so there is no child patch range to compare and no conflict resolution/source edits. No application checks run for branch-only movement; no push or new feature commit. Updated existing sibling planning stack map. This completes only the user-authorized restack, not this issue setup/provider/integration prerequisites.",
       "timestamp": "2026-11-28T09:23:59Z"
+    },
+    {
+      "text": "Partial backend integration evidence (not issue completion): real configured native Agent selection -\u003e canonical Outgoing.attachments -\u003e actual PR5 dispatch/materialization/preparation -\u003e controlled external chat adapter -\u003e Engine delivery confirmation/history passes in attachment_flow_integration_test.exs. Add A, forged failure, add B, remove A leaves only B, with exact bytes/name, one upload/publication, no A acquisition, and actual receipt recorded. Existing SMTP MIME/partial/failure/timeout regression suites pass in the same 502-check run. Full published Mattermost/SMTP configured-provider acceptance and remaining browser matrix remain pending; .11 prerequisite is not waived. No restack required at current PR5 boundary.",
+      "timestamp": "2026-11-28T11:01:46Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.7] Restack when authorized and verify PR6 against PR5 delivery",
   "type": "task",
-  "updated_at": "2026-11-28T10:11:33Z"
+  "updated_at": "2026-11-28T11:01:46Z"
 }
