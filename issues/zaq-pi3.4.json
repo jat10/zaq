@@ -11,9 +11,15 @@
   "id": "zaq-pi3.4",
   "labels": [],
   "parent": "zaq-pi3",
+  "comments": [
+    {
+      "text": "User steering confirmed: use existing functions and keep Factory unchanged. Removed draft attachment-specific Factory marker. Existing native runner resolves Actions before emitting ordered starts; StreamEvents will reuse its current invocation collection, request identity, complete_tool_call/5 and replay/hierarchy guards. OpaqueAliases extends the existing action_schema/alias_paths/maybe_map_scoped traversal for output direction; no manual Record capability traversal or new collector. Existing Factory interception remains byte-identical to PR5.",
+      "timestamp": "2026-11-28T10:41:10Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3.4] Expand selection output aliases through the existing schema traversal",
   "type": "task",
-  "updated_at": "2026-11-28T10:35:44Z"
+  "updated_at": "2026-11-28T10:41:10Z"
 }
