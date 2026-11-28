@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-pi3.14"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-pi3.16"
+  ],
   "created": "2026-11-28T10:11:00Z",
   "description": "Functional specifications covered with associated files to edit/add: Extend existing BO ChatLive/message components and authenticated BO file routes to display attachment filename/type/size and download/unavailable states. Reuse design-system components. Existing FileController preview routes are ingestion-oriented and do not automatically cover delivered Drive files; wire BO session actor to the shared delivered-file retrieval API through NodeRouter. Preserve existing BO authentication and history behavior.\n\nTests to add before implementation: LiveView/component and controller tests for multiple files, accessible names, valid download, denied/deleted file, session loss and restored history. Add immediate regression tests without expanding browser journeys yet.\n\nBranches/paths validated: Disk/Drive, live answer/history reload, BO session expiry, unauthorized conversation and text-only compatibility.\n\nMocking plan: Only external provider edges; real BO session, LiveView and domain boundaries.\n\nDocumentations to update for both code and docs/ related content: docs/services/web-bridge.md and BO component/Storybook guidance where new reusable patterns are introduced.\n\nAction reuse assessment: Extend existing BO components and file controller responsibility where coherent; reuse shared domain retrieval. Local-only presentation/HTTP code, no new Action or direct cross-service calls.\n\nImplementation handoff: Scope and sequence approved by the user on 2026-11-28. This turn records the plan only; application implementation, commits, pushes, rebases and dependency publication are not performed or authorized by this planning update. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/testing-approach.md, docs/documentation.md, docs/conventions.md and docs/code-quality.md before execution. Read applicable service guides and module responsibilities; Agent work requires the harness-critical checks; BO work requires DESIGN.md and docs/bo-components.md. Recheck live source and dependency contracts. Preserve existing test behavior unless specifically approved. Write immediate unit/integration/property tests before corresponding code; new browser journeys wait for the human UX gate. Keep real internal boundaries, mock only external edges, and inject runtime dependencies through existing opts/context and Zaq.Config. Follow the owning validation lifecycle. PR7 owns RunAgent, NotifyPerson and notification/workflow integration.",
   "id": "zaq-pi3.15",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-pi3.15] Render and download attachments in BO chat",
   "type": "task",
-  "updated_at": "2026-11-28T10:11:37Z"
+  "updated_at": "2026-11-28T10:11:39Z"
 }
