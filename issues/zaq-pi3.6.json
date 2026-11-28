@@ -11,9 +11,15 @@
   "id": "zaq-pi3.6",
   "labels": [],
   "parent": "zaq-pi3",
+  "comments": [
+    {
+      "text": "Configured propagation implemented with exactly two Executor additions: forward logical-server opaque_alias_scope to existing StreamEvents.consume and pass successful final attachments to existing Outgoing.from_pipeline_result. Factory, Agent.Api, Outgoing, Channels delivery, Engine, PR7 consumers and dependency pins are unchanged. New real LLM-boundary/native/Registry/ACL/NodeRouter/disk integration proves add A, failed forged selection, corrected add B, remove A -\u003e only B; next request with incoming files emits no attachments. Real source grant revocation rejects stale signed metadata. Real provider failure after selection emits none. Agent.Api trusted-actor legacy configured response retains the verified Record list. Model HTTP history and outgoing diagnostics contain no source bytes/full capabilities. The final B also traverses actual PR5 preparation/materialization/dispatch/Engine confirmation with only the external chat adapter controlled; exact uploaded bytes/name and confirmed-only saved history asserted, once, after deleting A. Final mix q and 502 focused checks passed. Full real-provider/browser acceptance is pending external/package/UX gates; no delivery readiness claim for unsupported pins.",
+      "timestamp": "2026-11-28T11:01:41Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3.6] Propagate successful selections through configured Agent results",
   "type": "task",
-  "updated_at": "2026-11-28T11:01:39Z"
+  "updated_at": "2026-11-28T11:01:41Z"
 }
