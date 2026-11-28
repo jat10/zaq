@@ -19,11 +19,15 @@
     {
       "text": "BO attachment execution has an evidenced upstream selection gap: shared Connection.select requires a persisted :web connector even though existing BO delivery uses the explicit config-free branch. Reproducer /tmp/pr6-pr5-bo-connection-gap_test.exs returns channel_not_configured; no PR5 production code patched. Safe historical widget descriptor projection proceeds through existing response path; capability enablement and full execution remain gated by owner fix, zaq-9j8.19 source preservation and published widget companion contract. Existing web file capability assertion approval requested, not assumed.",
       "timestamp": "2026-11-28T11:56:19Z"
+    },
+    {
+      "text": "Safe historical descriptor projection implemented as Web.Attachments.project/2 and reused by widget history and BO display; no raw source attrs/handles reach browser descriptors. Property tests prove closed fields and original stored indices. Full web executor enablement is not implemented around the upstream gaps: zaq-9j8.19 drops durable source; zaq-9j8.20 cannot select BO virtual transport. No modifications to PR4/PR5 delivery infrastructure, Factory or PR5 worktree. Compatible widget release/pin and existing capability-test approval also pending. Do not claim file readiness from the prepared frontend or hand-constructed historical fixtures.",
+      "timestamp": "2026-11-28T12:05:58Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.14] Enable attachment execution and descriptors for web delivery",
   "type": "task",
-  "updated_at": "2026-11-28T11:56:19Z"
+  "updated_at": "2026-11-28T12:05:58Z"
 }
