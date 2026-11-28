@@ -9,9 +9,15 @@
   "id": "zaq-9j8.14",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Rechecked approved scope and Action reuse against Executor.execute/5, Preparation.prepare_step/5, existing bridge callbacks and Result.safe_evidence/1. Extend Executor preflight after upload completion; preserve final re-encoding with actual root headers. No new Action or provider/reporting path. Existing executor regressions cover acquisition, deadlines, sequential abort and confirmation; extend them across both transfer modes.",
+      "timestamp": "2026-11-28T10:21:37Z"
+    }
+  ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-9j8.14] Preflight every publication before abort delivery starts",
   "type": "bug",
-  "updated_at": "2026-11-28T10:21:35Z"
+  "updated_at": "2026-11-28T10:21:37Z"
 }
