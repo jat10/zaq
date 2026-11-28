@@ -22,6 +22,11 @@ defmodule Zaq.Agent.StreamEvents do
   resource bytes. That helper owns typed evidence conversion; this module retains
   flat invocation relationships, replay handling and native-root turn correlation.
 
+  Authorized attachment instructions stay private within that invocation collection.
+  Final selection follows native declaration order and is published only after a
+  successful terminal answer. Scoped alias expansion and Action output validation
+  precede evidence conversion; failures never erase earlier valid instructions.
+
   Answer, reasoning and tool events share an event-driven publication interval in
   this reducer. Trigger switches select publication opportunities, not snapshot
   visibility or trace collection. Lifecycle status bypasses this policy and does
@@ -32,7 +37,9 @@ defmodule Zaq.Agent.StreamEvents do
   """
 
   alias ReqLLM.ToolResult
+  alias Zaq.Agent.OpaqueAliases
   alias Zaq.Agent.Status
+  alias Zaq.Agent.Tools.DataSource.AttachDocuments
   alias Zaq.Agent.TraceEvidence
   alias Zaq.ConnectorConfig.LiveUpdates
   alias Zaq.Contracts.ToolStep
@@ -63,6 +70,7 @@ defmodule Zaq.Agent.StreamEvents do
           trace: [map()],
           trace_artifacts: [map()],
           tool_calls: [map()],
+          attachments: [Zaq.Contracts.Record.t()],
           sources: [String.t()],
           termination_reason: term(),
           incoming: Incoming.t(),
@@ -78,7 +86,7 @@ defmodule Zaq.Agent.StreamEvents do
       Enum.reduce_while(events, state, fn event, state ->
         state = handle_event(event, state)
 
-        if state.answer_binding_failed or terminal_kind?(kind(event)),
+        if state.answer_binding_failed or state.terminal_received,
           do: {:halt, state},
           else: {:cont, state}
       end)
@@ -109,7 +117,9 @@ defmodule Zaq.Agent.StreamEvents do
       answer_binding_ready: false,
       answer_binding_failed: false,
       request_id: actual_request_id(Keyword.get(opts, :request), incoming),
+      native_request?: match?(%Jido.AI.Request.Handle{}, Keyword.get(opts, :request)),
       actor: Keyword.get(opts, :actor),
+      opaque_alias_scope: Keyword.get(opts, :opaque_alias_scope),
       execution_scope: Keyword.get(opts, :execution_scope),
       execution_user_message_id: Keyword.get(opts, :execution_user_message_id),
       execution_id: Keyword.get(opts, :execution_id),
@@ -143,6 +153,10 @@ defmodule Zaq.Agent.StreamEvents do
       error: nil
     }
   end
+
+  defp handle_event(%{request_id: id}, %{native_request?: true, request_id: expected} = state)
+       when not is_nil(id) and id != expected,
+       do: state
 
   defp handle_event(event, state) do
     state = %{
@@ -395,6 +409,15 @@ defmodule Zaq.Agent.StreamEvents do
 
   defp normalize_tool_arguments(%{"arguments" => nil} = call), do: Map.delete(call, "arguments")
 
+  defp normalize_tool_arguments(%{"name" => "attach_documents", "arguments" => arguments} = call)
+       when is_map(arguments),
+       do:
+         Map.put(
+           call,
+           "arguments",
+           arguments |> Map.take([:operation, "operation"]) |> json_safe()
+         )
+
   defp normalize_tool_arguments(%{"arguments" => arguments} = call),
     do: Map.put(call, "arguments", json_safe(arguments))
 
@@ -415,10 +438,16 @@ defmodule Zaq.Agent.StreamEvents do
   defp complete_tool_call(event, state, tool_call_id, invocation_id, existing) do
     data = data(event)
     tool_name = field(event, :tool_name) || data_get(data, :tool_name) || existing["name"]
+    instruction = attachment_instruction(event, state, existing)
+
+    evidence =
+      if tool_name == "attach_documents",
+        do: TraceEvidence.metadata(data_get(data, :result)),
+        else: data_get(data, :result)
 
     {trace_result, trace_artifacts} =
       TraceEvidence.externalize(
-        data_get(data, :result),
+        evidence,
         tool_call_id,
         tool_name,
         data_get(data, :origin) == "zaq_action"
@@ -426,6 +455,7 @@ defmodule Zaq.Agent.StreamEvents do
 
     tool_call =
       existing
+      |> Map.delete("attachment_instruction")
       |> Map.merge(%{
         "id" => tool_call_id,
         "invocation_id" => invocation_id,
@@ -445,6 +475,7 @@ defmodule Zaq.Agent.StreamEvents do
       |> put_hierarchy(data, state)
       |> reject_nil_values()
       |> json_safe()
+      |> Map.put("attachment_instruction", instruction)
 
     state = %{
       state
@@ -455,6 +486,52 @@ defmodule Zaq.Agent.StreamEvents do
 
     broadcast_tool(state, tool_call, :completed)
   end
+
+  defp attachment_instruction(event, state, existing) do
+    data = data(event)
+
+    with "started" <- existing["status"],
+         "attach_documents" <- existing["name"],
+         "attach_documents" <- field(event, :tool_name),
+         false <- nested?(existing),
+         true <- is_binary(field(event, :tool_call_id)),
+         true <- field(event, :request_id) == state.request_id,
+         true <- data_get(data, :outcome) in [nil, "succeeded"],
+         {:ok, {:ok, output, _effects}} <-
+           OpaqueAliases.expand_tool_result(
+             %{action_module: AttachDocuments},
+             data_get(data, :result),
+             %{opaque_alias_scope: state.opaque_alias_scope}
+           ),
+         {:ok, instruction} <- AttachDocuments.validate_output(tool_output(output)) do
+      instruction
+    else
+      _ -> nil
+    end
+  end
+
+  defp tool_output(%ToolResult{output: output}), do: output
+  defp tool_output(output), do: output
+
+  defp selected_attachments(tool_calls, %{
+         terminal_received: true,
+         error: nil,
+         termination_reason: reason
+       })
+       when reason in [:complete, :final_answer, :stop, "complete", "final_answer", "stop"] do
+    Enum.reduce(tool_calls, [], fn call, selected ->
+      case call["attachment_instruction"] do
+        nil ->
+          selected
+
+        instruction ->
+          {:ok, selected} = AttachDocuments.reduce_selection(selected, instruction)
+          selected
+      end
+    end)
+  end
+
+  defp selected_attachments(_tool_calls, _state), do: []
 
   defp put_tool_trace(trace, tool_call) do
     tool_call = Map.take(tool_call, @tool_trace_fields)
@@ -639,6 +716,9 @@ defmodule Zaq.Agent.StreamEvents do
       |> Enum.map(&associate_tool_turn(&1, state.tool_calls))
       |> Enum.sort_by(& &1["sequence"])
 
+    attachments = selected_attachments(tool_calls, state)
+    tool_calls = Enum.map(tool_calls, &Map.delete(&1, "attachment_instruction"))
+
     trace = Enum.reduce(tool_calls, state.trace, &put_tool_trace(&2, &1))
 
     %{
@@ -650,6 +730,7 @@ defmodule Zaq.Agent.StreamEvents do
       trace: Enum.reverse(trace),
       trace_artifacts: state.trace_artifacts,
       tool_calls: tool_calls,
+      attachments: attachments,
       sources:
         tool_calls
         |> Enum.reject(&nested?/1)

@@ -5,6 +5,11 @@ defmodule Zaq.Contracts.Record.Provenance do
   Provenance proves that a Record and its permission projection were issued by
   ZAQ. It is not an authorization grant; callers must still use their trusted
   actor context for permission decisions.
+
+  Signatures bind nested and overriding authorization principals as well as
+  provider permission fields. Nested-principal Records signed without that
+  binding require fresh authorized metadata and reissue; verification fails
+  closed rather than accepting the earlier projection.
   """
 
   alias Plug.Crypto.{KeyGenerator, MessageVerifier}
@@ -173,6 +178,22 @@ defmodule Zaq.Contracts.Record.Provenance do
   end
 
   defp principal(attrs) do
+    provider_projection = provider_principal(attrs)
+
+    effective =
+      case Record.Authorization.principal(attrs) do
+        {type, key} -> %{"type" => type, "key" => normalize_principal_key(key)}
+        nil -> nil
+      end
+
+    # Nested maps must carry the binding even when they match the flat fields,
+    # so earlier signatures that omitted nested identity cannot remain valid.
+    if is_map(attr(attrs, "principal")) or effective != provider_projection,
+      do: Map.put(provider_projection, "authorization_principal", effective),
+      else: provider_projection
+  end
+
+  defp provider_principal(attrs) do
     type = first_present([attr(attrs, "principal_type"), attr(attrs, "type")])
 
     key =

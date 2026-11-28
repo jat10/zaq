@@ -134,6 +134,12 @@ defmodule Zaq.Agent.Tools.Registry do
       module: Zaq.Agent.Tools.Resources.QueryResources
     },
     %{
+      key: "data_source.attach_document",
+      label: "Select response documents",
+      description: "Select authorized documents for the current response without delivering them",
+      module: Zaq.Agent.Tools.DataSource.AttachDocuments
+    },
+    %{
       key: "data_source.get_document",
       label: "Get document",
       description: "Get a document by id from a specific datasource provider",

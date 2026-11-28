@@ -8,6 +8,7 @@ defmodule Zaq.Agent.OpaqueAliases do
   """
 
   alias Jido.RuntimeStore
+  alias ReqLLM.ToolResult
   alias Zaq.Contracts.{Record, RecordPage}
   alias Zaq.Materialization.Handle
 
@@ -49,6 +50,19 @@ defmodule Zaq.Agent.OpaqueAliases do
   end
 
   def alias_tool_result(_tool_call, result, _context), do: {:ok, result}
+
+  @doc "Expands output aliases for private consumers using the Action's output schema."
+  @spec expand_tool_result(tool_call(), result(), map()) :: {:ok, result()} | {:error, term()}
+  def expand_tool_result(%{action_module: module}, {:ok, output, effects}, context)
+      when is_atom(module) do
+    with {:ok, schema} <- action_schema(module, :output_schema) do
+      maybe_map_scoped(output, alias_paths(schema), context, &expand_value/3, fn output ->
+        {:ok, output, effects}
+      end)
+    end
+  end
+
+  def expand_tool_result(_tool_call, result, _context), do: {:ok, result}
 
   @doc false
   @spec clear_scope(term()) :: :ok
@@ -105,6 +119,12 @@ defmodule Zaq.Agent.OpaqueAliases do
   defp alias_paths(schema), do: collect_paths(schema, []) |> Enum.uniq()
 
   defp maybe_map_scoped(value, [], _context, _mapper, wrap), do: {:ok, wrap.(value)}
+
+  defp maybe_map_scoped(%ToolResult{} = result, paths, context, mapper, wrap) do
+    maybe_map_scoped(result.output, paths, context, mapper, fn output ->
+      wrap.(%{result | output: output})
+    end)
+  end
 
   defp maybe_map_scoped(value, paths, context, mapper, wrap) do
     with {:ok, scope} <- fetch_scope(context),

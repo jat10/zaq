@@ -60,6 +60,13 @@ and completion synchronization. Tool calls expand aliases only on schema-declare
 paths before validation. Legacy descriptors without trusted source facts remain
 display-only; Agent never constructs provider locators from prompt text.
 
+Record provenance binds the effective permission principal using the same nested
+and flat precedence as Record authorization. Nested-principal Records with earlier
+signatures that omitted that binding fail verification and require authorized
+metadata retrieval and reissue. Equivalent flat permission projections retain
+their signatures. Provenance proves authenticity; current actor authorization
+remains a separate requirement.
+
 ---
 
 ## Module Responsibility Map
@@ -481,6 +488,29 @@ the provider delete succeeds. Runtime resource listing never scans directories.
   does not block tool/MCP selection; the BO warns about possible runtime failures.
 
 ### DataSource Success Payload Contract
+
+`data_source.attach_document` exposes the `attach_documents` Action only when
+explicitly enabled. It accepts complete signed file Records and an `add`,
+`remove` or `replace` operation. It requires a pending native request and trusted
+actor, refreshes source metadata through the validated `GetDocument` Action, and
+uses Record authorization for other signed files. Only literal top-level
+`skip_permissions: true` bypasses permissions; authenticity and file kind remain
+required. Selection never fetches bytes or applies destination limits.
+
+StreamEvents collects validated instructions inside its existing native invocation
+collection before trace conversion. Native declaration order determines selection;
+failed calls leave earlier selections intact. Only a matching, started root
+invocation can select. Replays, nested diagnostics, other requests and late events
+cannot change selection. Private output expansion uses the same schema traversal
+and logical-server alias scope as existing Factory interception and history.
+
+Successful final answers carry the final Record list through Executor and
+`Outgoing.from_pipeline_result` into `Outgoing.attachments`. Failure, cancellation,
+handoff, stream exhaustion and iteration limits publish no files; the next request
+starts empty. Incoming attachments never echo automatically. Channels retains
+ownership of planning, acquisition, delivery policy and confirmation. Tool success
+confirms selection only, not upload or delivery.
+
 - Any successful DataSource bridge callback must return one of these shapes only:
   - `{:ok, %Zaq.Contracts.RecordPage{...}}`
   - `{:ok, %Zaq.Contracts.Record{...}}`
