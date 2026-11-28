@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-28T10:11:09Z",
+  "description": "Functional specifications covered with associated files to edit/add: After recorded UX approval, add one consolidated set of BO/widget browser journeys in existing test/e2e suites and relevant widget package suites. Cover source selection through message delivery and authorized download with real internal boundaries. Keep this as the persistent feature E2E owner; never depend on parent epic closure.\n\nTests to add before implementation: Author journeys only after predecessor human approval. Disk and controlled Drive source, multiple attachments, history reload, session expiry/revocation and cross-user refusal; verify file bytes/names. Run existing affected E2E during implementation as required.\n\nBranches/paths validated: Both browser destinations and both sources; success, permissions, error feedback, reconnect/history and no incoming attachment echo.\n\nMocking plan: External LLM/Drive edges for deterministic browser suites; actual configured-provider smoke results remain separately identified.\n\nDocumentations to update for both code and docs/ related content: E2E fixtures/guide where needed and issue evidence linking scenarios, approval and validation results.\n\nAction reuse assessment: Verification-only: invoke implemented Action/session/delivery/file paths; do not add a parallel test-only flow.\n\nImplementation handoff: Scope and sequence approved by the user on 2026-11-28. This turn records the plan only; application implementation, commits, pushes, rebases and dependency publication are not performed or authorized by this planning update. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/testing-approach.md, docs/documentation.md, docs/conventions.md and docs/code-quality.md before execution. Read applicable service guides and module responsibilities; Agent work requires the harness-critical checks; BO work requires DESIGN.md and docs/bo-components.md. Recheck live source and dependency contracts. Preserve existing test behavior unless specifically approved. Write immediate unit/integration/property tests before corresponding code; new browser journeys wait for the human UX gate. Keep real internal boundaries, mock only external edges, and inject runtime dependencies through existing opts/context and Zaq.Config. Follow the owning validation lifecycle. PR7 owns RunAgent, NotifyPerson and notification/workflow integration.",
+  "id": "zaq-pi3.18",
+  "labels": [],
+  "parent": "zaq-pi3",
+  "priority": 2,
+  "status": "open",
+  "title": "Implement consolidated attachment browser acceptance",
+  "type": "task",
+  "updated_at": "2026-11-28T10:11:09Z"
+}
