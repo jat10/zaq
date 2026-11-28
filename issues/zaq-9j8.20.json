@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-28T11:56:18Z",
+  "description": "Owner ../zaq-feat-delivery-execution, exact pushed PR5 2144608e7f8110b75da7f05e4085dd84bfc16acd. Existing Channels.Api delivery_connection explicitly supports provider :web without a persisted ChannelConfig, via Bridge.fetch_connection_details(:web). When file execution is enabled, outgoing_connection routes all attachments through Delivery.Connection.select, whose origin_connection calls Bridge.fetch_channel_config(:web) and fails channel_not_configured. Temporary real-DataCase reproducer /tmp/pr6-pr5-bo-connection-gap_test.exs fails with {:error, {:channel_not_configured, :web}}; log /tmp/pr6-pr5-bo-connection-gap.log. Both affected infrastructure files match PR5. This is an integration gap for pending BO file delivery, not a current text-only regression. Resolve in owning workspace while preserving strict selected connector identity for provider-backed channels and config-free BO behavior. PR6 must not create a fake persisted connector, bypass shared delivery, or patch this infrastructure locally.",
+  "id": "zaq-9j8.20",
+  "labels": [],
+  "parent": "zaq-9j8",
+  "priority": 1,
+  "status": "open",
+  "title": "[PR5 integration] Support BO virtual connections in attachment selection",
+  "type": "bug",
+  "updated_at": "2026-11-28T11:56:18Z"
+}
