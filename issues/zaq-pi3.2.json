@@ -19,11 +19,15 @@
     {
       "text": "Added a new isolated ProvenanceTest file before production changes; existing tests untouched. Covers nested identity escalation as a property, canonical principal precedence, type/key/rights mutation across verify/from_map/Zoi, malformed nested identity versus valid flat fallback, independent provider/channel bindings, flat projection compatibility, unsafe old-token reissue, nil actor denial, equivalent normalization and signed JSON round trips. Current .1 baseline test process is still compiling dependencies; production remains unchanged until the new tests are observed red. Compatibility choice: nested maps always require explicit effective-principal binding, including when equivalent to flat fields, so old unsafe nested signatures cannot silently retain validity.",
       "timestamp": "2026-11-28T10:24:49Z"
+    },
+    {
+      "text": "Observed red phase: new suite 4/11 passed, with 7 failures proving nested identity escalation, unmatched and malformed nested/flat projection aliasing, channel override and unsafe legacy signature acceptance; shared principal API absent as expected. Implemented the smallest shared extension: expose Authorization.principal/1 without changing its body/can?/filter; Provenance retains provider fields and includes the effective principal when nested or different from the provider projection. Nested maps always bind even when equivalent to flat, enforcing explicit legacy reissue. Owning Agent documentation describes compatibility/authenticity versus authorization. No PR4/PR5 defect discovered or code changed there.",
+      "timestamp": "2026-11-28T10:25:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3.2] Bind signed provenance to effective authorization principals",
   "type": "task",
-  "updated_at": "2026-11-28T10:24:49Z"
+  "updated_at": "2026-11-28T10:25:32Z"
 }
