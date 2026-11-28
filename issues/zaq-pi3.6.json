@@ -4,7 +4,8 @@
     "zaq-pi3.5"
   ],
   "blocks": [
-    "zaq-pi3.11"
+    "zaq-pi3.11",
+    "zaq-pi3.12"
   ],
   "closed_at": "2026-11-28T11:01:42Z",
   "created": "2026-11-27T19:20:53Z",
@@ -22,5 +23,5 @@
   "status": "closed",
   "title": "[zaq-pi3.6] Propagate successful selections through configured Agent results",
   "type": "task",
-  "updated_at": "2026-11-28T11:01:42Z"
+  "updated_at": "2026-11-28T11:14:31Z"
 }

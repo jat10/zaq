@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-pi3.6"
+  ],
   "blocks": [
     "zaq-pi3.13"
   ],
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-pi3.12] Add authorized retrieval for delivered source attachments",
   "type": "task",
-  "updated_at": "2026-11-28T11:14:27Z"
+  "updated_at": "2026-11-28T11:14:31Z"
 }
