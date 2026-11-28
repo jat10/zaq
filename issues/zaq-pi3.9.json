@@ -1,8 +1,6 @@
 {
   "assignee": "",
-  "blocked_by": [
-    "zaq-pi3.8"
-  ],
+  "blocked_by": [],
   "blocks": [
     "zaq-pi3.10"
   ],
@@ -15,5 +13,5 @@
   "status": "open",
   "title": "[zaq-pi3.9] Complete PR6 technical review",
   "type": "task",
-  "updated_at": "2026-11-28T10:11:22Z"
+  "updated_at": "2026-11-28T10:11:29Z"
 }
