@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "zaq-pi3.12"
+  ],
   "blocks": [
     "zaq-pi3.15"
   ],
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-pi3.14] Enable attachment execution and descriptors for web delivery",
   "type": "task",
-  "updated_at": "2026-11-28T11:14:29Z"
+  "updated_at": "2026-11-28T11:14:32Z"
 }
