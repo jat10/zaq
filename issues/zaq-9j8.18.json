@@ -9,9 +9,15 @@
   "id": "zaq-9j8.18",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Rechecked approved five failing expectations and existing fixtures: EmailBridge declares native SMTP files plus required selected encoded-message/count limits; FileSettings and SMTP LiveView already enforce these contracts. Reconcile exact saved maps with submitted 10/25MB values; retain DeclaredSmtpBridge as explicitly unsupported while preserving its numeric declarations. Test-only reuse of current Channels/Engine/LiveView route, no new Action or production UI redesign. Existing credentials, byte conversion, false policy, unknown/invalid rejection and connector assertions remain intact.",
+      "timestamp": "2026-11-28T10:34:17Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.18] Reconcile SMTP settings tests with native attachment support",
   "type": "task",
-  "updated_at": "2026-11-28T10:34:12Z"
+  "updated_at": "2026-11-28T10:34:17Z"
 }
