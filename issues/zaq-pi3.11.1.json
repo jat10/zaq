@@ -7,9 +7,15 @@
   "id": "zaq-pi3.11.1",
   "labels": [],
   "parent": "zaq-pi3.11",
+  "comments": [
+    {
+      "text": "Verified only two lockfile entries changed. Published SDK f176793 and Mattermost 98cd98c pass exact multipart/no-I/O preparation, HTTP upload, provider-ID/thread publication, attachment-preserving edit and conservative incomplete-upload/no-retry contract tests. Existing Telegram absence and SMTP tests remain. mix q passes. Full named partial-upload facts and real configured-server acceptance still belong to parent .11 / zaq-h2i.4.3; no external publication or ignored source edits.",
+      "timestamp": "2026-11-28T11:24:29Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3.11.1] Pin published Mattermost attachment primitives",
   "type": "task",
-  "updated_at": "2026-11-28T11:14:26Z"
+  "updated_at": "2026-11-28T11:24:29Z"
 }
