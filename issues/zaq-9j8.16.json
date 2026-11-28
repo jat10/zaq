@@ -25,11 +25,15 @@
     {
       "text": "Combined 20-surface matrix found an existing grouped-modal fixture creating separate UUID attempts without chronological facts; added explicit UTC started_at to that existing fixture under approved attempt-contract/fixture scope. All existing modal assertions remain unchanged, including refreshing from three parts to one. Current code intentionally cannot infer newer attempts from UUID/report arrival alone.",
       "timestamp": "2026-11-28T10:40:01Z"
+    },
+    {
+      "text": "Final fixture repair validated: all grouped-modal assertions unchanged, mix q passes, and grouped-modal + grouped reporting + full EmailBridge suite passed 98 checks (3 properties, 95 tests). This verifies current-attempt updates in persisted/live modal data, while undated attempts stay conservative. No production UI or confirmation/history lifecycle changes.",
+      "timestamp": "2026-11-28T10:42:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.16] Scope displayed delivery evidence to the current attempt",
   "type": "bug",
-  "updated_at": "2026-11-28T10:40:01Z"
+  "updated_at": "2026-11-28T10:42:38Z"
 }
