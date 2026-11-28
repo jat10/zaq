@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-11-28T11:23:26Z",
+  "description": "Owner workspace: ../zaq-feat-delivery-execution; verified pushed parent 2144608e7f8110b75da7f05e4085dd84bfc16acd. PR6 must not patch this owner. Evidence: lib/zaq/channels/delivery_confirmation.ex confirmed_attachments/2 drops attributes from original Record metadata; Delivery.Executor.file_metadata/1 retains only name/mime/size, so merging acquired facts cannot restore a durable materialization_source. Real API -\u003e controlled external adapter -\u003e Engine confirmation reproducer /tmp/pr6-pr5-source-gap_test.exs: Record.attachment_metadata(record) retains valid v1 data_source_document source; delivered message is confirmed, but stored Message.attachments[0].attributes.materialization_source is nil. 18 existing delivery/adapter checks passed alongside the one expected failing reproduction. These two owner files are byte-identical to PR5 (not changed by PR6). Expected: confirmed attachment history preserves validated durable non-capability source facts and actual acquired name/MIME/size; never handles/provenance/bytes. Impact: browser download can authorize canonical message and recheck current ACL only if original provider/config/file identity survives history reload. Proposed owner investigation: preserve safe source at existing confirmation boundary without adding a second attachment store or changing receipt truth. Acceptance: real confirmed-only history path retains source, invalid/bearer source rejected, failed/unconfirmed files never gain descriptors. Action reuse: extend existing owner projection; no new delivery Action. No production code or PR5 worktree edited.",
+  "id": "zaq-9j8.19",
+  "labels": [],
+  "parent": "zaq-9j8",
+  "priority": 1,
+  "status": "open",
+  "title": "PR5 confirmation drops durable attachment sources",
+  "type": "bug",
+  "updated_at": "2026-11-28T11:23:26Z"
+}
