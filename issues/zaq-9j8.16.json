@@ -9,9 +9,15 @@
   "id": "zaq-9j8.16",
   "labels": [],
   "parent": "zaq-9j8",
+  "comments": [
+    {
+      "text": "Boundary/Action reuse assessment rechecked: extend Result safe evidence and existing DeliveryConfirmation reporting, Engine DeliveryEvidence validation and MessageDelivery row-lock persistence/presentation. No new Action, send route or history association implementation. Attempt precedence will use explicit UTC start time captured before preparation/provider operations, never UUID order or completion/report arrival; strictly later starts supersede, equal or missing start facts cannot displace an ordered current attempt, and same-attempt conflicting terminal facts cannot clear genuine failures. Preserve earlier snapshots separately in private delivery_attempts metadata. Legacy confirmation and history idempotency remain authoritative and untouched; test actual Channels-\u003eEngine persisted presentation.",
+      "timestamp": "2026-11-28T10:25:30Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.16] Scope displayed delivery evidence to the current attempt",
   "type": "bug",
-  "updated_at": "2026-11-28T10:25:28Z"
+  "updated_at": "2026-11-28T10:25:30Z"
 }
