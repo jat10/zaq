@@ -13,11 +13,15 @@
     {
       "text": "Rechecked approved scope and Action reuse against Executor.execute/5, Preparation.prepare_step/5, existing bridge callbacks and Result.safe_evidence/1. Extend Executor preflight after upload completion; preserve final re-encoding with actual root headers. No new Action or provider/reporting path. Existing executor regressions cover acquisition, deadlines, sequential abort and confirmation; extend them across both transfer modes.",
       "timestamp": "2026-11-28T10:21:37Z"
+    },
+    {
+      "text": "Implemented and validated in working tree. Before fix, extended upload regression failed because first publication escaped; after fix mix q passed and focused Executor/PreparationAttempt/AttemptReporting/Result suites passed: 53 checks (4 properties, 49 tests). Both transfer modes now preflight abort publications; uploaded-only refs remain private facts, no sends escape a static preparation failure, and final changed-root headers are revalidated. No commit/push/merge; keep in progress until normal landing lifecycle.",
+      "timestamp": "2026-11-28T10:23:45Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-9j8.14] Preflight every publication before abort delivery starts",
   "type": "bug",
-  "updated_at": "2026-11-28T10:21:37Z"
+  "updated_at": "2026-11-28T10:23:45Z"
 }
