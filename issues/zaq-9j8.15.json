@@ -17,11 +17,15 @@
     {
       "text": "Implemented and validated in working tree. New regressions reproduced answer loss and missing full-answer validation before the fix. Independent answer reservation occurs only after successful preparation; later usable group receives original answer, final text fallback is validated against selected limits, failures retain original indices, and uncertain sends are never promoted/retried. mix q passed; Executor/PreparationAttempt/APIExecution suites: 56 checks passed (2 properties, 54 tests). No commit/push/merge.",
       "timestamp": "2026-11-28T10:25:27Z"
+    },
+    {
+      "text": "Final combined 495-check matrix includes passing answer transfer/full-size fallback/no-retry/trailing-empty-group regressions; all 18 properties pass. Runtime and bridge ownership remain unchanged; independent jobs still overlap and provider operations execute at most once. Existing source HEAD remains 6a546dc44; all five fixes are uncommitted in worktree.",
+      "timestamp": "2026-11-28T10:59:24Z"
     }
   ],
   "priority": 1,
   "status": "in_progress",
   "title": "[zaq-9j8.15] Preserve the answer after independent preparation failure",
   "type": "bug",
-  "updated_at": "2026-11-28T10:25:27Z"
+  "updated_at": "2026-11-28T10:59:24Z"
 }
