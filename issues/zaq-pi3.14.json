@@ -15,11 +15,15 @@
     {
       "text": "Upstream source/history blocker tracked separately as zaq-9j8.19, owner ../zaq-feat-delivery-execution at 2144608e7. Confirmed delivery currently discards durable source metadata. No PR5 source patch is made in PR6; continue independent retrieval/protocol/presentation implementation while retaining this full history/download acceptance gate.",
       "timestamp": "2026-11-28T11:23:30Z"
+    },
+    {
+      "text": "BO attachment execution has an evidenced upstream selection gap: shared Connection.select requires a persisted :web connector even though existing BO delivery uses the explicit config-free branch. Reproducer /tmp/pr6-pr5-bo-connection-gap_test.exs returns channel_not_configured; no PR5 production code patched. Safe historical widget descriptor projection proceeds through existing response path; capability enablement and full execution remain gated by owner fix, zaq-9j8.19 source preservation and published widget companion contract. Existing web file capability assertion approval requested, not assumed.",
+      "timestamp": "2026-11-28T11:56:19Z"
     }
   ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.14] Enable attachment execution and descriptors for web delivery",
   "type": "task",
-  "updated_at": "2026-11-28T11:23:30Z"
+  "updated_at": "2026-11-28T11:56:19Z"
 }
