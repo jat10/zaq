@@ -13,11 +13,15 @@
     {
       "text": "Rechecked approved five failing expectations and existing fixtures: EmailBridge declares native SMTP files plus required selected encoded-message/count limits; FileSettings and SMTP LiveView already enforce these contracts. Reconcile exact saved maps with submitted 10/25MB values; retain DeclaredSmtpBridge as explicitly unsupported while preserving its numeric declarations. Test-only reuse of current Channels/Engine/LiveView route, no new Action or production UI redesign. Existing credentials, byte conversion, false policy, unknown/invalid rejection and connector assertions remain intact.",
       "timestamp": "2026-11-28T10:34:17Z"
+    },
+    {
+      "text": "Before reconciliation existing SMTP suite reproduced exactly the five approved failures: 51/56 passed. After changes mix q passed; SMTP plus EmailConnectorSettings/API, ChannelConfig, TransportRequirements, FileDeliverySettings, native EmailBridge delivery and PR5 APIExecution suites passed 196 checks (2 properties, 194 tests), including all 56 SMTP cases. Exact configured byte/count values retained, unsupported declaration fixture remains negative control and required inputs remain asserted. Corrected stale Channels service capability prose to native SMTP behavior. Existing browser execution next; no new feature E2E authored, no commit/push/merge.",
+      "timestamp": "2026-11-28T10:36:59Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-9j8.18] Reconcile SMTP settings tests with native attachment support",
   "type": "task",
-  "updated_at": "2026-11-28T10:34:17Z"
+  "updated_at": "2026-11-28T10:36:59Z"
 }
