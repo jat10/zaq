@@ -9,7 +9,7 @@
   "parent": "zaq-pi3",
   "priority": 2,
   "status": "open",
-  "title": "Verify and pin Mattermost attachment support",
+  "title": "[zaq-pi3.11] Verify and pin Mattermost attachment support",
   "type": "task",
-  "updated_at": "2026-11-28T10:10:49Z"
+  "updated_at": "2026-11-28T10:10:51Z"
 }
