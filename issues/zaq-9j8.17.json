@@ -1,7 +1,9 @@
 {
   "assignee": "",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "zaq-9j8.12"
+  ],
   "created": "2026-11-28T10:17:30Z",
   "description": "User approved review finding 4 on 2026-11-28.\n\nProblem: test/zaq/channels/delivery/plan_validation_test.exs property \"planner output preserves every original index across fixed groups\" repeats index-preservation coverage in test/zaq/channels/delivery/attachments_test.exs property \"packing preserves every original index exactly once and respects known ceilings\", using a narrower generator. Its distinct contribution is Plan.validate/2.\n\nAgreed change: add the Plan.validate/2 assertion to the existing packing property and remove the duplicate property. Retain distinct malformed-reference, dependency-cycle and invalid-edit validation tests and their necessary helpers. Preserve existing broader size/count/ceiling generators and assertions. Other executor, adapter compatibility and Engine suites have distinct responsibilities and remain separate; no broad test restructuring.\n\nApproval: user explicitly approved this exact consolidation/removal after explanation. This satisfies the existing-test behavior approval gate only for moving the distinct validation assertion and removing redundant coverage; unrelated assertion weakening or changes are not authorized.\n\nAcceptance: generated plans from the existing packing property pass Plan.validate/2 using the original attachment count; every original index still appears exactly once and existing ceiling assertions remain. Distinct malformed-plan rejection coverage is unchanged. Run the affected attachments and plan-validation suites and required issue validation checks.\n\nAction reuse assessment: test-only consolidation; reuse existing generators, fixtures and Plan.validate/2, no production operation or new Action. No new test module or duplicate helper is needed.\n\nRead AGENTS.md, docs/WORKFLOW_AGENT.md, docs/testing-approach.md and docs/code-quality.md before implementation. Follow validation lifecycle. This decision turn records agreed work only; no test source changed.",
   "id": "zaq-9j8.17",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "[zaq-9j8.17] Consolidate duplicated planner property coverage",
   "type": "task",
-  "updated_at": "2026-11-28T10:17:38Z"
+  "updated_at": "2026-11-28T10:17:40Z"
 }

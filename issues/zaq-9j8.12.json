@@ -4,7 +4,8 @@
     "zaq-9j8.11",
     "zaq-9j8.14",
     "zaq-9j8.15",
-    "zaq-9j8.16"
+    "zaq-9j8.16",
+    "zaq-9j8.17"
   ],
   "blocks": [],
   "created": "2026-11-27T18:38:08Z",
@@ -16,5 +17,5 @@
   "status": "open",
   "title": "[zaq-9j8.12] Complete PR5 review coverage and final validation",
   "type": "task",
-  "updated_at": "2026-11-28T10:16:53Z"
+  "updated_at": "2026-11-28T10:17:40Z"
 }
