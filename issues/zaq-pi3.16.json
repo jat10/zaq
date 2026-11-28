@@ -3,7 +3,9 @@
   "blocked_by": [
     "zaq-pi3.15"
   ],
-  "blocks": [],
+  "blocks": [
+    "zaq-pi3.8"
+  ],
   "created": "2026-11-28T10:11:03Z",
   "description": "Functional specifications covered with associated files to edit/add: Extend web_widget protocol validation, response/state reducers and existing message UI to accept server descriptors and display downloadable files. Use the session-authorized file route; preserve history reload and connector isolation. Track package change and compatible ZAQ mix.exs/mix.lock update explicitly. Follow sibling repository AGENTS.md before work there; do not alter unrelated worktree changes or claim unshipped package support.\n\nTests to add before implementation: Protocol/state/component tests for multiple files, history, download URL/session behavior, inaccessible or removed files, expired sessions and text-only responses. Keep browser scenario authoring deferred to its gate.\n\nBranches/paths validated: Disk/Drive, initial and resumed conversation, reconnect, live delivery/history parity and safe error feedback.\n\nMocking plan: External authentication/provider edges only; real package rendering/state and ZAQ integration where feasible.\n\nDocumentations to update for both code and docs/ related content: Widget package protocol/integration documentation and ZAQ docs/services/web-bridge.md compatibility instructions.\n\nAction reuse assessment: Extend existing widget response/state/UI owners and reuse the file API; no additional download service, authorization implementation or agent tool.\n\nImplementation handoff: Scope and sequence approved by the user on 2026-11-28. This turn records the plan only; application implementation, commits, pushes, rebases and dependency publication are not performed or authorized by this planning update. Read AGENTS.md, docs/WORKFLOW_AGENT.md, docs/exec-plans/PLAN_STRATEGY.md, docs/action-reuse.md, docs/testing-approach.md, docs/documentation.md, docs/conventions.md and docs/code-quality.md before execution. Read applicable service guides and module responsibilities; Agent work requires the harness-critical checks; BO work requires DESIGN.md and docs/bo-components.md. Recheck live source and dependency contracts. Preserve existing test behavior unless specifically approved. Write immediate unit/integration/property tests before corresponding code; new browser journeys wait for the human UX gate. Keep real internal boundaries, mock only external edges, and inject runtime dependencies through existing opts/context and Zaq.Config. Follow the owning validation lifecycle. PR7 owns RunAgent, NotifyPerson and notification/workflow integration.",
   "id": "zaq-pi3.16",
@@ -13,5 +15,5 @@
   "status": "open",
   "title": "[zaq-pi3.16] Render and download attachments in the web widget",
   "type": "task",
-  "updated_at": "2026-11-28T10:11:39Z"
+  "updated_at": "2026-11-28T10:11:40Z"
 }
