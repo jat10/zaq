@@ -9,7 +9,7 @@
   "parent": "zaq-9j8",
   "priority": 1,
   "status": "open",
-  "title": "[zaq-9j8] Preflight every publication before abort delivery starts",
+  "title": "[zaq-9j8.14] Preflight every publication before abort delivery starts",
   "type": "bug",
-  "updated_at": "2026-11-28T10:12:32Z"
+  "updated_at": "2026-11-28T10:12:39Z"
 }
