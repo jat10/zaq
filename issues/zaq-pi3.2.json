@@ -15,11 +15,15 @@
     {
       "text": "Pre-implementation discovery only while .1 setup runs. Module-context evidence: Authorization.can?/3 -\u003e permission_matches? -\u003e principal currently prioritizes a nested principal map and otherwise principal_channel/principal_type + principal_key; comparisons normalize identifiers. Provenance.issue/seal -\u003e canonical_claims -\u003e permission_projection currently signs a different provider-flat principal projection, omitting nested authorization identity. Record.from_map and semantic Zoi validate via Provenance.verify; metadata producers reseal. No process/global selection state is involved. Extend the existing Authorization principal projection for shared use, retain can?/filter semantics and provider signature fields, bind effective-principal overrides and malformed nested cases; no new permission Action/ACL implementation. Source reference branch has a related example but is not authority. Risks to cover: flat signature compatibility, nested overrides/tampering, invalid nested versus flat fallback, rights, atom/string maps, old unsafe nested signatures and JSON round trips. Existing Record/Authorization tests remain unchanged; add focused tests/properties. Serena overviews/targeted symbol reads worked; references query could not resolve the reported permission_projection name, so bounded rg established local callers. No production edits before .1 readiness.",
       "timestamp": "2026-11-28T10:17:16Z"
+    },
+    {
+      "text": "Added a new isolated ProvenanceTest file before production changes; existing tests untouched. Covers nested identity escalation as a property, canonical principal precedence, type/key/rights mutation across verify/from_map/Zoi, malformed nested identity versus valid flat fallback, independent provider/channel bindings, flat projection compatibility, unsafe old-token reissue, nil actor denial, equivalent normalization and signed JSON round trips. Current .1 baseline test process is still compiling dependencies; production remains unchanged until the new tests are observed red. Compatibility choice: nested maps always require explicit effective-principal binding, including when equivalent to flat fields, so old unsafe nested signatures cannot silently retain validity.",
+      "timestamp": "2026-11-28T10:24:49Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3.2] Bind signed provenance to effective authorization principals",
   "type": "task",
-  "updated_at": "2026-11-28T10:23:42Z"
+  "updated_at": "2026-11-28T10:24:49Z"
 }
