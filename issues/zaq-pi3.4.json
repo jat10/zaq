@@ -15,11 +15,15 @@
     {
       "text": "User steering confirmed: use existing functions and keep Factory unchanged. Removed draft attachment-specific Factory marker. Existing native runner resolves Actions before emitting ordered starts; StreamEvents will reuse its current invocation collection, request identity, complete_tool_call/5 and replay/hierarchy guards. OpaqueAliases extends the existing action_schema/alias_paths/maybe_map_scoped traversal for output direction; no manual Record capability traversal or new collector. Existing Factory interception remains byte-identical to PR5.",
       "timestamp": "2026-11-28T10:41:10Z"
+    },
+    {
+      "text": "Completed private output expansion through the existing OpaqueAliases action_schema/alias_paths/maybe_map_scoped/map_paths/expand_value traversal. ToolResult output and effects/metadata are preserved. Factory is byte-identical to PR5, following user steering; no attachment marker or interception branch remains. Existing Factory before/after functions are exercised by new same-scope/wrong-scope/cleared-scope/canonical/unknown-alias/tampering tests. No independent alias store or Record-field traversal. Final mix q passed and the combined focused regression run passed 502 checks (6 doctests, 29 properties, 467 examples).",
+      "timestamp": "2026-11-28T11:01:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "[zaq-pi3.4] Expand selection output aliases through the existing schema traversal",
   "type": "task",
-  "updated_at": "2026-11-28T10:41:10Z"
+  "updated_at": "2026-11-28T11:01:32Z"
 }
