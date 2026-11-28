@@ -12,9 +12,15 @@
   "id": "zaq-pi3.16",
   "labels": [],
   "parent": "zaq-pi3",
+  "comments": [
+    {
+      "text": "Prepared independent companion widget presentation in ../web_widget-zaq-pi3 (ww-m45): bounded attachment descriptors survive existing semantic/UI response normalization and LiveView-owned State for live completions and restored history. React cards show name/MIME/size, loading and unavailable states; download fetch reuses currentIdentityToken, current page binding and scoped same-origin cookie, with no token/source in URL. Added only immediate Elixir/Node unit checks; no consolidated browser journey. Unit JS suite passes 17 and tsc+Vite production builds pass. HTTP/JWT/session/protocol tests pass 44; targeted presentation suite passes 20. Package q formatting/Credo pass; warnings-as-errors blocked by unchanged verified_profile guard warnings tracked ww-e4z. External publication/pin and completed host .14 remain gates.",
+      "timestamp": "2026-11-28T11:55:39Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "[zaq-pi3.16] Render and download attachments in the web widget",
   "type": "task",
-  "updated_at": "2026-11-28T11:14:34Z"
+  "updated_at": "2026-11-28T11:55:39Z"
 }
